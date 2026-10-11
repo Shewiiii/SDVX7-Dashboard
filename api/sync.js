@@ -29,7 +29,8 @@ export default async function handler(req, res) {
       WHERE dashboard_records.record IS DISTINCT FROM EXCLUDED.record`];
     if (state) queries.push(sql`INSERT INTO dashboard_state (id, record) VALUES (1, ${JSON.stringify(state)}::jsonb)
       ON CONFLICT (id) DO UPDATE SET record = EXCLUDED.record ||
-        jsonb_build_object('catalog', COALESCE(EXCLUDED.record->'catalog', dashboard_state.record->'catalog', '[]'::jsonb)),
+        jsonb_build_object('catalog', COALESCE(EXCLUDED.record->'catalog', dashboard_state.record->'catalog', '[]'::jsonb),
+          'appeal_card', COALESCE(EXCLUDED.record->'appeal_card', dashboard_state.record->'appeal_card', 'null'::jsonb)),
         synced_at = now()`);
     await sql.transaction(queries);
     return res.status(200).json({ ok: true, accepted: rows.length });

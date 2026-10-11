@@ -70,5 +70,55 @@ class SyncTests(unittest.TestCase):
         record = {**self.base, "timing_histogram": [1, 0, 0, 1, 0, 0, 0], "judgments": {"near": 1}}
         self.assertEqual(sync.play_record(record, FakeCatalog())["timing"], 43.75)
 
+    def test_current_appeal_updates_without_song_changes_and_uses_xml_texture_mapping(self):
+        try:
+            from PIL import Image
+        except ImportError:
+            self.skipTest("Pillow is needed for artwork checks")
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            tracker = root / "game/tracker"
+            game = tracker.parent
+            (tracker / "cache").mkdir(parents=True)
+            (game / "data/others").mkdir(parents=True)
+            artwork = game / "data/graphics/ap_card"
+            artwork.mkdir(parents=True)
+            (game / "data/others/appeal_card.xml").write_text(
+                '<cards><card id="5535"><info><texture>ap_06_R0035</texture></info></card>'
+                '<card id="2"><info><texture>another_card</texture></info></card></cards>', encoding="cp932")
+            for texture, color in [("ap_06_R0035", "red"), ("another_card", "blue")]:
+                image = Image.new("RGBA", (3, 3), (0, 0, 0, 0))
+                image.putpixel((1, 1), (*Image.new("RGB", (1, 1), color).getpixel((0, 0)), 255))
+                image.save(artwork / f"{texture}.png")
+            cache = tracker / "cache/total_volforce.json"
+            raw = {"source": "sv7_load_m", "chart_volforce": {}, "updated_at": self.base["received_at"],
+                   "profile_id": "private", "player": {"appeal_id": 5535}}
+            cache.write_text(json.dumps(raw), encoding="utf-8")
+            catalog = sync.Catalog(tracker)
+            with patch.object(sync, "ROOT", root):
+                catalog.refresh()
+                catalog.prepare_covers()
+                first = catalog.appeal_card
+                self.assertIsNotNone(first)
+                restarted = sync.Catalog(tracker)
+                restarted.refresh()
+                with patch("PIL.Image.open", side_effect=AssertionError("Cached artwork was re-encoded")):
+                    restarted.prepare_covers()
+                self.assertEqual(restarted.appeal_card, first)
+                with Image.open(root / ".local/covers" / f"{first}.webp") as image:
+                    self.assertEqual(image.getpixel((0, 0))[3], 0)
+                state, _ = sync.snapshot(tracker, catalog, "Test")
+                self.assertEqual(state["appeal_card"], first)
+                self.assertNotIn("private", json.dumps(state))
+                self.assertNotIn("appeal_id", json.dumps(state))
+                raw["player"]["appeal_id"] = 2
+                cache.write_text(json.dumps(raw), encoding="utf-8")
+                catalog.prepare_covers()
+                self.assertNotEqual(catalog.appeal_card, first)
+                raw["player"]["appeal_id"] = "../../invalid"
+                cache.write_text(json.dumps(raw), encoding="utf-8")
+                catalog.prepare_covers()
+                self.assertIsNone(catalog.appeal_card)
+
 
 if __name__ == "__main__": unittest.main()

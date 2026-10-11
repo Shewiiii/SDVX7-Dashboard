@@ -49,6 +49,10 @@ On phones, the wallpaper is positioned at `82% center` to frame the purple chara
 
 ## Future sessions
 
+The appeal card beside your name comes from the latest captured in-game selection, resolved through the game's `appeal_card.xml` texture mapping. The companion uploads only the selected artwork. When you change cards, the next sync updates the website. Restart an already-running personal companion after updating its Python code.
+
+Total VolForce displays the matching class name and original class logo, using the same thresholds and ranks as the bot's profile command. The ten logos are small static assets under `public/assets/vf-classes/`; to refresh them from the game's current archives, run `..\.venv\Scripts\python.exe scripts/prepare-profile-assets.py` before deploying.
+
 Use **Start-tracker-with-dashboard.bat** instead of the tracker's usual launcher. This personal launcher starts the same existing tracker and a hidden companion process, uploads every 30 seconds, and stops its own sync process when the tracker exits. Logs are in `.local/sync.log` and `.local/sync-errors.log`. Your original launcher still works normally.
 
 Alternatively, run `python sync.py` separately, or `python sync.py --once` for a manual upload. Interrupted/failed uploads are retried with exponential backoff; cursors are saved only after the server acknowledges a committed batch. Duplicate uploads are harmless. The original logs remain the source for retry; don't delete unsynced logs.

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cleanPlay, cleanObservation, cleanState } from '../lib/records.mjs';
-import { chartPlays, DIFFS } from '../public/metrics.js';
+import { chartPlays, DIFFS, summary, volforceClass } from '../public/metrics.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const baseUrl = process.env.DASHBOARD_URL || 'http://localhost:3000';
@@ -29,6 +29,17 @@ try {
   for (const p of actual.plays) cleanPlay(p);
   for (const o of actual.observations) cleanObservation(o);
   cleanState(actual.state);
+  assert.ok(actual.state.appeal_card, 'Current appeal artwork is missing');
+  assert.equal(await page.locator('#appeal-card').getAttribute('src'), `/api/cover?id=${actual.state.appeal_card}`);
+  const expectedClass = volforceClass(summary(actual).total);
+  assert.equal(await page.locator('#vf-class-name').innerText(), expectedClass.name);
+  assert.equal(await page.locator('#vf-class-icon').getAttribute('src'), `/assets/vf-classes/${expectedClass.number}.png`);
+  await page.waitForFunction(() => ['appeal-card', 'vf-class-icon'].every(id => {
+    const image = document.getElementById(id); return image?.complete && image.naturalWidth > 0;
+  }));
+  const cardBounds = await page.locator('#appeal-card').boundingBox();
+  const nameBounds = await page.locator('#player-name').boundingBox();
+  assert.ok(cardBounds.x + cardBounds.width < nameBounds.x, 'Appeal card must be left of the name');
   assert.equal(await page.locator('#play-count').innerText(), actual.plays.length.toLocaleString());
   assert.equal(await page.locator('.hero-subtitle').innerText(), 'History of local plays');
   assert.equal(await page.locator('#connection').count(), 0);

@@ -69,6 +69,10 @@ class Catalog:
         self.cover_ids = {}
         self.cover_index = None
         self.cover_signature = None
+        self.appeal_card = None
+        self.appeal_signature = None
+        self.appeal_textures = {}
+        self.appeal_mapping_signature = None
 
     def refresh(self):
         signature = tuple((p.stat().st_mtime_ns, p.stat().st_size) if p.exists() else None for p in self.paths)
@@ -113,8 +117,64 @@ class Catalog:
     def get(self, mid, diff):
         return self.charts.get(f"{mid}:{diff}", {"title": f"Chart {mid}", "artist": "", "level": None})
 
+    def prepare_appeal_card(self):
+        """Read only the selected artwork, never publish the player record."""
+        try:
+            raw = json.loads((self.tracker / "cache/total_volforce.json").read_text(encoding="utf-8"))
+            appeal_id = (raw.get("player") or {}).get("appeal_id")
+            if type(appeal_id) is not int or appeal_id < 0:
+                self.appeal_card = None
+                self.appeal_signature = None
+                return
+            mapping = self.game / "data/others/appeal_card.xml"
+            stat = mapping.stat()
+            mapping_signature = (stat.st_mtime_ns, stat.st_size)
+            if mapping_signature != self.appeal_mapping_signature:
+                text = re.sub(r"<\?xml[^>]*\?>", "", mapping.read_text(encoding="cp932", errors="replace"), count=1)
+                self.appeal_textures = {int(card.get("id")): texture
+                    for card in ET.fromstring(text).findall("card")
+                    if card.get("id", "").isdecimal() and
+                    re.fullmatch(r"[A-Za-z0-9_]+", texture := card.findtext("info/texture", "").strip())}
+                self.appeal_mapping_signature = mapping_signature
+            texture = self.appeal_textures.get(appeal_id)
+            if not texture:
+                self.appeal_card = None
+                self.appeal_signature = None
+                return
+            source = self.game / "data/graphics/ap_card" / f"{texture}.png"
+            stat = source.stat()
+            signature = (appeal_id, str(source), stat.st_mtime_ns, stat.st_size)
+            if signature == self.appeal_signature:
+                return
+            cache_path = ROOT / ".local/appeal-card-cache.json"
+            cached = json.loads(cache_path.read_text(encoding="utf-8")) if cache_path.exists() else {}
+            cached_id = cached.get("id", "")
+            if (cached.get("signature") == list(signature) and isinstance(cached_id, str) and
+                    re.fullmatch(r"[a-f0-9]{64}", cached_id) and
+                    (ROOT / ".local/covers" / f"{cached_id}.webp").exists()):
+                self.appeal_card, self.appeal_signature = cached_id, signature
+                return
+            from PIL import Image
+            from io import BytesIO
+            with Image.open(source) as image:
+                image = image.convert("RGBA")
+                image.thumbnail((256, 256))
+                buffer = BytesIO()
+                image.save(buffer, "WEBP", lossless=True, method=4)
+            content = buffer.getvalue()
+            image_id = hashlib.sha256(content).hexdigest()
+            target = ROOT / ".local/covers" / f"{image_id}.webp"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+            write_json(cache_path, {"signature": list(signature), "id": image_id})
+            self.appeal_card, self.appeal_signature = image_id, signature
+        except (OSError, ValueError, TypeError, ET.ParseError, ImportError):
+            self.appeal_card = None
+            self.appeal_signature = None
+
     def prepare_covers(self):
         """Prepare small web covers for songs with local plays or saved records."""
+        self.prepare_appeal_card()
         music_ids = set()
         cache_path = self.tracker / "cache/total_volforce.json"
         if cache_path.exists():
@@ -256,7 +316,7 @@ def observation_record(record, profile_id):
 def snapshot(tracker, catalog, name):
     path = tracker / "cache/total_volforce.json"
     if not path.exists():
-        state = {"name": name, "updated_at": None, "charts": []}
+        state = {"name": name, "updated_at": None, "charts": [], "appeal_card": getattr(catalog, "appeal_card", None)}
         if hasattr(catalog, "public_catalog"): state["catalog"] = catalog.public_catalog()
         return state, None
     raw = json.loads(path.read_text(encoding="utf-8"))
@@ -272,7 +332,8 @@ def snapshot(tracker, catalog, name):
         charts.append({"music_id": mid, "diff_idx": diff, "vf": vf / 1000,
                        **catalog.get(mid, diff), "score": saved.get("score"), "clear_type": saved.get("clear_type")})
     charts.sort(key=lambda c: (-c["vf"], c["music_id"], c["diff_idx"]))
-    state = {"name": name, "updated_at": stamp(raw["updated_at"]), "charts": charts}
+    state = {"name": name, "updated_at": stamp(raw["updated_at"]), "charts": charts,
+             "appeal_card": getattr(catalog, "appeal_card", None)}
     if hasattr(catalog, "public_catalog"): state["catalog"] = catalog.public_catalog()
     return state, raw.get("profile_id")
 
@@ -382,7 +443,9 @@ def sync_once(config, tracker, catalog, reset=False):
         if acknowledged.get("endpoint") != endpoint_id or reset:
             acknowledged = {"endpoint": endpoint_id, "ids": []}
         known_ids = set(acknowledged["ids"])
-        pending_ids = sorted(set(catalog.cover_ids.values()) - known_ids)
+        image_ids = set(catalog.cover_ids.values())
+        if catalog.appeal_card: image_ids.add(catalog.appeal_card)
+        pending_ids = sorted(image_ids - known_ids)
         for start in range(0, len(pending_ids), 30):
             batch = pending_ids[start:start + 30]
             covers = [{"id": cover_id, "type": "image/webp", "data": base64.b64encode(
@@ -391,7 +454,7 @@ def sync_once(config, tracker, catalog, reset=False):
             known_ids.update(batch)
             acknowledged["ids"] = sorted(known_ids)
             write_json(cover_state_path, acknowledged)
-        if pending_ids: print(f"Synced {len(pending_ids)} song covers.")
+        if pending_ids: print(f"Synced {len(pending_ids)} artwork images.")
     current, profile = snapshot(tracker, catalog, config.get("name", "Shewi"))
     current_hash = hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()
     uploaded = 0

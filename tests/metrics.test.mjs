@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { performance, rolling, visibleObservations, summary } from '../public/metrics.js';
+import { performance, rolling, visibleObservations, summary, volforceClass } from '../public/metrics.js';
 import { authorized, cleanPlay, cleanObservation, cleanState, recordId } from '../lib/records.mjs';
 import syncHandler from '../api/sync.js';
 import dataHandler from '../api/data.js';
@@ -40,6 +40,23 @@ test('ingestion strips identifiers and stable IDs make enriched/retried plays id
   assert.throws(() => cleanPlay({ ...base, score: 10000001 }));
   assert.throws(() => cleanObservation({ timestamp: base.received_at, total_vf: Infinity, top_count: 50, minimum_vf: .3 }));
 });
+test('VF class handles class/rank boundaries, rounding noise, and missing totals', () => {
+  for (const [value, number, name] of [[0, 1, 'Sienna I'], [9.999, 1, 'Sienna IV'], [10, 2, 'Cobalt I'],
+    [12, 3, 'Dandelion I'], [14, 4, 'Cyan I'], [15, 5, 'Scarlet I'], [16, 6, 'Coral I'],
+    [16.249, 6, 'Coral I'], [16.249999999999996, 6, 'Coral II'], [16.487, 6, 'Coral II'],
+    [16.5, 6, 'Coral III'], [16.75, 6, 'Coral IV'], [17, 7, 'Argento I'],
+    [18, 8, 'Eldora I'], [19, 9, 'Crimson I'], [20, 10, 'Imperial I'], [23, 10, 'Imperial IV']]) {
+    assert.deepEqual(volforceClass(value), { number, name });
+  }
+  for (const value of [null, undefined, '16.487', -1, NaN, Infinity]) assert.equal(volforceClass(value), null);
+});
+
+test('appeal artwork accepts only image hashes and preserves older snapshot compatibility', () => {
+  assert.equal(cleanState({ charts: [], appeal_card: 'a'.repeat(64), player: { appeal_id: 5535 } }).appeal_card, 'a'.repeat(64));
+  assert.equal(cleanState({ charts: [], appeal_card: 'https://example.org/card.png' }).appeal_card, null);
+  assert.ok(!('appeal_card' in cleanState({ charts: [] })));
+});
+
 test('authentication rejects short, absent, wrong, and malformed secrets', () => {
   const secret = 'a'.repeat(64);
   assert.equal(authorized(`Bearer ${secret}`, secret), true);

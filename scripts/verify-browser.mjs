@@ -26,6 +26,13 @@ try {
         deviceScaleFactor: 1,
     });
     page.on("pageerror", (error) => errors.push(error.message));
+    const conversionRate = 0.00563;
+    await page.route("https://api.frankfurter.dev/v2/rate/jpy/eur", (route) =>
+        route.fulfill({
+            headers: { "access-control-allow-origin": "*" },
+            json: { base: "JPY", quote: "EUR", rate: conversionRate, date: "2026-10-11" },
+        }),
+    );
     const checkRow = async (selector) => {
         const row = page.locator(selector).first();
         const music = await row.getAttribute("data-music"),
@@ -152,9 +159,14 @@ try {
         style: "currency",
         currency: "JPY",
     }).format((267 * actual.plays.length) / 4);
+    const convertedSpending = new Intl.NumberFormat("en-IE", {
+        style: "currency",
+        currency: "EUR",
+    }).format(267 * actual.plays.length / 4 * conversionRate);
+    await page.waitForFunction(() => document.getElementById("play-detail").textContent.includes("€"));
     assert.equal(
         await page.locator("#play-detail").innerText(),
-        `${actual.plays.filter((p) => p.clear_type > 1).length} clears · ${spending}`,
+        `${actual.plays.filter((p) => p.clear_type > 1).length} clears · ${spending} (${convertedSpending})`,
     );
     const axes = await page
         .locator("#chart .axis-caption")

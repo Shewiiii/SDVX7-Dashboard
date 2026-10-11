@@ -23,6 +23,59 @@ const yen = new Intl.NumberFormat("ja-JP", {
     style: "currency",
     currency: "JPY",
 });
+const euro = new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency: "EUR",
+});
+let euroRate = null,
+    euroRateDate = "",
+    rateLoading = false,
+    rateAttempt = 0;
+
+function renderSpending() {
+    if (!data) return;
+    const spending = (STANDARD_START_YEN * data.plays.length) / 4;
+    const converted =
+        euroRate === null ? "" : ` (${euro.format(spending * euroRate)})`;
+    setText(
+        "play-detail",
+        `${data.plays.filter((p) => p.clear_type > 1).length} clears · Standard Start+EX: ${yen.format(spending)}${converted}`,
+    );
+    $("play-detail").title =
+        `Estimated Standard Start spending: ${yen.format(STANDARD_START_YEN)} × ${number(data.plays.length)} plays ÷ 4${euroRate === null ? "" : ` · JPY/EUR rate from Frankfurter (${euroRateDate})`}`;
+}
+
+async function loadEuroRate() {
+    const retryAfter = euroRate === null ? 60000 : 3600000;
+    if (rateLoading || Date.now() - rateAttempt < retryAfter) return;
+    rateLoading = true;
+    rateAttempt = Date.now();
+    try {
+        const response = await fetch(
+            "https://api.frankfurter.dev/v2/rate/jpy/eur",
+            {
+                signal: AbortSignal.timeout(5000),
+            },
+        );
+        if (!response.ok) throw new Error("Rate unavailable");
+        const result = await response.json();
+        if (
+            result.base !== "JPY" ||
+            result.quote !== "EUR" ||
+            !Number.isFinite(result.rate) ||
+            result.rate <= 0 ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(result.date)
+        )
+            throw new Error("Invalid rate");
+        euroRate = result.rate;
+        euroRateDate = result.date;
+        renderSpending();
+    } catch {
+        // Keep the yen amount (and any previously loaded conversion) available.
+    } finally {
+        rateLoading = false;
+    }
+}
 const escape = (value) =>
     String(value ?? "").replace(
         /[&<>"']/g,
@@ -127,12 +180,7 @@ function renderSummary() {
         stats.top.length ? chartTitle(stats.top[0]) : "No saved charts yet",
     );
     setText("play-count", number(data.plays.length));
-    setText(
-        "play-detail",
-        `${data.plays.filter((p) => p.clear_type > 1).length} clears · ${yen.format((STANDARD_START_YEN * data.plays.length) / 4)}`,
-    );
-    $("play-detail").title =
-        `Estimated Standard Start spending: ${yen.format(STANDARD_START_YEN)} × ${number(data.plays.length)} plays ÷ 4`;
+    renderSpending();
     setText("entry-vf", vf(stats.entry));
     setText(
         "entry-detail",
@@ -876,6 +924,7 @@ $("leaderboard-next").addEventListener("click", () => {
 
 async function load() {
     if (loading) return;
+    void loadEuroRate();
     loading = true;
     $("refresh").disabled = true;
     try {

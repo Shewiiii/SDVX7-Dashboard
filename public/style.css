@@ -121,7 +121,7 @@ button:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #ffffff12;
+    border-bottom: 0;
 }
 .brand {
     display: flex;
@@ -134,7 +134,7 @@ button:hover {
 .brand-mark {
     display: grid;
     place-items: center;
-    border: 1px solid #cba6f742;
+    border: 0;
     border-radius: 9px;
     width: 37px;
     height: 39px;
@@ -183,7 +183,7 @@ button:hover {
 }
 .icon-button {
     background: transparent;
-    border: 1px solid #ffffff18;
+    border: 0;
     border-radius: 7px;
     width: 31px;
     height: 31px;
@@ -247,7 +247,7 @@ h1 {
 }
 .notice {
     padding: 13px 18px;
-    border: 1px solid #bc7bc540;
+    border: 0;
     border-radius: 8px;
     background: #bc7bc513;
     color: #dfcae9;
@@ -263,7 +263,7 @@ h1 {
     overflow: hidden;
     min-height: 156px;
     background: #1b1b29b8;
-    border: 1px solid #ffffff12;
+    border: 0;
     border-radius: 10px;
     padding: 20px 23px;
 }
@@ -331,7 +331,7 @@ h1 {
     align-items: center;
     justify-content: space-between;
     margin: 32px 0 24px;
-    border-bottom: 1px solid #ffffff16;
+    border-bottom: 0;
 }
 .tabs {
     display: flex;
@@ -361,7 +361,7 @@ h1 {
     margin-left: 6px;
     font: 9px var(--mono);
     padding: 2px 5px;
-    border: 1px solid #ffffff20;
+    border: 0;
     border-radius: 4px;
     color: var(--muted);
 }
@@ -372,7 +372,7 @@ h1 {
 }
 .panel {
     background: #1b1b29c9;
-    border: 1px solid #ffffff13;
+    border: 0;
     border-radius: 11px;
     overflow: hidden;
     box-shadow: 0 10px 40px #08080c12;
@@ -411,7 +411,7 @@ h1 {
 }
 .segmented {
     display: flex;
-    border: 1px solid #ffffff14;
+    border: 0;
     background: #12121b7a;
     border-radius: 6px;
     padding: 3px;
@@ -431,7 +431,7 @@ h1 {
 .select-wrap select {
     font-size: 10px;
     color: var(--muted);
-    border: 1px solid #ffffff17;
+    border: 0;
     border-radius: 6px;
     background: #161620;
     padding: 10px 25px 10px 11px;
@@ -532,7 +532,7 @@ h1 {
     z-index: 3;
     padding: 12px 14px;
     max-width: 250px;
-    border: 1px solid #cba6f744;
+    border: 0;
     border-radius: 7px;
     background: #191823f5;
     box-shadow: 0 8px 30px #0005;
@@ -558,7 +558,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid #ffffff0d;
+    border-top: 0;
     padding: 14px 27px;
     color: var(--muted);
     font: 9px var(--mono);
@@ -610,7 +610,7 @@ h1 {
     gap: 11px;
     align-items: center;
     padding: 13px 0;
-    border-top: 1px solid #ffffff0a;
+    border-top: 0;
 }
 .row-index {
     font: 10px var(--mono);
@@ -637,7 +637,7 @@ h1 {
 }
 .difficulty-badge {
     font: 8px var(--mono);
-    border: 1px solid #ffffff19;
+    border: 0;
     border-radius: 3px;
     padding: 1px 4px;
     color: #bbb5cd;
@@ -688,7 +688,7 @@ h1 {
 .panel-foot {
     font: 9px var(--mono);
     color: var(--faint);
-    border-top: 1px solid #ffffff0c;
+    border-top: 0;
     padding: 12px 25px;
 }
 .empty-list {
@@ -712,7 +712,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 9px;
-    border: 1px solid #ffffff17;
+    border: 0;
     border-radius: 6px;
     background: #161620;
     padding: 0 12px;
@@ -756,13 +756,13 @@ th {
     font-weight: 400;
     color: var(--faint);
     padding: 12px 15px;
-    border-block: 1px solid #ffffff0e;
+    border-block: 0;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 td {
     padding: 15px;
-    border-bottom: 1px solid #ffffff09;
+    border-bottom: 0;
     font-size: 11px;
     vertical-align: middle;
 }
@@ -813,7 +813,7 @@ tbody tr:hover {
     color: var(--faint);
 }
 .pagination button {
-    border: 1px solid #ffffff18;
+    border: 0;
     background: none;
     border-radius: 4px;
     width: 29px;

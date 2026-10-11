@@ -7,8 +7,8 @@
 }
 :root {
     --brand-font: "Space Grotesk", var(--sans);
-    --performance-background-dim: 0.73;
-    --performance-panel-dim: 0.65;
+    --performance-background-dim: 0.8;
+    --performance-panel-dim: 0.8;
     --performance-background-blur: 10px;
 }
 .site-header {
@@ -42,17 +42,18 @@
 .metrics {
     gap: 0;
     background: #1b1b299c;
-    border-block: 1px solid #ffffff1c;
+    border-block: 0;
 }
 .metric {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
     border: 0;
     border-radius: 0;
     background: transparent;
-    min-height: 145px;
-    padding: 22px 24px;
-}
-.metric + .metric {
-    border-left: 1px solid #ffffff15;
+    min-height: 118px;
+    padding: 16px 22px;
 }
 .metric.featured {
     border: 0;
@@ -62,12 +63,21 @@
     display: none;
 }
 .metric-label {
+    justify-content: center;
     font-size: 10px;
     letter-spacing: 0.3px;
 }
 .metric-value {
     font-size: 32px;
-    margin-top: 17px;
+    margin: 11px 0 5px;
+}
+.metric-spark {
+    bottom: 14px;
+    height: 30px;
+}
+#play-detail {
+    white-space: normal;
+    line-height: 1.5;
 }
 .panel {
     border-radius: 5px;
@@ -115,7 +125,7 @@
     width: 40px;
     height: 40px;
     background: #ffffff05;
-    border: 1px solid #ffffff13;
+    border: 0;
     overflow: hidden;
     border-radius: 3px;
 }
@@ -195,7 +205,7 @@ footer {
 }
 .song-search > input {
     width: 100%;
-    border: 1px solid #ffffff26;
+    border: 0;
     border-radius: 4px;
     background: #14141f;
     color: var(--ink);
@@ -212,7 +222,7 @@ footer {
     right: 0;
     z-index: 4;
     background: #20202e;
-    border: 1px solid #6e5b88;
+    border: 0;
     border-radius: 4px;
     margin-top: 5px;
     max-height: 380px;
@@ -227,7 +237,7 @@ footer {
     padding: 10px 12px;
     text-align: left;
     border: 0;
-    border-bottom: 1px solid #ffffff09;
+    border-bottom: 0;
     background: none;
 }
 .song-option:hover,
@@ -269,7 +279,7 @@ footer {
     gap: 25px;
     margin: 0 27px 25px;
     padding-top: 20px;
-    border-top: 1px solid #ffffff12;
+    border-top: 0;
 }
 .selected-song-info {
     min-width: 0;
@@ -296,7 +306,7 @@ footer {
 .difficulty-tabs button {
     font: 10px var(--mono);
     background: transparent;
-    border: 1px solid #ffffff1c;
+    border: 0;
     border-radius: 3px;
     padding: 8px 11px;
     color: var(--muted);
@@ -323,7 +333,7 @@ footer {
     padding: 25px 27px 45px;
     font-size: 12px;
     color: var(--muted);
-    border-top: 1px solid #ffffff0d;
+    border-top: 0;
 }
 .played-date {
     font-family: var(--mono);
@@ -355,7 +365,7 @@ footer {
 }
 .metrics {
     background: rgb(27 27 41 / var(--performance-panel-dim));
-    border: 1px solid #ffffff1c;
+    border: 0;
     border-radius: 16px;
     overflow: hidden;
 }
@@ -465,18 +475,19 @@ footer {
 .metric-total {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0 12px;
     flex-wrap: wrap;
-    margin-top: 17px;
+    margin-top: 11px;
 }
 .metric-total .metric-value {
-    margin: 0 0 7px;
+    margin: 0 0 5px;
 }
 .vf-class {
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-bottom: 7px;
+    margin-bottom: 5px;
     white-space: nowrap;
     font-size: 11px;
     color: var(--muted);
@@ -504,10 +515,6 @@ footer {
     }
     .metric.featured .metric-spark {
         display: block;
-    }
-    #play-detail {
-        white-space: normal;
-        line-height: 1.5;
     }
     /* Frame the character on phones and cover the viewport with toolbars hidden.
      lvh stays stable when browser chrome expands or retracts. */
@@ -542,7 +549,7 @@ footer {
         gap: 5px 7px;
         align-items: center;
         padding: 10px 12px;
-        border-top: 1px solid #ffffff0d;
+        border-top: 0;
     }
     .records-panel tbody td,
     .leaderboard-panel tbody td {
@@ -661,7 +668,7 @@ footer {
 }
 @media (max-width: 1000px) {
     .metric {
-        padding: 20px 17px;
+        padding: 14px 16px;
     }
     .metric-value {
         font-size: 28px;
@@ -704,14 +711,11 @@ footer {
         gap: 0;
     }
     .metric {
-        padding: 19px 15px;
-        min-height: 132px;
+        padding: 14px;
+        min-height: 108px;
     }
     .metric:nth-child(3) {
         border-left: 0;
-    }
-    .metric:nth-child(n + 3) {
-        border-top: 1px solid #ffffff15;
     }
     .metric-value {
         font-size: 27px;

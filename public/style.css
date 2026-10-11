@@ -1,6 +1,19 @@
 @font-face {
-    font-family: Archive Mono;
-    src: url("/assets/mono.ttf") format("truetype");
+    font-family: "Space Grotesk";
+    src: url("/assets/fonts/space-grotesk.ttf") format("truetype");
+    font-weight: 300 700;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Space Mono";
+    src: url("/assets/fonts/space-mono-regular.ttf") format("truetype");
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Space Mono";
+    src: url("/assets/fonts/space-mono-bold.ttf") format("truetype");
+    font-weight: 700;
     font-display: swap;
 }
 :root {
@@ -13,8 +26,8 @@
     --line: #353346;
     --purple: #cba6f7;
     --total: #bc7bc5;
-    --mono: "Archive Mono", Consolas, monospace;
-    --sans: "Segoe UI", Arial, sans-serif;
+    --mono: "Space Mono", monospace;
+    --sans: "Space Grotesk", sans-serif;
 }
 * {
     box-sizing: border-box;

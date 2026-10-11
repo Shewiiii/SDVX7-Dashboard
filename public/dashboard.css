@@ -55,14 +55,7 @@
     color: var(--muted);
     font-size: 9px;
 }
-@font-face {
-    font-family: "Space Grotesk";
-    src: url("/assets/fonts/space-grotesk.ttf") format("truetype");
-    font-weight: 300 700;
-    font-display: swap;
-}
 :root {
-    --brand-font: "Space Grotesk", var(--sans);
     --performance-background-dim: 0.8;
     --performance-panel-dim: 0.8;
     --performance-background-blur: 10px;
@@ -71,7 +64,7 @@
     height: 74px;
 }
 .brand {
-    font-family: var(--brand-font);
+    font-family: var(--sans);
     font-size: 18px;
     font-weight: 600;
     letter-spacing: 0.3px;
@@ -93,7 +86,7 @@
     margin: 0 0 7px;
 }
 .hero-meta {
-    font: 10px var(--mono);
+    font: 10px var(--sans);
 }
 .metrics {
     gap: 0;
@@ -155,6 +148,7 @@
     background: #ffffff06;
 }
 .tab-caption {
+    font-family: var(--sans);
     letter-spacing: 0;
     text-transform: none;
 }
@@ -240,6 +234,7 @@
     padding-top: 0;
 }
 footer {
+    font-family: var(--sans);
     font-size: 9px;
     letter-spacing: 0;
     padding-top: 24px;

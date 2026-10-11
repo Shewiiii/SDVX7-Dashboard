@@ -1,16 +1,23 @@
 /* Plain labels, compact controls, and the game's own cover artwork. */
+@font-face {
+    font-family: "Space Grotesk";
+    src: url("/assets/fonts/space-grotesk.ttf") format("truetype");
+    font-weight: 300 700;
+    font-display: swap;
+}
 :root {
+    --brand-font: "Space Grotesk", var(--sans);
     --performance-background-dim: 0.73;
     --performance-panel-dim: 0.65;
-    --performance-background-blur: 7px;
+    --performance-background-blur: 10px;
 }
 .site-header {
     height: 74px;
 }
 .brand {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 400;
+    font-family: var(--brand-font);
+    font-size: 18px;
+    font-weight: 600;
     letter-spacing: 0.3px;
 }
 .brand-icon {
@@ -605,7 +612,7 @@ footer {
         height: 64px;
     }
     .brand {
-        font-size: 12px;
+        font-size: 16px;
     }
     .hero {
         padding: 27px 0 24px;

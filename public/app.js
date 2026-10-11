@@ -526,9 +526,10 @@ function renderTable() {
               ? (a, b) => (b.score ?? -1) - (a.score ?? -1)
               : (a, b) => (top ? a.rank - b.rank : byTime(b, a)),
     );
-    const pages = Math.max(1, Math.ceil(records.length / 25));
+    const pageSize = 50;
+    const pages = Math.max(1, Math.ceil(records.length / pageSize));
     page = Math.min(page, pages - 1);
-    const chunk = records.slice(page * 25, (page + 1) * 25);
+    const chunk = records.slice(page * pageSize, (page + 1) * pageSize);
     $("records").innerHTML = chunk.length
         ? chunk
               .map(

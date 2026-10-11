@@ -13,6 +13,13 @@
     font-weight: 400;
     letter-spacing: 0.3px;
 }
+.brand-icon {
+    display: block;
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
 .hero {
     padding: 32px 0 28px;
 }

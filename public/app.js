@@ -5,6 +5,7 @@ import {
     average,
     performance,
     rolling,
+    lineValue,
     visibleObservations,
     topCharts,
     summary,
@@ -17,6 +18,11 @@ import {
 } from "./metrics.js";
 
 const $ = (id) => document.getElementById(id);
+const STANDARD_START_YEN = 267;
+const yen = new Intl.NumberFormat("ja-JP", {
+    style: "currency",
+    currency: "JPY",
+});
 const escape = (value) =>
     String(value ?? "").replace(
         /[&<>"']/g,
@@ -52,6 +58,12 @@ const badge = (p) =>
     `<span class="difficulty-badge d${p.diff_idx}">${DIFFS[p.diff_idx]}${p.level ? " " + escape(p.level) : ""}</span>`;
 const clear = (p) =>
     `<span class="clear-label ${p.clear_type === 6 ? "puc" : ""}">${CLEARS[p.clear_type] || "—"}</span>`;
+const gradeMarkup = (score) => {
+    const label = grade(score);
+    return label === "—"
+        ? label
+        : `<img class="grade-icon" src="/assets/grades/${label.toLowerCase().replace("+", "-plus")}.png" alt="${label}" title="${label}">`;
+};
 let data = null,
     stats = null,
     view = "overview",
@@ -87,7 +99,7 @@ function setText(id, value) {
     $(id).textContent = value;
 }
 function row(p, rank = null) {
-    return `<div class="play-row"><span class="row-index ${rank === 1 ? "leading" : ""}">${rank ? String(rank).padStart(2, "0") : clock(p.received_at)}</span>${coverMarkup(p)}<div>${chartButton(p)}<div class="song-details">${badge(p)}${clear(p)}</div></div><div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
+    return `<div class="play-row chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index ${rank === 1 ? "leading" : ""}">${rank ? String(rank).padStart(2, "0") : clock(p.received_at)}</span>${coverMarkup(p)}<div>${chartButton(p)}<div class="song-details">${badge(p)}${clear(p)}</div></div><div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
 }
 
 function renderSummary() {
@@ -98,7 +110,9 @@ function renderSummary() {
     setText("total-vf", vf(stats.total));
     const appeal = data.state.appeal_card;
     const card = $("appeal-card");
-    card.hidden = !(typeof appeal === "string" && /^[a-f0-9]{64}$/.test(appeal));
+    card.hidden = !(
+        typeof appeal === "string" && /^[a-f0-9]{64}$/.test(appeal)
+    );
     if (!card.hidden) card.src = `/api/cover?id=${appeal}`;
     else card.removeAttribute("src");
     const vfClass = volforceClass(stats.total);
@@ -114,9 +128,11 @@ function renderSummary() {
     );
     setText("play-count", number(data.plays.length));
     setText(
-        "session-count",
-        `${stats.sessions.length} sessions · ${data.plays.filter((p) => p.clear_type > 1).length} clears`,
+        "play-detail",
+        `${data.plays.filter((p) => p.clear_type > 1).length} clears · ${yen.format((STANDARD_START_YEN * data.plays.length) / 4)}`,
     );
+    $("play-detail").title =
+        `Estimated Standard Start spending: ${yen.format(STANDARD_START_YEN)} × ${number(data.plays.length)} plays ÷ 4`;
     setText("entry-vf", vf(stats.entry));
     setText(
         "entry-detail",
@@ -236,7 +252,7 @@ function renderChart() {
     const width = mobile ? 400 : 1100,
         height = mobile ? 300 : 380;
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    const left = mobile ? 45 : 69,
+    const left = mobile ? 52 : 69,
         right = width - (mobile ? 46 : 72),
         top = 33,
         bottom = height - 50;
@@ -275,7 +291,7 @@ function renderChart() {
     svg.append(
         svgElement(
             "text",
-            { x: left, y: 17, class: "axis-caption" },
+            { x: right, y: 17, "text-anchor": "end", class: "axis-caption" },
             "CHART VF",
         ),
     );
@@ -284,15 +300,14 @@ function renderChart() {
             svgElement(
                 "text",
                 {
-                    x: right,
+                    x: left,
                     y: 17,
-                    "text-anchor": "end",
                     class: "axis-caption",
                 },
                 "TOTAL VF",
             ),
         );
-    const gridCount = mobile ? 4 : 6;
+    const gridCount = mobile ? 8 : 12;
     for (let i = 0; i <= gridCount; i++) {
         const py = top + (i / gridCount) * (bottom - top);
         svg.append(
@@ -308,9 +323,8 @@ function renderChart() {
             svgElement(
                 "text",
                 {
-                    x: left - (mobile ? 7 : 13),
+                    x: right + (mobile ? 7 : 13),
                     y: py + 4,
-                    "text-anchor": "end",
                 },
                 vf(high - (i / gridCount) * (high - low)),
             ),
@@ -319,7 +333,11 @@ function renderChart() {
             svg.append(
                 svgElement(
                     "text",
-                    { x: right + (mobile ? 7 : 13), y: py + 4 },
+                    {
+                        x: left - (mobile ? 7 : 13),
+                        y: py + 4,
+                        "text-anchor": "end",
+                    },
                     vf(totalHigh - (i / gridCount) * (totalHigh - totalLow)),
                 ),
             );
@@ -379,17 +397,14 @@ function renderChart() {
     }
     line("threshold", segment, "#a3a1b8", 1.2, y, true, "4 5");
     let best = 0;
-    line(
-        "best",
-        plays.map((p) => {
-            best = Math.max(best, p.play_vf);
-            return [Date.parse(p.received_at), best];
-        }),
-        "#777095",
-        1.5,
-        y,
-        true,
-    );
+    const bestPoints = plays.map((p) => {
+        best = Math.max(best, p.play_vf);
+        return [Date.parse(p.received_at), best];
+    });
+    const avg10Points = rolling(plays, 10),
+        avg100Points = rolling(plays, 100);
+    const totalPoints = observations.map((o) => [o.time, o.total_vf]);
+    line("best", bestPoints, "#777095", 1.5, y, true);
     if (shown.has("plays")) {
         const group = svgElement("g", { fill: "#8a71a6", opacity: 0.58 });
         plays.forEach((p) =>
@@ -403,16 +418,9 @@ function renderChart() {
         );
         svg.append(group);
     }
-    line("avg10", rolling(plays, 10), "#8e73ad", 1.8);
-    line("avg100", rolling(plays, 100), "#cba6f7", 2.8);
-    line(
-        "total",
-        observations.map((o) => [o.time, o.total_vf]),
-        "#bc7bc5",
-        1.6,
-        ty,
-        true,
-    );
+    line("avg10", avg10Points, "#8e73ad", 1.8);
+    line("avg100", avg100Points, "#cba6f7", 2.8);
+    line("total", totalPoints, "#bc7bc5", 1.6, ty, true);
     const crosshair = svgElement("line", {
         x1: 0,
         x2: 0,
@@ -421,13 +429,52 @@ function renderChart() {
         class: "crosshair",
         visibility: "hidden",
     });
-    const point = svgElement("circle", {
-        r: 4,
-        class: "hover-point",
-        visibility: "hidden",
+    const markers = svgElement("g", {
+        class: "hover-markers",
+        "pointer-events": "none",
     });
-    svg.append(crosshair, point);
-    hover = { plays, x, y, start, end, left, right, crosshair, point, width };
+    const series = [
+        {
+            key: "total",
+            label: "Total VF",
+            points: totalPoints,
+            color: "#bc7bc5",
+            step: true,
+            y: ty,
+        },
+        {
+            key: "avg100",
+            label: "Avg 100",
+            points: avg100Points,
+            color: "#cba6f7",
+            y,
+        },
+        {
+            key: "avg10",
+            label: "Avg 10",
+            points: avg10Points,
+            color: "#8e73ad",
+            y,
+        },
+        {
+            key: "best",
+            label: "Best VF",
+            points: bestPoints,
+            color: "#777095",
+            step: true,
+            y,
+        },
+        {
+            key: "threshold",
+            label: "Top 50",
+            points: observations.map((o) => [o.time, o.minimum_vf]),
+            color: "#a3a1b8",
+            step: true,
+            y,
+        },
+    ];
+    svg.append(crosshair, markers);
+    hover = { series, x, start, end, left, right, crosshair, markers, width };
     $("chart-summary").innerHTML =
         `<strong>${number(plays.length)}</strong> plays &nbsp; / &nbsp; Best <strong>${vf(Math.max(...values))}</strong> &nbsp; / &nbsp; Average <strong>${vf(average(values))}</strong>`;
 }
@@ -444,44 +491,159 @@ $("chart").addEventListener("pointermove", (event) => {
         hover.start +
         ((px - hover.left) / (hover.right - hover.left)) *
             (hover.end - hover.start);
-    let lo = 0,
-        hi = hover.plays.length - 1;
-    while (lo < hi) {
-        const mid = (lo + hi) >> 1;
-        if (Date.parse(hover.plays[mid].received_at) < time) lo = mid + 1;
-        else hi = mid;
-    }
-    let p = hover.plays[lo];
-    if (
-        lo &&
-        Math.abs(Date.parse(hover.plays[lo - 1].received_at) - time) <
-            Math.abs(Date.parse(p.received_at) - time)
-    )
-        p = hover.plays[lo - 1];
-    const x = hover.x(Date.parse(p.received_at));
+    const x = hover.x(time);
     hover.crosshair.setAttribute("x1", x);
     hover.crosshair.setAttribute("x2", x);
     hover.crosshair.setAttribute("visibility", "visible");
-    hover.point.setAttribute("cx", x);
-    hover.point.setAttribute("cy", hover.y(p.play_vf));
-    hover.point.setAttribute("visibility", "visible");
+    hover.markers.replaceChildren();
+    const lines = hover.series
+        .filter((series) => shown.has(series.key))
+        .map((series) => {
+            const value = lineValue(series.points, time, series.step);
+            if (value !== null)
+                hover.markers.append(
+                    svgElement("circle", {
+                        cx: x,
+                        cy: series.y(value),
+                        r: 3.5,
+                        fill: series.color,
+                        stroke: "#1b1b29",
+                        "stroke-width": 1.5,
+                        "data-line": series.key,
+                    }),
+                );
+            return `<div class="tooltip-line"><span><i class="dot ${series.key}"></i>${series.label}</span><b>${vf(value)}</b></div>`;
+        });
+    if (!lines.length) {
+        hideTooltip();
+        return;
+    }
     const tooltip = $("tooltip");
-    tooltip.innerHTML = `<strong>${escape(chartTitle(p))}</strong>${badge(p)} <span class="tooltip-value">${vf(p.play_vf)} VF</span><small>${number(p.score)} · ${CLEARS[p.clear_type]}<br>${date(p.received_at)} · ${clock(p.received_at)}</small>`;
+    tooltip.innerHTML = `<strong>${date(time)} · ${clock(time)}</strong>${lines.join("")}`;
+    tooltip.classList.remove("compact");
+    tooltip.style.maxWidth = "";
     tooltip.hidden = false;
     const wrap = $("chart-wrap").getBoundingClientRect();
-    tooltip.style.left = `${Math.max(8, Math.min(event.clientX - wrap.left + 15, wrap.width - tooltip.offsetWidth - 10))}px`;
-    tooltip.style.top = `${Math.max(8, event.clientY - wrap.top - tooltip.offsetHeight - 14)}px`;
+    const cursorX = event.clientX - wrap.left,
+        cursorY = event.clientY - wrap.top;
+    const gap = 12,
+        inset = 8;
+    const rightSpace = wrap.width - cursorX - gap - inset;
+    const leftSpace = cursorX - gap - inset;
+    const useRight =
+        rightSpace >= tooltip.offsetWidth ||
+        (leftSpace < tooltip.offsetWidth && rightSpace >= leftSpace);
+    const available = useRight ? rightSpace : leftSpace;
+    if (available < tooltip.offsetWidth) {
+        tooltip.classList.add("compact");
+        tooltip.style.maxWidth = `${available}px`;
+    }
+    tooltip.style.left = `${useRight ? cursorX + gap : cursorX - gap - tooltip.offsetWidth}px`;
+    tooltip.style.top = `${Math.max(inset, Math.min(cursorY - tooltip.offsetHeight - gap, wrap.height - tooltip.offsetHeight - inset))}px`;
 });
 function hideTooltip() {
     $("tooltip").hidden = true;
     if (hover) {
         hover.crosshair.setAttribute("visibility", "hidden");
-        hover.point.setAttribute("visibility", "hidden");
+        hover.markers.replaceChildren();
     }
 }
 $("chart").addEventListener("pointerleave", hideTooltip);
 
-function switchView(next) {
+function updateUrl(replace = false) {
+    const params = new URLSearchParams();
+    if (view === "overview") {
+        if (days) params.set("days", days);
+        if (difficulty !== 1) params.set("difficulty", difficulty);
+        const series = [...document.querySelectorAll("[data-series]")]
+            .map((button) => button.dataset.series)
+            .filter((name) => shown.has(name));
+        if (series.length !== 6) params.set("series", series.join(","));
+    } else if (view === "leaderboard") {
+        if (selected) {
+            params.set("song", selected.music_id);
+            params.set("diff", selected.diff_idx);
+        }
+        if (leaderboardPage) params.set("page", leaderboardPage + 1);
+    } else {
+        if (page) params.set("page", page + 1);
+        if ($("search").value) params.set("q", $("search").value);
+        const defaultSort = view === "top" ? "vf" : "recent";
+        if ($("sort").value !== defaultSort)
+            params.set("sort", $("sort").value);
+    }
+    const hash = `#${view}${params.size ? "?" + params.toString() : ""}`;
+    if (location.hash !== hash)
+        history[replace ? "replaceState" : "pushState"](null, "", hash);
+}
+
+function restoreUrl() {
+    const [route, query = ""] = location.hash.slice(1).split("?");
+    const next = ["overview", "top", "history", "leaderboard"].includes(route)
+        ? route
+        : "overview";
+    const params = new URLSearchParams(query);
+    const pageNumber = Number(params.get("page"));
+    const restoredPage =
+        Number.isSafeInteger(pageNumber) && pageNumber > 0 ? pageNumber - 1 : 0;
+    days = [0, 7, 30, 90].includes(Number(params.get("days")))
+        ? Number(params.get("days"))
+        : 0;
+    difficulty =
+        params.has("difficulty") &&
+        [0, 1, 2, 4].includes(Number(params.get("difficulty")))
+            ? Number(params.get("difficulty"))
+            : 1;
+    shown.clear();
+    const series = params.has("series")
+        ? params.get("series").split(",")
+        : ["plays", "best", "avg10", "avg100", "threshold", "total"];
+    document.querySelectorAll("[data-series]").forEach((button) => {
+        if (series.includes(button.dataset.series))
+            shown.add(button.dataset.series);
+        button.setAttribute(
+            "aria-pressed",
+            String(shown.has(button.dataset.series)),
+        );
+    });
+    document
+        .querySelectorAll("[data-days]")
+        .forEach((button) =>
+            button.classList.toggle(
+                "selected",
+                Number(button.dataset.days) === days,
+            ),
+        );
+    $("difficulty").value = String(difficulty);
+    const musicId = Number(params.get("song")),
+        diff = Number(params.get("diff"));
+    selected =
+        next === "leaderboard" &&
+        params.has("diff") &&
+        Number.isSafeInteger(musicId) &&
+        musicId > 0 &&
+        Number.isInteger(diff) &&
+        diff >= 0 &&
+        diff < DIFFS.length
+            ? { music_id: musicId, diff_idx: diff }
+            : null;
+    leaderboardPage = next === "leaderboard" ? restoredPage : 0;
+    closeMatches();
+    $("song-query").value =
+        selected && songs.has(musicId)
+            ? `${songs.get(musicId).title} ${DIFFS[diff]}`
+            : "";
+    switchView(next, false);
+    if (["top", "history"].includes(next)) {
+        page = restoredPage;
+        $("search").value = params.get("q") || "";
+        const sort = params.get("sort");
+        if (["vf", "score", "recent"].includes(sort)) $("sort").value = sort;
+        renderTable();
+    }
+}
+
+function switchView(next, recordHistory = true) {
     view = next;
     page = 0;
     document.querySelectorAll(".tab").forEach((button) => {
@@ -498,6 +660,7 @@ function switchView(next) {
     if (view === "overview") renderChart();
     else if (view === "leaderboard") renderLeaderboard();
     else renderTable();
+    if (recordHistory) updateUrl();
 }
 
 function renderTable() {
@@ -534,7 +697,7 @@ function renderTable() {
         ? chunk
               .map(
                   (p) =>
-                      `<tr><td class="row-index">${top ? String(p.rank).padStart(2, "0") : `${shortDate(p.received_at)}<br>${clock(p.received_at)}`}</td><td><div class="table-song">${coverMarkup(p)}<div>${chartButton(p)}<div class="artist">${escape(p.artist)}</div></div></div></td><td>${badge(p)}</td><td class="score-cell">${number(p.score)}</td><td>${clear(p)}</td><td class="right vf-cell">${vf(p.vf ?? p.play_vf)}</td></tr>`,
+                      `<tr class="chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><td class="row-index">${top ? String(p.rank).padStart(2, "0") : `${shortDate(p.received_at)}<br>${clock(p.received_at)}`}</td><td><div class="table-song">${coverMarkup(p)}<div>${chartButton(p)}<div class="artist">${escape(p.artist)}</div></div></div></td><td>${badge(p)}</td><td class="score-cell">${number(p.score)}</td><td>${clear(p)}</td><td class="right vf-cell">${vf(p.vf ?? p.play_vf)}</td></tr>`,
               )
               .join("")
         : '<tr><td colspan="6">No matching charts.</td></tr>';
@@ -580,7 +743,10 @@ function selectChart(musicId, diff) {
     $("song-query").value = `${song.title} ${DIFFS[diff]}`;
     closeMatches();
     if (view !== "leaderboard") switchView("leaderboard");
-    else renderLeaderboard();
+    else {
+        renderLeaderboard();
+        updateUrl();
+    }
 }
 
 function renderLeaderboard() {
@@ -590,7 +756,17 @@ function renderLeaderboard() {
     $("leaderboard-results").hidden = !selected;
     if (!selected) return;
     const song = songs.get(selected.music_id);
-    if (!song) return;
+    if (
+        !song ||
+        !song.difficulties.some((d) => d.diff_idx === selected.diff_idx)
+    ) {
+        $("selected-chart").hidden = true;
+        $("leaderboard-results").hidden = true;
+        $("leaderboard-empty").hidden = false;
+        return;
+    }
+    if (!$("song-query").value)
+        $("song-query").value = `${song.title} ${DIFFS[selected.diff_idx]}`;
     const diff = song.difficulties.find(
         (d) => d.diff_idx === selected.diff_idx,
     );
@@ -612,10 +788,10 @@ function renderLeaderboard() {
         ? chunk
               .map(
                   (p, index) =>
-                      `<tr data-play-vf="${p.play_vf}"><td class="row-index">${leaderboardPage * 10 + index + 1}</td><td class="score-cell">${number(p.score)}</td><td>${grade(p.score)}</td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr>`,
+                      `<tr data-play-vf="${p.play_vf}"><td class="row-index">${leaderboardPage * 10 + index + 1}</td><td class="score-cell"><div class="score-with-grade">${gradeMarkup(p.score)}<span>${number(p.score)}</span></div></td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr>`,
               )
               .join("")
-        : '<tr><td colspan="6">No recorded nonzero plays for this chart yet.</td></tr>';
+        : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';
     setText(
         "leaderboard-page-info",
         `${plays.length} plays · Page ${leaderboardPage + 1} / ${pages}`,
@@ -672,7 +848,7 @@ $("song-options").addEventListener("click", (event) => {
 });
 document.addEventListener("click", (event) => {
     if (!event.target.closest(".song-search")) closeMatches();
-    const button = event.target.closest(".open-chart");
+    const button = event.target.closest(".open-chart, .chart-row");
     if (button)
         selectChart(Number(button.dataset.music), Number(button.dataset.diff));
     const diff = event.target.closest("[data-chart-diff]");
@@ -690,10 +866,12 @@ document.addEventListener(
 $("leaderboard-previous").addEventListener("click", () => {
     leaderboardPage--;
     renderLeaderboard();
+    updateUrl();
 });
 $("leaderboard-next").addEventListener("click", () => {
     leaderboardPage++;
     renderLeaderboard();
+    updateUrl();
 });
 
 async function load() {
@@ -749,6 +927,7 @@ document.querySelectorAll("[data-days]").forEach((button) =>
             .querySelectorAll("[data-days]")
             .forEach((b) => b.classList.toggle("selected", b === button));
         renderChart();
+        updateUrl();
     }),
 );
 document.querySelectorAll("[data-series]").forEach((button) =>
@@ -758,27 +937,33 @@ document.querySelectorAll("[data-series]").forEach((button) =>
         else shown.add(series);
         button.setAttribute("aria-pressed", String(shown.has(series)));
         renderChart();
+        updateUrl();
     }),
 );
 $("difficulty").addEventListener("change", () => {
     difficulty = Number($("difficulty").value);
     renderChart();
+    updateUrl();
 });
 $("search").addEventListener("input", () => {
     page = 0;
     renderTable();
+    updateUrl(true);
 });
 $("sort").addEventListener("change", () => {
     page = 0;
     renderTable();
+    updateUrl();
 });
 $("previous").addEventListener("click", () => {
     page--;
     renderTable();
+    updateUrl();
 });
 $("next").addEventListener("click", () => {
     page++;
     renderTable();
+    updateUrl();
 });
 $("all-plays").addEventListener("click", () => switchView("history"));
 $("all-top").addEventListener("click", () => switchView("top"));
@@ -808,4 +993,8 @@ window.addEventListener("resize", () => {
 setInterval(() => {
     if (!document.hidden) load();
 }, 60000);
+window.addEventListener("popstate", restoreUrl);
+window.addEventListener("hashchange", restoreUrl);
+restoreUrl();
+updateUrl(true);
 load();

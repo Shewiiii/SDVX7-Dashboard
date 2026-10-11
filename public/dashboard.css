@@ -146,6 +146,17 @@
 .open-chart:hover {
     color: var(--purple);
 }
+.chart-row {
+    cursor: pointer;
+    transition: background 0.16s;
+}
+.chart-row:hover,
+.chart-row:focus-within {
+    background: #cba6f704;
+}
+.chart-row .open-chart:hover {
+    color: var(--ink);
+}
 .table-song {
     display: flex;
     align-items: center;
@@ -385,6 +396,51 @@ footer {
 }
 .chart-tooltip {
     border-radius: 12px;
+    box-sizing: border-box;
+    width: max-content;
+}
+.chart-tooltip.compact {
+    padding: 10px 8px;
+    font-size: 10px;
+}
+.chart-tooltip.compact strong {
+    font-size: 9px;
+}
+.chart-tooltip.compact .tooltip-line {
+    gap: 8px;
+}
+.chart-tooltip.compact .tooltip-line b {
+    font-size: 10px;
+}
+.grade-icon {
+    display: block;
+    width: 48px;
+    height: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+.score-with-grade {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+.tooltip-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 7px;
+}
+.tooltip-line span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+}
+.tooltip-line b {
+    font: 11px var(--mono);
+    color: var(--ink);
 }
 .leaderboard-panel .pagination {
     border-radius: 0 0 16px 16px;
@@ -395,7 +451,9 @@ footer {
     gap: 18px;
     min-width: 0;
 }
-.profile-heading > div { min-width: 0; }
+.profile-heading > div {
+    min-width: 0;
+}
 .appeal-card {
     display: block;
     width: 64px;
@@ -411,7 +469,9 @@ footer {
     flex-wrap: wrap;
     margin-top: 17px;
 }
-.metric-total .metric-value { margin: 0 0 7px; }
+.metric-total .metric-value {
+    margin: 0 0 7px;
+}
 .vf-class {
     display: flex;
     align-items: center;
@@ -421,14 +481,34 @@ footer {
     font-size: 11px;
     color: var(--muted);
 }
-.vf-class img { width: 28px; height: 28px; object-fit: contain; }
+.vf-class img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
 /* Compact two-line entries keep every field visible on phones. */
 @media (max-width: 700px) {
-    .profile-heading { gap: 13px; }
-    .appeal-card { width: 52px; height: 67px; }
-    .vf-class { font-size: 10px; }
-    .vf-class img { width: 23px; height: 23px; }
-    .metric.featured .metric-spark { display: none; }
+    .profile-heading {
+        gap: 13px;
+    }
+    .appeal-card {
+        width: 52px;
+        height: 67px;
+    }
+    .vf-class {
+        font-size: 10px;
+    }
+    .vf-class img {
+        width: 23px;
+        height: 23px;
+    }
+    .metric.featured .metric-spark {
+        display: block;
+    }
+    #play-detail {
+        white-space: normal;
+        line-height: 1.5;
+    }
     /* Frame the character on phones and cover the viewport with toolbars hidden.
      lvh stays stable when browser chrome expands or retracts. */
     .ambient {
@@ -524,8 +604,8 @@ footer {
         font-size: 9px;
     }
     .leaderboard-panel tbody tr {
-        grid-template-columns: 24px minmax(0, 1fr) 36px 48px;
-        grid-template-areas: "position score grade vf" ". clear played played";
+        grid-template-columns: 24px minmax(0, 1fr) 48px 48px;
+        grid-template-areas: "position score score vf" ". clear played played";
     }
     .leaderboard-panel td:nth-child(1) {
         grid-area: position;
@@ -536,13 +616,13 @@ footer {
         font-size: 12px;
     }
     .leaderboard-panel td:nth-child(3) {
-        grid-area: grade;
-        font-size: 9px;
-    }
-    .leaderboard-panel td:nth-child(4) {
         grid-area: clear;
     }
-    .leaderboard-panel td:nth-child(5) {
+    .leaderboard-panel .grade-icon {
+        width: 40px;
+        height: 30px;
+    }
+    .leaderboard-panel td:nth-child(4) {
         grid-area: played;
         display: flex;
         justify-content: flex-end;
@@ -551,7 +631,7 @@ footer {
         font-size: 8px;
         text-align: right;
     }
-    .leaderboard-panel td:nth-child(6) {
+    .leaderboard-panel td:nth-child(5) {
         grid-area: vf;
         font-size: 12px;
     }

@@ -799,7 +799,7 @@ td .table-title {
     font: 12px var(--mono);
     color: var(--purple);
 }
-tr:hover td {
+tbody tr:hover {
     background: #cba6f704;
 }
 .pagination {

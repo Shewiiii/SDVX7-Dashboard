@@ -17,14 +17,32 @@ export const average = (values) =>
 
 // Same thresholds and quarter ranks as the tracker's profile command.
 export function volforceClass(value) {
-    if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return null;
+    if (typeof value !== "number" || !Number.isFinite(value) || value < 0)
+        return null;
     value = Math.round(value * 1000) / 1000;
     const thresholds = [0, 10, 12, 14, 15, 16, 17, 18, 19, 20];
-    const names = ["Sienna", "Cobalt", "Dandelion", "Cyan", "Scarlet", "Coral", "Argento", "Eldora", "Crimson", "Imperial"];
-    const steps = [2.5, .5, .5, .25, .25, .25, .25, .25, .25, 1];
+    const names = [
+        "Sienna",
+        "Cobalt",
+        "Dandelion",
+        "Cyan",
+        "Scarlet",
+        "Coral",
+        "Argento",
+        "Eldora",
+        "Crimson",
+        "Imperial",
+    ];
+    const steps = [2.5, 0.5, 0.5, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 1];
     const index = thresholds.findLastIndex((threshold) => value >= threshold);
-    const rank = Math.min(3, Math.floor((value - thresholds[index]) / steps[index]));
-    return { number: index + 1, name: `${names[index]} ${["I", "II", "III", "IV"][rank]}` };
+    const rank = Math.min(
+        3,
+        Math.floor((value - thresholds[index]) / steps[index]),
+    );
+    return {
+        number: index + 1,
+        name: `${names[index]} ${["I", "II", "III", "IV"][rank]}`,
+    };
 }
 
 export function sessions(plays) {
@@ -66,6 +84,30 @@ export function rolling(plays, window) {
         if (index >= window) sum -= plays[index - window].play_vf;
         return [Date.parse(p.received_at), sum / Math.min(index + 1, window)];
     });
+}
+
+// Sample the drawn line: steps use the preceding value; averages interpolate.
+// Do not invent values outside the line or across missing-data gaps.
+export function lineValue(points, time, step = false) {
+    if (!points.length || time < points[0][0] || time > points.at(-1)[0])
+        return null;
+    let low = 0,
+        high = points.length;
+    while (low < high) {
+        const middle = (low + high) >> 1;
+        if (points[middle][0] <= time) low = middle + 1;
+        else high = middle;
+    }
+    const previous = points[low - 1],
+        next = points[low];
+    if (previous[1] === null) return null;
+    if (step || !next || previous[0] === time) return previous[1];
+    if (next[1] === null) return null;
+    return (
+        previous[1] +
+        ((next[1] - previous[1]) * (time - previous[0])) /
+            (next[0] - previous[0])
+    );
 }
 
 export function visibleObservations(observations, start, end) {

@@ -424,9 +424,16 @@ h1 {
     padding: 7px 10px;
     border-radius: 4px;
 }
-.segmented .selected {
+.segmented .selected,
+.segmented button:focus-visible {
     background: #cba6f71b;
     color: var(--purple);
+}
+@media (hover: hover) {
+    .segmented button:hover {
+        background: #cba6f71b;
+        color: var(--purple);
+    }
 }
 .select-wrap select {
     font-size: 10px;
@@ -602,14 +609,14 @@ h1 {
     padding: 0 25px 15px;
 }
 .play-list {
-    padding: 0 25px 8px;
+    padding: 0 0 8px;
 }
 .play-row {
     display: grid;
     grid-template-columns: 35px minmax(0, 1fr) auto;
     gap: 11px;
     align-items: center;
-    padding: 13px 0;
+    padding: 13px 25px;
     border-top: 0;
 }
 .row-index {
@@ -640,30 +647,28 @@ h1 {
     border: 0;
     border-radius: 3px;
     padding: 1px 4px;
-    color: #bbb5cd;
+    color: var(--difficulty-color, #bbb5cd);
     white-space: nowrap;
 }
-.difficulty-badge.d4 {
-    color: #cba6f7;
-    border-color: #cba6f735;
-    background: #cba6f70a;
+.difficulty-badge.d0,
+.difficulty-tabs button[data-chart-diff="0"] {
+    --difficulty-color: #a8bddb;
 }
-.difficulty-badge.d2 {
-    color: #dcb6c9;
-    border-color: #dcb6c92e;
+.difficulty-badge.d1,
+.difficulty-tabs button[data-chart-diff="1"] {
+    --difficulty-color: #e1cf9d;
 }
-.difficulty-badge.d1 {
-    color: #e1cf9d;
-    border-color: #e1cf9d2c;
-}
-.difficulty-badge.d0 {
-    color: #a6cabd;
-    border-color: #a6cabd30;
+.difficulty-badge.d2,
+.difficulty-tabs button[data-chart-diff="2"] {
+    --difficulty-color: #dcb6c9;
 }
 .difficulty-badge.d3,
-.difficulty-badge.d5 {
-    color: #a8bddb;
-    border-color: #a8bddb30;
+.difficulty-badge.d4,
+.difficulty-badge.d5,
+.difficulty-tabs button[data-chart-diff="3"],
+.difficulty-tabs button[data-chart-diff="4"],
+.difficulty-tabs button[data-chart-diff="5"] {
+    --difficulty-color: #f4f4f7;
 }
 .row-values {
     text-align: right;
@@ -800,7 +805,7 @@ td .table-title {
     color: var(--purple);
 }
 tbody tr:hover {
-    background: #cba6f704;
+    background: #cba6f711;
 }
 .pagination {
     padding: 16px 27px;
@@ -1021,7 +1026,7 @@ footer {
         align-items: center;
         padding: 20px 18px 8px;
     }
-    .play-list {
+    .play-row {
         padding-inline: 18px;
     }
     .session-meta {

@@ -19,6 +19,19 @@ import {
 
 const $ = (id) => document.getElementById(id);
 const STANDARD_START_YEN = 267;
+const START_PRICES = [
+    ["Light Start", 3, 206],
+    ["Standard Start with EX-TRACK", 4, STANDARD_START_YEN],
+    ["Premium Time (4 songs)", 4, 411],
+];
+const popupYen = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "JPY",
+});
+const popupEuro = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
 const yen = new Intl.NumberFormat("ja-JP", {
     style: "currency",
     currency: "JPY",
@@ -37,12 +50,62 @@ function renderSpending() {
     const spending = (STANDARD_START_YEN * data.plays.length) / 4;
     const converted =
         euroRate === null ? "" : ` (${euro.format(spending * euroRate)})`;
-    setText(
-        "play-detail",
-        `${data.plays.filter((p) => p.clear_type > 1).length} clears · Standard Start+EX: ${yen.format(spending)}${converted}`,
+    const price = document.createElement("button");
+    price.type = "button";
+    price.className = "spending-price";
+    price.textContent = yen.format(spending);
+    price.setAttribute("aria-describedby", "spending-popup");
+    price.setAttribute("aria-label", "View arcade spending estimates");
+    price.addEventListener("pointerenter", (event) => {
+        if (event.pointerType === "mouse") showSpendingPopup();
+    });
+    price.addEventListener("pointerleave", scheduleSpendingHide);
+    price.addEventListener("focus", showSpendingPopup);
+    price.addEventListener("blur", scheduleSpendingHide);
+    price.addEventListener("click", showSpendingPopup);
+    $("play-detail").replaceChildren(
+        `${data.plays.filter((p) => p.clear_type > 1).length} clears · `,
+        price,
+        converted,
     );
-    $("play-detail").title =
-        `Estimated Standard Start spending: ${yen.format(STANDARD_START_YEN)} × ${number(data.plays.length)} plays ÷ 4${euroRate === null ? "" : ` · JPY/EUR rate from Frankfurter (${euroRateDate})`}`;
+    $("spending-description").textContent =
+        `${number(data.plays.length)} plays on an arcade cabinet corresponds to:`;
+    $("spending-options").replaceChildren(
+        ...START_PRICES.map(([label, songs, cost]) => {
+            const amount = (data.plays.length / songs) * cost;
+            const item = document.createElement("li");
+            item.textContent = `${label}: ${popupYen.format(amount)}${euroRate === null ? "" : ` (≈ ${popupEuro.format(amount * euroRate)} EUR)`}`;
+            return item;
+        }),
+    );
+}
+
+let spendingHideTimer;
+function hideSpendingPopup() {
+    clearTimeout(spendingHideTimer);
+    $("spending-popup").hidePopover();
+}
+function scheduleSpendingHide() {
+    clearTimeout(spendingHideTimer);
+    spendingHideTimer = setTimeout(() => {
+        if (!document.activeElement?.matches(".spending-price"))
+            hideSpendingPopup();
+    }, 150);
+}
+function showSpendingPopup() {
+    clearTimeout(spendingHideTimer);
+    const popup = $("spending-popup");
+    const trigger = document.querySelector(".spending-price");
+    if (!trigger) return;
+    popup.showPopover();
+    const anchor = trigger.getBoundingClientRect();
+    const box = popup.getBoundingClientRect();
+    popup.style.left = `${Math.max(12, Math.min(anchor.left + anchor.width / 2 - box.width / 2, innerWidth - box.width - 12))}px`;
+    const top =
+        anchor.bottom + 10 + box.height <= innerHeight - 12
+            ? anchor.bottom + 10
+            : anchor.top - box.height - 10;
+    popup.style.top = `${Math.max(12, Math.min(top, innerHeight - box.height - 12))}px`;
 }
 
 async function loadEuroRate() {
@@ -815,9 +878,6 @@ function renderLeaderboard() {
     }
     if (!$("song-query").value)
         $("song-query").value = `${song.title} ${DIFFS[selected.diff_idx]}`;
-    const diff = song.difficulties.find(
-        (d) => d.diff_idx === selected.diff_idx,
-    );
     const plays = chartPlays(data, selected.music_id, selected.diff_idx);
     const saved = data.state.charts.find(
         (c) =>
@@ -828,7 +888,7 @@ function renderLeaderboard() {
         saved?.clear_type ??
         (plays.length ? Math.max(...plays.map((p) => p.clear_type)) : null);
     $("selected-chart").innerHTML =
-        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary">${badge({ ...selected, level: diff?.level })}<span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span></div></div></div>`;
+        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span></div></div></div></div>`;
     const pages = Math.max(1, Math.ceil(plays.length / 10));
     leaderboardPage = Math.min(leaderboardPage, pages - 1);
     const chunk = plays.slice(leaderboardPage * 10, (leaderboardPage + 1) * 10);
@@ -1044,6 +1104,25 @@ setInterval(() => {
 }, 60000);
 window.addEventListener("popstate", restoreUrl);
 window.addEventListener("hashchange", restoreUrl);
+$("spending-popup").addEventListener("pointerenter", () =>
+    clearTimeout(spendingHideTimer),
+);
+$("spending-popup").addEventListener("pointerleave", scheduleSpendingHide);
+document.addEventListener("click", (event) => {
+    if (!event.target.closest(".spending-price, #spending-popup"))
+        hideSpendingPopup();
+});
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") hideSpendingPopup();
+});
+window.addEventListener(
+    "scroll",
+    (event) => {
+        if (event.target !== $("spending-popup")) hideSpendingPopup();
+    },
+    { capture: true, passive: true },
+);
+window.addEventListener("resize", hideSpendingPopup);
 restoreUrl();
 updateUrl(true);
 load();

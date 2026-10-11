@@ -1,0 +1,19 @@
+{
+  "name": "shewi-sdvx-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "check": "node --check public/app.js && node --check api/data.js && node --check api/sync.js && node --check api/cover.js && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.0"
+  }
+}

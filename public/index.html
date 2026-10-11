@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12121d">
+  <meta name="description" content="SOUND VOLTEX stats and history of local plays.">
+  <title>Shewi · SOUND VOLTEX</title>
+  <link rel="icon" type="image/svg+xml" href="/mark.svg">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="SOUND VOLTEX dashboard home">SOUND VOLTEX ∇</a>
+      <div class="header-right"><button class="icon-button" id="refresh" aria-label="Refresh data" title="Refresh data">↻</button></div>
+    </header>
+    <main id="main">
+      <section class="hero">
+        <div><h1 id="player-name">Shewi</h1><p class="hero-subtitle">History of local plays</p></div>
+        <div class="hero-meta"><span id="archive-dates">Loading history…</span></div>
+      </section>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <section class="metrics" aria-label="Performance summary">
+        <article class="metric featured"><div class="metric-label">Total VolForce</div><div class="metric-value" id="total-vf">—</div><div class="metric-detail" id="vf-change">Latest server observation</div><div class="metric-spark" id="spark" aria-hidden="true"></div></article>
+        <article class="metric"><div class="metric-label">Best Chart VF</div><div class="metric-value" id="best-vf">—</div><div class="metric-detail" id="best-title">Across saved charts</div></article>
+        <article class="metric"><div class="metric-label">Worse Chart VF</div><div class="metric-value" id="entry-vf">—</div><div class="metric-detail" id="entry-detail">VF needed to enter Top 50</div></article>
+        <article class="metric"><div class="metric-label">Tracked plays</div><div class="metric-value" id="play-count">—</div><div class="metric-detail" id="session-count">—</div></article>
+      </section>
+      <div class="navigation-row"><nav class="tabs" aria-label="Dashboard views"><button class="tab active" data-view="overview" aria-current="page">Overview</button><button class="tab" data-view="top">Top 50 <span class="tab-count" id="top-count">—</span></button><button class="tab" data-view="history">Play history</button><button class="tab" data-view="leaderboard">Leaderboard</button></nav><span class="tab-caption mono" id="updated">—</span></div>
+      <section id="overview-view">
+        <article class="panel performance-panel">
+          <div class="panel-head"><div><h2>Performance history</h2><p class="panel-subtitle">Chart VolForce over time</p></div><div class="chart-controls"><div class="segmented" role="group" aria-label="Time range"><button data-days="7">7D</button><button data-days="30">30D</button><button data-days="90">90D</button><button class="selected" data-days="0">ALL</button></div><label class="select-wrap"><span class="sr-only">Minimum difficulty</span><select id="difficulty"><option value="1">ADV and above</option><option value="2">EXH and above</option><option value="4">MXM and above</option><option value="0">All difficulties</option></select></label></div></div>
+          <div class="chart-legend" id="legend" role="group" aria-label="Visible chart series">
+            <button data-series="plays" aria-pressed="true"><i class="dot plays"></i>Plays</button><button data-series="best" aria-pressed="true"><i class="dot best"></i>Best VF</button><button data-series="avg10" aria-pressed="true"><i class="dot avg10"></i>Avg 10</button><button data-series="avg100" aria-pressed="true"><i class="dot avg100"></i>Avg 100</button><button data-series="threshold" aria-pressed="true"><i class="dot threshold"></i>Top 50 entry</button><button data-series="total" aria-pressed="true"><i class="dot total"></i>Total VF</button>
+          </div>
+          <div class="chart-wrap" id="chart-wrap"><svg id="chart" viewBox="0 0 1100 380" role="img" aria-label="VolForce performance over time"></svg><div class="chart-tooltip" id="tooltip" hidden></div><div class="chart-empty" id="chart-empty" hidden>No cleared plays in this range.</div></div>
+          <div class="chart-summary"><span id="chart-summary">Loading your performance history…</span><span class="chart-hint">Hover to inspect · Click a legend to toggle</span></div>
+        </article>
+        <div class="lower-grid">
+          <article class="panel recent-panel"><div class="panel-head compact"><div><h2>Latest session</h2></div><button class="text-button" id="all-plays">All plays</button></div><div id="session-meta" class="session-meta">—</div><div id="recent-plays" class="play-list"></div></article>
+          <article class="panel top-panel"><div class="panel-head compact"><div><h2>Best charts</h2></div><button class="text-button" id="all-top">Top 50</button></div><div id="top-plays" class="play-list top-list"></div><div class="panel-foot" id="top-foot">—</div></article>
+        </div>
+      </section>
+      <section id="records-view" class="panel records-panel" hidden>
+        <div class="panel-head"><div><h2 id="records-title">Top 50 charts</h2><p class="panel-subtitle" id="records-description">Ranked by VF.</p></div><button class="text-button" id="export">Export JSON</button></div>
+        <div class="table-tools"><label class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search title or artist…" aria-label="Search records"></label><label class="select-wrap"><span class="sr-only">Sort records</span><select id="sort"><option value="vf">Highest VolForce</option><option value="score">Highest score</option><option value="recent">Most recent</option></select></label><span class="mono result-count" id="result-count"></span></div>
+        <div class="table-scroll"><table><thead><tr><th id="first-column">Rank</th><th>Chart</th><th>Difficulty</th><th>Score</th><th>Clear</th><th class="right">VF</th></tr></thead><tbody id="records"></tbody></table></div>
+        <div class="pagination"><span id="page-info" class="mono"></span><div><button id="previous" aria-label="Previous page">←</button><button id="next" aria-label="Next page">→</button></div></div>
+      </section>
+      <section id="leaderboard-view" class="panel leaderboard-panel" hidden>
+        <div class="panel-head"><div><h2>Leaderboard</h2><p class="panel-subtitle">Select a song and difficulty to see its plays, ranked by score.</p></div></div>
+        <div class="song-search"><label for="song-query">Song</label><input id="song-query" type="search" placeholder="Title, artist, or reading…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="song-options"><div id="song-options" role="listbox" aria-label="Matching songs and difficulties" hidden></div></div>
+        <div id="selected-chart" hidden></div>
+        <div id="leaderboard-empty" class="leaderboard-empty">Search for a song above.</div>
+        <div id="leaderboard-results" hidden>
+          <div class="table-scroll"><table><thead><tr><th>Rank</th><th>Score</th><th>Grade</th><th>Clear</th><th>Played</th><th class="right">VF</th></tr></thead><tbody id="leaderboard-records"></tbody></table></div>
+          <div class="pagination"><span id="leaderboard-page-info" class="mono"></span><div><button id="leaderboard-previous" aria-label="Previous leaderboard page">←</button><button id="leaderboard-next" aria-label="Next leaderboard page">→</button></div></div>
+        </div>
+      </section>
+    </main>
+    <footer><span>SOUND VOLTEX ∇</span><span>Times shown in your local timezone</span></footer>
+  </div>
+</body>
+</html>

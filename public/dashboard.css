@@ -1,0 +1,65 @@
+/* Plain labels, compact controls, and the game's own cover artwork. */
+:root{
+  /* Match the performance graph's blend amounts; larger values dim more. */
+  --performance-background-dim:0.67;
+  --performance-panel-dim:0.65;
+  --performance-background-blur:10px;
+}
+.site-header{height:74px}.brand{font-family:var(--mono);font-size:13px;font-weight:400;letter-spacing:.3px}.hero{padding:32px 0 28px}.hero h1{font-size:43px;font-weight:500;letter-spacing:-1px;margin:0 0 7px}.hero-meta{font:10px var(--mono)}.metrics{gap:0;background:#1b1b299c;border-block:1px solid #ffffff1c}.metric{border:0;border-radius:0;background:transparent;min-height:145px;padding:22px 24px}.metric+.metric{border-left:1px solid #ffffff15}.metric.featured{border:0;background:transparent}.metric.featured:before{display:none}.metric-label{font-size:10px;letter-spacing:.3px}.metric-value{font-size:32px;margin-top:17px}.panel{border-radius:5px;box-shadow:none;background:#1b1b29df}.panel-head h2{font-weight:500;font-size:18px;margin-top:0}.panel-head.compact h2{font-size:17px}.panel-head.compact{padding-top:20px}.tab{font-size:12px}.tab-count{border:0;background:#ffffff06}.tab-caption{letter-spacing:0;text-transform:none}.text-button{font-size:11px}.navigation-row{margin-top:25px}.play-row{grid-template-columns:38px 40px minmax(0,1fr) auto;gap:11px}.cover-tile{display:inline-flex;position:relative;align-items:center;justify-content:center;flex:none;width:40px;height:40px;background:#ffffff05;border:1px solid #ffffff13;overflow:hidden;border-radius:3px}.cover-tile img{display:block;width:100%;height:100%;object-fit:cover}.cover-missing{color:var(--faint);font-size:12px}.cover-tile.large{width:154px;height:154px;border-radius:4px}.open-chart{border:0;background:none;color:var(--ink);padding:0;text-align:left;max-width:100%;display:block}.open-chart:hover{color:var(--purple)}.table-song{display:flex;align-items:center;gap:12px}.table-song>div{min-width:0}.table-song .song-title{font-size:11px}.top-list{padding-top:0}footer{font-size:9px;letter-spacing:0;padding-top:24px}
+.leaderboard-panel{overflow:visible}.leaderboard-panel .panel-head{padding-bottom:20px}.song-search{position:relative;margin:0 27px 24px;max-width:620px}.song-search>label{display:block;font-size:11px;color:var(--muted);margin-bottom:8px}.song-search>input{width:100%;border:1px solid #ffffff26;border-radius:4px;background:#14141f;color:var(--ink);padding:12px 14px;font-size:13px}.song-search>input::placeholder{color:var(--faint)}#song-options{position:absolute;top:100%;left:0;right:0;z-index:4;background:#20202e;border:1px solid #6e5b88;border-radius:4px;margin-top:5px;max-height:380px;overflow-y:auto;box-shadow:0 8px 25px #0005}.song-option{width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;text-align:left;border:0;border-bottom:1px solid #ffffff09;background:none}.song-option:hover,.song-option[aria-selected=true]{background:#cba6f711;color:var(--ink)}.option-song{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;font-size:12px}.option-song>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.option-song small{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.song-option .difficulty-badge{font-size:9px}.search-empty{padding:18px;color:var(--muted);font-size:12px}.selected-song{display:flex;align-items:center;gap:25px;margin:0 27px 25px;padding-top:20px;border-top:1px solid #ffffff12}.selected-song-info{min-width:0;flex:1}.selected-song h3{font-size:25px;font-weight:500;line-height:1.3;letter-spacing:-.3px;margin:0 0 5px;overflow-wrap:anywhere}.selected-song-info>p{color:var(--muted);font-size:12px;margin:0 0 18px}.difficulty-tabs{display:flex;gap:6px;flex-wrap:wrap}.difficulty-tabs button{font:10px var(--mono);background:transparent;border:1px solid #ffffff1c;border-radius:3px;padding:8px 11px;color:var(--muted)}.difficulty-tabs button span{font-size:9px;margin-left:4px}.difficulty-tabs button.selected{color:var(--purple);border-color:#cba6f777;background:#cba6f70d}.selected-summary{display:flex;gap:17px;align-items:center;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:18px}.leaderboard-empty{padding:25px 27px 45px;font-size:12px;color:var(--muted);border-top:1px solid #ffffff0d}.played-date{font-family:var(--mono);font-size:9px}.played-date span{margin-left:8px;color:var(--faint)}.leaderboard-panel table{min-width:580px}.leaderboard-panel .pagination{border-radius:0 0 5px 5px}
+/* Blend wallpaper into #1e1e2e, then panels into #1b1b29, like Python. */
+.ambient{
+  background:linear-gradient(rgb(30 30 46 / var(--performance-background-dim)),rgb(30 30 46 / var(--performance-background-dim))),url('/assets/background.png') center/cover no-repeat;
+  filter:blur(var(--performance-background-blur));opacity:1;
+}
+.ambient:after{background:none}
+.metrics{background:rgb(27 27 41 / var(--performance-panel-dim));border:1px solid #ffffff1c;border-radius:16px;overflow:hidden}
+.panel{background:rgb(27 27 41 / var(--performance-panel-dim));border-radius:16px}
+.cover-tile{border-radius:7px}.cover-tile.large{border-radius:10px}
+.song-search>input,.search-wrap,.select-wrap select{border-radius:10px}
+#song-options{border-radius:12px}
+.segmented{border-radius:10px}.segmented button,.difficulty-tabs button,.pagination button{border-radius:7px}
+.icon-button{border-radius:10px}.chart-tooltip{border-radius:12px}
+.leaderboard-panel .pagination{border-radius:0 0 16px 16px}
+/* Compact two-line entries keep every field visible on phones. */
+@media(max-width:700px){
+  /* Frame the character on phones and cover the viewport with toolbars hidden.
+     lvh stays stable when browser chrome expands or retracts. */
+  .ambient{
+    bottom:auto;
+    height:calc(100vh + 50px);
+    height:calc(100lvh + 50px);
+    background-position:82% center;
+  }
+  .records-panel table,.leaderboard-panel table{display:block;min-width:0;width:100%}
+  .records-panel thead,.leaderboard-panel thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .records-panel tbody,.leaderboard-panel tbody{display:block}
+  .records-panel tbody tr,.leaderboard-panel tbody tr{display:grid;gap:5px 7px;align-items:center;padding:10px 12px;border-top:1px solid #ffffff0d}
+  .records-panel tbody td,.leaderboard-panel tbody td{display:block;min-width:0;max-width:none;padding:0;border:0;font-size:10px}
+  .records-panel tbody tr{grid-template-columns:39px minmax(0,1fr) auto 49px;grid-template-areas:'position song song vf' '. difficulty score clear'}
+  .records-panel td:nth-child(1){grid-area:position;font-size:8px}
+  .records-panel td:nth-child(2){grid-area:song}
+  .records-panel td:nth-child(3){grid-area:difficulty}
+  .records-panel td:nth-child(4){grid-area:score;text-align:right}
+  .records-panel td:nth-child(5){grid-area:clear;text-align:right}
+  .records-panel td:nth-child(6){grid-area:vf;font-size:12px}
+  .records-panel .table-song{gap:8px}.records-panel .table-song>div{flex:1}
+  .records-panel .cover-tile{width:30px;height:30px;border-radius:6px}
+  .records-panel .song-title{font-size:11px}.records-panel .artist{font-size:8px;margin-top:2px}
+  .records-panel .clear-label{font-size:8px}.records-panel .score-cell{font-size:9px}
+  .leaderboard-panel tbody tr{grid-template-columns:24px minmax(0,1fr) 36px 48px;grid-template-areas:'position score grade vf' '. clear played played'}
+  .leaderboard-panel td:nth-child(1){grid-area:position;font-size:9px}
+  .leaderboard-panel td:nth-child(2){grid-area:score;font-size:12px}
+  .leaderboard-panel td:nth-child(3){grid-area:grade;font-size:9px}
+  .leaderboard-panel td:nth-child(4){grid-area:clear}
+  .leaderboard-panel td:nth-child(5){grid-area:played;display:flex;justify-content:flex-end;flex-wrap:wrap;gap:0 5px;font-size:8px;text-align:right}
+  .leaderboard-panel td:nth-child(6){grid-area:vf;font-size:12px}
+  .leaderboard-panel .played-date span{margin-left:0}
+  .leaderboard-panel .selected-song{gap:12px}
+  .selected-song .cover-tile.large{width:72px;height:72px}
+  .selected-song .selected-song-info{flex-basis:140px}
+  .records-panel td[colspan],.leaderboard-panel td[colspan]{grid-column:1/-1;grid-row:1;padding:10px 0}
+  .records-panel .pagination,.leaderboard-panel .pagination{padding:12px}
+}
+@media(max-width:1000px){.metric{padding:20px 17px}.metric-value{font-size:28px}.metric-label{font-size:8px}.tabs{gap:22px}.lower-grid{grid-template-columns:1fr 1fr}.play-row{grid-template-columns:30px 34px minmax(0,1fr) auto;gap:8px}.play-row .cover-tile{width:34px;height:34px}.tab-caption{font-size:8px}}
+@media(max-width:700px){.site-header{height:64px}.brand{font-size:12px}.hero{padding:27px 0 24px}.hero h1{font-size:36px}.metrics{gap:0}.metric{padding:19px 15px;min-height:132px}.metric:nth-child(3){border-left:0}.metric:nth-child(n+3){border-top:1px solid #ffffff15}.metric-value{font-size:27px}.metric-label{font-size:8px}.tabs{gap:19px}.tab{font-size:10px}.tab-count{margin-left:3px;padding:2px 3px;font-size:8px}.lower-grid{grid-template-columns:1fr}.play-row{grid-template-columns:32px 38px minmax(0,1fr) auto;gap:9px}.play-row .cover-tile{width:38px;height:38px}.song-title{font-size:11px}.song-details{gap:5px;font-size:8px}.song-details .clear-label{font-size:8px}.song-search{margin:0 18px 20px}.song-search>input{font-size:12px}.selected-song{margin:0 18px 21px;gap:14px;align-items:flex-start;flex-wrap:wrap}.cover-tile.large{width:92px;height:92px}.selected-song-info{flex-basis:190px}.selected-song h3{font-size:20px}.selected-song-info>p{font-size:10px;margin-bottom:13px}.difficulty-tabs{gap:5px}.difficulty-tabs button{font-size:8px;padding:6px 7px}.difficulty-tabs button span{font-size:8px}.selected-summary{gap:10px;font-size:9px}.song-option{gap:9px;padding:9px 10px}.option-song{font-size:11px}.song-option .cover-tile{width:32px;height:32px}.leaderboard-empty{padding:20px 18px 35px}footer{font-size:8px}.hero-subtitle{font-size:12px}}

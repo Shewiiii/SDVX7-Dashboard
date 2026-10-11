@@ -1,0 +1,12 @@
+.env*
+.local/
+tests/
+sync.py
+configure.py
+*.ps1
+*.bat
+README.md
+__pycache__/
+.agents/
+skills-lock.json
+scripts/

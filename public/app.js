@@ -28,10 +28,6 @@ const popupYen = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "JPY",
 });
-const popupEuro = new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-});
 const yen = new Intl.NumberFormat("ja-JP", {
     style: "currency",
     currency: "JPY",
@@ -74,16 +70,28 @@ function renderSpending() {
         ...START_PRICES.map(([label, songs, cost]) => {
             const amount = (data.plays.length / songs) * cost;
             const item = document.createElement("li");
-            item.textContent = `${label}: ${popupYen.format(amount)}${euroRate === null ? "" : ` (≈ ${popupEuro.format(amount * euroRate)} EUR)`}`;
+            item.textContent = `${label}: ${popupYen.format(amount)}${euroRate === null ? "" : ` (≈ ${euro.format(amount * euroRate)})`}`;
             return item;
         }),
     );
 }
 
-let spendingHideTimer;
+let spendingHideTimer,
+    spendingCloseVersion = 0;
 function hideSpendingPopup() {
     clearTimeout(spendingHideTimer);
-    $("spending-popup").hidePopover();
+    const popup = $("spending-popup");
+    if (!popup.matches(":popover-open") || popup.classList.contains("closing"))
+        return;
+    const version = ++spendingCloseVersion;
+    popup.classList.add("closing");
+    Promise.allSettled(
+        popup.getAnimations().map((animation) => animation.finished),
+    ).then(() => {
+        if (version !== spendingCloseVersion) return;
+        popup.hidePopover();
+        popup.classList.remove("closing");
+    });
 }
 function scheduleSpendingHide() {
     clearTimeout(spendingHideTimer);
@@ -97,6 +105,8 @@ function showSpendingPopup() {
     const popup = $("spending-popup");
     const trigger = document.querySelector(".spending-price");
     if (!trigger) return;
+    spendingCloseVersion++;
+    popup.classList.remove("closing");
     popup.showPopover();
     const anchor = trigger.getBoundingClientRect();
     const box = popup.getBoundingClientRect();

@@ -22,14 +22,16 @@
     font: 10.5px/1.45 var(--sans);
     opacity: 0;
     transform: translateY(4px);
-    transition: opacity 0.14s, transform 0.14s;
+    transition:
+        opacity 0.14s,
+        transform 0.14s;
 }
-.spending-popup:popover-open {
+.spending-popup:popover-open:not(.closing) {
     opacity: 1;
     transform: translateY(0);
 }
 @starting-style {
-    .spending-popup:popover-open {
+    .spending-popup:popover-open:not(.closing) {
         opacity: 0;
         transform: translateY(4px);
     }

@@ -91,6 +91,18 @@
 .hero-meta {
     font: 10px var(--sans);
 }
+.hero-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dan-banner {
+    display: block;
+    width: auto;
+    height: 24px;
+    flex: none;
+    object-fit: contain;
+}
 .metrics {
     --metric-value-size: 32px;
     grid-template-columns: repeat(6, minmax(0, 1fr));

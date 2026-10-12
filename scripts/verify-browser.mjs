@@ -31,7 +31,12 @@ try {
     await page.route("https://api.frankfurter.dev/v2/rate/jpy/eur", (route) =>
         route.fulfill({
             headers: { "access-control-allow-origin": "*" },
-            json: { base: "JPY", quote: "EUR", rate: conversionRate, date: "2026-10-11" },
+            json: {
+                base: "JPY",
+                quote: "EUR",
+                rate: conversionRate,
+                date: "2026-10-11",
+            },
         }),
     );
     const checkRow = async (selector) => {
@@ -126,6 +131,24 @@ try {
     for (const p of actual.plays) cleanPlay(p);
     for (const o of actual.observations) cleanObservation(o);
     cleanState(actual.state);
+    if (actual.state.skill_level) {
+        assert.equal(
+            await page.locator("#dan-banner").getAttribute("src"),
+            `/assets/dan/${actual.state.skill_level}.png`,
+        );
+        await page.waitForFunction(() => {
+            const banner = document.getElementById("dan-banner");
+            return banner.complete && banner.naturalWidth === 226;
+        });
+        const danBounds = await page.locator("#dan-banner").boundingBox();
+        const subtitleBounds = await page
+            .locator(".hero-subtitle span")
+            .boundingBox();
+        assert.ok(
+            danBounds.x + danBounds.width < subtitleBounds.x,
+            "Dan banner must be left of the subtitle",
+        );
+    }
     assert.ok(actual.state.appeal_card, "Current appeal artwork is missing");
     assert.equal(
         await page.locator("#appeal-card").getAttribute("src"),
@@ -163,16 +186,27 @@ try {
     const convertedSpending = new Intl.NumberFormat("en-IE", {
         style: "currency",
         currency: "EUR",
-    }).format(267 * actual.plays.length / 4 * conversionRate);
-    await page.waitForFunction(() => document.getElementById("spending-detail").textContent.includes("€"));
+    }).format(((267 * actual.plays.length) / 4) * conversionRate);
+    await page.waitForFunction(() =>
+        document.getElementById("spending-detail").textContent.includes("€"),
+    );
     assert.equal(
         await page.locator("#play-detail").innerText(),
         `${actual.plays.filter((p) => p.clear_type > 1).length} clears`,
     );
     assert.equal(await page.locator(".metrics > .metric").count(), 6);
-    assert.equal(await page.locator("#spending-total .spending-price").innerText(), spending);
-    assert.equal(await page.locator("#spending-detail").innerText(), `≈ ${convertedSpending} · Standard Start`);
-    assert.equal(await page.locator("#playtime-total").innerText(), playtimeText(actual.state.playtime?.total_seconds));
+    assert.equal(
+        await page.locator("#spending-total .spending-price").innerText(),
+        spending,
+    );
+    assert.equal(
+        await page.locator("#spending-detail").innerText(),
+        `≈ ${convertedSpending} · Standard Start`,
+    );
+    assert.equal(
+        await page.locator("#playtime-total").innerText(),
+        playtimeText(actual.state.playtime?.total_seconds),
+    );
     const axes = await page
         .locator("#chart .axis-caption")
         .evaluateAll((labels) =>
@@ -186,10 +220,7 @@ try {
             axes.find((label) => label.text === "CHART VF").x,
     );
     assert.equal(await page.locator("#chart .grid").count(), 13);
-    assert.equal(
-        await page.locator(".hero-subtitle").innerText(),
-        "ᓚ₍ ^. .^₎",
-    );
+    assert.equal(await page.locator(".hero-subtitle").innerText(), "ᓚ₍ ^. .^₎");
     assert.equal(await page.locator("#connection").count(), 0);
     assert.ok(
         !(await page.locator("body").innerText()).includes("Personal archive"),
@@ -513,7 +544,9 @@ try {
     await page.route("**/api/data", (route) =>
         route.fulfill({ status: 503, body: "{}" }),
     );
-    await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await page.evaluate(() =>
+        document.dispatchEvent(new Event("visibilitychange")),
+    );
     await page.locator("#notice").waitFor();
     assert.match(await page.locator("#notice").innerText(), /last loaded/);
     assert.equal(

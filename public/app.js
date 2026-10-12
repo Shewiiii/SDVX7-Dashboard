@@ -250,6 +250,19 @@ function renderSummary() {
     const name = data.state.name || "Shewi";
     setText("player-name", name);
     document.title = `${name} · SOUND VOLTEX`;
+    const dan = data.state.skill_level;
+    const danBanner = $("dan-banner");
+    danBanner.hidden = !(Number.isInteger(dan) && dan >= 1 && dan <= 12);
+    if (!danBanner.hidden) {
+        danBanner.src = `/assets/dan/${dan}.png`;
+        danBanner.alt =
+            dan === 12
+                ? "∞ Dan"
+                : `${dan}${dan === 1 ? "st" : dan === 2 ? "nd" : dan === 3 ? "rd" : "th"} Dan`;
+    } else {
+        danBanner.removeAttribute("src");
+        danBanner.alt = "";
+    }
     setText("total-vf", vf(stats.total));
     const appeal = data.state.appeal_card;
     const card = $("appeal-card");

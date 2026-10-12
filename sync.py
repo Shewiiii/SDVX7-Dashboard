@@ -17,6 +17,8 @@ import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from pathlib import Path
 
+from playtime import playtime_snapshot
+
 try:
     from pykakasi import kakasi
 
@@ -491,6 +493,7 @@ def observation_record(record, profile_id):
 
 
 def snapshot(tracker, catalog, name):
+    playtime = playtime_snapshot(tracker)
     path = tracker / "cache/total_volforce.json"
     if not path.exists():
         state = {
@@ -498,6 +501,8 @@ def snapshot(tracker, catalog, name):
             "updated_at": None,
             "charts": [],
             "appeal_card": getattr(catalog, "appeal_card", None),
+            "playtime": playtime,
+            "skill_level": None,
         }
         if hasattr(catalog, "public_catalog"):
             state["catalog"] = catalog.public_catalog()
@@ -506,6 +511,9 @@ def snapshot(tracker, catalog, name):
     if raw.get("source") != "sv7_load_m":
         raise ValueError("Unsupported snapshot")
     records = raw.get("chart_records") or {}
+    skill_level = (raw.get("player") or {}).get("skill_level")
+    if type(skill_level) is not int or not 1 <= skill_level <= 12:
+        skill_level = None
     charts = []
     for key, vf in raw["chart_volforce"].items():
         mid, diff = map(int, key.split(":"))
@@ -528,6 +536,8 @@ def snapshot(tracker, catalog, name):
         "updated_at": stamp(raw["updated_at"]),
         "charts": charts,
         "appeal_card": getattr(catalog, "appeal_card", None),
+        "playtime": playtime,
+        "skill_level": skill_level,
     }
     if hasattr(catalog, "public_catalog"):
         state["catalog"] = catalog.public_catalog()

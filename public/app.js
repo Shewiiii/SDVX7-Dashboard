@@ -1014,7 +1014,6 @@ async function load() {
     if (loading) return;
     void loadEuroRate();
     loading = true;
-    $("refresh").disabled = true;
     try {
         const response = await fetch("/api/data", { cache: "no-store" });
         if (!response.ok) throw new Error("Unavailable");
@@ -1038,7 +1037,7 @@ async function load() {
         setText(
             "notice",
             data
-                ? "Could not refresh. Showing the last loaded records. Try again shortly."
+                ? "Could not update. Showing the last loaded records. Retrying automatically."
                 : "No data available. Try again after syncing.",
         );
         $("notice").hidden = false;
@@ -1048,7 +1047,6 @@ async function load() {
         }
     } finally {
         loading = false;
-        $("refresh").disabled = false;
     }
 }
 
@@ -1104,7 +1102,6 @@ $("next").addEventListener("click", () => {
 });
 $("all-plays").addEventListener("click", () => switchView("history"));
 $("all-top").addEventListener("click", () => switchView("top"));
-$("refresh").addEventListener("click", load);
 $("export").addEventListener("click", () => {
     if (!data) return;
     const payload = view === "top" ? topCharts(data.state) : data.plays;

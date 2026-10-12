@@ -513,7 +513,7 @@ try {
     await page.route("**/api/data", (route) =>
         route.fulfill({ status: 503, body: "{}" }),
     );
-    await page.locator("#refresh").click();
+    await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
     await page.locator("#notice").waitFor();
     assert.match(await page.locator("#notice").innerText(), /last loaded/);
     assert.equal(

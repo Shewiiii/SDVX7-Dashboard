@@ -166,11 +166,6 @@ button:hover {
     font-weight: 400;
     color: var(--muted);
 }
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
 .connection {
     font: 10px var(--mono);
     color: var(--muted);
@@ -193,18 +188,6 @@ button:hover {
 }
 .connection.error:before {
     background: #e5b68f;
-}
-.icon-button {
-    background: transparent;
-    border: 0;
-    border-radius: 7px;
-    width: 31px;
-    height: 31px;
-    font-size: 21px;
-    line-height: 1;
-}
-.icon-button:hover {
-    background: #cba6f711;
 }
 .hero {
     display: flex;
@@ -939,9 +922,6 @@ footer {
     .connection {
         font-size: 8px;
         letter-spacing: 0;
-    }
-    .header-right {
-        gap: 10px;
     }
     .hero {
         padding: 31px 0 25px;

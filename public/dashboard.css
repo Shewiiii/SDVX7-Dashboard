@@ -486,15 +486,6 @@ footer {
 .pagination button {
     border-radius: 7px;
 }
-.icon-button {
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border-radius: 10px;
-}
-.icon-button svg {
-    display: block;
-}
 .chart-tooltip {
     border-radius: 12px;
     box-sizing: border-box;

@@ -4,6 +4,6 @@ node_modules/
 !.env.example
 .local/
 __pycache__/
-
+tests/
 .vercel
 .env*

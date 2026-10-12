@@ -15,6 +15,13 @@ export const vf = (value) => (Number.isFinite(value) ? value.toFixed(3) : "—")
 export const average = (values) =>
     values.length ? values.reduce((s, v) => s + v, 0) / values.length : null;
 
+export function playtimeText(seconds) {
+    if (!Number.isSafeInteger(seconds) || seconds < 0) return "—";
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours.toLocaleString()}h ${String(minutes).padStart(2, "0")}m`;
+}
+
 // Same thresholds and quarter ranks as the tracker's profile command.
 export function volforceClass(value) {
     if (typeof value !== "number" || !Number.isFinite(value) || value < 0)

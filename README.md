@@ -6,6 +6,15 @@ This is your separate companion to the tracker. Nothing in the bot, proxy, track
 
 The dashboard uses the performance graph's lavender/indigo palette, mono numbers, and softly blurred wallpaper. It shows your actual data: server-snapshot Total VolForce, Top 50 entry threshold, chart bests, interactive play performance (10/100-play averages, best VF, total VF, and threshold), sessions, and a searchable/exportable play archive. Failed plays remain in the archive and are excluded from performance averages. Older play VF is recalculated with the local chart level rather than using stale chart-best VF.
 
+The summary bar has six cards. **Tracked plays** shows the play count and clears.
+**Spendings** highlights the Standard Start with EX-TRACK estimate (¥267 per four
+plays), with a euro conversion and a popup for other start options. **Active
+Playtime** reads the tracker's saved playtime total in the local preview; an
+optional starting value entered during tracker setup is identified as a RyuNET
+estimate. Start the updated tracker to measure gameplay. The cards use six
+columns on desktop, three on smaller screens, and two on phones. Cloud upload of
+playtime requires approval; until it is enabled, the hosted card waits for data.
+
 ## Local preview
 
 Double-click **Preview-dashboard.bat**, then open **http://localhost:3000**. Leave its terminal open while using the preview. It reads your current tracker history without a database or account. `Ctrl+C` stops it.

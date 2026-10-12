@@ -86,20 +86,15 @@
                 <section class="metrics" aria-label="Performance summary">
                     <article class="metric featured">
                         <div class="metric-label">Total VolForce</div>
-                        <div class="metric-total">
-                            <div class="metric-value" id="total-vf">—</div>
-                            <div class="vf-class" id="vf-class" hidden>
-                                <img
-                                    id="vf-class-icon"
-                                    alt=""
-                                    width="28"
-                                    height="28"
-                                />
-                                <span id="vf-class-name"></span>
-                            </div>
-                        </div>
-                        <div class="metric-detail" id="vf-change">
-                            Latest server observation
+                        <div class="metric-value" id="total-vf">—</div>
+                        <div class="vf-class" id="vf-class" hidden>
+                            <img
+                                id="vf-class-icon"
+                                alt=""
+                                width="28"
+                                height="28"
+                            />
+                            <span id="vf-class-name"></span>
                         </div>
                         <div
                             class="metric-spark"
@@ -115,7 +110,7 @@
                         </div>
                     </article>
                     <article class="metric">
-                        <div class="metric-label">Worse Chart VF</div>
+                        <div class="metric-label">Worst Chart VF</div>
                         <div class="metric-value" id="entry-vf">—</div>
                         <div class="metric-detail" id="entry-detail">
                             VF needed to enter Top 50
@@ -125,6 +120,20 @@
                         <div class="metric-label">Tracked plays</div>
                         <div class="metric-value" id="play-count">—</div>
                         <div class="metric-detail" id="play-detail">—</div>
+                    </article>
+                    <article class="metric">
+                        <div class="metric-label">Spendings</div>
+                        <div class="metric-value" id="spending-total">—</div>
+                        <div class="metric-detail" id="spending-detail">
+                            Standard Start with EX-TRACK
+                        </div>
+                    </article>
+                    <article class="metric metric-playtime">
+                        <div class="metric-label">Active Playtime</div>
+                        <div class="metric-value" id="playtime-total">—</div>
+                        <div class="metric-detail" id="playtime-detail">
+                            Waiting for tracked gameplay
+                        </div>
                     </article>
                 </section>
                 <div class="navigation-row">
@@ -389,7 +398,12 @@
                 ><span>Rasis my oshi ❤️</span>
             </footer>
         </div>
-        <div id="spending-popup" class="spending-popup" popover="manual" role="tooltip">
+        <div
+            id="spending-popup"
+            class="spending-popup"
+            popover="manual"
+            role="tooltip"
+        >
             <p id="spending-description"></p>
             <ul id="spending-options"></ul>
             <small id="spending-rate"></small>

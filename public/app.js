@@ -15,6 +15,7 @@ import {
     chartPlays,
     grade,
     volforceClass,
+    playtimeText,
 } from "./metrics.js";
 
 const $ = (id) => document.getElementById(id);
@@ -44,14 +45,15 @@ let euroRate = null,
 function renderSpending() {
     if (!data) return;
     const spending = (STANDARD_START_YEN * data.plays.length) / 4;
-    const converted =
-        euroRate === null ? "" : ` (${euro.format(spending * euroRate)})`;
     const price = document.createElement("button");
     price.type = "button";
     price.className = "spending-price";
     price.textContent = yen.format(spending);
     price.setAttribute("aria-describedby", "spending-popup");
-    price.setAttribute("aria-label", "View arcade spending estimates");
+    price.setAttribute(
+        "aria-label",
+        `${yen.format(spending)} · View arcade spending estimates`,
+    );
     price.addEventListener("pointerenter", (event) => {
         if (event.pointerType === "mouse") showSpendingPopup();
     });
@@ -59,10 +61,10 @@ function renderSpending() {
     price.addEventListener("focus", showSpendingPopup);
     price.addEventListener("blur", scheduleSpendingHide);
     price.addEventListener("click", showSpendingPopup);
-    $("play-detail").replaceChildren(
-        `${data.plays.filter((p) => p.clear_type > 1).length} clears · `,
-        price,
-        converted,
+    $("spending-total").replaceChildren(price);
+    setText(
+        "spending-detail",
+        `${euroRate === null ? "" : `≈ ${euro.format(spending * euroRate)} · `}Standard Start`,
     );
     $("spending-description").textContent =
         `${number(data.plays.length)} plays on an arcade cabinet corresponds to:`;
@@ -73,6 +75,21 @@ function renderSpending() {
             item.textContent = `${label}: ${popupYen.format(amount)}${euroRate === null ? "" : ` (≈ ${euro.format(amount * euroRate)})`}`;
             return item;
         }),
+    );
+}
+
+function renderPlaytime() {
+    const playtime = data.state.playtime;
+    setText("playtime-total", playtimeText(playtime?.total_seconds));
+    if (!playtime) {
+        setText("playtime-detail", "Waiting for tracked gameplay");
+        return;
+    }
+    setText(
+        "playtime-detail",
+        playtime.initial_seconds > 0
+            ? `${playtimeText(playtime.initial_seconds)} + ${playtimeText(playtime.local_seconds)}`
+            : `Based on ${number(playtime.plays)} ${playtime.plays === 1 ? "play" : "plays"}`,
     );
 }
 
@@ -253,7 +270,12 @@ function renderSummary() {
         stats.top.length ? chartTitle(stats.top[0]) : "No saved charts yet",
     );
     setText("play-count", number(data.plays.length));
+    setText(
+        "play-detail",
+        `${number(data.plays.filter((p) => p.clear_type > 1).length)} clears`,
+    );
     renderSpending();
+    renderPlaytime();
     setText("entry-vf", vf(stats.entry));
     setText(
         "entry-detail",
@@ -261,10 +283,6 @@ function renderSummary() {
             ? "in Top 50"
             : `${stats.top.length} / 50 charts recorded`,
     );
-    $("vf-change").innerHTML =
-        stats.growth !== null
-            ? `<span class="positive">${stats.growth >= 0 ? "+" : ""}${vf(stats.growth)}</span> since tracking began`
-            : "Latest saved server snapshot";
     const sorted = [...data.plays].sort(byTime);
     setText(
         "archive-dates",
@@ -1020,7 +1038,7 @@ async function load() {
         setText(
             "notice",
             data
-                ? "Could not refresh. Showing the last loaded records; try again shortly."
+                ? "Could not refresh. Showing the last loaded records. Try again shortly."
                 : "No data available. Try again after syncing.",
         );
         $("notice").hidden = false;

@@ -7,6 +7,7 @@ import {
     summary,
     volforceClass,
     lineValue,
+    playtimeText,
 } from "../public/metrics.js";
 import {
     authorized,
@@ -29,6 +30,16 @@ const base = {
     title: "Test",
     artist: "Artist",
 };
+
+test("playtime duration displays zero, minutes, and total hours without inventing missing data", () => {
+    assert.equal(playtimeText(0), "0h 00m");
+    assert.equal(playtimeText(1610), "0h 26m");
+    assert.equal(playtimeText(45060), "12h 31m");
+    assert.equal(playtimeText(90000), "25h 00m");
+    for (const value of [undefined, null, -1, NaN, Infinity, "60", 1.5]) {
+        assert.equal(playtimeText(value), "—");
+    }
+});
 
 test("performance excludes failed plays and NOV, and honors the selected calendar window", () => {
     const plays = [

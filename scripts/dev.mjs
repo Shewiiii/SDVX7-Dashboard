@@ -2,20 +2,23 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { existsSync } from 'node:fs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const publicRoot = path.join(root, 'public');
 const port = Number(process.env.PORT || 3000);
 const trackerPython = path.join(root, '..', '.venv', 'Scripts', 'python.exe');
+const python = process.env.PYTHON || (existsSync(trackerPython) ? trackerPython : 'python');
+const runFile = promisify(execFile);
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css',
   '.png': 'image/png', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.json': 'application/json' };
 let exportTask = null;
 function refresh() {
   if (exportTask) return exportTask;
   exportTask = new Promise((resolve, reject) => {
-    const child = spawn(process.env.PYTHON || (existsSync(trackerPython) ? trackerPython : 'python'), [path.join(root, 'sync.py'), '--export'], { cwd: root });
+    const child = spawn(python, [path.join(root, 'sync.py'), '--export'], { cwd: root });
     child.stdout.on('data', data => process.stdout.write(data));
     child.stderr.on('data', data => process.stderr.write(data));
     child.on('error', reject);
@@ -37,8 +40,11 @@ createServer(async (req, res) => {
     }
     if (url.pathname === '/api/data') {
       await refresh();
+      const data = JSON.parse(await readFile(path.join(root, '.local/preview-data.json'), 'utf8'));
+      const playtime = await runFile(python, [path.join(root, 'playtime.py')], { cwd: root });
+      data.state.playtime = JSON.parse(playtime.stdout);
       res.writeHead(200, { 'Content-Type': types['.json'], 'Cache-Control': 'no-store' });
-      res.end(await readFile(path.join(root, '.local/preview-data.json')));
+      res.end(JSON.stringify(data));
       return;
     }
     const relative = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);

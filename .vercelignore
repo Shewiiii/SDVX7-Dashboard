@@ -2,6 +2,7 @@
 .local/
 tests/
 sync.py
+playtime.py
 configure.py
 *.ps1
 *.bat

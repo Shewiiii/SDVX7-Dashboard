@@ -5,6 +5,7 @@
     border: 0;
     padding: 0;
     font: inherit;
+    letter-spacing: inherit;
 }
 .spending-popup {
     position: fixed;
@@ -91,20 +92,23 @@
     font: 10px var(--sans);
 }
 .metrics {
+    --metric-value-size: 32px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0;
     background: #1b1b299c;
     border-block: 0;
 }
 .metric {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 3;
+    row-gap: 4px;
     text-align: center;
     border: 0;
     border-radius: 0;
     background: transparent;
     min-height: 118px;
-    padding: 16px 22px;
+    padding: 10px 12px;
 }
 .metric.featured {
     border: 0;
@@ -114,13 +118,35 @@
     display: none;
 }
 .metric-label {
+    grid-row: 1;
+    min-height: 28px;
     justify-content: center;
     font-size: 10px;
     letter-spacing: 0.3px;
 }
 .metric-value {
-    font-size: 32px;
-    margin: 11px 0 5px;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--metric-value-size);
+    margin: 0;
+    white-space: nowrap;
+    min-width: 0;
+}
+.metric-detail,
+.vf-class {
+    grid-row: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    align-self: center;
+    line-height: 1.5;
+}
+.metric-playtime .metric-detail {
+    white-space: normal;
+    line-height: 1.5;
 }
 .metric-spark {
     bottom: 14px;
@@ -537,24 +563,14 @@ footer {
     border-radius: 8px;
     flex: none;
 }
-.metric-total {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0 12px;
-    flex-wrap: wrap;
-    margin-top: 11px;
-}
-.metric-total .metric-value {
-    margin: 0 0 5px;
-}
 .vf-class {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
-    margin-bottom: 5px;
+    margin: 0;
     white-space: nowrap;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--muted);
 }
 .vf-class img {
@@ -731,12 +747,17 @@ footer {
         padding: 12px;
     }
 }
+@media (max-width: 1200px) {
+    .metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
 @media (max-width: 1000px) {
     .metric {
         padding: 14px 16px;
     }
-    .metric-value {
-        font-size: 28px;
+    .metrics {
+        --metric-value-size: 28px;
     }
     .metric-label {
         font-size: 8px;
@@ -773,6 +794,8 @@ footer {
         font-size: 36px;
     }
     .metrics {
+        --metric-value-size: clamp(22px, 6vw, 27px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0;
     }
     .metric {
@@ -782,10 +805,12 @@ footer {
     .metric:nth-child(3) {
         border-left: 0;
     }
-    .metric-value {
-        font-size: 27px;
+    .metric-detail,
+    .vf-class {
+        min-height: 23px;
     }
     .metric-label {
+        min-height: 23px;
         font-size: 8px;
     }
     .tabs {

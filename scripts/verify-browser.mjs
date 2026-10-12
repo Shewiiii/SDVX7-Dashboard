@@ -10,6 +10,7 @@ import {
     summary,
     volforceClass,
     grade,
+    playtimeText,
 } from "../public/metrics.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -42,12 +43,12 @@ try {
         await page.waitForFunction(
             (selector) =>
                 getComputedStyle(document.querySelector(selector))
-                    .backgroundColor === "rgba(203, 166, 247, 0.016)",
+                    .backgroundColor === "rgba(203, 166, 247, 0.067)",
             selector,
         );
         assert.equal(
             await row.evaluate((el) => getComputedStyle(el).backgroundColor),
-            "rgba(203, 166, 247, 0.016)",
+            "rgba(203, 166, 247, 0.067)",
         );
         if (selector.includes("#records")) {
             assert.ok(
@@ -163,11 +164,15 @@ try {
         style: "currency",
         currency: "EUR",
     }).format(267 * actual.plays.length / 4 * conversionRate);
-    await page.waitForFunction(() => document.getElementById("play-detail").textContent.includes("€"));
+    await page.waitForFunction(() => document.getElementById("spending-detail").textContent.includes("€"));
     assert.equal(
         await page.locator("#play-detail").innerText(),
-        `${actual.plays.filter((p) => p.clear_type > 1).length} clears · ${spending} (${convertedSpending})`,
+        `${actual.plays.filter((p) => p.clear_type > 1).length} clears`,
     );
+    assert.equal(await page.locator(".metrics > .metric").count(), 6);
+    assert.equal(await page.locator("#spending-total .spending-price").innerText(), spending);
+    assert.equal(await page.locator("#spending-detail").innerText(), `≈ ${convertedSpending} · Standard Start`);
+    assert.equal(await page.locator("#playtime-total").innerText(), playtimeText(actual.state.playtime?.total_seconds));
     const axes = await page
         .locator("#chart .axis-caption")
         .evaluateAll((labels) =>
@@ -183,7 +188,7 @@ try {
     assert.equal(await page.locator("#chart .grid").count(), 13);
     assert.equal(
         await page.locator(".hero-subtitle").innerText(),
-        "History of local plays",
+        "ᓚ₍ ^. .^₎",
     );
     assert.equal(await page.locator("#connection").count(), 0);
     assert.ok(

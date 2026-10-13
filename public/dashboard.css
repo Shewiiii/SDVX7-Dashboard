@@ -20,6 +20,7 @@
     padding: 8px 9px 0;
 }
 #timing-chart {
+    --timing-curve-color: #504a72;
     display: block;
     width: 100%;
     height: auto;
@@ -37,13 +38,32 @@
     stroke: #ffffff09;
     stroke-width: 1;
 }
-.timing-zero {
-    stroke: #cba6f750;
+.timing-zero,
+.timing-guide {
+    stroke: #a3a1b829;
     stroke-dasharray: 3 4;
+    pointer-events: none;
+}
+#timing-chart .timing-guide-value {
+    letter-spacing: 0;
+}
+#timing-chart .timing-guide-label {
+    font-size: 8px;
 }
 .timing-bar {
     opacity: 0.7;
     transition: opacity 0.16s;
+}
+.timing-curve {
+    pointer-events: none;
+}
+.timing-curve-line {
+    fill: none;
+    stroke: var(--timing-curve-color);
+    stroke-width: 1.5;
+}
+.timing-curve-gradient stop {
+    stop-color: var(--timing-curve-color);
 }
 .timing-bar.early {
     fill: #bc7bc5;

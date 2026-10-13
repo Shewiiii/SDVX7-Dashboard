@@ -388,6 +388,30 @@ function renderSpark() {
     $("spark").replaceChildren(svg);
 }
 
+function smoothTimingPath(points) {
+    // Keep the decorative curve within neighboring bucket values, without overshoot.
+    const slopes = points.map(([px, py], index) => {
+        if (index === 0 || index === points.length - 1) return 0;
+        const [previousX, previousY] = points[index - 1];
+        const [nextX, nextY] = points[index + 1];
+        const before = (py - previousY) / (px - previousX);
+        const after = (nextY - py) / (nextX - px);
+        return before * after <= 0
+            ? 0
+            : (2 * before * after) / (before + after);
+    });
+    let path = `M${points[0][0]},${points[0][1]}`;
+    for (let index = 0; index < points.length - 1; index++) {
+        const [x1, y1] = points[index],
+            [x2, y2] = points[index + 1];
+        const third = (x2 - x1) / 3;
+        const clampY = (value) =>
+            Math.max(Math.min(y1, y2), Math.min(Math.max(y1, y2), value));
+        path += ` C${x1 + third},${clampY(y1 + slopes[index] * third)} ${x2 - third},${clampY(y2 - slopes[index + 1] * third)} ${x2},${y2}`;
+    }
+    return path;
+}
+
 function renderTimingHistogram() {
     const stats = timingHistogram(data.plays, { days, difficulty });
     const svg = $("timing-chart");
@@ -407,6 +431,15 @@ function renderTimingHistogram() {
         bottom = height - 55;
     const slot = (right - left) / 7;
     const x = (index) => left + (index + 0.5) * slot;
+    const xOffset = (offset) => {
+        for (let index = 0; index < TIMING_OFFSETS.length - 1; index++) {
+            const early = TIMING_OFFSETS[index],
+                late = TIMING_OFFSETS[index + 1];
+            if (offset <= early && offset >= late)
+                return x(index + (early - offset) / (early - late));
+        }
+        return x(3);
+    };
     const peak = Math.max(...stats.bins);
     const power = 10 ** Math.floor(Math.log10(Math.max(peak / 4, 1)));
     const step = Math.ceil(peak / (4 * power)) * power;
@@ -417,6 +450,66 @@ function renderTimingHistogram() {
         maximumFractionDigits: 1,
     });
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    const defs = svgElement("defs");
+    const gradient = svgElement("linearGradient", {
+        id: "timing-curve-gradient",
+        class: "timing-curve-gradient",
+        gradientUnits: "userSpaceOnUse",
+        x1: 0,
+        x2: 0,
+        y1: top,
+        y2: bottom,
+    });
+    for (const [offset, opacity] of [
+        ["0%", 0.24],
+        ["65%", 0.1],
+        ["100%", 0],
+    ])
+        gradient.append(
+            svgElement("stop", { offset, "stop-opacity": opacity }),
+        );
+    const mask = svgElement("mask", {
+        id: "timing-curve-mask",
+        maskUnits: "userSpaceOnUse",
+        x: 0,
+        y: 0,
+        width,
+        height,
+    });
+    mask.append(
+        svgElement("rect", { x: 0, y: 0, width, height, fill: "white" }),
+    );
+    stats.bins.forEach((count, index) =>
+        mask.append(
+            svgElement("rect", {
+                x: x(index) - slot * 0.34,
+                y: y(count),
+                width: slot * 0.68,
+                height: bottom - y(count),
+                rx: 3,
+                fill: "black",
+            }),
+        ),
+    );
+    defs.append(gradient, mask);
+    const curve = smoothTimingPath([
+        [left, bottom],
+        ...stats.bins.map((count, index) => [x(index), y(count)]),
+        [right, bottom],
+    ]);
+    const backdrop = svgElement("g", {
+        class: "timing-curve",
+        "aria-hidden": "true",
+        mask: "url(#timing-curve-mask)",
+    });
+    backdrop.append(
+        svgElement("path", {
+            d: curve + " Z",
+            fill: "url(#timing-curve-gradient)",
+        }),
+        svgElement("path", { d: curve, class: "timing-curve-line" }),
+    );
+    svg.append(defs, backdrop);
     for (let tick = 0; tick <= 4; tick++) {
         const count = tick * step;
         svg.append(
@@ -436,18 +529,51 @@ function renderTimingHistogram() {
             ),
         );
     }
-    svg.append(
-        svgElement("line", {
-            x1: x(3),
-            x2: x(3),
-            y1: top,
-            y2: bottom,
-            class: "timing-zero",
-        }),
-    );
+    for (const [offset, judgement] of [
+        [41.6, "CRITICAL"],
+        [20.8, "S-CRITICAL"],
+        [-20.8, "S-CRITICAL"],
+        [-41.6, "CRITICAL"],
+    ]) {
+        const position = xOffset(offset);
+        const caption = `${offset > 0 ? "+" : "−"}${Math.abs(offset)} ms`;
+        svg.append(
+            svgElement("line", {
+                x1: position,
+                x2: position,
+                y1: top,
+                y2: bottom,
+                class: "timing-guide",
+                "data-offset": offset,
+            }),
+        );
+        svg.append(
+            svgElement(
+                "text",
+                {
+                    x: position,
+                    y: 17,
+                    "text-anchor": "middle",
+                    class: "axis-caption timing-guide-value",
+                },
+                caption,
+            ),
+        );
+        svg.append(
+            svgElement(
+                "text",
+                {
+                    x: position,
+                    y: 30,
+                    "text-anchor": "middle",
+                    class: "timing-guide-label",
+                },
+                judgement,
+            ),
+        );
+    }
     for (const [position, label, anchor] of [
         [left, "EARLY", "start"],
-        [x(3), "0 MS", "middle"],
         [right, "LATE", "end"],
     ])
         svg.append(

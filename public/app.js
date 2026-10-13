@@ -219,6 +219,7 @@ let data = null,
     page = 0,
     loading = false;
 let dataFingerprint = "";
+const revealedViews = new Set();
 let pendingScroll = null,
     scrollSaveTimer;
 history.scrollRestoration = "manual";
@@ -293,6 +294,12 @@ function prepareLoading() {
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
         svg.replaceChildren();
     }
+}
+
+function revealOnce(key, animate) {
+    const firstVisit = !revealedViews.has(key);
+    revealedViews.add(key);
+    return animate && firstVisit;
 }
 
 function renderSummary({ animate = true } = {}) {
@@ -720,6 +727,16 @@ function renderChart({ animate = true, transition = false } = {}) {
             () => renderChart({ animate: false }),
         );
     }
+    animate = view === "overview" ? revealOnce("overview", animate) : false;
+    if (!animate) {
+        for (const id of [
+            "chart",
+            "timing-chart",
+            "chart-summary",
+            "timing-summary",
+        ])
+            motion.stop($(id));
+    }
     const plays = performance(data.plays, { days, difficulty });
     renderTimingHistogram({ animate });
     const svg = $("chart");
@@ -965,7 +982,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     svg.append(crosshair, markers);
     hover = { series, x, start, end, left, right, crosshair, markers, width };
     $("chart-summary").innerHTML =
-        `<strong>${number(plays.length)}</strong> plays &nbsp; / &nbsp; Best <strong>${vf(Math.max(...values))}</strong> &nbsp; / &nbsp; Average <strong>${vf(average(values))}</strong>`;
+        `<strong>${number(plays.length)}</strong> plays · Best <strong>${vf(Math.max(...values))}</strong> · Average <strong>${vf(average(values))}</strong>`;
     motion.history(svg, animate);
     if (animate) motion.data($("chart-summary"));
 }
@@ -1201,6 +1218,7 @@ function renderTable({ animate = true } = {}) {
     );
     setText("first-column", top ? "Rank" : "Played");
     if (!data) return;
+    animate = revealOnce(view, animate);
     if (!animate) {
         for (const id of ["records", "page-info", "result-count"])
             motion.stop($(id));
@@ -1330,6 +1348,7 @@ function judgementDetails(play) {
 
 function renderLeaderboard({ animate = true } = {}) {
     if (!data) return;
+    if (selected) animate = revealOnce(`song:${selected.music_id}`, animate);
     if (!animate) {
         for (const id of [
             "selected-chart",
@@ -1469,7 +1488,11 @@ document.addEventListener("click", (event) => {
     if (button)
         selectChart(Number(button.dataset.music), Number(button.dataset.diff));
     const diff = event.target.closest("[data-chart-diff]");
-    if (diff && selected && Number(diff.dataset.chartDiff) !== selected.diff_idx)
+    if (
+        diff &&
+        selected &&
+        Number(diff.dataset.chartDiff) !== selected.diff_idx
+    )
         selectChart(selected.music_id, Number(diff.dataset.chartDiff), {
             animate: false,
         });

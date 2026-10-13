@@ -20,6 +20,7 @@ import {
     timingHistogram,
     TIMING_OFFSETS,
 } from "./metrics.js";
+import { motion } from "./motion.js";
 
 const $ = (id) => document.getElementById(id);
 const STANDARD_START_YEN = 267;
@@ -217,6 +218,10 @@ let data = null,
     difficulty = 1,
     page = 0,
     loading = false;
+let dataFingerprint = "";
+let pendingScroll = null,
+    scrollSaveTimer;
+history.scrollRestoration = "manual";
 const shown = new Set([
     "plays",
     "best",
@@ -248,7 +253,49 @@ function row(p, rank = null) {
     return `<div class="play-row chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index ${rank === 1 ? "leading" : ""}">${rank ? String(rank).padStart(2, "0") : clock(p.received_at)}</span>${coverMarkup(p)}<div>${chartButton(p)}<div class="song-details">${badge(p)}${clear(p)}</div></div><div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
 }
 
-function renderSummary() {
+function prepareLoading() {
+    const placeholders = Array.from(
+        { length: 3 },
+        () =>
+            '<div class="play-row loading-entry" aria-hidden="true"><span class="skeleton-shape skeleton-position"></span><span class="skeleton-shape skeleton-cover"></span><div><span class="skeleton-shape skeleton-title"></span><span class="skeleton-shape skeleton-detail"></span></div><div><span class="skeleton-shape skeleton-value"></span><span class="skeleton-shape skeleton-score"></span></div></div>',
+    ).join("");
+    $("recent-plays").innerHTML = placeholders;
+    $("top-plays").innerHTML = placeholders;
+    $("top-foot").textContent = "";
+    $("records").innerHTML =
+        `<tr class="record-loading-row"><td colspan="6">${placeholders}</td></tr>`;
+    $("leaderboard-records").innerHTML =
+        `<tr class="record-loading-row"><td colspan="5">${placeholders}</td></tr>`;
+    for (const id of [
+        "previous",
+        "next",
+        "leaderboard-previous",
+        "leaderboard-next",
+    ])
+        $(id).disabled = true;
+    if (view === "leaderboard") {
+        $("selected-chart").hidden = !selected;
+        if (selected)
+            $("selected-chart").innerHTML =
+                '<div class="selected-song" aria-hidden="true"><span class="cover-tile large skeleton-shape"></span><div class="selected-song-info"><div class="skeleton-shape skeleton-heading"></div><div class="skeleton-shape skeleton-detail"></div><div class="skeleton-shape skeleton-title"></div></div></div>';
+        $("leaderboard-results").hidden = !selected;
+        $("leaderboard-empty").hidden = !!selected;
+    }
+    const mobile = window.matchMedia("(max-width: 700px)").matches;
+    const width = mobile ? 400 : 1100;
+    for (const [id, height] of [
+        ["chart", mobile ? 300 : 380],
+        ["timing-chart", mobile ? 250 : 260],
+    ]) {
+        const svg = $(id);
+        svg.removeAttribute("hidden");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        svg.replaceChildren();
+    }
+}
+
+function renderSummary({ animate = true } = {}) {
     stats = summary(data);
     const name = data.state.name || "Shewi";
     setText("player-name", name);
@@ -340,6 +387,19 @@ function renderSummary() {
             : "Your strongest saved charts",
     );
     renderSpark();
+    if (animate) {
+        motion.metrics(document.querySelector(".metrics"));
+        motion.data(document.querySelector(".profile-heading"));
+        for (const id of [
+            "archive-dates",
+            "updated",
+            "session-meta",
+            "top-foot",
+        ])
+            motion.data($(id));
+        motion.data($("recent-plays"), ".play-row, .empty-list");
+        motion.data($("top-plays"), ".play-row, .empty-list");
+    }
 }
 
 const NS = "http://www.w3.org/2000/svg";
@@ -412,10 +472,11 @@ function smoothTimingPath(points) {
     return path;
 }
 
-function renderTimingHistogram() {
+function renderTimingHistogram({ animate = true } = {}) {
     const stats = timingHistogram(data.plays, { days, difficulty });
     const svg = $("timing-chart");
     svg.replaceChildren();
+    svg.removeAttribute("aria-hidden");
     svg.toggleAttribute("hidden", !stats.hits);
     $("timing-empty").hidden = !!stats.hits;
     if (!stats.hits) {
@@ -640,14 +701,30 @@ function renderTimingHistogram() {
     );
     $("timing-summary").innerHTML =
         `<strong>${number(stats.plays)}</strong> plays · <strong>${number(stats.hits)}</strong> notes · Average <strong>${timingText(stats.average)}</strong>`;
+    motion.histogram(svg, animate);
+    if (animate) motion.data($("timing-summary"));
 }
 
-function renderChart() {
+function renderChart({ animate = true, transition = false } = {}) {
     if (!data) return;
+    if (transition) {
+        hideTooltip();
+        hover = null;
+        return motion.swap(
+            [
+                $("chart-wrap"),
+                document.querySelector(".timing-chart-wrap"),
+                $("chart-summary"),
+                $("timing-summary"),
+            ],
+            () => renderChart({ animate: false }),
+        );
+    }
     const plays = performance(data.plays, { days, difficulty });
-    renderTimingHistogram();
+    renderTimingHistogram({ animate });
     const svg = $("chart");
     svg.replaceChildren();
+    svg.removeAttribute("aria-hidden");
     hover = null;
     $("tooltip").hidden = true;
     $("chart-empty").hidden = !!plays.length;
@@ -764,6 +841,8 @@ function renderChart() {
             ),
         );
     }
+    const seriesLayer = svgElement("g", { class: "history-series" });
+    svg.append(seriesLayer);
     function line(
         series,
         points,
@@ -775,7 +854,7 @@ function renderChart() {
     ) {
         if (!shown.has(series) || !points.length) return;
         if (points.length === 1) {
-            svg.append(
+            seriesLayer.append(
                 svgElement("circle", {
                     cx: x(points[0][0]),
                     cy: mapper(points[0][1]),
@@ -784,7 +863,7 @@ function renderChart() {
                 }),
             );
         } else
-            svg.append(
+            seriesLayer.append(
                 svgElement("path", {
                     d: pathData(points, x, mapper, step),
                     fill: "none",
@@ -826,7 +905,7 @@ function renderChart() {
                 }),
             ),
         );
-        svg.append(group);
+        seriesLayer.append(group);
     }
     line("avg10", avg10Points, "#8e73ad", 1.8);
     line("avg100", avg100Points, "#cba6f7", 2.8);
@@ -887,6 +966,8 @@ function renderChart() {
     hover = { series, x, start, end, left, right, crosshair, markers, width };
     $("chart-summary").innerHTML =
         `<strong>${number(plays.length)}</strong> plays &nbsp; / &nbsp; Best <strong>${vf(Math.max(...values))}</strong> &nbsp; / &nbsp; Average <strong>${vf(average(values))}</strong>`;
+    motion.history(svg, animate);
+    if (animate) motion.data($("chart-summary"));
 }
 
 $("chart").addEventListener("pointermove", (event) => {
@@ -960,6 +1041,27 @@ function hideTooltip() {
 }
 $("chart").addEventListener("pointerleave", hideTooltip);
 
+function rememberScroll() {
+    clearTimeout(scrollSaveTimer);
+    if (pendingScroll) return;
+    history.replaceState(
+        {
+            ...history.state,
+            dashboardScroll: { x: scrollX, y: scrollY },
+        },
+        "",
+    );
+}
+
+function restoreScroll(position) {
+    if (!position) return;
+    pendingScroll = position;
+    if (!data) return;
+    pendingScroll = null;
+    window.scrollTo({ left: position.x, top: position.y, behavior: "instant" });
+    rememberScroll();
+}
+
 function updateUrl(replace = false) {
     const params = new URLSearchParams();
     if (view === "overview") {
@@ -984,10 +1086,17 @@ function updateUrl(replace = false) {
     }
     const hash = `#${view}${params.size ? "?" + params.toString() : ""}`;
     if (location.hash !== hash)
-        history[replace ? "replaceState" : "pushState"](null, "", hash);
+        history[replace ? "replaceState" : "pushState"](
+            { dashboardScroll: pendingScroll || { x: scrollX, y: scrollY } },
+            "",
+            hash,
+        );
 }
 
 function restoreUrl() {
+    const savedScroll = history.state?.dashboardScroll;
+    const previousDays = days;
+    const previousChart = JSON.stringify([difficulty, [...shown]]);
     const [route, query = ""] = location.hash.slice(1).split("?");
     const next = ["overview", "top", "history", "leaderboard"].includes(route)
         ? route
@@ -1043,17 +1152,26 @@ function restoreUrl() {
         selected && songs.has(musicId)
             ? `${songs.get(musicId).title} ${DIFFS[diff]}`
             : "";
-    switchView(next, false);
+    if (data && next === "overview" && view === "overview") {
+        if (days !== previousDays) renderChart({ transition: true });
+        else if (previousChart !== JSON.stringify([difficulty, [...shown]]))
+            renderChart();
+    } else switchView(next, false, { animate: false });
     if (["top", "history"].includes(next)) {
         page = restoredPage;
         $("search").value = params.get("q") || "";
         const sort = params.get("sort");
         if (["vf", "score", "recent"].includes(sort)) $("sort").value = sort;
-        renderTable();
+        renderTable({ animate: false });
     }
+    restoreScroll(savedScroll);
 }
 
-function switchView(next, recordHistory = true) {
+function switchView(next, recordHistory = true, { animate = true } = {}) {
+    if (recordHistory) {
+        pendingScroll = null;
+        rememberScroll();
+    }
     view = next;
     page = 0;
     document.querySelectorAll(".tab").forEach((button) => {
@@ -1067,14 +1185,14 @@ function switchView(next, recordHistory = true) {
     $("leaderboard-view").hidden = view !== "leaderboard";
     $("search").value = "";
     $("sort").value = view === "top" ? "vf" : "recent";
-    if (view === "overview") renderChart();
-    else if (view === "leaderboard") renderLeaderboard();
-    else renderTable();
+    if (view === "overview") renderChart({ animate });
+    else if (view === "leaderboard") renderLeaderboard({ animate });
+    else renderTable({ animate });
+    if (!data && loading) prepareLoading();
     if (recordHistory) updateUrl();
 }
 
-function renderTable() {
-    if (!data) return;
+function renderTable({ animate = true } = {}) {
     const top = view === "top";
     setText("records-title", top ? "Top 50 charts" : "Play history");
     setText(
@@ -1082,6 +1200,11 @@ function renderTable() {
         top ? "Ranked by VF." : "All tracked plays, including crashes.",
     );
     setText("first-column", top ? "Rank" : "Played");
+    if (!data) return;
+    if (!animate) {
+        for (const id of ["records", "page-info", "result-count"])
+            motion.stop($(id));
+    }
     const query = $("search").value.trim().toLocaleLowerCase();
     const source = top
         ? topCharts(data.state).map((p, i) => ({ ...p, rank: i + 1 }))
@@ -1118,6 +1241,11 @@ function renderTable() {
     setText("page-info", `PAGE ${page + 1} / ${pages}`);
     $("previous").disabled = page === 0;
     $("next").disabled = page + 1 >= pages;
+    if (animate) {
+        motion.data($("records"), ".chart-row, tr:not(.chart-row)");
+        motion.data($("page-info"));
+        motion.data($("result-count"));
+    }
 }
 
 function closeMatches() {
@@ -1145,16 +1273,17 @@ function renderMatches() {
     $("song-query").removeAttribute("aria-activedescendant");
 }
 
-function selectChart(musicId, diff) {
+function selectChart(musicId, diff, { animate = true } = {}) {
     const song = songs.get(musicId);
     if (!song) return;
+    rememberScroll();
     selected = { music_id: musicId, diff_idx: diff };
     leaderboardPage = 0;
     $("song-query").value = `${song.title} ${DIFFS[diff]}`;
     closeMatches();
-    if (view !== "leaderboard") switchView("leaderboard");
+    if (view !== "leaderboard") switchView("leaderboard", true, { animate });
     else {
-        renderLeaderboard();
+        renderLeaderboard({ animate });
         updateUrl();
     }
 }
@@ -1199,8 +1328,16 @@ function judgementDetails(play) {
         .join("")}</dl>`;
 }
 
-function renderLeaderboard() {
+function renderLeaderboard({ animate = true } = {}) {
     if (!data) return;
+    if (!animate) {
+        for (const id of [
+            "selected-chart",
+            "leaderboard-records",
+            "leaderboard-page-info",
+        ])
+            motion.stop($(id));
+    }
     $("selected-chart").hidden = !selected;
     $("leaderboard-empty").hidden = !!selected;
     $("leaderboard-results").hidden = !selected;
@@ -1246,6 +1383,17 @@ function renderLeaderboard() {
     );
     $("leaderboard-previous").disabled = leaderboardPage === 0;
     $("leaderboard-next").disabled = leaderboardPage + 1 >= pages;
+    if (animate) {
+        motion.data(
+            $("selected-chart"),
+            ".cover-tile.large, .selected-song-info",
+        );
+        motion.data(
+            $("leaderboard-records"),
+            ".leaderboard-entry, .judgement-row:not([hidden])",
+        );
+        motion.data($("leaderboard-page-info"));
+    }
 }
 
 $("leaderboard-records").addEventListener("click", (event) => {
@@ -1255,7 +1403,13 @@ $("leaderboard-records").addEventListener("click", (event) => {
     const details = $(button.getAttribute("aria-controls"));
     details.hidden = !details.hidden;
     if (details.hidden) expandedJudgements.delete(row.dataset.judgementKey);
-    else expandedJudgements.add(row.dataset.judgementKey);
+    else {
+        expandedJudgements.add(row.dataset.judgementKey);
+        motion.data(
+            details,
+            ".judgement-counts > div, .judgements-unavailable",
+        );
+    }
     button.setAttribute("aria-expanded", String(!details.hidden));
     button.setAttribute(
         "aria-label",
@@ -1315,8 +1469,10 @@ document.addEventListener("click", (event) => {
     if (button)
         selectChart(Number(button.dataset.music), Number(button.dataset.diff));
     const diff = event.target.closest("[data-chart-diff]");
-    if (diff && selected)
-        selectChart(selected.music_id, Number(diff.dataset.chartDiff));
+    if (diff && selected && Number(diff.dataset.chartDiff) !== selected.diff_idx)
+        selectChart(selected.music_id, Number(diff.dataset.chartDiff), {
+            animate: false,
+        });
 });
 document.addEventListener(
     "error",
@@ -1341,6 +1497,10 @@ async function load() {
     if (loading) return;
     void loadEuroRate();
     loading = true;
+    document.body.dataset.loading = data ? "refresh" : "initial";
+    $("main").setAttribute("aria-busy", "true");
+    setText("load-status-label", data ? "Updating…" : "Loading records…");
+    if (!data) prepareLoading();
     try {
         const response = await fetch("/api/data", { cache: "no-store" });
         if (!response.ok) throw new Error("Unavailable");
@@ -1348,18 +1508,27 @@ async function load() {
         if (
             !Array.isArray(next.plays) ||
             !Array.isArray(next.observations) ||
-            !next.state
+            !next.state ||
+            !Array.isArray(next.state.charts)
         )
             throw new Error("Invalid data");
+        const fingerprint = JSON.stringify([
+            next.plays,
+            next.observations,
+            next.state,
+        ]);
+        const animate = !data || fingerprint !== dataFingerprint;
+        dataFingerprint = fingerprint;
         data = next;
         catalog = songCatalog(data);
         songs = new Map(catalog.map((song) => [song.music_id, song]));
         $("notice").hidden = true;
+        renderSummary({ animate });
+        renderChart({ animate });
+        if (view === "leaderboard") renderLeaderboard({ animate });
+        else if (view !== "overview") renderTable({ animate });
         document.body.dataset.ready = "true";
-        renderSummary();
-        renderChart();
-        if (view === "leaderboard") renderLeaderboard();
-        else if (view !== "overview") renderTable();
+        restoreScroll(pendingScroll);
     } catch {
         setText(
             "notice",
@@ -1371,9 +1540,21 @@ async function load() {
         if (!data) {
             setText("chart-summary", "Waiting for your archive.");
             setText("archive-dates", "No history loaded");
+            for (const id of ["recent-plays", "top-plays"])
+                $(id).innerHTML =
+                    '<div class="empty-list">No data available yet.</div>';
+            $("records").innerHTML =
+                '<tr><td colspan="6">No data available yet.</td></tr>';
+            $("leaderboard-records").innerHTML =
+                '<tr><td colspan="5">No data available yet.</td></tr>';
+            $("selected-chart").hidden = true;
+            setText("timing-summary", "Waiting for timing data.");
+            for (const id of ["chart", "timing-chart"]) $(id).replaceChildren();
         }
     } finally {
         loading = false;
+        delete document.body.dataset.loading;
+        $("main").setAttribute("aria-busy", "false");
     }
 }
 
@@ -1384,11 +1565,13 @@ document
     );
 document.querySelectorAll("[data-days]").forEach((button) =>
     button.addEventListener("click", () => {
-        days = Number(button.dataset.days);
+        const nextDays = Number(button.dataset.days);
+        if (days === nextDays) return;
+        days = nextDays;
         document
             .querySelectorAll("[data-days]")
             .forEach((b) => b.classList.toggle("selected", b === button));
-        renderChart();
+        renderChart({ transition: true });
         updateUrl();
     }),
 );
@@ -1409,20 +1592,23 @@ $("difficulty").addEventListener("change", () => {
 });
 $("search").addEventListener("input", () => {
     page = 0;
-    renderTable();
+    renderTable({ animate: false });
     updateUrl(true);
 });
 $("sort").addEventListener("change", () => {
+    rememberScroll();
     page = 0;
     renderTable();
     updateUrl();
 });
 $("previous").addEventListener("click", () => {
+    rememberScroll();
     page--;
     renderTable();
     updateUrl();
 });
 $("next").addEventListener("click", () => {
+    rememberScroll();
     page++;
     renderTable();
     updateUrl();
@@ -1449,13 +1635,21 @@ document.addEventListener("visibilitychange", () => {
 let resizeTimeout;
 window.addEventListener("resize", () => {
     clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(renderChart, 100);
+    resizeTimeout = setTimeout(() => renderChart({ animate: false }), 100);
 });
 setInterval(() => {
     if (!document.hidden) load();
 }, 60000);
 window.addEventListener("popstate", restoreUrl);
 window.addEventListener("hashchange", restoreUrl);
+window.addEventListener(
+    "scroll",
+    () => {
+        clearTimeout(scrollSaveTimer);
+        scrollSaveTimer = setTimeout(rememberScroll, 120);
+    },
+    { passive: true },
+);
 $("spending-popup").addEventListener("pointerenter", () =>
     clearTimeout(spendingHideTimer),
 );

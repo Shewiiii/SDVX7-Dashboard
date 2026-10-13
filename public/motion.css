@@ -1,0 +1,214 @@
+.reveal-pending {
+    opacity: 0;
+}
+.load-status {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    visibility: hidden;
+    color: var(--muted);
+    font: 11px var(--sans);
+}
+body[data-loading] .load-status {
+    visibility: visible;
+}
+.loading-dots {
+    display: flex;
+    gap: 4px;
+}
+.loading-dots i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--purple);
+}
+body[data-loading] .loading-dots i {
+    animation: loading-dot 1.2s ease-in-out infinite;
+}
+body[data-loading] .loading-dots i:nth-child(2) {
+    animation-delay: 0.15s;
+}
+body[data-loading] .loading-dots i:nth-child(3) {
+    animation-delay: 0.3s;
+}
+@keyframes loading-dot {
+    0%,
+    70%,
+    100% {
+        opacity: 0.25;
+        transform: translateY(0);
+    }
+    35% {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
+}
+.skeleton-shape,
+body[data-loading="initial"] .metric-value::after,
+body[data-loading="initial"] .metric-detail::after,
+body[data-loading="initial"] #session-meta::after {
+    background: linear-gradient(
+        100deg,
+        #aaa8bd10 40%,
+        #cba6f726 50%,
+        #aaa8bd10 60%
+    );
+    background-size: 300% 100%;
+    background-repeat: no-repeat;
+    background-position: 100% 0;
+    border-radius: 6px;
+}
+body[data-loading="initial"] .pagination > span {
+    position: relative;
+    min-width: 100px;
+    color: transparent;
+}
+body[data-loading="initial"] .pagination > span::after {
+    content: "";
+    position: absolute;
+    inset: 3px 0;
+    border-radius: 5px;
+    background: #aaa8bd15;
+    animation: loading-dot 1.2s ease-in-out infinite;
+}
+body[data-loading="initial"] .skeleton-shape,
+body[data-loading="initial"] .metric-value::after,
+body[data-loading="initial"] .metric-detail::after,
+body[data-loading="initial"] #session-meta::after {
+    animation: loading-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes loading-shimmer {
+    from {
+        background-position: 100% 0;
+    }
+    to {
+        background-position: 0% 0;
+    }
+}
+body[data-loading="initial"] .metric-value,
+body[data-loading="initial"] .metric-detail,
+body[data-loading="initial"] #session-meta {
+    position: relative;
+    color: transparent;
+}
+body[data-loading="initial"] .metric-value > * {
+    visibility: hidden;
+}
+body[data-loading="initial"] .metric-value::after {
+    content: "";
+    position: absolute;
+    width: min(65%, 108px);
+    height: 15px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+body[data-loading="initial"] .metric-detail::after {
+    content: "";
+    position: absolute;
+    width: min(75%, 132px);
+    height: 7px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+body[data-loading="initial"] #session-meta::after {
+    content: "";
+    position: absolute;
+    left: 25px;
+    top: 5px;
+    width: min(65%, 215px);
+    height: 7px;
+}
+body[data-loading="initial"] .panel-foot {
+    visibility: hidden;
+}
+.loading-entry {
+    pointer-events: none;
+}
+.loading-entry .skeleton-shape {
+    display: block;
+}
+.skeleton-position {
+    width: 24px;
+    height: 7px;
+}
+.skeleton-cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 7px;
+}
+.skeleton-title {
+    width: min(80%, 165px);
+    height: 10px;
+}
+.skeleton-heading {
+    width: min(90%, 330px);
+    height: 24px;
+    margin-bottom: 16px;
+}
+.selected-song-info > .skeleton-title {
+    margin-top: 20px;
+}
+.skeleton-detail {
+    width: min(55%, 105px);
+    height: 7px;
+    margin-top: 10px;
+}
+.skeleton-value {
+    width: 46px;
+    height: 11px;
+}
+.skeleton-score {
+    width: 54px;
+    height: 7px;
+    margin-top: 10px;
+}
+.record-loading-row td {
+    padding: 0;
+}
+.record-loading-row .loading-entry {
+    padding: 15px 27px;
+}
+.timing-bar {
+    transform-box: view-box;
+    transform-origin: 0 0;
+}
+@media (max-width: 700px) {
+    body[data-loading="initial"] #session-meta::after {
+        left: 18px;
+    }
+    .load-status-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+    .skeleton-cover {
+        width: 38px;
+        height: 38px;
+    }
+    .record-loading-row .loading-entry {
+        padding: 10px 0;
+    }
+    .skeleton-value {
+        width: 38px;
+    }
+    .skeleton-score {
+        width: 44px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .reveal-pending {
+        opacity: 1;
+    }
+    body[data-loading] .loading-dots i,
+    body[data-loading="initial"] .skeleton-shape,
+    body[data-loading="initial"] .metric-value::after,
+    body[data-loading="initial"] .metric-detail::after,
+    body[data-loading="initial"] #session-meta::after,
+    body[data-loading="initial"] .pagination > span::after {
+        animation: none;
+    }
+}

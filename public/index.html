@@ -12,9 +12,10 @@
         <link rel="icon" type="image/webp" href="/assets/rasis.webp" />
         <link rel="stylesheet" href="/style.css" />
         <link rel="stylesheet" href="/dashboard.css" />
+        <link rel="stylesheet" href="/motion.css" />
         <script type="module" src="/app.js"></script>
     </head>
-    <body>
+    <body data-loading="initial">
         <a class="skip-link" href="#main">Skip to content</a>
         <div class="ambient" aria-hidden="true"></div>
         <div class="shell">
@@ -33,8 +34,16 @@
                     />
                     <span>Rasis Tracker</span>
                 </a>
+                <div class="load-status" role="status" aria-live="polite">
+                    <span class="loading-dots" aria-hidden="true"
+                        ><i></i><i></i><i></i
+                    ></span>
+                    <span class="load-status-label" id="load-status-label"
+                        >Loading records…</span
+                    >
+                </div>
             </header>
-            <main id="main">
+            <main id="main" aria-busy="true">
                 <section class="hero">
                     <div>
                         <div class="profile-heading">
@@ -213,8 +222,7 @@
                             </div>
                         </div>
                         <div class="chart-summary">
-                            <span id="chart-summary"
-                                >Loading your performance history…</span
+                            <span id="chart-summary">Loading...</span
                             ><span class="chart-hint"
                                 >Hover to inspect · Click a legend to
                                 toggle</span
@@ -246,9 +254,7 @@
                                 </div>
                             </div>
                             <div class="chart-summary">
-                                <span id="timing-summary"
-                                    >Loading timing history…</span
-                                >
+                                <span id="timing-summary">Loading...</span>
                             </div>
                         </section>
                     </article>
@@ -274,7 +280,7 @@
                                 id="top-plays"
                                 class="play-list top-list"
                             ></div>
-                            <div class="panel-foot" id="top-foot">—</div>
+                            <div class="panel-foot" id="top-foot"></div>
                         </article>
                     </div>
                 </section>

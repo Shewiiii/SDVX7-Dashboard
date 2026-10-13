@@ -12,6 +12,20 @@ export const byTime = (a, b) =>
     Date.parse(a.received_at || a.timestamp) -
     Date.parse(b.received_at || b.timestamp);
 export const vf = (value) => (Number.isFinite(value) ? value.toFixed(3) : "—");
+export function timingText(ms) {
+    if (!Number.isFinite(ms)) return "—";
+    const magnitude = Math.abs(ms);
+    let rounded = magnitude.toFixed(1);
+    // Python rounds exact decimal ties to even; JavaScript toFixed rounds up.
+    // At one decimal place, the binary-exact ties are odd quarter milliseconds.
+    if (Number.isInteger(magnitude * 4) && (magnitude * 4) % 2 === 1) {
+        const lower = Math.floor(magnitude * 10);
+        rounded = ((lower + (lower % 2)) / 10).toFixed(1);
+    }
+    const sign = ms < 0 || Object.is(ms, -0) ? "-" : "+";
+    const emoji = ms > 0 ? "🐇" : ms < 0 ? "🐢" : "🐈";
+    return `${sign}${rounded} ms ${emoji}`;
+}
 export const average = (values) =>
     values.length ? values.reduce((s, v) => s + v, 0) / values.length : null;
 

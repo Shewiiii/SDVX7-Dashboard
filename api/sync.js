@@ -78,7 +78,9 @@ export default async function handler(req, res) {
           'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb)),
         synced_at = now()`);
         await sql.transaction(queries);
-        return res.status(200).json({ ok: true, accepted: rows.length });
+        return res
+            .status(200)
+            .json({ ok: true, accepted: rows.length, play_schema: 2 });
     } catch {
         return res
             .status(503)

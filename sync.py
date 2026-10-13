@@ -454,6 +454,19 @@ def play_record(record, catalog):
                 ) / total
         except (ValueError, TypeError):
             pass
+    judgement_keys = (
+        "s_critical",
+        "critical",
+        "near",
+        "error",
+        "early_near",
+        "late_near",
+    )
+    judgments = {
+        key: value
+        for key in judgement_keys
+        if type(value := counts.get(key)) is int and 0 <= value <= 10000000
+    }
     return {
         "music_id": mid,
         "diff_idx": diff,
@@ -464,6 +477,7 @@ def play_record(record, catalog):
         **metadata,
         "level": float(level) if level else None,
         "timing": timing,
+        "judgments": judgments or None,
     }
 
 
@@ -643,6 +657,10 @@ def upload(url, token, payload, bypass=None):
             result = json.load(response)
             if result.get("ok") is not True:
                 raise ValueError("Upload was not acknowledged")
+            if payload.get("plays") and result.get("play_schema", 0) < 2:
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing judgements"
+                )
     except urllib.error.HTTPError as error:
         # Do not expose secrets, request headers, response contents, or connection URLs.
         raise RuntimeError(f"Upload returned HTTP {error.code}") from None
@@ -660,6 +678,9 @@ def sync_once(config, tracker, catalog, reset=False):
     endpoint_id = hashlib.sha256(config["url"].encode()).hexdigest()
     if saved.get("endpoint") != endpoint_id:
         saved = {}
+    # Replay old captures once to enrich existing plays without changing their IDs.
+    if saved.get("play_schema") != 2:
+        saved.pop("plays", None)
     catalog.refresh()
     if hasattr(catalog, "prepare_covers"):
         catalog.prepare_covers()
@@ -723,7 +744,11 @@ def sync_once(config, tracker, catalog, reset=False):
             upload(config["url"], config["token"], payload, config.get("bypass"))
             uploaded += len(plays) + len(observations)
         saved.update(
-            endpoint=endpoint_id, plays=pc, observations=oc, snapshot=current_hash
+            endpoint=endpoint_id,
+            plays=pc,
+            observations=oc,
+            snapshot=current_hash,
+            play_schema=2,
         )
         write_json(state_path, saved)
         if len(plays) < 150 and len(observations) < 150:

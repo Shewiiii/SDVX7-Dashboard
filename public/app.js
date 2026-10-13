@@ -16,6 +16,7 @@ import {
     grade,
     volforceClass,
     playtimeText,
+    timingText,
 } from "./metrics.js";
 
 const $ = (id) => document.getElementById(id);
@@ -901,6 +902,46 @@ function selectChart(musicId, diff) {
     }
 }
 
+const expandedJudgements = new Set();
+const judgementKey = (play) =>
+    JSON.stringify([
+        play.received_at,
+        play.music_id,
+        play.diff_idx,
+        play.score,
+        play.clear_type,
+    ]);
+
+function judgementDetails(play) {
+    const fields = [
+        ["s_critical", "S-CRITICAL"],
+        ["critical", "CRITICAL"],
+        ["near", "NEAR"],
+        ["error", "ERROR"],
+        ["timing", "TIMING"],
+    ];
+    const count = (key) =>
+        Number.isSafeInteger(play.judgments?.[key])
+            ? number(play.judgments[key])
+            : "—";
+    if (
+        ![...fields.map(([key]) => key), "early_near", "late_near"].some(
+            (key) => Number.isSafeInteger(play.judgments?.[key]),
+        ) &&
+        !Number.isFinite(play.timing)
+    )
+        return '<p class="judgements-unavailable">Judgements weren’t recorded for this play.</p>';
+    return `<dl class="judgement-counts">${fields
+        .map(([key, label]) =>
+            key === "timing"
+                ? `<div class="judgement-timing"><dt>${label}</dt><dd title="Positive = early; negative = late">${timingText(play.timing)}</dd></div>`
+                : key === "near"
+                  ? `<div><dt>${label}</dt><dd title="Early · Late" aria-label="Early Near ${count("early_near")}, Late Near ${count("late_near")}">${count("early_near")} · ${count("late_near")}</dd></div>`
+                  : `<div><dt>${label}</dt><dd>${count(key)}</dd></div>`,
+        )
+        .join("")}</dl>`;
+}
+
 function renderLeaderboard() {
     if (!data) return;
     $("selected-chart").hidden = !selected;
@@ -935,10 +976,11 @@ function renderLeaderboard() {
     const chunk = plays.slice(leaderboardPage * 10, (leaderboardPage + 1) * 10);
     $("leaderboard-records").innerHTML = chunk.length
         ? chunk
-              .map(
-                  (p, index) =>
-                      `<tr data-play-vf="${p.play_vf}"><td class="row-index">${leaderboardPage * 10 + index + 1}</td><td class="score-cell"><div class="score-with-grade">${gradeMarkup(p.score)}<span>${number(p.score)}</span></div></td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr>`,
-              )
+              .map((p, index) => {
+                  const key = judgementKey(p);
+                  const expanded = expandedJudgements.has(key);
+                  return `<tr class="leaderboard-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index">${leaderboardPage * 10 + index + 1}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+              })
               .join("")
         : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';
     setText(
@@ -948,6 +990,21 @@ function renderLeaderboard() {
     $("leaderboard-previous").disabled = leaderboardPage === 0;
     $("leaderboard-next").disabled = leaderboardPage + 1 >= pages;
 }
+
+$("leaderboard-records").addEventListener("click", (event) => {
+    const row = event.target.closest(".leaderboard-entry");
+    if (!row) return;
+    const button = row.querySelector(".judgement-toggle");
+    const details = $(button.getAttribute("aria-controls"));
+    details.hidden = !details.hidden;
+    if (details.hidden) expandedJudgements.delete(row.dataset.judgementKey);
+    else expandedJudgements.add(row.dataset.judgementKey);
+    button.setAttribute("aria-expanded", String(!details.hidden));
+    button.setAttribute(
+        "aria-label",
+        `${details.hidden ? "Show" : "Hide"} judgements for score ${row.querySelector(".score-with-grade span").textContent}`,
+    );
+});
 
 $("song-query").addEventListener("input", renderMatches);
 $("song-query").addEventListener("focus", renderMatches);

@@ -11,6 +11,7 @@ import {
     volforceClass,
     grade,
     playtimeText,
+    timingText,
 } from "../public/metrics.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -359,6 +360,69 @@ try {
         const img = document.querySelector("#selected-chart img");
         return img?.complete && img.naturalWidth > 0;
     });
+    const judgementButton = page.locator(".judgement-toggle").first();
+    await judgementButton.click();
+    assert.equal(await judgementButton.getAttribute("aria-expanded"), "true");
+    const judgementDetails = page.locator("#judgements-0");
+    assert.ok(await judgementDetails.isVisible());
+    const fields = [
+        "s_critical",
+        "critical",
+        "near",
+        "error",
+        "early_near",
+        "late_near",
+    ];
+    if (
+        fields.some((key) =>
+            Number.isSafeInteger(expected[0].judgments?.[key]),
+        ) ||
+        Number.isFinite(expected[0].timing)
+    ) {
+        assert.deepEqual(
+            (await judgementDetails.locator("dd").allTextContents())
+                .slice(0, 4)
+                .map((text, index) => {
+                    const value = (part) =>
+                        part.trim() === "—"
+                            ? null
+                            : Number(part.replace(/\D/g, ""));
+                    return index === 2
+                        ? text.split("·").map(value)
+                        : value(text);
+                }),
+            [
+                expected[0].judgments?.s_critical ?? null,
+                expected[0].judgments?.critical ?? null,
+                [
+                    expected[0].judgments?.early_near ?? null,
+                    expected[0].judgments?.late_near ?? null,
+                ],
+                expected[0].judgments?.error ?? null,
+            ],
+        );
+    } else {
+        assert.match(await judgementDetails.innerText(), /weren’t recorded/);
+    }
+    if (Number.isFinite(expected[0].timing)) {
+        assert.equal(
+            await judgementDetails.locator(".judgement-timing dd").innerText(),
+            timingText(expected[0].timing),
+        );
+    }
+    const beforeRefresh = await judgementButton.elementHandle();
+    await page.evaluate(() =>
+        document.dispatchEvent(new Event("visibilitychange")),
+    );
+    await page.waitForFunction(
+        (oldButton) => !oldButton.isConnected,
+        beforeRefresh,
+    );
+    assert.equal(await judgementButton.getAttribute("aria-expanded"), "true");
+    assert.ok(await judgementDetails.isVisible());
+    await judgementButton.press("Enter");
+    assert.equal(await judgementButton.getAttribute("aria-expanded"), "false");
+    assert.equal(await judgementDetails.isVisible(), false);
     await page.screenshot({
         path: path.join(root, ".local/leaderboard-desktop.png"),
         fullPage: true,
@@ -429,6 +493,12 @@ try {
                 await page.locator('body[data-ready="true"]').waitFor();
             }
             await page.locator(`[data-view="${view}"]`).click();
+            if (view === "leaderboard") {
+                const toggle = page.locator(".judgement-toggle").first();
+                if ((await toggle.getAttribute("aria-expanded")) !== "true")
+                    await toggle.click();
+                assert.ok(await page.locator("#judgements-0").isVisible());
+            }
             const panel =
                 view === "leaderboard" ? "#leaderboard-view" : "#records-view";
             const sidewaysScroll = await page

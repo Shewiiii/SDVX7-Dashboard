@@ -220,6 +220,37 @@
                                 toggle</span
                             >
                         </div>
+                        <section
+                            class="timing-section"
+                            aria-labelledby="timing-title"
+                        >
+                            <div class="timing-heading">
+                                <h2 id="timing-title">Timing histogram</h2>
+                                <p>
+                                    Accuracy of BT/FX notes in S-CRITICAL plays
+                                </p>
+                            </div>
+                            <div class="timing-chart-wrap">
+                                <svg
+                                    id="timing-chart"
+                                    viewBox="0 0 1100 260"
+                                    role="img"
+                                    aria-label="Timing histogram: early on the left, zero milliseconds in the middle, late on the right"
+                                ></svg>
+                                <div
+                                    id="timing-empty"
+                                    class="timing-empty"
+                                    hidden
+                                >
+                                    No recorded timing in this range.
+                                </div>
+                            </div>
+                            <div class="chart-summary">
+                                <span id="timing-summary"
+                                    >Loading timing history…</span
+                                >
+                            </div>
+                        </section>
                     </article>
                     <div class="lower-grid">
                         <article class="panel recent-panel">

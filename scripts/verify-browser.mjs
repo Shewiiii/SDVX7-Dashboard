@@ -12,6 +12,7 @@ import {
     grade,
     playtimeText,
     timingText,
+    timingHistogram,
 } from "../public/metrics.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -221,6 +222,26 @@ try {
             axes.find((label) => label.text === "CHART VF").x,
     );
     assert.equal(await page.locator("#chart .grid").count(), 13);
+    const histogram = timingHistogram(actual.plays);
+    assert.equal(await page.locator("#timing-chart .timing-bar").count(), 7);
+    assert.deepEqual(
+        await page
+            .locator("#timing-chart .timing-bar title")
+            .evaluateAll((titles) =>
+                titles.map((title) =>
+                    Number(title.textContent.split("·")[1].replace(/\D/g, "")),
+                ),
+            ),
+        histogram.bins,
+    );
+    assert.match(
+        await page.locator("#timing-summary").innerText(),
+        /notes · Average/,
+    );
+    assert.equal(
+        await page.locator(".performance-panel #timing-chart").count(),
+        1,
+    );
     assert.equal(await page.locator(".hero-subtitle").innerText(), "ᓚ₍ ^. .^₎");
     assert.equal(await page.locator("#connection").count(), 0);
     assert.ok(
@@ -477,6 +498,14 @@ try {
     await page.locator("#song-query").press("Escape");
     for (const width of [390, 320]) {
         await page.setViewportSize({ width, height: 844 });
+        await page.locator('[data-view="overview"]').click();
+        const histogramBounds = await page
+            .locator("#timing-chart")
+            .boundingBox();
+        assert.ok(
+            histogramBounds.x >= 0 &&
+                histogramBounds.x + histogramBounds.width <= width,
+        );
         const phoneBackground = await background();
         assert.equal(phoneBackground.position, "82% 50%");
         assert.equal(phoneBackground.height, 894);

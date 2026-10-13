@@ -418,6 +418,7 @@ def play_record(record, catalog):
     if not math.isfinite(vf) or not 0 <= vf <= 2:
         raise ValueError("Invalid VolForce")
     timing = None
+    timing_histogram = None
     histogram = record.get("timing_histogram")
     counts = record.get("judgments") or {}
     if (
@@ -448,6 +449,9 @@ def play_record(record, catalog):
                 center = just + critical - sum(h[i] for i in (1, 2, 4, 5))
                 if 0 <= center <= h[3]:
                     total = total - h[3] + center
+                    if total > 0:
+                        timing_histogram = h.copy()
+                        timing_histogram[3] = center
             if total > 0:
                 timing = (
                     87.5 * (h[0] - h[6]) + 37.5 * (h[1] - h[5]) + 25 * (h[2] - h[4])
@@ -477,6 +481,8 @@ def play_record(record, catalog):
         **metadata,
         "level": float(level) if level else None,
         "timing": timing,
+        "timing_histogram": timing_histogram,
+        "timing_eligible": timing_histogram is not None,
         "judgments": judgments or None,
     }
 
@@ -657,9 +663,9 @@ def upload(url, token, payload, bypass=None):
             result = json.load(response)
             if result.get("ok") is not True:
                 raise ValueError("Upload was not acknowledged")
-            if payload.get("plays") and result.get("play_schema", 0) < 2:
+            if payload.get("plays") and result.get("play_schema", 0) < 4:
                 raise RuntimeError(
-                    "Deploy the updated dashboard API before syncing judgements"
+                    "Deploy the updated dashboard API before syncing timing histograms"
                 )
     except urllib.error.HTTPError as error:
         # Do not expose secrets, request headers, response contents, or connection URLs.
@@ -679,7 +685,7 @@ def sync_once(config, tracker, catalog, reset=False):
     if saved.get("endpoint") != endpoint_id:
         saved = {}
     # Replay old captures once to enrich existing plays without changing their IDs.
-    if saved.get("play_schema") != 2:
+    if saved.get("play_schema") != 4:
         saved.pop("plays", None)
     catalog.refresh()
     if hasattr(catalog, "prepare_covers"):
@@ -748,7 +754,7 @@ def sync_once(config, tracker, catalog, reset=False):
             plays=pc,
             observations=oc,
             snapshot=current_hash,
-            play_schema=2,
+            play_schema=4,
         )
         write_json(state_path, saved)
         if len(plays) < 150 and len(observations) < 150:

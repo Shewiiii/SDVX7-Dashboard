@@ -98,6 +98,44 @@ export function performance(
         .sort(byTime);
 }
 
+export const TIMING_OFFSETS = [87.5, 37.5, 25, 0, -25, -37.5, -87.5];
+export function timingHistogram(
+    plays,
+    { days = 0, difficulty = 1, now = Date.now() } = {},
+) {
+    const bins = Array(7).fill(0);
+    const cutoff = days ? now - days * 86400000 : -Infinity;
+    let recorded = 0;
+    for (const play of plays) {
+        const histogram = play.timing_histogram;
+        if (
+            play.timing_eligible !== true ||
+            play.diff_idx < difficulty ||
+            !(Date.parse(play.received_at) >= cutoff) ||
+            !Array.isArray(histogram) ||
+            histogram.length !== 7 ||
+            !histogram.every(
+                (count) => Number.isSafeInteger(count) && count >= 0,
+            ) ||
+            !histogram.some((count) => count > 0)
+        )
+            continue;
+        histogram.forEach((count, index) => (bins[index] += count));
+        recorded++;
+    }
+    const hits = bins.reduce((sum, count) => sum + count, 0);
+    const weighted = bins.reduce(
+        (sum, count, index) => sum + count * TIMING_OFFSETS[index],
+        0,
+    );
+    return {
+        bins,
+        plays: recorded,
+        hits,
+        average: hits ? weighted / hits : null,
+    };
+}
+
 export function rolling(plays, window) {
     let sum = 0;
     return plays.map((p, index) => {

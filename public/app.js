@@ -17,6 +17,8 @@ import {
     volforceClass,
     playtimeText,
     timingText,
+    timingHistogram,
+    TIMING_OFFSETS,
 } from "./metrics.js";
 
 const $ = (id) => document.getElementById(id);
@@ -386,9 +388,138 @@ function renderSpark() {
     $("spark").replaceChildren(svg);
 }
 
+function renderTimingHistogram() {
+    const stats = timingHistogram(data.plays, { days, difficulty });
+    const svg = $("timing-chart");
+    svg.replaceChildren();
+    svg.toggleAttribute("hidden", !stats.hits);
+    $("timing-empty").hidden = !!stats.hits;
+    if (!stats.hits) {
+        setText("timing-summary", "No recorded timing in this range.");
+        return;
+    }
+    const mobile = window.matchMedia("(max-width: 700px)").matches;
+    const width = mobile ? 400 : 1100,
+        height = mobile ? 250 : 260;
+    const left = mobile ? 48 : 69,
+        right = width - (mobile ? 22 : 72);
+    const top = 38,
+        bottom = height - 55;
+    const slot = (right - left) / 7;
+    const x = (index) => left + (index + 0.5) * slot;
+    const peak = Math.max(...stats.bins);
+    const power = 10 ** Math.floor(Math.log10(Math.max(peak / 4, 1)));
+    const step = Math.ceil(peak / (4 * power)) * power;
+    const maximum = step * 4;
+    const y = (count) => bottom - (count / maximum) * (bottom - top);
+    const compact = new Intl.NumberFormat(undefined, {
+        notation: "compact",
+        maximumFractionDigits: 1,
+    });
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    for (let tick = 0; tick <= 4; tick++) {
+        const count = tick * step;
+        svg.append(
+            svgElement("line", {
+                x1: left,
+                x2: right,
+                y1: y(count),
+                y2: y(count),
+                class: "grid",
+            }),
+        );
+        svg.append(
+            svgElement(
+                "text",
+                { x: left - 10, y: y(count) + 3, "text-anchor": "end" },
+                compact.format(count),
+            ),
+        );
+    }
+    svg.append(
+        svgElement("line", {
+            x1: x(3),
+            x2: x(3),
+            y1: top,
+            y2: bottom,
+            class: "timing-zero",
+        }),
+    );
+    for (const [position, label, anchor] of [
+        [left, "EARLY", "start"],
+        [x(3), "0 MS", "middle"],
+        [right, "LATE", "end"],
+    ])
+        svg.append(
+            svgElement(
+                "text",
+                {
+                    x: position,
+                    y: 17,
+                    "text-anchor": anchor,
+                    class: "axis-caption",
+                },
+                label,
+            ),
+        );
+    stats.bins.forEach((count, index) => {
+        const offset = TIMING_OFFSETS[index];
+        const caption = offset > 0 ? `+${offset}` : String(offset);
+        const bar = svgElement("rect", {
+            x: x(index) - slot * 0.34,
+            y: y(count),
+            width: slot * 0.68,
+            height: bottom - y(count),
+            rx: 3,
+            class: `timing-bar ${index < 3 ? "early" : index > 3 ? "late" : "center"}`,
+            tabindex: count ? 0 : -1,
+            role: "img",
+            "aria-label": `${index < 3 ? "Early" : index > 3 ? "Late" : "Center"}, approximately ${caption} ms: ${number(count)} hits`,
+        });
+        bar.append(
+            svgElement(
+                "title",
+                {},
+                `${caption} ms (approx.) · ${number(count)} hits · ${((count / stats.hits) * 100).toFixed(1)}%`,
+            ),
+        );
+        svg.append(bar);
+        svg.append(
+            svgElement(
+                "text",
+                {
+                    x: x(index),
+                    y: y(count) - 6,
+                    "text-anchor": "middle",
+                    class: "timing-count",
+                },
+                compact.format(count),
+            ),
+        );
+        if (!mobile || ![1, 5].includes(index))
+            svg.append(
+                svgElement(
+                    "text",
+                    { x: x(index), y: bottom + 20, "text-anchor": "middle" },
+                    caption,
+                ),
+            );
+    });
+    svg.append(
+        svgElement(
+            "text",
+            { x: (left + right) / 2, y: height - 9, "text-anchor": "middle" },
+            "Approximate offset (ms)",
+        ),
+    );
+    $("timing-summary").innerHTML =
+        `<strong>${number(stats.plays)}</strong> plays · <strong>${number(stats.hits)}</strong> notes · Average <strong>${timingText(stats.average)}</strong>`;
+}
+
 function renderChart() {
     if (!data) return;
     const plays = performance(data.plays, { days, difficulty });
+    renderTimingHistogram();
     const svg = $("chart");
     svg.replaceChildren();
     hover = null;

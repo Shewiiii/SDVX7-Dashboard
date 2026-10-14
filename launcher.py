@@ -87,7 +87,7 @@ def main():
                     "Dashboard is not connected. Run Setup-dashboard.bat to enable cloud sync."
                 )
             elif sync_running():
-                print("Dashboard sync is already running; using the existing worker.")
+                print("Dashboard sync is already running. Using the existing worker.")
             while tracker_process.poll() is None:
                 if (
                     connected
@@ -103,7 +103,7 @@ def main():
                             )
                     except OSError:
                         print(
-                            "Dashboard sync could not start; retrying in 30 seconds. The tracker continues."
+                            "Dashboard sync could not start. Retrying in 30 seconds. The tracker continues."
                         )
                     retry_at = time.monotonic() + 30
                 time.sleep(0.5)

@@ -136,7 +136,7 @@ def configure_connection(config):
         config["token"] = secret
     if len(config.get("token", "")) < 32:
         raise ValueError(
-            "Paste the website's SYNC_TOKEN; it must have at least 32 characters."
+            "Paste the website's SYNC_TOKEN. It must have at least 32 characters."
         )
     bypass = getpass.getpass("Deployment Protection bypass secret (optional): ").strip()
     if bypass:
@@ -200,7 +200,7 @@ def deploy(config, tracker, node, npm, update=False):
         stages["database_connected"] = True
         stages_path.parent.mkdir(parents=True, exist_ok=True)
         stages_path.write_text(json.dumps(stages, indent=2), encoding="utf-8")
-    # Keep the saved token, including on reruns; never rotate an existing connection.
+    # Keep the saved token, including on reruns. Never rotate an existing connection.
     config["token"] = config.get("token") or secrets.token_urlsafe(48)
     save_config(config)
     run([node, "scripts/connect.mjs"])

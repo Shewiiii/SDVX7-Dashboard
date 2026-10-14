@@ -382,7 +382,7 @@ def play_record(record, catalog):
             // 1000000000000
         ) / 1000
     else:
-        raise ValueError("No level for legacy play; cannot use stale best-play VF")
+        raise ValueError("No level for legacy play. Cannot use stale best-play VF")
     if not math.isfinite(vf) or not 0 <= vf <= 2:
         raise ValueError("Invalid VolForce")
     timing = None
@@ -618,7 +618,7 @@ def read_checkpoint(path):
     except (ValueError, UnicodeError):
         pass
     # Checkpoints are disposable: replaying uses the same cloud record IDs.
-    print(f"Invalid {path.name}; rebuilding sync checkpoint from local history.")
+    print(f"Invalid {path.name}. Rebuilding sync checkpoint from local history.")
     return {}
 
 

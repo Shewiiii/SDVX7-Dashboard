@@ -51,7 +51,7 @@ def tracker_python(tracker):
 
 
 def tracker_module(tracker, name):
-    # Reuse installed helpers; never import the bot or start another proxy.
+    # Reuse installed helpers. Never import the bot or start another proxy.
     location = str(tracker)
     if location not in sys.path:
         sys.path.insert(0, location)

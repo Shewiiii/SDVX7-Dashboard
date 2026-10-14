@@ -12,6 +12,7 @@ import {
     byTime,
     songCatalog,
     searchCharts,
+    filterCharts,
     chartPlays,
     grade,
     volforceClass,
@@ -1228,15 +1229,11 @@ function renderTable({ animate = true } = {}) {
         for (const id of ["records", "page-info", "result-count"])
             motion.stop($(id));
     }
-    const query = $("search").value.trim().toLocaleLowerCase();
+    const query = $("search").value;
     const source = top
         ? topCharts(data.state).map((p, i) => ({ ...p, rank: i + 1 }))
         : data.plays;
-    let records = source.filter((p) =>
-        `${chartTitle(p)} ${p.artist || ""} ${DIFFS[p.diff_idx]}`
-            .toLocaleLowerCase()
-            .includes(query),
-    );
+    let records = filterCharts(source, catalog, query);
     const sort = $("sort").value;
     const playCounts = new Map();
     const chartKey = (p) => `${p.music_id}:${p.diff_idx}`;

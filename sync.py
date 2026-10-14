@@ -38,6 +38,7 @@ def normalize(text):
 
 
 def search_forms(text):
+    text = unicodedata.normalize("NFKC", text)
     forms = {normalize(text)}
     if _kana:
         for scheme in ("hepburn", "kunrei", "passport"):

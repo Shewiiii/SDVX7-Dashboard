@@ -257,7 +257,7 @@ export function songCatalog(data) {
     return [...songs.values()];
 }
 
-export function searchCharts(catalog, query, limit = 25) {
+function parseSearch(query) {
     const words = query.trim().split(/\s+/).filter(Boolean);
     const last = words.at(-1)?.toUpperCase();
     let difficulty = DIFFS.findIndex((name) => name === last);
@@ -265,49 +265,74 @@ export function searchCharts(catalog, query, limit = 25) {
     if (difficulty >= 0) words.pop();
     const tokens = words.map(normalizeSearch).filter(Boolean),
         term = tokens.join("");
+    return { difficulty, tokens, term };
+}
+
+function songSearchRank(song, { tokens, term }) {
+    const groups = song.forms?.some((forms) => forms.length)
+        ? song.forms
+        : [
+              [normalizeSearch(song.title)],
+              [],
+              [normalizeSearch(song.artist)],
+              [],
+          ];
+    let rank = tokens.length ? null : [0, 0];
+    for (
+        let priority = 0;
+        priority < groups.length && tokens.length;
+        priority++
+    ) {
+        const matching = groups[priority].filter((form) =>
+            tokens.every((token) => form.includes(token)),
+        );
+        if (matching.length) {
+            rank = [
+                priority,
+                Math.min(
+                    ...matching.map((form) =>
+                        form === term ? 0 : form.startsWith(term) ? 1 : 2,
+                    ),
+                ),
+            ];
+            break;
+        }
+    }
+    if (
+        !rank &&
+        tokens.every((token) =>
+            groups.some((forms) => forms.some((form) => form.includes(token))),
+        )
+    )
+        rank = [groups.length, 0];
+    return rank;
+}
+
+export function filterCharts(charts, catalog, query) {
+    if (!query.trim()) return charts;
+    const search = parseSearch(query);
+    const songs = new Map(catalog.map((song) => [song.music_id, song]));
+    const ranks = new Map();
+    return charts.filter((chart) => {
+        if (search.difficulty >= 0 && chart.diff_idx !== search.difficulty)
+            return false;
+        if (!ranks.has(chart.music_id))
+            ranks.set(
+                chart.music_id,
+                songSearchRank(songs.get(chart.music_id) || chart, search),
+            );
+        return ranks.get(chart.music_id) !== null;
+    });
+}
+
+export function searchCharts(catalog, query, limit = 25) {
+    const search = parseSearch(query);
     const matches = [];
     for (const song of catalog) {
-        const groups = song.forms?.length
-            ? song.forms
-            : [
-                  [normalizeSearch(song.title)],
-                  [],
-                  [normalizeSearch(song.artist)],
-                  [],
-              ];
-        let rank = tokens.length ? null : [0, 0];
-        for (
-            let priority = 0;
-            priority < groups.length && tokens.length;
-            priority++
-        ) {
-            const matching = groups[priority].filter((form) =>
-                tokens.every((token) => form.includes(token)),
-            );
-            if (matching.length) {
-                rank = [
-                    priority,
-                    Math.min(
-                        ...matching.map((form) =>
-                            form === term ? 0 : form.startsWith(term) ? 1 : 2,
-                        ),
-                    ),
-                ];
-                break;
-            }
-        }
-        if (
-            !rank &&
-            tokens.every((token) =>
-                groups.some((forms) =>
-                    forms.some((form) => form.includes(token)),
-                ),
-            )
-        )
-            rank = [groups.length, 0];
+        const rank = songSearchRank(song, search);
         if (!rank) continue;
         for (const d of song.difficulties)
-            if (difficulty < 0 || d.diff_idx === difficulty)
+            if (search.difficulty < 0 || d.diff_idx === search.difficulty)
                 matches.push({ ...song, ...d, rank });
     }
     return matches

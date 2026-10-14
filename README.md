@@ -31,4 +31,4 @@ In addition to the requirements for the tracker, you also need a [Vercel account
 
 Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `start-tracker-with-dashboard.bat`.
 
-Connection settings and sync logs are in `.local/`. Keep this folder private; it contains the upload secret.
+Connection settings and sync logs are in `.local/`. Keep this folder private: it contains the upload secret.

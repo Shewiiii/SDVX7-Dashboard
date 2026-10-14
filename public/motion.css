@@ -1,6 +1,9 @@
 .reveal-pending {
     opacity: 0;
 }
+body[data-loading="initial"]:not([data-ready="true"]) .profile-heading {
+    opacity: 0;
+}
 .load-status {
     display: flex;
     align-items: center;

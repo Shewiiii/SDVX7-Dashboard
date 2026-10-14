@@ -396,7 +396,6 @@ function renderSummary({ animate = true } = {}) {
     renderSpark();
     if (animate) {
         motion.metrics(document.querySelector(".metrics"));
-        motion.data(document.querySelector(".profile-heading"));
         for (const id of [
             "archive-dates",
             "updated",
@@ -690,14 +689,18 @@ function renderTimingHistogram({ animate = true } = {}) {
                 compact.format(count),
             ),
         );
-        if (!mobile || ![1, 5].includes(index))
-            svg.append(
-                svgElement(
-                    "text",
-                    { x: x(index), y: bottom + 20, "text-anchor": "middle" },
-                    caption,
-                ),
-            );
+        svg.append(
+            svgElement(
+                "text",
+                {
+                    x: x(index),
+                    y: bottom + 20,
+                    "text-anchor": "middle",
+                    class: "timing-offset",
+                },
+                caption,
+            ),
+        );
     });
     svg.append(
         svgElement(
@@ -735,7 +738,8 @@ function renderChart({ animate = true, transition = false } = {}) {
             "chart-summary",
             "timing-summary",
         ])
-            motion.stop($(id));
+            // Keep the first reveal queued until this graph actually comes into view.
+            if (!motion.isPending($(id))) motion.stop($(id));
     }
     const plays = performance(data.plays, { days, difficulty });
     renderTimingHistogram({ animate });
@@ -1178,7 +1182,8 @@ function restoreUrl() {
         page = restoredPage;
         $("search").value = params.get("q") || "";
         const sort = params.get("sort");
-        if (["vf", "score", "recent"].includes(sort)) $("sort").value = sort;
+        if (["vf", "score", "recent", "plays"].includes(sort))
+            $("sort").value = sort;
         renderTable({ animate: false });
     }
     restoreScroll(savedScroll);
@@ -1233,12 +1238,25 @@ function renderTable({ animate = true } = {}) {
             .includes(query),
     );
     const sort = $("sort").value;
+    const playCounts = new Map();
+    const chartKey = (p) => `${p.music_id}:${p.diff_idx}`;
+    if (sort === "plays") {
+        for (const play of data.plays) {
+            const key = chartKey(play);
+            playCounts.set(key, (playCounts.get(key) || 0) + 1);
+        }
+    }
     records = [...records].sort(
         sort === "vf"
             ? (a, b) => (b.vf ?? b.play_vf) - (a.vf ?? a.play_vf)
             : sort === "score"
               ? (a, b) => (b.score ?? -1) - (a.score ?? -1)
-              : (a, b) => (top ? a.rank - b.rank : byTime(b, a)),
+              : sort === "plays"
+                ? (a, b) =>
+                      (playCounts.get(chartKey(b)) || 0) -
+                          (playCounts.get(chartKey(a)) || 0) ||
+                      (top ? a.rank - b.rank : byTime(b, a))
+                : (a, b) => (top ? a.rank - b.rank : byTime(b, a)),
     );
     const pageSize = 50;
     const pages = Math.max(1, Math.ceil(records.length / pageSize));
@@ -1550,6 +1568,8 @@ async function load() {
         renderChart({ animate });
         if (view === "leaderboard") renderLeaderboard({ animate });
         else if (view !== "overview") renderTable({ animate });
+        if (revealOnce("profile", animate))
+            motion.profile(document.querySelector(".profile-heading"));
         document.body.dataset.ready = "true";
         restoreScroll(pendingScroll);
     } catch {
@@ -1580,6 +1600,19 @@ async function load() {
         $("main").setAttribute("aria-busy", "false");
     }
 }
+
+document.querySelector(".brand").addEventListener("click", (event) => {
+    if (
+        event.button !== 0 ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.altKey
+    )
+        return;
+    event.preventDefault();
+    switchView("overview");
+});
 
 document
     .querySelectorAll("[data-view]")
@@ -1655,10 +1688,11 @@ $("export").addEventListener("click", () => {
 document.addEventListener("visibilitychange", () => {
     if (!document.hidden) load();
 });
-let resizeTimeout;
+let chartWidth = innerWidth;
 window.addEventListener("resize", () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => renderChart({ animate: false }), 100);
+    if (innerWidth === chartWidth) return;
+    chartWidth = innerWidth;
+    renderChart({ animate: false });
 });
 setInterval(() => {
     if (!document.hidden) load();

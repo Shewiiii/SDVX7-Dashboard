@@ -43,13 +43,32 @@ function clearTree(root) {
     }
 }
 
+function visible(root, minimum = 0) {
+    if (document.hidden) return false;
+    const bounds = root.getBoundingClientRect();
+    const top = window.visualViewport?.offsetTop || 0;
+    const bottom = top + (window.visualViewport?.height || innerHeight) - 16;
+    const height = Math.min(bounds.bottom, bottom) - Math.max(bounds.top, top);
+    return (
+        bounds.width > 0 &&
+        bounds.height > 0 &&
+        height > 0 &&
+        height >= Math.min(bounds.height * minimum, (bottom - top) * 0.5)
+    );
+}
+
 function start(root) {
-    const reveal = pending.get(root);
-    if (!reveal) return;
+    const next = pending.get(root);
+    if (next && !root.isConnected) {
+        pending.delete(root);
+        observer?.unobserve(root);
+        return;
+    }
+    if (!next || !visible(root, next.minimum)) return;
     pending.delete(root);
     observer?.unobserve(root);
     root.classList.remove("reveal-pending");
-    if (root.isConnected && !reducedMotion.matches) reveal();
+    if (root.isConnected && !reducedMotion.matches) next.reveal();
 }
 
 const observer =
@@ -59,29 +78,34 @@ const observer =
                   for (const entry of entries)
                       if (entry.isIntersecting) start(entry.target);
               },
-              { threshold: 0, rootMargin: "0px 0px -16px 0px" },
+              { threshold: [0, 0.5], rootMargin: "0px 0px -16px 0px" },
           )
         : null;
 
-function queue(root, reveal) {
+let visibilityFrame;
+function checkVisibility() {
+    cancelAnimationFrame(visibilityFrame);
+    visibilityFrame = requestAnimationFrame(() => {
+        for (const root of pending.keys()) start(root);
+    });
+}
+window.addEventListener("scroll", checkVisibility, { passive: true });
+window.addEventListener("resize", checkVisibility);
+window.visualViewport?.addEventListener("scroll", checkVisibility);
+window.visualViewport?.addEventListener("resize", checkVisibility);
+document.addEventListener("visibilitychange", checkVisibility);
+
+function queue(root, reveal, minimum = 0) {
     if (!root) return;
     cancel(root);
     pending.delete(root);
     observer?.unobserve(root);
     root.classList.remove("reveal-pending");
     if (reducedMotion.matches) return;
-    pending.set(root, reveal);
+    pending.set(root, { reveal, minimum });
     root.classList.add("reveal-pending");
-    const bounds = root.getBoundingClientRect();
-    if (
-        !observer ||
-        (bounds.width &&
-            bounds.height &&
-            bounds.top < innerHeight - 16 &&
-            bounds.bottom > 0)
-    )
-        start(root);
-    else observer.observe(root);
+    if (visible(root, minimum)) start(root);
+    else observer?.observe(root);
 }
 
 function fade(root, element, delay = 0) {
@@ -125,6 +149,9 @@ function draw(root, path, delay = 0, duration = 950) {
 }
 
 export const motion = {
+    isPending(root) {
+        return pending.has(root);
+    },
     stop(root) {
         if (root) clearTree(root);
     },
@@ -180,6 +207,15 @@ export const motion = {
             );
         });
     },
+    profile(root) {
+        queue(root, () => {
+            const elements = [".appeal-card", "#player-name", ".hero-subtitle"];
+            elements.forEach((selector, index) => {
+                const element = root.querySelector(selector);
+                if (element && !element.hidden) fade(root, element, index * 80);
+            });
+        });
+    },
     metrics(root) {
         queue(root, () => {
             root.querySelectorAll(".metric").forEach((metric, index) => {
@@ -198,65 +234,79 @@ export const motion = {
     },
     history(svg, animate = true) {
         if (!animate && !pending.has(svg)) return;
-        queue(svg, () => {
-            play(svg, svg, [{ opacity: 0 }, { opacity: 1 }], { duration: 400 });
-            const series = svg.querySelector(".history-series");
-            if (series)
-                play(
-                    svg,
-                    series,
-                    [
-                        { clipPath: "inset(0 100% 0 0)" },
-                        { clipPath: "inset(0 0% 0 0)" },
-                    ],
-                    {
-                        duration: 800, // Line tracing speed
-                        delay: 100,
-                        easing: graphEase,
-                    },
-                );
-        });
+        queue(
+            svg,
+            () => {
+                play(svg, svg, [{ opacity: 0 }, { opacity: 1 }], {
+                    duration: 400,
+                });
+                const series = svg.querySelector(".history-series");
+                if (series)
+                    play(
+                        svg,
+                        series,
+                        [
+                            { clipPath: "inset(0 100% 0 0)" },
+                            { clipPath: "inset(0 0% 0 0)" },
+                        ],
+                        {
+                            duration: 800, // Line tracing speed
+                            delay: 100,
+                            easing: graphEase,
+                        },
+                    );
+            },
+            0.5,
+        );
     },
     histogram(svg, animate = true) {
         if (!animate && !pending.has(svg)) return;
-        queue(svg, () => {
-            play(svg, svg, [{ opacity: 0 }, { opacity: 1 }], { duration: 400 });
-            svg.querySelectorAll(".timing-bar").forEach((bar, index) => {
-                const bottom =
-                    Number(bar.getAttribute("y")) +
-                    Number(bar.getAttribute("height"));
-                play(
-                    svg,
-                    bar,
-                    [
-                        {
-                            transform: `translateY(${bottom}px) scaleY(0) translateY(${-bottom}px)`,
-                        },
-                        {
-                            transform: `translateY(${bottom}px) scaleY(1) translateY(${-bottom}px)`,
-                        },
-                    ],
-                    { duration: 850, delay: 100 + index * 45 },
-                );
-            });
-            svg.querySelectorAll(".timing-count").forEach((label, index) => {
-                play(svg, label, [{ opacity: 0 }, { opacity: 1 }], {
-                    duration: 350,
-                    delay: 380 + index * 45,
+        queue(
+            svg,
+            () => {
+                play(svg, svg, [{ opacity: 0 }, { opacity: 1 }], {
+                    duration: 400,
                 });
-            });
-            const curve = svg.querySelector(".timing-curve");
-            if (curve)
-                play(
-                    svg,
-                    curve,
-                    [
-                        { opacity: 0, clipPath: "inset(0 100% 0 0)" },
-                        { opacity: 1, clipPath: "inset(0 0% 0 0)" },
-                    ],
-                    { duration: 1100, delay: 180, easing: graphEase },
+                svg.querySelectorAll(".timing-bar").forEach((bar, index) => {
+                    const bottom =
+                        Number(bar.getAttribute("y")) +
+                        Number(bar.getAttribute("height"));
+                    play(
+                        svg,
+                        bar,
+                        [
+                            {
+                                transform: `translateY(${bottom}px) scaleY(0) translateY(${-bottom}px)`,
+                            },
+                            {
+                                transform: `translateY(${bottom}px) scaleY(1) translateY(${-bottom}px)`,
+                            },
+                        ],
+                        { duration: 850, delay: 100 + index * 45 },
+                    );
+                });
+                svg.querySelectorAll(".timing-count").forEach(
+                    (label, index) => {
+                        play(svg, label, [{ opacity: 0 }, { opacity: 1 }], {
+                            duration: 350,
+                            delay: 380 + index * 45,
+                        });
+                    },
                 );
-        });
+                const curve = svg.querySelector(".timing-curve");
+                if (curve)
+                    play(
+                        svg,
+                        curve,
+                        [
+                            { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+                            { opacity: 1, clipPath: "inset(0 0% 0 0)" },
+                        ],
+                        { duration: 1100, delay: 180, easing: graphEase },
+                    );
+            },
+            0.5,
+        );
     },
 };
 

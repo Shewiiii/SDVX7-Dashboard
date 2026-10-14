@@ -207,15 +207,6 @@ export const motion = {
             );
         });
     },
-    profile(root) {
-        queue(root, () => {
-            const elements = [".appeal-card", "#player-name", ".hero-subtitle"];
-            elements.forEach((selector, index) => {
-                const element = root.querySelector(selector);
-                if (element && !element.hidden) fade(root, element, index * 80);
-            });
-        });
-    },
     metrics(root) {
         queue(root, () => {
             root.querySelectorAll(".metric").forEach((metric, index) => {

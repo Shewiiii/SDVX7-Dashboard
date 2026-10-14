@@ -1,8 +1,41 @@
 .reveal-pending {
     opacity: 0;
 }
-body[data-loading="initial"]:not([data-ready="true"]) .profile-heading {
-    opacity: 0;
+.profile-card-placeholder {
+    display: none;
+}
+body[data-loading="initial"] .profile-card-placeholder {
+    display: block;
+}
+body[data-loading="initial"] #appeal-card {
+    display: none;
+}
+body[data-loading="initial"] #player-name,
+body[data-loading="initial"] .hero-subtitle {
+    position: relative;
+    color: transparent;
+}
+body[data-loading="initial"] .hero-subtitle {
+    min-height: 24px;
+}
+body[data-loading="initial"] .hero-subtitle > * {
+    visibility: hidden;
+}
+body[data-loading="initial"] #player-name::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 30%;
+    width: 90%;
+    height: 40%;
+}
+body[data-loading="initial"] .hero-subtitle::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: min(100%, 150px);
+    height: 8px;
 }
 .load-status {
     display: flex;
@@ -47,6 +80,8 @@ body[data-loading] .loading-dots i:nth-child(3) {
     }
 }
 .skeleton-shape,
+body[data-loading="initial"] #player-name::after,
+body[data-loading="initial"] .hero-subtitle::after,
 body[data-loading="initial"] .metric-value::after,
 body[data-loading="initial"] .metric-detail::after,
 body[data-loading="initial"] #session-meta::after {
@@ -75,6 +110,8 @@ body[data-loading="initial"] .pagination > span::after {
     animation: loading-dot 1.2s ease-in-out infinite;
 }
 body[data-loading="initial"] .skeleton-shape,
+body[data-loading="initial"] #player-name::after,
+body[data-loading="initial"] .hero-subtitle::after,
 body[data-loading="initial"] .metric-value::after,
 body[data-loading="initial"] .metric-detail::after,
 body[data-loading="initial"] #session-meta::after {
@@ -208,6 +245,8 @@ body[data-loading="initial"] .panel-foot {
     }
     body[data-loading] .loading-dots i,
     body[data-loading="initial"] .skeleton-shape,
+    body[data-loading="initial"] #player-name::after,
+    body[data-loading="initial"] .hero-subtitle::after,
     body[data-loading="initial"] .metric-value::after,
     body[data-loading="initial"] .metric-detail::after,
     body[data-loading="initial"] #session-meta::after,

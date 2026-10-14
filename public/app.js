@@ -1565,8 +1565,6 @@ async function load() {
         renderChart({ animate });
         if (view === "leaderboard") renderLeaderboard({ animate });
         else if (view !== "overview") renderTable({ animate });
-        if (revealOnce("profile", animate))
-            motion.profile(document.querySelector(".profile-heading"));
         document.body.dataset.ready = "true";
         restoreScroll(pendingScroll);
     } catch {

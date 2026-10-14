@@ -640,6 +640,20 @@ def write_json(path, data):
     temporary.replace(path)
 
 
+def read_checkpoint(path):
+    if not path.exists():
+        return {}
+    try:
+        saved = json.loads(path.read_text(encoding="utf-8-sig"))
+        if isinstance(saved, dict):
+            return saved
+    except (ValueError, UnicodeError):
+        pass
+    # Checkpoints are disposable: replaying uses the same cloud record IDs.
+    print(f"Invalid {path.name}; rebuilding sync checkpoint from local history.")
+    return {}
+
+
 def settings():
     path = ROOT / ".local/sync-config.json"
     config = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
@@ -678,11 +692,7 @@ def upload(url, token, payload, bypass=None):
 
 def sync_once(config, tracker, catalog, reset=False):
     state_path = ROOT / ".local/sync-state.json"
-    saved = (
-        json.loads(state_path.read_text(encoding="utf-8"))
-        if state_path.exists() and not reset
-        else {}
-    )
+    saved = read_checkpoint(state_path) if not reset else {}
     endpoint_id = hashlib.sha256(config["url"].encode()).hexdigest()
     if saved.get("endpoint") != endpoint_id:
         saved = {}
@@ -693,11 +703,7 @@ def sync_once(config, tracker, catalog, reset=False):
     if hasattr(catalog, "prepare_covers"):
         catalog.prepare_covers()
         cover_state_path = ROOT / ".local/cover-sync-state.json"
-        acknowledged = (
-            json.loads(cover_state_path.read_text(encoding="utf-8"))
-            if cover_state_path.exists()
-            else {}
-        )
+        acknowledged = read_checkpoint(cover_state_path)
         if acknowledged.get("endpoint") != endpoint_id or reset:
             acknowledged = {"endpoint": endpoint_id, "ids": []}
         known_ids = set(acknowledged["ids"])

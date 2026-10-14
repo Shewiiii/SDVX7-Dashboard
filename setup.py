@@ -44,6 +44,16 @@ def prompt(label, default=""):
     return input(f"{label}{suffix}: ").strip() or default
 
 
+def prompt_origin(label, default=""):
+    while True:
+        try:
+            return origin(prompt(label, default))
+        except ValueError as error:
+            print(
+                f"{error} Example: https://your-dashboard.vercel.app. Please try again."
+            )
+
+
 def run(command, *, capture=False, **kwargs):
     result = subprocess.run(
         command,
@@ -77,9 +87,11 @@ def check_tracker(tracker):
         [
             str(python),
             "-c",
-            ("import dotenv, PIL, pykakasi; "
-            "from tracker.music import MusicCatalog; "
-            "from tracker.playtime import load_playtime_summary"),
+            (
+                "import dotenv, PIL, pykakasi; "
+                "from tracker.music import MusicCatalog; "
+                "from tracker.playtime import load_playtime_summary"
+            ),
         ],
         cwd=tracker,
         check=True,
@@ -94,6 +106,10 @@ def check_tracker(tracker):
 
 
 def vercel(npm, *args, capture=False, **kwargs):
+    # A ZIP inside the tracker must not inherit the tracker's Git repository.
+    kwargs.setdefault(
+        "env", {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
+    )
     return run(
         [
             npm,
@@ -110,8 +126,8 @@ def vercel(npm, *args, capture=False, **kwargs):
 
 
 def configure_connection(config):
-    config["url"] = origin(
-        prompt("Existing dashboard HTTPS address", config.get("url", ""))
+    config["url"] = prompt_origin(
+        "Existing dashboard HTTPS address", config.get("url", "")
     )
     secret = getpass.getpass(
         "Existing website SYNC_TOKEN (Enter to keep saved secret): "
@@ -182,6 +198,7 @@ def deploy(config, tracker, node, npm, update=False):
                 "preview",
             )
         stages["database_connected"] = True
+        stages_path.parent.mkdir(parents=True, exist_ok=True)
         stages_path.write_text(json.dumps(stages, indent=2), encoding="utf-8")
     # Keep the saved token, including on reruns; never rotate an existing connection.
     config["token"] = config.get("token") or secrets.token_urlsafe(48)
@@ -189,11 +206,11 @@ def deploy(config, tracker, node, npm, update=False):
     run([node, "scripts/connect.mjs"])
     vercel(npm, "deploy", "--prod", "--yes")
     config = load_config()
-    config["url"] = origin(
-        prompt(
-            "Stable production address (use the alias, not a deployment-specific address)",
-            config.get("url", ""),
-        )
+    print(
+        "Copy the and paste the ALIASED URL you see above (it should be https://[what you typed before].vercel.app)."
+    )
+    config["url"] = prompt_origin(
+        "Aliased URL:", config.get("url", "")
     )
     save_config(config)
     print(

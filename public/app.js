@@ -38,12 +38,13 @@ const yen = new Intl.NumberFormat("ja-JP", {
     style: "currency",
     currency: "JPY",
 });
-const euro = new Intl.NumberFormat("en-IE", {
+let conversionCurrency = "EUR"; // Older deployed snapshots did not include currency.
+let convertedMoney = new Intl.NumberFormat("en-IE", {
     style: "currency",
-    currency: "EUR",
+    currency: conversionCurrency,
 });
-let euroRate = null,
-    euroRateDate = "",
+let exchangeRate = null,
+    exchangeRateDate = "",
     rateLoading = false,
     rateAttempt = 0;
 
@@ -69,7 +70,7 @@ function renderSpending() {
     $("spending-total").replaceChildren(price);
     setText(
         "spending-detail",
-        `${euroRate === null ? "" : `≈ ${euro.format(spending * euroRate)} · `}Standard Start`,
+        `${exchangeRate === null ? "" : `≈ ${convertedMoney.format(spending * exchangeRate)} · `}Standard Start`,
     );
     $("spending-description").textContent =
         `${number(data.plays.length)} plays on an arcade cabinet corresponds to:`;
@@ -77,7 +78,7 @@ function renderSpending() {
         ...START_PRICES.map(([label, songs, cost]) => {
             const amount = (data.plays.length / songs) * cost;
             const item = document.createElement("li");
-            item.textContent = `${label}: ${popupYen.format(amount)}${euroRate === null ? "" : ` (≈ ${euro.format(amount * euroRate)})`}`;
+            item.textContent = `${label}: ${popupYen.format(amount)}${exchangeRate === null ? "" : ` (≈ ${convertedMoney.format(amount * exchangeRate)})`}`;
             return item;
         }),
     );
@@ -140,14 +141,34 @@ function showSpendingPopup() {
     popup.style.top = `${Math.max(12, Math.min(top, innerHeight - box.height - 12))}px`;
 }
 
-async function loadEuroRate() {
-    const retryAfter = euroRate === null ? 60000 : 3600000;
+async function loadExchangeRate() {
+    const requested = /^[A-Z]{3}$/.test(data?.state.currency || "")
+        ? data.state.currency
+        : "EUR";
+    if (requested !== conversionCurrency) {
+        conversionCurrency = requested;
+        convertedMoney = new Intl.NumberFormat("en-IE", {
+            style: "currency",
+            currency: requested,
+        });
+        exchangeRate = null;
+        exchangeRateDate = "";
+        rateAttempt = 0;
+        rateLoading = false;
+        renderSpending();
+    }
+    if (requested === "JPY") {
+        exchangeRate = null; // Yen spending is already displayed without conversion.
+        renderSpending();
+        return;
+    }
+    const retryAfter = exchangeRate === null ? 60000 : 3600000;
     if (rateLoading || Date.now() - rateAttempt < retryAfter) return;
     rateLoading = true;
     rateAttempt = Date.now();
     try {
         const response = await fetch(
-            "https://api.frankfurter.dev/v2/rate/jpy/eur",
+            `https://api.frankfurter.dev/v2/rate/jpy/${requested.toLowerCase()}`,
             {
                 signal: AbortSignal.timeout(5000),
             },
@@ -156,19 +177,20 @@ async function loadEuroRate() {
         const result = await response.json();
         if (
             result.base !== "JPY" ||
-            result.quote !== "EUR" ||
+            result.quote !== requested ||
             !Number.isFinite(result.rate) ||
             result.rate <= 0 ||
             !/^\d{4}-\d{2}-\d{2}$/.test(result.date)
         )
             throw new Error("Invalid rate");
-        euroRate = result.rate;
-        euroRateDate = result.date;
+        if (requested !== conversionCurrency) return;
+        exchangeRate = result.rate;
+        exchangeRateDate = result.date;
         renderSpending();
     } catch {
         // Keep the yen amount (and any previously loaded conversion) available.
     } finally {
-        rateLoading = false;
+        if (requested === conversionCurrency) rateLoading = false;
     }
 }
 const escape = (value) =>
@@ -305,7 +327,7 @@ function revealOnce(key, animate) {
 
 function renderSummary({ animate = true } = {}) {
     stats = summary(data);
-    const name = data.state.name || "Shewi";
+    const name = data.state.name || "Player";
     setText("player-name", name);
     document.title = `${name} · SOUND VOLTEX`;
     const dan = data.state.skill_level;
@@ -1533,7 +1555,6 @@ $("leaderboard-next").addEventListener("click", () => {
 
 async function load() {
     if (loading) return;
-    void loadEuroRate();
     loading = true;
     document.body.dataset.loading = data ? "refresh" : "initial";
     $("main").setAttribute("aria-busy", "true");
@@ -1562,6 +1583,7 @@ async function load() {
         songs = new Map(catalog.map((song) => [song.music_id, song]));
         $("notice").hidden = true;
         renderSummary({ animate });
+        void loadExchangeRate();
         renderChart({ animate });
         if (view === "leaderboard") renderLeaderboard({ animate });
         else if (view !== "overview") renderTable({ animate });

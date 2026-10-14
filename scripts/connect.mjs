@@ -14,7 +14,6 @@ try {
     if (error.code !== "ENOENT") throw error;
 }
 config.token ||= randomBytes(48).toString("base64url");
-config.name ||= "Shewi";
 if (process.argv[2]) {
     const url = new URL(process.argv[2]);
     if (

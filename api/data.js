@@ -1,22 +1,37 @@
-import { database } from '../lib/database.mjs';
+import { database } from "../lib/database.mjs";
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'GET required' });
-  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
-  if (!process.env.DATABASE_URL) return res.status(503).json({ error: 'Data is not connected yet' });
-  try {
-    const sql = database();
-    const [records, states] = await sql.transaction([
-      sql`SELECT kind, jsonb_agg(record ORDER BY COALESCE(record->>'received_at', record->>'timestamp')) AS items
+    if (req.method !== "GET")
+        return res.status(405).json({ error: "GET required" });
+    res.setHeader(
+        "Cache-Control",
+        "public, s-maxage=30, stale-while-revalidate=60",
+    );
+    if (!process.env.DATABASE_URL)
+        return res.status(503).json({ error: "Data is not connected yet" });
+    try {
+        const sql = database();
+        const [records, states] = await sql.transaction([
+            sql`SELECT kind, jsonb_agg(record ORDER BY COALESCE(record->>'received_at', record->>'timestamp')) AS items
           FROM dashboard_records WHERE kind IN ('play', 'observation') GROUP BY kind`,
-      sql`SELECT record, synced_at FROM dashboard_state WHERE id = 1`,
-    ]);
-    const grouped = Object.fromEntries(records.map(r => [r.kind, r.items]));
-    return res.status(200).json({ plays: grouped.play || [], observations: grouped.observation || [],
-      state: states[0]?.record || { name: 'Shewi', charts: [] }, synced_at: states[0]?.synced_at || null,
-      source: 'cloud' });
-  } catch {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(503).json({ error: 'Data unavailable; try again shortly' });
-  }
+            sql`SELECT record, synced_at FROM dashboard_state WHERE id = 1`,
+        ]);
+        const grouped = Object.fromEntries(
+            records.map((r) => [r.kind, r.items]),
+        );
+        return res
+            .status(200)
+            .json({
+                plays: grouped.play || [],
+                observations: grouped.observation || [],
+                state: states[0]?.record || { name: "Player", charts: [] },
+                synced_at: states[0]?.synced_at || null,
+                source: "cloud",
+            });
+    } catch {
+        res.setHeader("Cache-Control", "no-store");
+        return res
+            .status(503)
+            .json({ error: "Data unavailable; try again shortly" });
+    }
 }

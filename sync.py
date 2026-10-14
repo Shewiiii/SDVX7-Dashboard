@@ -1,22 +1,27 @@
-"""Personal, read-only tracker companion with optional cover and reading helpers."""
-
 from __future__ import annotations
 
-import argparse
 import base64
 import hashlib
 import json
 import math
 import os
 import re
+import sys
 import time
 import unicodedata
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
-from pathlib import Path
 
+from companion import (
+    ROOT,
+    display_name,
+    load_config,
+    resolve_tracker,
+    shared_settings,
+    tracker_module,
+)
 from playtime import playtime_snapshot
 
 try:
@@ -55,17 +60,7 @@ def search_forms(text):
     return sorted(f for f in forms if f)
 
 
-ROOT = Path(__file__).resolve().parent
-TRACKER = ROOT.parent
 PLAY_SCHEMA = 5
-TAGS = (
-    ("novice",),
-    ("advanced",),
-    ("exhaust",),
-    ("infinite", "gravity", "heaven", "vivid", "exceed", "nabla"),
-    ("maximum",),
-    ("ultimate",),
-)
 CLEARS = {1: 50, 2: 100, 3: 102, 4: 106, 5: 110, 6: 104}
 GRADES = (
     (9900000, 105),
@@ -82,7 +77,7 @@ GRADES = (
 
 
 def stamp(value):
-    date = datetime.fromisoformat(str(value))
+    date = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     if date.tzinfo is None:
         date = date.replace(tzinfo=UTC)
     return (
@@ -93,10 +88,10 @@ def stamp(value):
 class Catalog:
     def __init__(self, tracker):
         game = tracker.parent
-        self.paths = [
-            game / "data/others/music_db.xml",
-            game / "data_mods/ryunet_custom/others/music_db.merged.xml",
-        ]
+        self.music = tracker_module(tracker, "music").MusicCatalog(
+            game / "data/others/music_db.xml"
+        )
+        self.paths = self.music.paths
         self.signature = None
         self.charts = {}
         self.songs = {}
@@ -111,78 +106,49 @@ class Catalog:
         self.appeal_mapping_signature = None
 
     def refresh(self):
+        self.music.refresh()
         signature = tuple(
-            (p.stat().st_mtime_ns, p.stat().st_size) if p.exists() else None
-            for p in self.paths
+            id(mapping)
+            for mapping in (
+                self.music.titles,
+                self.music.artists,
+                self.music.levels,
+                self.music.title_readings,
+                self.music.artist_readings,
+            )
         )
         if signature == self.signature:
             return
         charts, songs = {}, {}
-        for path in self.paths:
-            if not path.exists():
-                continue
-            try:
-                raw = path.read_bytes()
-                match = re.search(
-                    rb"encoding=[\'\"]([^\'\"]+)", raw[:200], re.IGNORECASE
-                )
-                encoding = match[1].decode("ascii").lower() if match else "utf-8-sig"
-                if encoding in ("shift-jis", "shift_jis", "sjis", "windows-31j"):
-                    encoding = "cp932"
-                text = re.sub(r"<\?xml[^>]*\?>", "", raw.decode(encoding), count=1)
-                for music in ET.fromstring(text).findall("music"):
-                    mid = int(music.get("id", "0"))
-                    title = music.findtext("info/title_name", "").strip()[:200]
-                    artist = music.findtext("info/artist_name", "").strip()[:200]
-                    song = songs.setdefault(
-                        mid,
-                        {
-                            "music_id": mid,
-                            "title": title,
-                            "artist": artist,
-                            "forms": [],
-                            "difficulties": [],
-                        },
+        for mid, levels in self.music.levels.items():
+            title = self.music.titles.get(mid, f"Chart {mid}")[:200]
+            artist = self.music.artists.get(mid, "")[:200]
+            difficulties = [
+                {"diff_idx": diff, "level": level}
+                for diff, level in sorted(levels.items())
+                if math.isfinite(level) and level > 0
+            ]
+            songs[mid] = {
+                "music_id": mid,
+                "title": title,
+                "artist": artist,
+                "forms": [
+                    search_forms(value)
+                    for value in (
+                        title,
+                        self.music.title_readings.get(mid, ""),
+                        artist,
+                        self.music.artist_readings.get(mid, ""),
                     )
-                    song.update(
-                        title=title,
-                        artist=artist,
-                        forms=[
-                            search_forms(value)
-                            for value in (
-                                title,
-                                music.findtext("info/title_yomigana", ""),
-                                artist,
-                                music.findtext("info/artist_yomigana", ""),
-                            )
-                        ],
-                    )
-                    for diff, tags in enumerate(TAGS):
-                        element = next(
-                            (
-                                e
-                                for tag in tags
-                                if (e := music.find(f"difficulty/{tag}")) is not None
-                            ),
-                            None,
-                        )
-                        if element is None:
-                            continue
-                        level = float(element.findtext("difnum", "0")) / 10
-                        if not math.isfinite(level) or level <= 0:
-                            continue
-                        charts[f"{mid}:{diff}"] = {
-                            "title": title,
-                            "artist": artist,
-                            "level": level,
-                        }
-                        song["difficulties"] = [
-                            d for d in song["difficulties"] if d["diff_idx"] != diff
-                        ] + [{"diff_idx": diff, "level": level}]
-            except (OSError, ValueError, ET.ParseError, UnicodeError) as error:
-                print(
-                    f"Music metadata unavailable ({type(error).__name__}); using chart IDs."
-                )
+                ],
+                "difficulties": difficulties,
+            }
+            for difficulty in difficulties:
+                charts[f"{mid}:{difficulty['diff_idx']}"] = {
+                    "title": title,
+                    "artist": artist,
+                    "level": difficulty["level"],
+                }
         self.charts, self.songs, self.signature = charts, songs, signature
 
     def get(self, mid, diff):
@@ -520,6 +486,7 @@ def snapshot(tracker, catalog, name):
     if not path.exists():
         state = {
             "name": name,
+            "currency": shared_settings(tracker)["currency"],
             "updated_at": None,
             "charts": [],
             "appeal_card": getattr(catalog, "appeal_card", None),
@@ -555,6 +522,7 @@ def snapshot(tracker, catalog, name):
     charts.sort(key=lambda c: (-c["vf"], c["music_id"], c["diff_idx"]))
     state = {
         "name": name,
+        "currency": shared_settings(tracker)["currency"],
         "updated_at": stamp(raw["updated_at"]),
         "charts": charts,
         "appeal_card": getattr(catalog, "appeal_card", None),
@@ -655,8 +623,12 @@ def read_checkpoint(path):
 
 
 def settings():
-    path = ROOT / ".local/sync-config.json"
-    config = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    try:
+        config = load_config()
+    except (OSError, ValueError, TypeError) as error:
+        raise SystemExit(
+            f"Cannot load dashboard connection settings: {error}"
+        ) from None
     return {
         **config,
         "url": os.getenv("SDVX_DASHBOARD_URL", config.get("url", "")),
@@ -690,9 +662,9 @@ def upload(url, token, payload, bypass=None):
         raise RuntimeError("Cannot reach dashboard") from None
 
 
-def sync_once(config, tracker, catalog, reset=False):
+def sync_once(config, tracker, catalog):
     state_path = ROOT / ".local/sync-state.json"
-    saved = read_checkpoint(state_path) if not reset else {}
+    saved = read_checkpoint(state_path)
     endpoint_id = hashlib.sha256(config["url"].encode()).hexdigest()
     if saved.get("endpoint") != endpoint_id:
         saved = {}
@@ -704,7 +676,7 @@ def sync_once(config, tracker, catalog, reset=False):
         catalog.prepare_covers()
         cover_state_path = ROOT / ".local/cover-sync-state.json"
         acknowledged = read_checkpoint(cover_state_path)
-        if acknowledged.get("endpoint") != endpoint_id or reset:
+        if acknowledged.get("endpoint") != endpoint_id:
             acknowledged = {"endpoint": endpoint_id, "ids": []}
         known_ids = set(acknowledged["ids"])
         image_ids = set(catalog.cover_ids.values())
@@ -734,7 +706,7 @@ def sync_once(config, tracker, catalog, reset=False):
             write_json(cover_state_path, acknowledged)
         if pending_ids:
             print(f"Synced {len(pending_ids)} artwork images.")
-    current, profile = snapshot(tracker, catalog, config.get("name", "Shewi"))
+    current, profile = snapshot(tracker, catalog, display_name(config, tracker))
     current_hash = hashlib.sha256(
         json.dumps(current, sort_keys=True).encode()
     ).hexdigest()
@@ -771,7 +743,11 @@ def sync_once(config, tracker, catalog, reset=False):
         print(f"Synced {uploaded} records at {datetime.now().strftime('%H:%M:%S')}.")
 
 
-def export(tracker, catalog, name):
+def export_preview():
+    tracker = resolve_tracker()
+    config = settings()
+    catalog = Catalog(tracker)
+    name = display_name(config, tracker)
     catalog.refresh()
     catalog.prepare_covers()
     state, profile = snapshot(tracker, catalog, name)
@@ -824,72 +800,54 @@ def export(tracker, catalog, name):
     )
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--once", action="store_true")
-    parser.add_argument(
-        "--export",
-        action="store_true",
-        help="Prepare local preview data; no cloud upload",
-    )
-    parser.add_argument(
-        "--reset",
-        action="store_true",
-        help="Re-import history; duplicate records are ignored",
-    )
-    parser.add_argument("--tracker", type=Path, default=TRACKER)
-    parser.add_argument("--interval", type=int, default=30)
-    args = parser.parse_args()
+def run(once=False):
     config = settings()
-    catalog = Catalog(args.tracker)
-    if args.export:
-        export(args.tracker, catalog, config.get("name", "Shewi"))
-        return
+    tracker = resolve_tracker()
+    catalog = Catalog(tracker)
     if (
         not config.get("url", "").startswith("https://")
         or len(config.get("token", "")) < 32
     ):
-        parser.exit(1, "Run configure.py first to connect the dashboard.\n")
+        raise SystemExit("Run Setup-dashboard.bat first to connect the dashboard.")
     lock_path = ROOT / ".local/sync.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
-    lock = lock_path.open("a+b")
-    lock.seek(0)
-    if lock_path.stat().st_size == 0:
-        lock.write(b"0")
-        lock.flush()
+    with lock_path.open("a+b") as lock:
+        if lock_path.stat().st_size == 0:
+            lock.write(b"0")
+            lock.flush()
         lock.seek(0)
-    try:
-        if os.name == "nt":
-            import msvcrt
-
-            msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        parser.exit(1, "A personal sync process is already running.\n")
-    print("Personal SDVX sync running. Tracker files are read only.")
-    delay = max(5, args.interval)
-    while True:
         try:
-            sync_once(config, args.tracker, catalog, reset=args.reset)
-            args.reset = False
-            delay = max(5, args.interval)
-        except (OSError, ValueError, RuntimeError, KeyError) as error:
-            print(
-                f"Sync pending ({type(error).__name__}). Will retry; local history is safe."
-            )
-            if args.once:
-                raise SystemExit(1) from None
-            delay = min(300, delay * 2)
-        if args.once:
-            return
-        time.sleep(delay)
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            raise SystemExit("Dashboard sync is already running.") from None
+        print("Dashboard sync running.")
+        delay = 30
+        while True:
+            try:
+                sync_once(config, tracker, catalog)
+                delay = 30
+            except (OSError, ValueError, RuntimeError, KeyError) as error:
+                detail = f": {error}" if isinstance(error, RuntimeError) else ""
+                print(f"Sync pending ({type(error).__name__}){detail}. Retrying.")
+                if once:
+                    raise SystemExit(1) from None
+                delay = min(300, delay * 2)
+            if once:
+                return
+            time.sleep(delay)
 
 
 if __name__ == "__main__":
     try:
-        main()
+        if len(sys.argv) > 1:
+            raise SystemExit("Sync does not accept command-line options.")
+        run()
     except KeyboardInterrupt:
         print("Sync stopped.")

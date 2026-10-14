@@ -4,15 +4,16 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { existsSync } from "node:fs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = path.join(root, "public");
 const port = Number(process.env.PORT || 3000);
-const trackerPython = path.join(root, "..", ".venv", "Scripts", "python.exe");
-const python =
-    process.env.PYTHON ||
-    (existsSync(trackerPython) ? trackerPython : "python");
+const python = path.join(
+    root,
+    "..",
+    ".venv",
+    process.platform === "win32" ? "Scripts/python.exe" : "bin/python",
+);
 const runFile = promisify(execFile);
 const types = {
     ".html": "text/html; charset=utf-8",
@@ -27,9 +28,13 @@ let exportTask = null;
 function refresh() {
     if (exportTask) return exportTask;
     exportTask = new Promise((resolve, reject) => {
-        const child = spawn(python, [path.join(root, "sync.py"), "--export"], {
-            cwd: root,
-        });
+        const child = spawn(
+            python,
+            ["-c", "from sync import export_preview; export_preview()"],
+            {
+                cwd: root,
+            },
+        );
         child.stdout.on("data", (data) => process.stdout.write(data));
         child.stderr.on("data", (data) => process.stderr.write(data));
         child.on("error", reject);

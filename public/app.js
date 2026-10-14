@@ -1614,11 +1614,17 @@ document.querySelector(".brand").addEventListener("click", (event) => {
     switchView("overview");
 });
 
-document
-    .querySelectorAll("[data-view]")
-    .forEach((button) =>
-        button.addEventListener("click", () => switchView(button.dataset.view)),
-    );
+document.querySelectorAll("[data-view]").forEach((button) =>
+    button.addEventListener("click", () => {
+        if (button.dataset.view === "leaderboard") {
+            selected = null;
+            leaderboardPage = 0;
+            $("song-query").value = "";
+            closeMatches();
+        }
+        switchView(button.dataset.view);
+    }),
+);
 document.querySelectorAll("[data-days]").forEach((button) =>
     button.addEventListener("click", () => {
         const nextDays = Number(button.dataset.days);

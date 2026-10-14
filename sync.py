@@ -56,6 +56,7 @@ def search_forms(text):
 
 ROOT = Path(__file__).resolve().parent
 TRACKER = ROOT.parent
+PLAY_SCHEMA = 5
 TAGS = (
     ("novice",),
     ("advanced",),
@@ -166,9 +167,8 @@ class Catalog:
                         )
                         if element is None:
                             continue
-                        level = float(element.findtext("difnum", "0"))
-                        level = level / 10 if level > 20 else level
-                        if not math.isfinite(level) or not 0 < level <= 20:
+                        level = float(element.findtext("difnum", "0")) / 10
+                        if not math.isfinite(level) or level <= 0:
                             continue
                         charts[f"{mid}:{diff}"] = {
                             "title": title,
@@ -398,7 +398,8 @@ def play_record(record, catalog):
     if not (mid > 0 and 0 <= diff <= 5 and 0 <= score <= 10000000 and 0 <= clear <= 6):
         raise ValueError("Invalid play")
     metadata = catalog.get(mid, diff)
-    level = record.get("level") or metadata.get("level")
+    # Prefer decoded XML metadata over levels captured by the old scaling heuristic.
+    level = metadata.get("level") or record.get("level")
     if clear == 0:
         vf = 0.0  # Failed plays do not contribute to performance.
     elif record.get("volforce_source") == "updated":
@@ -685,7 +686,7 @@ def sync_once(config, tracker, catalog, reset=False):
     if saved.get("endpoint") != endpoint_id:
         saved = {}
     # Replay old captures once to enrich existing plays without changing their IDs.
-    if saved.get("play_schema") != 4:
+    if saved.get("play_schema") != PLAY_SCHEMA:
         saved.pop("plays", None)
     catalog.refresh()
     if hasattr(catalog, "prepare_covers"):
@@ -754,7 +755,7 @@ def sync_once(config, tracker, catalog, reset=False):
             plays=pc,
             observations=oc,
             snapshot=current_hash,
-            play_schema=4,
+            play_schema=PLAY_SCHEMA,
         )
         write_json(state_path, saved)
         if len(plays) < 150 and len(observations) < 150:

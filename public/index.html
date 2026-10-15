@@ -144,9 +144,7 @@
                         ><button class="tab" data-view="top">Top 50</button
                         ><button class="tab" data-view="history">
                             Play history</button
-                        ><button class="tab" data-view="search">
-                            Search
-                        </button>
+                        ><button class="tab" data-view="search">Search</button>
                     </nav>
                     <span class="tab-caption" id="updated">—</span>
                 </div>
@@ -212,6 +210,7 @@
                         <div class="chart-wrap" id="chart-wrap">
                             <svg
                                 id="chart"
+                                class="chart-svg"
                                 viewBox="0 0 1100 380"
                                 role="img"
                                 aria-label="VolForce performance over time"
@@ -239,12 +238,13 @@
                             <div class="timing-heading">
                                 <h2 id="timing-title">Timing histogram</h2>
                                 <p>
-                                    Accuracy of BT/FX notes in S-Critical plays
+                                    Accuracy of BT/FX notes in S-CRITICAL plays
                                 </p>
                             </div>
                             <div class="timing-chart-wrap">
                                 <svg
                                     id="timing-chart"
+                                    class="chart-svg"
                                     viewBox="0 0 1100 260"
                                     role="img"
                                     aria-label="Timing histogram: early on the left, zero milliseconds in the middle, late on the right"
@@ -288,7 +288,12 @@
                         </article>
                     </div>
                 </section>
-                <section id="records-view" class="panel records-panel" aria-label="Top 50" hidden>
+                <section
+                    id="records-view"
+                    class="panel records-panel"
+                    aria-label="Top 50"
+                    hidden
+                >
                     <div class="table-tools">
                         <label class="search-wrap"
                             ><span aria-hidden="true">⌕</span

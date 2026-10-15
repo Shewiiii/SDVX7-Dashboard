@@ -218,6 +218,83 @@ export function summary(data) {
     };
 }
 
+export const PAGE_SIZE = 50;
+export const chartKey = (chart) => `${chart.music_id}:${chart.diff_idx}`;
+
+function countChartPlays(plays) {
+    const counts = new Map();
+    for (const play of plays) {
+        const key = chartKey(play);
+        counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    return counts;
+}
+
+function groupChartPlays(plays) {
+    const bestPlays = new Map();
+    for (const play of plays) {
+        const key = chartKey(play);
+        const previous = bestPlays.get(key);
+        if (!previous || (play.score ?? -1) > (previous.score ?? -1))
+            bestPlays.set(key, play);
+    }
+    return [...bestPlays.values()];
+}
+
+export function recordList(
+    data,
+    catalog,
+    { top = false, query = "", sort = "recent" } = {},
+) {
+    const source = top
+        ? topCharts(data.state).map((chart, index) => ({
+              ...chart,
+              rank: index + 1,
+          }))
+        : data.plays;
+    let records = filterCharts(source, catalog, query);
+    const totalPlays = records.length;
+    const grouped = !top && sort === "plays";
+    const playCounts =
+        sort === "plays" ? countChartPlays(data.plays) : new Map();
+    const recentFirst = top
+        ? (a, b) => a.rank - b.rank
+        : (a, b) => byTime(b, a);
+    const chartOrder = new Map();
+    if (sort === "plays") {
+        const ordered = [...records].sort(recentFirst);
+        for (const record of ordered) {
+            const key = chartKey(record);
+            if (!chartOrder.has(key)) chartOrder.set(key, chartOrder.size);
+        }
+        if (grouped) records = groupChartPlays(ordered);
+    }
+    const comparators = {
+        vf: (a, b) => (b.vf ?? b.play_vf) - (a.vf ?? a.play_vf),
+        score: (a, b) => (b.score ?? -1) - (a.score ?? -1),
+        recent: recentFirst,
+        plays: (a, b) =>
+            (playCounts.get(chartKey(b)) || 0) -
+                (playCounts.get(chartKey(a)) || 0) ||
+            chartOrder.get(chartKey(a)) - chartOrder.get(chartKey(b)) ||
+            recentFirst(a, b),
+    };
+    records = [...records].sort(comparators[sort] || recentFirst);
+    return { records, grouped, totalPlays, playCounts };
+}
+
+export function paginate(records, page, pageSize = PAGE_SIZE) {
+    const pages = Math.max(1, Math.ceil(records.length / pageSize));
+    page = Math.max(0, Math.min(page, pages - 1));
+    const start = page * pageSize;
+    return {
+        page,
+        pages,
+        start,
+        items: records.slice(start, start + pageSize),
+    };
+}
+
 export function normalizeSearch(value) {
     return String(value)
         .normalize("NFKC")

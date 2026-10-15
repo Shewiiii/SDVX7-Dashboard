@@ -2,7 +2,7 @@
 
 This is a web extension of [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX7-VolForce-Tracker), based on Vercel, and originally made for personal use, but may be interesting to share.
 
-It allows to quickly see your stats on an intuitive UI, whenever and wherever you want, with a seemless integration with the bot.
+It allows to quickly see your stats on an intuitive UI, whenever and wherever you want, with a seamless integration with the bot.
 
 You can see my dashboard here: https://sdvx.shewi.app/ (I am not very good at the game).
 

@@ -355,8 +355,29 @@
 .table-song > div {
     min-width: 0;
 }
-.table-song .song-title {
+.record-details {
+    display: none;
+}
+.records-panel tbody td {
+    font-size: 12px;
+}
+.records-panel .row-index {
     font-size: 11px;
+}
+.records-panel .artist {
+    font-size: 10px;
+}
+.records-panel .difficulty-badge {
+    font-size: 11px;
+}
+.records-panel .score-cell {
+    font-size: 12px;
+}
+.records-panel .clear-label {
+    font-size: 11px;
+}
+.records-panel .vf-cell {
+    font-size: 13px;
 }
 .top-list {
     padding-top: 0;
@@ -776,55 +797,59 @@ footer {
         border: 0;
         font-size: 10px;
     }
+    .records-panel tbody td {
+        font-size: 11px;
+    }
     .records-panel tbody tr {
-        grid-template-columns: 39px minmax(0, 1fr) auto 49px;
-        grid-template-areas: "position song song vf" ". difficulty score clear";
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        grid-template-areas: "position song vf" "position song score";
+        gap: 0 9px;
+        padding: 13px 18px;
     }
     .records-panel td:nth-child(1) {
         grid-area: position;
-        font-size: 8px;
+        font-size: 10px;
     }
     .records-panel td:nth-child(2) {
         grid-area: song;
     }
-    .records-panel td:nth-child(3) {
-        grid-area: difficulty;
+    .records-panel td:nth-child(3),
+    .records-panel td:nth-child(5),
+    .records-panel .artist {
+        display: none;
     }
     .records-panel td:nth-child(4) {
         grid-area: score;
+        align-self: start;
+        margin-top: 3px;
         text-align: right;
-    }
-    .records-panel td:nth-child(5) {
-        grid-area: clear;
-        text-align: right;
+        font-size: 9px;
+        color: var(--faint);
+        white-space: nowrap;
     }
     .records-panel td:nth-child(6) {
         grid-area: vf;
-        font-size: 12px;
+        align-self: end;
+        font-size: 13px;
+        color: #d0bcdf;
     }
     .records-panel .table-song {
-        gap: 8px;
+        gap: 9px;
     }
     .records-panel .table-song > div {
         flex: 1;
     }
     .records-panel .cover-tile {
-        width: 30px;
-        height: 30px;
-        border-radius: 6px;
+        width: 38px;
+        height: 38px;
     }
-    .records-panel .song-title {
-        font-size: 11px;
+    .records-panel .record-details {
+        display: flex;
+        flex-wrap: wrap;
     }
-    .records-panel .artist {
-        font-size: 8px;
-        margin-top: 2px;
-    }
+    .records-panel .difficulty-badge,
     .records-panel .clear-label {
         font-size: 8px;
-    }
-    .records-panel .score-cell {
-        font-size: 9px;
     }
     .song-search-panel tbody tr {
         grid-template-columns: 24px minmax(0, 1fr) 48px 48px;
@@ -971,7 +996,7 @@ footer {
         height: 38px;
     }
     .song-title {
-        font-size: 11px;
+        font-size: 12px;
     }
     .song-details {
         gap: 5px;

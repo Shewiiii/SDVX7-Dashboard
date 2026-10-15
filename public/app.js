@@ -1335,7 +1335,7 @@ function renderTable({ animate = true } = {}) {
         ? chunk
               .map(
                   (p) =>
-                      `<tr class="chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><td class="row-index">${top ? String(p.rank).padStart(2, "0") : grouped ? `${number(playCounts.get(chartKey(p)))}<br>${playCounts.get(chartKey(p)) === 1 ? "play" : "plays"}` : `${shortDate(p.received_at)}<br>${clock(p.received_at)}`}</td><td><div class="table-song">${coverMarkup(p)}<div>${chartButton(p)}<div class="artist">${escape(p.artist)}</div></div></div></td><td>${badge(p)}</td><td class="score-cell">${number(p.score)}</td><td>${clear(p)}</td><td class="right vf-cell">${vf(p.vf ?? p.play_vf)}</td></tr>`,
+                      `<tr class="chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><td class="row-index">${top ? String(p.rank).padStart(2, "0") : grouped ? `${number(playCounts.get(chartKey(p)))}<br>${playCounts.get(chartKey(p)) === 1 ? "play" : "plays"}` : `${shortDate(p.received_at)}<br>${clock(p.received_at)}`}</td><td><div class="table-song">${coverMarkup(p)}<div>${chartButton(p)}<div class="artist">${escape(p.artist)}</div><div class="song-details record-details">${badge(p)}${clear(p)}</div></div></div></td><td>${badge(p)}</td><td class="score-cell">${number(p.score)}</td><td>${clear(p)}</td><td class="right vf-cell">${vf(p.vf ?? p.play_vf)}</td></tr>`,
               )
               .join("")
         : '<tr><td colspan="6">No matching charts.</td></tr>';

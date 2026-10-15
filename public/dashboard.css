@@ -1652,6 +1652,9 @@ footer {
     }
 }
 @media (max-width: 430px) {
+    .difficulty-tabs {
+        justify-content: center;
+    }
     .song-search-panel .selected-song {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);

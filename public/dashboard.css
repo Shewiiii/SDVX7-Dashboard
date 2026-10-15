@@ -341,7 +341,7 @@
 .play-row + .play-row,
 .song-option + .song-option,
 .records-panel tbody tr + tr,
-.leaderboard-panel tbody tr + tr {
+.song-search-panel tbody tr + tr {
     border-top: 1px solid #ffffff09;
 }
 .chart-row .open-chart:hover {
@@ -366,34 +366,18 @@ footer {
     font-size: 11px;
     padding-top: 24px;
 }
-.leaderboard-panel {
+.song-search-panel {
     overflow: visible;
-}
-.leaderboard-panel .panel-head {
-    padding-bottom: 20px;
+    padding-top: 22px;
 }
 .song-search {
     position: relative;
     margin: 0 27px 24px;
-    max-width: 620px;
+    width: 320px;
+    max-width: calc(100% - 54px);
 }
-.song-search > label {
-    display: block;
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 8px;
-}
-.song-search > input {
+.song-search .search-wrap {
     width: 100%;
-    border: 0;
-    border-radius: 4px;
-    background: #14141f;
-    color: var(--ink);
-    padding: 12px 14px;
-    font-size: 13px;
-}
-.song-search > input::placeholder {
-    color: var(--faint);
 }
 #song-options {
     position: absolute;
@@ -518,7 +502,7 @@ footer {
     color: var(--muted);
     margin-top: 18px;
 }
-.leaderboard-empty {
+.song-search-empty {
     padding: 25px 27px 45px;
     font-size: 12px;
     color: var(--muted);
@@ -532,10 +516,10 @@ footer {
     margin-left: 8px;
     color: var(--faint);
 }
-.leaderboard-panel table {
+.song-search-panel table {
     min-width: 580px;
 }
-.leaderboard-panel .pagination {
+.song-search-panel .pagination {
     border-radius: 0 0 5px 5px;
 }
 /* Blend wallpaper into #1e1e2e, then panels into #1b1b29, like Python. */
@@ -568,7 +552,6 @@ footer {
 .cover-tile.large {
     border-radius: 10px;
 }
-.song-search > input,
 .search-wrap,
 .select-wrap select {
     border-radius: 10px;
@@ -615,10 +598,10 @@ footer {
     gap: 10px;
     white-space: nowrap;
 }
-.leaderboard-entry {
+.song-search-entry {
     cursor: pointer;
 }
-.leaderboard-entry:focus-within {
+.song-search-entry:focus-within {
     background: #cba6f711;
 }
 .judgement-toggle,
@@ -638,11 +621,11 @@ footer {
 .judgement-toggle[aria-expanded="true"] .judgement-chevron {
     transform: rotate(180deg);
 }
-.leaderboard-panel .judgement-row {
+.song-search-panel .judgement-row {
     border-top: 0;
     background: #ffffff03;
 }
-.leaderboard-panel .judgement-row td {
+.song-search-panel .judgement-row td {
     padding: 12px 27px;
 }
 .judgement-counts {
@@ -674,7 +657,7 @@ footer {
     .judgement-timing {
         grid-column: 1 / -1;
     }
-    .leaderboard-panel .judgement-row td {
+    .song-search-panel .judgement-row td {
         padding: 4px 12px;
     }
 }
@@ -695,7 +678,7 @@ footer {
     font: 11px var(--sans);
     color: var(--ink);
 }
-.leaderboard-panel .pagination {
+.song-search-panel .pagination {
     border-radius: 0 0 16px 16px;
 }
 .profile-heading {
@@ -758,13 +741,13 @@ footer {
         background-position: 82% center;
     }
     .records-panel table,
-    .leaderboard-panel table {
+    .song-search-panel table {
         display: block;
         min-width: 0;
         width: 100%;
     }
     .records-panel thead,
-    .leaderboard-panel thead {
+    .song-search-panel thead {
         position: absolute;
         width: 1px;
         height: 1px;
@@ -773,11 +756,11 @@ footer {
         white-space: nowrap;
     }
     .records-panel tbody,
-    .leaderboard-panel tbody {
+    .song-search-panel tbody {
         display: block;
     }
     .records-panel tbody tr,
-    .leaderboard-panel tbody tr {
+    .song-search-panel tbody tr {
         display: grid;
         gap: 5px 7px;
         align-items: center;
@@ -785,7 +768,7 @@ footer {
         border-top: 0;
     }
     .records-panel tbody td,
-    .leaderboard-panel tbody td {
+    .song-search-panel tbody td {
         display: block;
         min-width: 0;
         max-width: none;
@@ -843,26 +826,26 @@ footer {
     .records-panel .score-cell {
         font-size: 9px;
     }
-    .leaderboard-panel tbody tr {
+    .song-search-panel tbody tr {
         grid-template-columns: 24px minmax(0, 1fr) 48px 48px;
         grid-template-areas: "position score score vf" ". clear played played";
     }
-    .leaderboard-panel td:nth-child(1) {
+    .song-search-panel td:nth-child(1) {
         grid-area: position;
         font-size: 9px;
     }
-    .leaderboard-panel td:nth-child(2) {
+    .song-search-panel td:nth-child(2) {
         grid-area: score;
         font-size: 12px;
     }
-    .leaderboard-panel td:nth-child(3) {
+    .song-search-panel td:nth-child(3) {
         grid-area: clear;
     }
-    .leaderboard-panel .grade-icon {
+    .song-search-panel .grade-icon {
         width: 40px;
         height: 30px;
     }
-    .leaderboard-panel td:nth-child(4) {
+    .song-search-panel td:nth-child(4) {
         grid-area: played;
         display: flex;
         justify-content: flex-end;
@@ -871,14 +854,14 @@ footer {
         font-size: 8px;
         text-align: right;
     }
-    .leaderboard-panel td:nth-child(5) {
+    .song-search-panel td:nth-child(5) {
         grid-area: vf;
         font-size: 12px;
     }
-    .leaderboard-panel .played-date span {
+    .song-search-panel .played-date span {
         margin-left: 0;
     }
-    .leaderboard-panel .selected-song {
+    .song-search-panel .selected-song {
         gap: 12px;
     }
     .selected-song .cover-tile.large {
@@ -889,13 +872,13 @@ footer {
         flex-basis: 140px;
     }
     .records-panel td[colspan],
-    .leaderboard-panel td[colspan] {
+    .song-search-panel td[colspan] {
         grid-column: 1/-1;
         grid-row: 1;
         padding: 10px 0;
     }
     .records-panel .pagination,
-    .leaderboard-panel .pagination {
+    .song-search-panel .pagination {
         padding: 12px;
     }
 }
@@ -997,11 +980,12 @@ footer {
     .song-details .clear-label {
         font-size: 8px;
     }
+    .song-search-panel {
+        padding-top: 18px;
+    }
     .song-search {
         margin: 0 18px 20px;
-    }
-    .song-search > input {
-        font-size: 12px;
+        max-width: calc(100% - 36px);
     }
     .selected-song {
         margin: 0 18px 21px;
@@ -1048,7 +1032,7 @@ footer {
         width: 32px;
         height: 32px;
     }
-    .leaderboard-empty {
+    .song-search-empty {
         padding: 20px 18px 35px;
     }
     footer {

@@ -39,7 +39,7 @@
                         ><i></i><i></i><i></i
                     ></span>
                     <span class="load-status-label" id="load-status-label"
-                        >Loading records…</span
+                        >Loading records...</span
                     >
                 </div>
             </header>
@@ -76,7 +76,7 @@
                         </div>
                     </div>
                     <div class="hero-meta">
-                        <span id="archive-dates">Loading history…</span>
+                        <span id="archive-dates">Loading history...</span>
                     </div>
                 </section>
                 <div id="notice" class="notice" role="status" hidden></div>
@@ -144,8 +144,8 @@
                         ><button class="tab" data-view="top">Top 50</button
                         ><button class="tab" data-view="history">
                             Play history</button
-                        ><button class="tab" data-view="leaderboard">
-                            Leaderboard
+                        ><button class="tab" data-view="search">
+                            Search
                         </button>
                     </nav>
                     <span class="tab-caption" id="updated">—</span>
@@ -288,25 +288,14 @@
                         </article>
                     </div>
                 </section>
-                <section id="records-view" class="panel records-panel" hidden>
-                    <div class="panel-head">
-                        <div>
-                            <h2 id="records-title">Top 50 charts</h2>
-                            <p class="panel-subtitle" id="records-description">
-                                Ranked by VF.
-                            </p>
-                        </div>
-                        <button class="text-button" id="export">
-                            Export JSON
-                        </button>
-                    </div>
+                <section id="records-view" class="panel records-panel" aria-label="Top 50" hidden>
                     <div class="table-tools">
                         <label class="search-wrap"
                             ><span aria-hidden="true">⌕</span
                             ><input
                                 id="search"
                                 type="search"
-                                placeholder="Search title or artist…"
+                                placeholder="Type anything..."
                                 aria-label="Search records" /></label
                         ><label class="select-wrap"
                             ><span class="sr-only">Sort records</span
@@ -343,30 +332,26 @@
                     </div>
                 </section>
                 <section
-                    id="leaderboard-view"
-                    class="panel leaderboard-panel"
+                    id="song-search-view"
+                    class="panel song-search-panel"
+                    aria-label="Search"
                     hidden
                 >
-                    <div class="panel-head">
-                        <div>
-                            <h2>Leaderboard</h2>
-                            <p class="panel-subtitle">
-                                Select a song and difficulty to see its plays,
-                                ranked by score.
-                            </p>
-                        </div>
-                    </div>
                     <div class="song-search">
-                        <input
-                            id="song-query"
-                            type="search"
-                            placeholder="Search"
-                            autocomplete="off"
-                            role="combobox"
-                            aria-autocomplete="list"
-                            aria-expanded="false"
-                            aria-controls="song-options"
-                        />
+                        <label class="search-wrap">
+                            <span aria-hidden="true">⌕</span>
+                            <input
+                                id="song-query"
+                                type="search"
+                                aria-label="Search songs by title or artist"
+                                placeholder="Type anything..."
+                                autocomplete="off"
+                                role="combobox"
+                                aria-autocomplete="list"
+                                aria-expanded="false"
+                                aria-controls="song-options"
+                            />
+                        </label>
                         <div
                             id="song-options"
                             role="listbox"
@@ -375,10 +360,10 @@
                         ></div>
                     </div>
                     <div id="selected-chart" hidden></div>
-                    <div id="leaderboard-empty" class="leaderboard-empty">
+                    <div id="song-search-empty" class="song-search-empty">
                         Search for a song above.
                     </div>
-                    <div id="leaderboard-results" hidden>
+                    <div id="song-search-results" hidden>
                         <div class="table-scroll">
                             <table>
                                 <thead>
@@ -390,20 +375,20 @@
                                         <th class="right">VF</th>
                                     </tr>
                                 </thead>
-                                <tbody id="leaderboard-records"></tbody>
+                                <tbody id="song-search-records"></tbody>
                             </table>
                         </div>
                         <div class="pagination">
-                            <span id="leaderboard-page-info"></span>
+                            <span id="song-search-page-info"></span>
                             <div>
                                 <button
-                                    id="leaderboard-previous"
-                                    aria-label="Previous leaderboard page"
+                                    id="song-search-previous"
+                                    aria-label="Previous song scores page"
                                 >
                                     ←</button
                                 ><button
-                                    id="leaderboard-next"
-                                    aria-label="Next leaderboard page"
+                                    id="song-search-next"
+                                    aria-label="Next song scores page"
                                 >
                                     →
                                 </button>

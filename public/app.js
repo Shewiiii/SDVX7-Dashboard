@@ -259,7 +259,7 @@ let hover = null;
 let catalog = [],
     songs = new Map(),
     selected = null,
-    leaderboardPage = 0,
+    songSearchPage = 0,
     matches = [],
     activeMatch = -1;
 
@@ -289,22 +289,22 @@ function prepareLoading() {
     $("top-foot").textContent = "";
     $("records").innerHTML =
         `<tr class="record-loading-row"><td colspan="6">${placeholders}</td></tr>`;
-    $("leaderboard-records").innerHTML =
+    $("song-search-records").innerHTML =
         `<tr class="record-loading-row"><td colspan="5">${placeholders}</td></tr>`;
     for (const id of [
         "previous",
         "next",
-        "leaderboard-previous",
-        "leaderboard-next",
+        "song-search-previous",
+        "song-search-next",
     ])
         $(id).disabled = true;
-    if (view === "leaderboard") {
+    if (view === "search") {
         $("selected-chart").hidden = !selected;
         if (selected)
             $("selected-chart").innerHTML =
                 '<div class="selected-song" aria-hidden="true"><span class="cover-tile large skeleton-shape"></span><div class="selected-song-info"><div class="skeleton-shape skeleton-heading"></div><div class="skeleton-shape skeleton-detail"></div><div class="skeleton-shape skeleton-title"></div></div></div>';
-        $("leaderboard-results").hidden = !selected;
-        $("leaderboard-empty").hidden = !!selected;
+        $("song-search-results").hidden = !selected;
+        $("song-search-empty").hidden = !!selected;
     }
     const mobile = window.matchMedia("(max-width: 700px)").matches;
     const width = mobile ? 400 : 1100;
@@ -1119,7 +1119,7 @@ function restoreScroll(position) {
 
 function scrollToCard() {
     restoreScroll({
-        card: view === "leaderboard" ? "leaderboard-view" : "records-view",
+        card: view === "search" ? "song-search-view" : "records-view",
     });
 }
 
@@ -1132,12 +1132,12 @@ function updateUrl(replace = false) {
             .map((button) => button.dataset.series)
             .filter((name) => shown.has(name));
         if (series.length !== 6) params.set("series", series.join(","));
-    } else if (view === "leaderboard") {
+    } else if (view === "search") {
         if (selected) {
             params.set("song", selected.music_id);
             params.set("diff", selected.diff_idx);
         }
-        if (leaderboardPage) params.set("page", leaderboardPage + 1);
+        if (songSearchPage) params.set("page", songSearchPage + 1);
     } else {
         if (page) params.set("page", page + 1);
         if ($("search").value) params.set("q", $("search").value);
@@ -1159,8 +1159,16 @@ function restoreUrl() {
     const previousDays = days;
     const previousChart = JSON.stringify([difficulty, [...shown]]);
     const [route, query = ""] = location.hash.slice(1).split("?");
-    const next = ["overview", "top", "history", "leaderboard"].includes(route)
-        ? route
+    // Keep previously shared song links working.
+    const routeName = route === "leaderboard" ? "search" : route;
+    if (routeName !== route)
+        history.replaceState(
+            history.state,
+            "",
+            `#${routeName}${query ? "?" + query : ""}`,
+        );
+    const next = ["overview", "top", "history", "search"].includes(routeName)
+        ? routeName
         : "overview";
     const params = new URLSearchParams(query);
     const pageNumber = Number(params.get("page"));
@@ -1198,7 +1206,7 @@ function restoreUrl() {
     const musicId = Number(params.get("song")),
         diff = Number(params.get("diff"));
     selected =
-        next === "leaderboard" &&
+        next === "search" &&
         params.has("diff") &&
         Number.isSafeInteger(musicId) &&
         musicId > 0 &&
@@ -1207,7 +1215,7 @@ function restoreUrl() {
         diff < DIFFS.length
             ? { music_id: musicId, diff_idx: diff }
             : null;
-    leaderboardPage = next === "leaderboard" ? restoredPage : 0;
+    songSearchPage = next === "search" ? restoredPage : 0;
     closeMatches();
     $("song-query").value =
         selected && songs.has(musicId)
@@ -1248,11 +1256,11 @@ function switchView(
     });
     $("overview-view").hidden = view !== "overview";
     $("records-view").hidden = !["top", "history"].includes(view);
-    $("leaderboard-view").hidden = view !== "leaderboard";
+    $("song-search-view").hidden = view !== "search";
     $("search").value = "";
     $("sort").value = view === "top" ? "vf" : "recent";
     if (view === "overview") renderChart({ animate });
-    else if (view === "leaderboard") renderLeaderboard({ animate });
+    else if (view === "search") renderSongSearch({ animate });
     else renderTable({ animate });
     if (!data && loading) prepareLoading();
     if (recordHistory) {
@@ -1265,14 +1273,9 @@ function renderTable({ animate = true } = {}) {
     const top = view === "top";
     const sort = $("sort").value;
     const grouped = !top && sort === "plays";
-    setText("records-title", top ? "Top 50 charts" : "Play history");
-    setText(
-        "records-description",
-        top
-            ? "Ranked by VF."
-            : grouped
-              ? "Grouped by song and difficulty, showing each chart’s best-scoring play."
-              : "All tracked plays, including crashes.",
+    $("records-view").setAttribute(
+        "aria-label",
+        top ? "Top 50" : "Play history",
     );
     setText("first-column", top ? "Rank" : grouped ? "Plays" : "Played");
     setText("records-score-heading", grouped ? "Best score" : "Score");
@@ -1382,13 +1385,12 @@ function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
     if (!song) return;
     rememberScroll();
     selected = { music_id: musicId, diff_idx: diff };
-    leaderboardPage = 0;
+    songSearchPage = 0;
     $("song-query").value = `${song.title} ${DIFFS[diff]}`;
     closeMatches();
-    if (view !== "leaderboard")
-        switchView("leaderboard", true, { animate, scroll });
+    if (view !== "search") switchView("search", true, { animate, scroll });
     else {
-        renderLeaderboard({ animate });
+        renderSongSearch({ animate });
         updateUrl();
         if (scroll) scrollToCard();
     }
@@ -1434,20 +1436,20 @@ function judgementDetails(play) {
         .join("")}</dl>`;
 }
 
-function renderLeaderboard({ animate = true } = {}) {
+function renderSongSearch({ animate = true } = {}) {
     if (!data) return;
     if (selected) animate = revealOnce(`song:${selected.music_id}`, animate);
     if (!animate) {
         for (const id of [
             "selected-chart",
-            "leaderboard-records",
-            "leaderboard-page-info",
+            "song-search-records",
+            "song-search-page-info",
         ])
             motion.stop($(id));
     }
     $("selected-chart").hidden = !selected;
-    $("leaderboard-empty").hidden = !!selected;
-    $("leaderboard-results").hidden = !selected;
+    $("song-search-empty").hidden = !!selected;
+    $("song-search-results").hidden = !selected;
     if (!selected) return;
     const song = songs.get(selected.music_id);
     if (
@@ -1455,8 +1457,8 @@ function renderLeaderboard({ animate = true } = {}) {
         !song.difficulties.some((d) => d.diff_idx === selected.diff_idx)
     ) {
         $("selected-chart").hidden = true;
-        $("leaderboard-results").hidden = true;
-        $("leaderboard-empty").hidden = false;
+        $("song-search-results").hidden = true;
+        $("song-search-empty").hidden = false;
         return;
     }
     if (!$("song-query").value)
@@ -1473,41 +1475,41 @@ function renderLeaderboard({ animate = true } = {}) {
     $("selected-chart").innerHTML =
         `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span></div></div></div></div>`;
     const pages = Math.max(1, Math.ceil(plays.length / PAGE_SIZE));
-    leaderboardPage = Math.min(leaderboardPage, pages - 1);
+    songSearchPage = Math.min(songSearchPage, pages - 1);
     const chunk = plays.slice(
-        leaderboardPage * PAGE_SIZE,
-        (leaderboardPage + 1) * PAGE_SIZE,
+        songSearchPage * PAGE_SIZE,
+        (songSearchPage + 1) * PAGE_SIZE,
     );
-    $("leaderboard-records").innerHTML = chunk.length
+    $("song-search-records").innerHTML = chunk.length
         ? chunk
               .map((p, index) => {
                   const key = judgementKey(p);
                   const expanded = expandedJudgements.has(key);
-                  return `<tr class="leaderboard-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index">${leaderboardPage * PAGE_SIZE + index + 1}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+                  return `<tr class="song-search-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index">${songSearchPage * PAGE_SIZE + index + 1}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
               })
               .join("")
         : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';
     setText(
-        "leaderboard-page-info",
-        `${plays.length} plays · Page ${leaderboardPage + 1} / ${pages}`,
+        "song-search-page-info",
+        `${plays.length} plays · Page ${songSearchPage + 1} / ${pages}`,
     );
-    $("leaderboard-previous").disabled = leaderboardPage === 0;
-    $("leaderboard-next").disabled = leaderboardPage + 1 >= pages;
+    $("song-search-previous").disabled = songSearchPage === 0;
+    $("song-search-next").disabled = songSearchPage + 1 >= pages;
     if (animate) {
         motion.data(
             $("selected-chart"),
             ".cover-tile.large, .selected-song-info",
         );
         motion.data(
-            $("leaderboard-records"),
-            ".leaderboard-entry, .judgement-row:not([hidden])",
+            $("song-search-records"),
+            ".song-search-entry, .judgement-row:not([hidden])",
         );
-        motion.data($("leaderboard-page-info"));
+        motion.data($("song-search-page-info"));
     }
 }
 
-$("leaderboard-records").addEventListener("click", (event) => {
-    const row = event.target.closest(".leaderboard-entry");
+$("song-search-records").addEventListener("click", (event) => {
+    const row = event.target.closest(".song-search-entry");
     if (!row) return;
     const button = row.querySelector(".judgement-toggle");
     const details = $(button.getAttribute("aria-controls"));
@@ -1597,17 +1599,17 @@ document.addEventListener(
     },
     true,
 );
-$("leaderboard-previous").addEventListener("click", () => {
+$("song-search-previous").addEventListener("click", () => {
     rememberScroll();
-    leaderboardPage--;
-    renderLeaderboard();
+    songSearchPage--;
+    renderSongSearch();
     updateUrl();
     scrollToCard();
 });
-$("leaderboard-next").addEventListener("click", () => {
+$("song-search-next").addEventListener("click", () => {
     rememberScroll();
-    leaderboardPage++;
-    renderLeaderboard();
+    songSearchPage++;
+    renderSongSearch();
     updateUrl();
     scrollToCard();
 });
@@ -1617,7 +1619,7 @@ async function load() {
     loading = true;
     document.body.dataset.loading = data ? "refresh" : "initial";
     $("main").setAttribute("aria-busy", "true");
-    setText("load-status-label", data ? "Updating…" : "Loading records…");
+    setText("load-status-label", data ? "Updating..." : "Loading records...");
     if (!data) prepareLoading();
     try {
         const response = await fetch("/api/data", { cache: "no-store" });
@@ -1644,7 +1646,7 @@ async function load() {
         renderSummary({ animate });
         void loadExchangeRate();
         renderChart({ animate });
-        if (view === "leaderboard") renderLeaderboard({ animate });
+        if (view === "search") renderSongSearch({ animate });
         else if (view !== "overview") renderTable({ animate });
         document.body.dataset.ready = "true";
         restoreScroll(pendingScroll);
@@ -1664,7 +1666,7 @@ async function load() {
                     '<div class="empty-list">No data available yet.</div>';
             $("records").innerHTML =
                 '<tr><td colspan="6">No data available yet.</td></tr>';
-            $("leaderboard-records").innerHTML =
+            $("song-search-records").innerHTML =
                 '<tr><td colspan="5">No data available yet.</td></tr>';
             $("selected-chart").hidden = true;
             setText("timing-summary", "Waiting for timing data.");
@@ -1692,9 +1694,9 @@ document.querySelector(".brand").addEventListener("click", (event) => {
 
 document.querySelectorAll("[data-view]").forEach((button) =>
     button.addEventListener("click", () => {
-        if (button.dataset.view === "leaderboard") {
+        if (button.dataset.view === "search") {
             selected = null;
-            leaderboardPage = 0;
+            songSearchPage = 0;
             $("song-query").value = "";
             closeMatches();
         }
@@ -1759,20 +1761,6 @@ $("all-plays").addEventListener("click", () =>
 $("all-top").addEventListener("click", () =>
     switchView("top", true, { scroll: true }),
 );
-$("export").addEventListener("click", () => {
-    if (!data) return;
-    const payload = view === "top" ? topCharts(data.state) : data.plays;
-    const url = URL.createObjectURL(
-        new Blob([JSON.stringify(payload, null, 2)], {
-            type: "application/json",
-        }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `sdvx-${view}-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
 document.addEventListener("visibilitychange", () => {
     if (!document.hidden) load();
 });

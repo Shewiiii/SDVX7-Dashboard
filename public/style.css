@@ -670,11 +670,8 @@ h1 {
 .top-list {
     padding-top: 9px;
 }
-.records-panel .panel-head {
-    padding-bottom: 24px;
-}
 .table-tools {
-    padding: 0 27px 22px;
+    padding: 22px 27px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -993,15 +990,8 @@ footer {
     .panel-foot {
         padding-inline: 18px;
     }
-    .records-panel .panel-head {
-        flex-direction: row;
-        align-items: center;
-    }
-    .records-panel h2 {
-        font-size: 16px;
-    }
     .table-tools {
-        padding: 0 18px 18px;
+        padding: 18px;
         gap: 8px;
         flex-wrap: wrap;
     }

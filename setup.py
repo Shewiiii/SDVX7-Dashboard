@@ -207,11 +207,9 @@ def deploy(config, tracker, node, npm, update=False):
     vercel(npm, "deploy", "--prod", "--yes")
     config = load_config()
     print(
-        "Copy the and paste the ALIASED URL you see above (it should be https://[what you typed before].vercel.app)."
+        "Copy the and paste the ALIASED URL you see above (it should be https://[what you typed before].vercel.app), OR your custom domain put in Vercel."
     )
-    config["url"] = prompt_origin(
-        "Aliased URL:", config.get("url", "")
-    )
+    config["url"] = prompt_origin("Aliased URL:", config.get("url", ""))
     save_config(config)
     print(
         "For a public dashboard, production Deployment Protection must allow public access."

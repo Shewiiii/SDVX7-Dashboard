@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import errno
 import hashlib
 import json
 import math
@@ -825,7 +826,12 @@ def run(once=False):
                 import fcntl
 
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError:
+        except OSError as error:
+            if error.errno not in (errno.EACCES, errno.EAGAIN):
+                raise
+            if once:
+                print("Dashboard sync is already running. Keeping the existing worker.")
+                return
             raise SystemExit("Dashboard sync is already running.") from None
         print("Dashboard sync running.")
         delay = 30

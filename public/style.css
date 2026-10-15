@@ -4,18 +4,6 @@
     font-weight: 300 700;
     font-display: swap;
 }
-@font-face {
-    font-family: "Space Mono";
-    src: url("/assets/fonts/space-mono-regular.ttf") format("truetype");
-    font-weight: 400;
-    font-display: swap;
-}
-@font-face {
-    font-family: "Space Mono";
-    src: url("/assets/fonts/space-mono-bold.ttf") format("truetype");
-    font-weight: 700;
-    font-display: swap;
-}
 :root {
     color-scheme: dark;
     --bg: #12121d;
@@ -26,7 +14,6 @@
     --line: #353346;
     --purple: #cba6f7;
     --total: #bc7bc5;
-    --mono: "Space Mono", monospace;
     --sans: "Space Grotesk", sans-serif;
 }
 * {
@@ -37,6 +24,7 @@ body {
     background: var(--bg);
     color: var(--ink);
     font-family: var(--sans);
+    font-variant-numeric: tabular-nums;
     font-size: 14px;
     line-height: 1.5;
 }
@@ -142,7 +130,6 @@ button:hover {
     gap: 14px;
     font-size: 16px;
     font-weight: 650;
-    letter-spacing: 1.3px;
 }
 .brand-mark {
     display: grid;
@@ -162,18 +149,15 @@ button:hover {
 }
 .brand-secondary {
     font-size: 11px;
-    letter-spacing: 0.9px;
     font-weight: 400;
     color: var(--muted);
 }
 .connection {
-    font: 10px var(--mono);
+    font: 10px var(--sans);
     color: var(--muted);
     display: flex;
     gap: 9px;
     align-items: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 .connection:before {
     content: "";
@@ -196,8 +180,7 @@ button:hover {
     padding: 46px 0 33px;
 }
 .eyebrow {
-    font: 9px var(--mono);
-    letter-spacing: 2px;
+    font: 9px var(--sans);
     color: var(--muted);
     display: flex;
     align-items: center;
@@ -213,7 +196,6 @@ h1 {
     font-size: 53px;
     line-height: 1.14;
     font-weight: 550;
-    letter-spacing: -2px;
     margin: 11px 0 8px;
 }
 .heading-dot {
@@ -232,14 +214,6 @@ h1 {
     color: var(--muted);
     font-size: 12px;
     padding-bottom: 5px;
-}
-.hero-meta .mono {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    color: var(--faint);
-}
-.mono {
-    font-family: var(--mono);
 }
 .notice {
     padding: 13px 18px;
@@ -277,8 +251,7 @@ h1 {
     background: var(--purple);
 }
 .metric-label {
-    font: 9px var(--mono);
-    letter-spacing: 1px;
+    font: 9px var(--sans);
     color: var(--muted);
     display: flex;
     justify-content: space-between;
@@ -291,8 +264,7 @@ h1 {
     color: #b39dce;
 }
 .metric-value {
-    font: 34px var(--mono);
-    letter-spacing: -1.7px;
+    font: 34px var(--sans);
     margin: 16px 0 7px;
     line-height: 1.1;
     position: relative;
@@ -355,7 +327,7 @@ h1 {
 }
 .tab-count {
     margin-left: 6px;
-    font: 9px var(--mono);
+    font: 9px var(--sans);
     padding: 2px 5px;
     border: 0;
     border-radius: 4px;
@@ -383,7 +355,6 @@ h1 {
 .panel-head h2 {
     font-size: 19px;
     font-weight: 500;
-    letter-spacing: -0.35px;
     margin: 7px 0 4px;
     display: flex;
     align-items: center;
@@ -397,7 +368,7 @@ h1 {
 }
 .panel-subtitle {
     color: var(--muted);
-    font-size: 11px;
+    font-size: 12px;
     margin: 0;
 }
 .chart-controls {
@@ -416,7 +387,7 @@ h1 {
     border: 0;
     background: none;
     color: var(--muted);
-    font: 10px var(--mono);
+    font: 10px var(--sans);
     padding: 7px 10px;
     border-radius: 4px;
 }
@@ -452,7 +423,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 6px;
-    font: 9px var(--mono);
+    font: 9px var(--sans);
     color: var(--muted);
     padding: 2px 0;
     border: 0;
@@ -498,13 +469,12 @@ h1 {
     overflow: visible;
 }
 #chart text {
-    font-family: var(--mono);
+    font-family: var(--sans);
     font-size: 10px;
     fill: #928da7;
 }
 #chart .axis-caption {
     font-size: 9px;
-    letter-spacing: 1px;
     fill: #c0b7d0;
 }
 #chart .grid {
@@ -549,7 +519,7 @@ h1 {
     margin-bottom: 7px;
 }
 .chart-tooltip .tooltip-value {
-    font: 16px var(--mono);
+    font: 16px var(--sans);
     color: var(--purple);
     margin: 3px 0;
 }
@@ -564,7 +534,7 @@ h1 {
     border-top: 0;
     padding: 14px 27px;
     color: var(--muted);
-    font: 9px var(--mono);
+    font: 11px var(--sans);
     gap: 14px;
 }
 .chart-summary strong {
@@ -573,7 +543,7 @@ h1 {
 }
 .chart-hint {
     color: var(--faint);
-    font: 10px var(--sans);
+    font: 11px var(--sans);
 }
 .lower-grid {
     display: grid;
@@ -600,7 +570,7 @@ h1 {
     margin-left: 5px;
 }
 .session-meta {
-    font: 9px var(--mono);
+    font: 12px var(--sans);
     color: var(--faint);
     padding: 0 25px 15px;
 }
@@ -616,7 +586,7 @@ h1 {
     border-top: 0;
 }
 .row-index {
-    font: 10px var(--mono);
+    font: 10px var(--sans);
     color: var(--faint);
 }
 .row-index.leading {
@@ -639,7 +609,7 @@ h1 {
     color: var(--faint);
 }
 .difficulty-badge {
-    font: 8px var(--mono);
+    font: 8px var(--sans);
     border: 0;
     border-radius: 3px;
     padding: 1px 4px;
@@ -668,7 +638,7 @@ h1 {
 }
 .row-values {
     text-align: right;
-    font-family: var(--mono);
+    font-family: var(--sans);
 }
 .row-vf {
     font-size: 13px;
@@ -687,7 +657,7 @@ h1 {
     color: #d8c295;
 }
 .panel-foot {
-    font: 9px var(--mono);
+    font: 12px var(--sans);
     color: var(--faint);
     border-top: 0;
     padding: 12px 25px;
@@ -753,13 +723,11 @@ thead {
     background: #ffffff02;
 }
 th {
-    font: 9px var(--mono);
+    font: 9px var(--sans);
     font-weight: 400;
     color: var(--faint);
     padding: 12px 15px;
     border-block: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 td {
     padding: 15px;
@@ -792,12 +760,12 @@ td .table-title {
     white-space: nowrap;
 }
 .score-cell {
-    font-family: var(--mono);
+    font-family: var(--sans);
     font-size: 10px;
     color: #c8c3d9;
 }
 .vf-cell {
-    font: 12px var(--mono);
+    font: 12px var(--sans);
     color: var(--purple);
 }
 tbody tr:hover {
@@ -827,8 +795,7 @@ footer {
     align-items: center;
     justify-content: space-between;
     color: var(--faint);
-    font: 8px var(--mono);
-    letter-spacing: 0.3px;
+    font: 11px var(--sans);
 }
 .footer-mark {
     color: var(--purple);
@@ -865,7 +832,6 @@ footer {
     }
     .metric-label {
         font-size: 8px;
-        letter-spacing: 0.5px;
     }
     .chart-controls {
         flex-direction: column;
@@ -921,7 +887,6 @@ footer {
     }
     .connection {
         font-size: 8px;
-        letter-spacing: 0;
     }
     .hero {
         padding: 31px 0 25px;
@@ -1007,7 +972,7 @@ footer {
     }
     .chart-summary {
         padding: 13px 18px;
-        font-size: 8px;
+        font-size: 12px;
     }
     .lower-grid {
         grid-template-columns: 1fr;
@@ -1056,7 +1021,7 @@ footer {
         padding: 15px 18px;
     }
     footer {
-        font-size: 7px;
+        font-size: 10px;
         gap: 20px;
         align-items: flex-start;
     }
@@ -1065,7 +1030,6 @@ footer {
     }
     .eyebrow {
         font-size: 8px;
-        letter-spacing: 1.5px;
     }
 }
 .ambient {

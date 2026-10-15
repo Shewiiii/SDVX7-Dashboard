@@ -316,10 +316,7 @@
                                 <option value="recent">Most recent</option>
                                 <option value="plays">Most played</option>
                             </select></label
-                        ><span
-                            class="result-count"
-                            id="result-count"
-                        ></span>
+                        ><span class="result-count" id="result-count"></span>
                     </div>
                     <div class="table-scroll">
                         <table>
@@ -328,7 +325,7 @@
                                     <th id="first-column">Rank</th>
                                     <th>Chart</th>
                                     <th>Difficulty</th>
-                                    <th>Score</th>
+                                    <th id="records-score-heading">Score</th>
                                     <th>Clear</th>
                                     <th class="right">VF</th>
                                 </tr>
@@ -360,11 +357,10 @@
                         </div>
                     </div>
                     <div class="song-search">
-                        <label for="song-query">Song</label
-                        ><input
+                        <input
                             id="song-query"
                             type="search"
-                            placeholder="Title, artist, or reading…"
+                            placeholder="Search"
                             autocomplete="off"
                             role="combobox"
                             aria-autocomplete="list"
@@ -398,9 +394,7 @@
                             </table>
                         </div>
                         <div class="pagination">
-                            <span
-                                id="leaderboard-page-info"
-                            ></span>
+                            <span id="leaderboard-page-info"></span>
                             <div>
                                 <button
                                     id="leaderboard-previous"

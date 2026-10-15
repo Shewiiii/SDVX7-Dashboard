@@ -24,6 +24,7 @@ import {
 import { motion } from "./motion.js";
 
 const $ = (id) => document.getElementById(id);
+const PAGE_SIZE = 50;
 const STANDARD_START_YEN = 267;
 const START_PRICES = [
     ["Light Start", 3, 206],
@@ -620,10 +621,10 @@ function renderTimingHistogram({ animate = true } = {}) {
         );
     }
     for (const [offset, judgement] of [
-        [41.6, "CRITICAL"],
-        [20.8, "S-CRITICAL"],
-        [-20.8, "S-CRITICAL"],
-        [-41.6, "CRITICAL"],
+        [41.6, "Critical"],
+        [20.8, "S-Critical"],
+        [-20.8, "S-Critical"],
+        [-41.6, "Critical"],
     ]) {
         const position = xOffset(offset);
         const caption = `${offset > 0 ? "+" : "−"}${Math.abs(offset)} ms`;
@@ -663,8 +664,8 @@ function renderTimingHistogram({ animate = true } = {}) {
         );
     }
     for (const [position, label, anchor] of [
-        [left, "EARLY", "start"],
-        [right, "LATE", "end"],
+        [left, "Early", "start"],
+        [right, "Late", "end"],
     ])
         svg.append(
             svgElement(
@@ -733,7 +734,7 @@ function renderTimingHistogram({ animate = true } = {}) {
         ),
     );
     $("timing-summary").innerHTML =
-        `<strong>${number(stats.plays)}</strong> plays · <strong>${number(stats.hits)}</strong> notes · Average <strong>${timingText(stats.average)}</strong>`;
+        `<strong>${number(stats.plays)}</strong> plays · <strong>${number(stats.hits)}</strong> notes · Average <strong>${timingText(stats.average)}</strong>`;
     motion.histogram(svg, animate);
     if (animate) motion.data($("timing-summary"));
 }
@@ -823,7 +824,7 @@ function renderChart({ animate = true, transition = false } = {}) {
         svgElement(
             "text",
             { x: right, y: 17, "text-anchor": "end", class: "axis-caption" },
-            "CHART VF",
+            "Chart VF",
         ),
     );
     if (observations.length && shown.has("total"))
@@ -835,7 +836,7 @@ function renderChart({ animate = true, transition = false } = {}) {
                     y: 17,
                     class: "axis-caption",
                 },
-                "TOTAL VF",
+                "Total VF",
             ),
         );
     const gridCount = mobile ? 8 : 12;
@@ -1009,7 +1010,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     svg.append(crosshair, markers);
     hover = { series, x, start, end, left, right, crosshair, markers, width };
     $("chart-summary").innerHTML =
-        `<strong>${number(plays.length)}</strong> plays · Best <strong>${vf(Math.max(...values))}</strong> · Average <strong>${vf(average(values))}</strong>`;
+        `<strong>${number(plays.length)}</strong> plays · Best <strong>${vf(Math.max(...values))}</strong> · Average <strong>${vf(average(values))}</strong>`;
     motion.history(svg, animate);
     if (animate) motion.data($("chart-summary"));
 }
@@ -1102,8 +1103,24 @@ function restoreScroll(position) {
     pendingScroll = position;
     if (!data) return;
     pendingScroll = null;
-    window.scrollTo({ left: position.x, top: position.y, behavior: "instant" });
+    const top = position.card
+        ? $(position.card).getBoundingClientRect().top + scrollY - 16
+        : position.y;
+    const smooth =
+        position.card &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({
+        left: position.x ?? 0,
+        top,
+        behavior: smooth ? "smooth" : "instant",
+    });
     rememberScroll();
+}
+
+function scrollToCard() {
+    restoreScroll({
+        card: view === "leaderboard" ? "leaderboard-view" : "records-view",
+    });
 }
 
 function updateUrl(replace = false) {
@@ -1212,7 +1229,11 @@ function restoreUrl() {
     restoreScroll(savedScroll);
 }
 
-function switchView(next, recordHistory = true, { animate = true } = {}) {
+function switchView(
+    next,
+    recordHistory = true,
+    { animate = true, scroll = false } = {},
+) {
     if (recordHistory) {
         pendingScroll = null;
         rememberScroll();
@@ -1234,17 +1255,27 @@ function switchView(next, recordHistory = true, { animate = true } = {}) {
     else if (view === "leaderboard") renderLeaderboard({ animate });
     else renderTable({ animate });
     if (!data && loading) prepareLoading();
-    if (recordHistory) updateUrl();
+    if (recordHistory) {
+        updateUrl();
+        if (scroll && view !== "overview") scrollToCard();
+    }
 }
 
 function renderTable({ animate = true } = {}) {
     const top = view === "top";
+    const sort = $("sort").value;
+    const grouped = !top && sort === "plays";
     setText("records-title", top ? "Top 50 charts" : "Play history");
     setText(
         "records-description",
-        top ? "Ranked by VF." : "All tracked plays, including crashes.",
+        top
+            ? "Ranked by VF."
+            : grouped
+              ? "Grouped by song and difficulty, showing each chart’s best-scoring play."
+              : "All tracked plays, including crashes.",
     );
-    setText("first-column", top ? "Rank" : "Played");
+    setText("first-column", top ? "Rank" : grouped ? "Plays" : "Played");
+    setText("records-score-heading", grouped ? "Best score" : "Score");
     if (!data) return;
     animate = revealOnce(view, animate);
     if (!animate) {
@@ -1256,14 +1287,29 @@ function renderTable({ animate = true } = {}) {
         ? topCharts(data.state).map((p, i) => ({ ...p, rank: i + 1 }))
         : data.plays;
     let records = filterCharts(source, catalog, query);
-    const sort = $("sort").value;
+    const totalPlays = records.length;
     const playCounts = new Map();
+    const chartOrder = new Map();
     const chartKey = (p) => `${p.music_id}:${p.diff_idx}`;
     if (sort === "plays") {
         for (const play of data.plays) {
             const key = chartKey(play);
             playCounts.set(key, (playCounts.get(key) || 0) + 1);
         }
+        const ordered = [...records].sort((a, b) =>
+            top ? a.rank - b.rank : byTime(b, a),
+        );
+        const bestPlays = new Map();
+        for (const record of ordered) {
+            const key = chartKey(record);
+            if (!chartOrder.has(key)) chartOrder.set(key, chartOrder.size);
+            if (
+                !bestPlays.has(key) ||
+                (record.score ?? -1) > (bestPlays.get(key).score ?? -1)
+            )
+                bestPlays.set(key, record);
+        }
+        if (grouped) records = [...bestPlays.values()];
     }
     records = [...records].sort(
         sort === "vf"
@@ -1274,26 +1320,29 @@ function renderTable({ animate = true } = {}) {
                 ? (a, b) =>
                       (playCounts.get(chartKey(b)) || 0) -
                           (playCounts.get(chartKey(a)) || 0) ||
+                      chartOrder.get(chartKey(a)) -
+                          chartOrder.get(chartKey(b)) ||
                       (top ? a.rank - b.rank : byTime(b, a))
                 : (a, b) => (top ? a.rank - b.rank : byTime(b, a)),
     );
-    const pageSize = 50;
-    const pages = Math.max(1, Math.ceil(records.length / pageSize));
+    const pages = Math.max(1, Math.ceil(records.length / PAGE_SIZE));
     page = Math.min(page, pages - 1);
-    const chunk = records.slice(page * pageSize, (page + 1) * pageSize);
+    const chunk = records.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
     $("records").innerHTML = chunk.length
         ? chunk
               .map(
                   (p) =>
-                      `<tr class="chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><td class="row-index">${top ? String(p.rank).padStart(2, "0") : `${shortDate(p.received_at)}<br>${clock(p.received_at)}`}</td><td><div class="table-song">${coverMarkup(p)}<div>${chartButton(p)}<div class="artist">${escape(p.artist)}</div></div></div></td><td>${badge(p)}</td><td class="score-cell">${number(p.score)}</td><td>${clear(p)}</td><td class="right vf-cell">${vf(p.vf ?? p.play_vf)}</td></tr>`,
+                      `<tr class="chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><td class="row-index">${top ? String(p.rank).padStart(2, "0") : grouped ? `${number(playCounts.get(chartKey(p)))}<br>${playCounts.get(chartKey(p)) === 1 ? "play" : "plays"}` : `${shortDate(p.received_at)}<br>${clock(p.received_at)}`}</td><td><div class="table-song">${coverMarkup(p)}<div>${chartButton(p)}<div class="artist">${escape(p.artist)}</div></div></div></td><td>${badge(p)}</td><td class="score-cell">${number(p.score)}</td><td>${clear(p)}</td><td class="right vf-cell">${vf(p.vf ?? p.play_vf)}</td></tr>`,
               )
               .join("")
         : '<tr><td colspan="6">No matching charts.</td></tr>';
     setText(
         "result-count",
-        `${number(records.length)} ${top ? "charts" : "plays"}`,
+        grouped
+            ? `${number(totalPlays)} ${totalPlays === 1 ? "play" : "plays"} across ${number(records.length)} ${records.length === 1 ? "chart" : "charts"}`
+            : `${number(records.length)} ${top ? "charts" : "plays"}`,
     );
-    setText("page-info", `PAGE ${page + 1} / ${pages}`);
+    setText("page-info", `Page ${page + 1} / ${pages}`);
     $("previous").disabled = page === 0;
     $("next").disabled = page + 1 >= pages;
     if (animate) {
@@ -1328,7 +1377,7 @@ function renderMatches() {
     $("song-query").removeAttribute("aria-activedescendant");
 }
 
-function selectChart(musicId, diff, { animate = true } = {}) {
+function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
     const song = songs.get(musicId);
     if (!song) return;
     rememberScroll();
@@ -1336,10 +1385,12 @@ function selectChart(musicId, diff, { animate = true } = {}) {
     leaderboardPage = 0;
     $("song-query").value = `${song.title} ${DIFFS[diff]}`;
     closeMatches();
-    if (view !== "leaderboard") switchView("leaderboard", true, { animate });
+    if (view !== "leaderboard")
+        switchView("leaderboard", true, { animate, scroll });
     else {
         renderLeaderboard({ animate });
         updateUrl();
+        if (scroll) scrollToCard();
     }
 }
 
@@ -1355,11 +1406,11 @@ const judgementKey = (play) =>
 
 function judgementDetails(play) {
     const fields = [
-        ["s_critical", "S-CRITICAL"],
-        ["critical", "CRITICAL"],
-        ["near", "NEAR"],
-        ["error", "ERROR"],
-        ["timing", "TIMING"],
+        ["s_critical", "S-Critical"],
+        ["critical", "Critical"],
+        ["near", "Near"],
+        ["error", "Error"],
+        ["timing", "Timing"],
     ];
     const count = (key) =>
         Number.isSafeInteger(play.judgments?.[key])
@@ -1421,15 +1472,18 @@ function renderLeaderboard({ animate = true } = {}) {
         (plays.length ? Math.max(...plays.map((p) => p.clear_type)) : null);
     $("selected-chart").innerHTML =
         `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span></div></div></div></div>`;
-    const pages = Math.max(1, Math.ceil(plays.length / 10));
+    const pages = Math.max(1, Math.ceil(plays.length / PAGE_SIZE));
     leaderboardPage = Math.min(leaderboardPage, pages - 1);
-    const chunk = plays.slice(leaderboardPage * 10, (leaderboardPage + 1) * 10);
+    const chunk = plays.slice(
+        leaderboardPage * PAGE_SIZE,
+        (leaderboardPage + 1) * PAGE_SIZE,
+    );
     $("leaderboard-records").innerHTML = chunk.length
         ? chunk
               .map((p, index) => {
                   const key = judgementKey(p);
                   const expanded = expandedJudgements.has(key);
-                  return `<tr class="leaderboard-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index">${leaderboardPage * 10 + index + 1}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+                  return `<tr class="leaderboard-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index">${leaderboardPage * PAGE_SIZE + index + 1}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td>${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
               })
               .join("")
         : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';
@@ -1532,6 +1586,7 @@ document.addEventListener("click", (event) => {
     )
         selectChart(selected.music_id, Number(diff.dataset.chartDiff), {
             animate: false,
+            scroll: false,
         });
 });
 document.addEventListener(
@@ -1543,14 +1598,18 @@ document.addEventListener(
     true,
 );
 $("leaderboard-previous").addEventListener("click", () => {
+    rememberScroll();
     leaderboardPage--;
     renderLeaderboard();
     updateUrl();
+    scrollToCard();
 });
 $("leaderboard-next").addEventListener("click", () => {
+    rememberScroll();
     leaderboardPage++;
     renderLeaderboard();
     updateUrl();
+    scrollToCard();
 });
 
 async function load() {
@@ -1685,15 +1744,21 @@ $("previous").addEventListener("click", () => {
     page--;
     renderTable();
     updateUrl();
+    scrollToCard();
 });
 $("next").addEventListener("click", () => {
     rememberScroll();
     page++;
     renderTable();
     updateUrl();
+    scrollToCard();
 });
-$("all-plays").addEventListener("click", () => switchView("history"));
-$("all-top").addEventListener("click", () => switchView("top"));
+$("all-plays").addEventListener("click", () =>
+    switchView("history", true, { scroll: true }),
+);
+$("all-top").addEventListener("click", () =>
+    switchView("top", true, { scroll: true }),
+);
 $("export").addEventListener("click", () => {
     if (!data) return;
     const payload = view === "top" ? topCharts(data.state) : data.plays;

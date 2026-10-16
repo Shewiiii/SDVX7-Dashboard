@@ -45,7 +45,9 @@ function clearTree(root) {
 
 function visible(root, minimum = 0) {
     if (document.hidden) return false;
-    const bounds = root.getBoundingClientRect();
+    let bounds = root.getBoundingClientRect();
+    if (!bounds.height && root.ownerSVGElement)
+        bounds = root.ownerSVGElement.getBoundingClientRect();
     const top = window.visualViewport?.offsetTop || 0;
     const bottom = top + (window.visualViewport?.height || innerHeight) - 16;
     const height = Math.min(bounds.bottom, bottom) - Math.max(bounds.top, top);
@@ -145,6 +147,18 @@ function draw(root, path, delay = 0, duration = 950) {
             { strokeDasharray: `${length} ${length}`, strokeDashoffset: 0 },
         ],
         { delay, duration },
+    );
+}
+
+function sweep(root, element, delay = 0) {
+    play(
+        root,
+        element,
+        [
+            { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+            { opacity: 1, clipPath: "inset(0 0% 0 0)" },
+        ],
+        { duration: 1100, delay, easing: graphEase },
     );
 }
 
@@ -295,6 +309,35 @@ export const motion = {
                         ],
                         { duration: 1100, delay: 180, easing: graphEase },
                     );
+            },
+            0.5,
+        );
+    },
+    calculator(svg, animate = true) {
+        if (!animate && !pending.has(svg)) return;
+        queue(
+            svg,
+            () => {
+                svg.querySelectorAll(
+                    ".calculator-curve:not([hidden]), .calculator-reference",
+                ).forEach((curve, index) => sweep(svg, curve, index * 65));
+                const markers = svg.querySelector(".calculator-markers");
+                if (markers)
+                    play(svg, markers, [{ opacity: 0 }, { opacity: 1 }], {
+                        duration: 300,
+                        delay: 900,
+                    });
+            },
+            0.5,
+        );
+    },
+    calculatorReferences(root) {
+        queue(
+            root,
+            () => {
+                root.querySelectorAll(".calculator-reference").forEach(
+                    (reference, index) => sweep(root, reference, index * 65),
+                );
             },
             0.5,
         );

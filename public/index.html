@@ -144,7 +144,10 @@
                         ><button class="tab" data-view="top">Top 50</button
                         ><button class="tab" data-view="history">
                             Play history</button
-                        ><button class="tab" data-view="search">Search</button>
+                        ><button class="tab" data-view="search">Search</button
+                        ><button class="tab" data-view="calculator">
+                            VF Calculator
+                        </button>
                     </nav>
                     <span class="tab-caption" id="updated">—</span>
                 </div>
@@ -295,14 +298,41 @@
                     hidden
                 >
                     <div class="table-tools">
-                        <label class="search-wrap"
-                            ><span aria-hidden="true">⌕</span
-                            ><input
+                        <div class="search-wrap">
+                            <span aria-hidden="true">⌕</span>
+                            <input
                                 id="search"
-                                type="search"
+                                type="text"
+                                role="searchbox"
+                                inputmode="search"
+                                enterkeyhint="search"
                                 placeholder="Type anything..."
-                                aria-label="Search records" /></label
-                        ><label class="select-wrap"
+                                aria-label="Search records"
+                            />
+                            <button
+                                type="button"
+                                class="search-clear"
+                                data-clear-input="search"
+                                aria-label="Clear record search"
+                                hidden
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 16 16"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="m4 4 8 8m0-8-8 8"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                        <label class="select-wrap"
                             ><span class="sr-only">Sort records</span
                             ><select id="sort">
                                 <option value="vf">Highest VolForce</option>
@@ -343,11 +373,13 @@
                     hidden
                 >
                     <div class="song-search">
-                        <label class="search-wrap">
+                        <div class="search-wrap">
                             <span aria-hidden="true">⌕</span>
                             <input
                                 id="song-query"
-                                type="search"
+                                type="text"
+                                inputmode="search"
+                                enterkeyhint="search"
                                 aria-label="Search songs by title or artist"
                                 placeholder="Type anything..."
                                 autocomplete="off"
@@ -356,7 +388,29 @@
                                 aria-expanded="false"
                                 aria-controls="song-options"
                             />
-                        </label>
+                            <button
+                                type="button"
+                                class="search-clear"
+                                data-clear-input="song-query"
+                                aria-label="Clear song search"
+                                hidden
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 16 16"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="m4 4 8 8m0-8-8 8"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
                         <div
                             id="song-options"
                             role="listbox"
@@ -399,6 +453,167 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </section>
+                <section
+                    id="calculator-view"
+                    class="panel calculator-panel"
+                    aria-labelledby="calculator-title"
+                    hidden
+                >
+                    <div class="panel-head">
+                        <div>
+                            <h2 id="calculator-title">VF Calculator</h2>
+                            <p class="panel-subtitle">
+                                Chart VolForce by score or difficulty
+                            </p>
+                        </div>
+                    </div>
+                    <div class="calculator-controls">
+                        <div
+                            class="segmented"
+                            role="group"
+                            aria-label="Calculator mode"
+                        >
+                            <button
+                                type="button"
+                                data-calculator-mode="score"
+                                class="selected"
+                                aria-pressed="true"
+                            >
+                                Variable Score
+                            </button>
+                            <button
+                                type="button"
+                                data-calculator-mode="difficulty"
+                                aria-pressed="false"
+                            >
+                                Variable Difficulty
+                            </button>
+                        </div>
+                        <div
+                            class="calculator-field"
+                            id="calculator-level-field"
+                        >
+                            <label for="calculator-level">Difficulty</label>
+                            <div class="calculator-number-control">
+                                <input
+                                    id="calculator-level"
+                                    type="number"
+                                    min="1"
+                                    max="20.9"
+                                    step="0.1"
+                                    value="18"
+                                    inputmode="decimal"
+                                    required
+                                    aria-describedby="calculator-validation"
+                                />
+                                <div class="calculator-number-steps">
+                                    <button
+                                        type="button"
+                                        data-step-input="level"
+                                        data-step="1"
+                                        aria-label="Increase difficulty"
+                                    >
+                                        ▴
+                                    </button>
+                                    <button
+                                        type="button"
+                                        data-step-input="level"
+                                        data-step="-1"
+                                        aria-label="Decrease difficulty"
+                                    >
+                                        ▾
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="calculator-field"
+                            id="calculator-score-field"
+                            hidden
+                        >
+                            <label for="calculator-score">Score</label>
+                            <div class="calculator-number-control">
+                                <input
+                                    id="calculator-score"
+                                    type="text"
+                                    role="spinbutton"
+                                    aria-valuemin="0"
+                                    aria-valuemax="10000000"
+                                    aria-valuenow="9500000"
+                                    value="9&#8239;500&#8239;000"
+                                    inputmode="numeric"
+                                    autocomplete="off"
+                                    required
+                                    aria-describedby="calculator-validation"
+                                />
+                                <div class="calculator-number-steps">
+                                    <button
+                                        type="button"
+                                        data-step-input="score"
+                                        data-step="1"
+                                        aria-label="Increase score by 25,000"
+                                    >
+                                        ▴
+                                    </button>
+                                    <button
+                                        type="button"
+                                        data-step-input="score"
+                                        data-step="-1"
+                                        aria-label="Decrease score by 25,000"
+                                    >
+                                        ▾
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p
+                        id="calculator-validation"
+                        class="calculator-validation"
+                        role="status"
+                        hidden
+                    ></p>
+                    <div class="calculator-chart-wrap">
+                        <svg
+                            id="calculator-chart"
+                            class="chart-svg"
+                            viewBox="0 0 1100 390"
+                            role="img"
+                            aria-label="Chart VolForce calculator"
+                        ></svg>
+                    </div>
+                    <div class="calculator-readout">
+                        <div
+                            id="calculator-reference-legend"
+                            class="calculator-reference-legend"
+                            aria-label="Personal VF reference lines"
+                            hidden
+                        ></div>
+                        <label class="calculator-target">
+                            <span id="calculator-target-label"
+                                >Target score</span
+                            >
+                            <input
+                                id="calculator-target"
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.000001"
+                                value="0.61"
+                                aria-labelledby="calculator-target-label"
+                            />
+                            <output
+                                id="calculator-point"
+                                for="calculator-target"
+                            ></output>
+                        </label>
+                        <div
+                            id="calculator-legend"
+                            class="calculator-legend"
+                            aria-label="Chart VF by clear type"
+                        ></div>
                     </div>
                 </section>
             </main>

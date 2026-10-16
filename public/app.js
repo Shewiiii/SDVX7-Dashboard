@@ -24,6 +24,8 @@ import {
     TIMING_OFFSETS,
 } from "./metrics.js";
 import { motion } from "./motion.js";
+import { svgElement, pathData } from "./svg.js";
+import { createCalculator } from "./calculator.js";
 
 const $ = (id) => document.getElementById(id);
 const STANDARD_START_YEN = 267;
@@ -245,6 +247,12 @@ let data = null,
     loading = false;
 let dataFingerprint = "";
 const revealedViews = new Set();
+const defaultRecordSorts = { top: "vf", history: "recent" };
+const recordSorts = { ...defaultRecordSorts };
+const calculator = createCalculator(
+    () => updateUrl(true),
+    () => stats,
+);
 let pendingScroll = null,
     scrollSaveTimer;
 history.scrollRestoration = "manual";
@@ -433,25 +441,6 @@ function renderSummary({ animate = true } = {}) {
     }
 }
 
-const NS = "http://www.w3.org/2000/svg";
-function svgElement(tag, attrs = {}, content) {
-    const element = document.createElementNS(NS, tag);
-    Object.entries(attrs).forEach(([k, v]) => element.setAttribute(k, v));
-    if (content !== undefined) element.textContent = content;
-    return element;
-}
-function pathData(points, x, y, step = false) {
-    if (!points.length) return "";
-    return points
-        .map((p, index) =>
-            index === 0
-                ? `M${x(p[0]).toFixed(2)},${y(p[1]).toFixed(2)}`
-                : step
-                  ? `H${x(p[0]).toFixed(2)}V${y(p[1]).toFixed(2)}`
-                  : `L${x(p[0]).toFixed(2)},${y(p[1]).toFixed(2)}`,
-        )
-        .join(" ");
-}
 function renderSpark() {
     const points = [...data.observations].sort(byTime);
     if (points.length < 2) {
@@ -1139,10 +1128,13 @@ function updateUrl(replace = false) {
             params.set("diff", selected.diff_idx);
         }
         if (songSearchPage) params.set("page", songSearchPage + 1);
+    } else if (view === "calculator") {
+        for (const [key, value] of Object.entries(calculator.parameters()))
+            params.set(key, value);
     } else {
         if (page) params.set("page", page + 1);
         if ($("search").value) params.set("q", $("search").value);
-        const defaultSort = view === "top" ? "vf" : "recent";
+        const defaultSort = defaultRecordSorts[view];
         if ($("sort").value !== defaultSort)
             params.set("sort", $("sort").value);
     }
@@ -1168,10 +1160,17 @@ function restoreUrl() {
             "",
             `#${routeName}${query ? "?" + query : ""}`,
         );
-    const next = ["overview", "top", "history", "search"].includes(routeName)
+    const next = [
+        "overview",
+        "top",
+        "history",
+        "search",
+        "calculator",
+    ].includes(routeName)
         ? routeName
         : "overview";
     const params = new URLSearchParams(query);
+    if (next === "calculator") calculator.restore(params);
     const pageNumber = Number(params.get("page"));
     const restoredPage =
         Number.isSafeInteger(pageNumber) && pageNumber > 0 ? pageNumber - 1 : 0;
@@ -1231,8 +1230,10 @@ function restoreUrl() {
         page = restoredPage;
         $("search").value = params.get("q") || "";
         const sort = params.get("sort");
-        if (["vf", "score", "recent", "plays"].includes(sort))
-            $("sort").value = sort;
+        $("sort").value = ["vf", "score", "recent", "plays"].includes(sort)
+            ? sort
+            : defaultRecordSorts[next];
+        recordSorts[next] = $("sort").value;
         renderTable({ animate: false });
     }
     restoreScroll(savedScroll);
@@ -1247,6 +1248,7 @@ function switchView(
         pendingScroll = null;
         rememberScroll();
     }
+    if (view in recordSorts) recordSorts[view] = $("sort").value;
     view = next;
     page = 0;
     document.querySelectorAll(".tab").forEach((button) => {
@@ -1258,10 +1260,14 @@ function switchView(
     $("overview-view").hidden = view !== "overview";
     $("records-view").hidden = !["top", "history"].includes(view);
     $("song-search-view").hidden = view !== "search";
+    $("calculator-view").hidden = view !== "calculator";
     $("search").value = "";
-    $("sort").value = view === "top" ? "vf" : "recent";
+    $("sort").value = recordSorts[view] || defaultRecordSorts.history;
+    updateSearchClearButtons();
     if (view === "overview") renderChart({ animate });
     else if (view === "search") renderSongSearch({ animate });
+    else if (view === "calculator")
+        calculator.render({ animate: revealOnce("calculator", animate) });
     else renderTable({ animate });
     if (!data && loading) prepareLoading();
     if (recordHistory) {
@@ -1304,6 +1310,7 @@ function renderTable({ animate = true } = {}) {
     );
     setText("first-column", top ? "Rank" : grouped ? "Plays" : "Played");
     setText("records-score-heading", grouped ? "Best score" : "Score");
+    updateSearchClearButtons();
     if (!data) return;
     animate = revealOnce(view, animate);
     if (!animate) {
@@ -1339,6 +1346,48 @@ function renderTable({ animate = true } = {}) {
     }
 }
 
+function updateSearchClearButtons() {
+    document.querySelectorAll("[data-clear-input]").forEach((button) => {
+        button.hidden = !$(button.dataset.clearInput).value;
+    });
+}
+
+function updateSearchOptionsHeight() {
+    const input = $("song-query");
+    const options = $("song-options");
+    if (
+        document.activeElement !== input ||
+        !matchMedia("(max-width: 700px)").matches
+    ) {
+        options.style.removeProperty("--search-options-max-height");
+        return;
+    }
+    const viewport = window.visualViewport;
+    const bottom =
+        (viewport?.offsetTop || 0) + (viewport?.height || innerHeight);
+    const field = input.closest(".search-wrap").getBoundingClientRect();
+    options.style.setProperty(
+        "--search-options-max-height",
+        `${Math.max(80, bottom - field.bottom - 12)}px`,
+    );
+}
+
+let searchRevealTimer;
+let searchViewportHeight = window.visualViewport?.height || innerHeight;
+function scheduleSearchReveal() {
+    clearTimeout(searchRevealTimer);
+    searchRevealTimer = setTimeout(() => {
+        const input = document.activeElement;
+        if (
+            !input?.matches(".search-wrap input") ||
+            !matchMedia("(max-width: 700px)").matches
+        )
+            return;
+        scrollToCard();
+        updateSearchOptionsHeight();
+    }, 80);
+}
+
 function closeMatches() {
     $("song-options").hidden = true;
     $("song-query").setAttribute("aria-expanded", "false");
@@ -1347,6 +1396,7 @@ function closeMatches() {
 }
 
 function renderMatches() {
+    updateSearchClearButtons();
     if (!data) return;
     matches = searchCharts(catalog, $("song-query").value);
     activeMatch = -1;
@@ -1359,9 +1409,11 @@ function renderMatches() {
               )
               .join("")
         : '<div class="search-empty">No matching song.</div>';
+    list.scrollTop = 0;
     list.hidden = false;
     $("song-query").setAttribute("aria-expanded", "true");
     $("song-query").removeAttribute("aria-activedescendant");
+    updateSearchOptionsHeight();
 }
 
 function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
@@ -1441,6 +1493,7 @@ function fitDifficultyButtons() {
 }
 
 function renderSongSearch({ animate = true } = {}) {
+    updateSearchClearButtons();
     if (!data) return;
     if (selected) animate = revealOnce(`song:${selected.music_id}`, animate);
     if (!animate) {
@@ -1467,6 +1520,7 @@ function renderSongSearch({ animate = true } = {}) {
     }
     if (!$("song-query").value)
         $("song-query").value = `${song.title} ${DIFFS[selected.diff_idx]}`;
+    updateSearchClearButtons();
     const averageTiming = average(
         data.plays
             .filter(
@@ -1540,6 +1594,30 @@ $("song-search-records").addEventListener("click", (event) => {
         `${details.hidden ? "Show" : "Hide"} judgements for score ${row.querySelector(".score-with-grade span").textContent}`,
     );
 });
+
+document.querySelectorAll("[data-clear-input]").forEach((button) => {
+    button.addEventListener("pointerdown", (event) => event.preventDefault());
+    button.addEventListener("click", () => {
+        const input = $(button.dataset.clearInput);
+        input.value = "";
+        input.focus({ preventScroll: true });
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+});
+document.addEventListener("focusin", (event) => {
+    if (event.target.matches(".search-wrap input")) scheduleSearchReveal();
+});
+document.addEventListener("focusout", () =>
+    setTimeout(updateSearchOptionsHeight, 0),
+);
+window.visualViewport?.addEventListener("resize", () => {
+    const height = window.visualViewport.height;
+    if (height < searchViewportHeight) scheduleSearchReveal();
+    searchViewportHeight = height;
+    updateSearchOptionsHeight();
+});
+window.visualViewport?.addEventListener("scroll", updateSearchOptionsHeight);
+window.addEventListener("scroll", updateSearchOptionsHeight, { passive: true });
 
 $("song-query").addEventListener("input", renderMatches);
 $("song-query").addEventListener("focus", renderMatches);
@@ -1659,7 +1737,8 @@ async function load() {
         void loadExchangeRate();
         renderChart({ animate });
         if (view === "search") renderSongSearch({ animate });
-        else if (view !== "overview") renderTable({ animate });
+        else if (view === "calculator") calculator.updateReferences();
+        else if (["top", "history"].includes(view)) renderTable({ animate });
         document.body.dataset.ready = "true";
         restoreScroll(pendingScroll);
     } catch {
@@ -1712,6 +1791,8 @@ document.querySelectorAll("[data-view]").forEach((button) =>
             $("song-query").value = "";
             closeMatches();
         }
+        if (button.dataset.view === "calculator")
+            calculator.restore(new URLSearchParams());
         switchView(button.dataset.view);
     }),
 );
@@ -1781,6 +1862,7 @@ window.addEventListener("resize", () => {
     if (innerWidth === chartWidth) return;
     chartWidth = innerWidth;
     renderChart({ animate: false });
+    if (view === "calculator") calculator.render({ animate: false });
 });
 setInterval(() => {
     if (!document.hidden) load();

@@ -257,8 +257,22 @@ export function recordList(
     const grouped = !top && sort === "plays";
     const playCounts =
         sort === "plays" ? countChartPlays(data.plays) : new Map();
+    const latestPlays = new Map();
+    if (top && sort === "recent") {
+        for (const play of data.plays) {
+            const time = Date.parse(play.received_at || play.timestamp);
+            const key = chartKey(play);
+            if (
+                Number.isFinite(time) &&
+                time > (latestPlays.get(key) ?? -Infinity)
+            )
+                latestPlays.set(key, time);
+        }
+    }
     const recentFirst = top
-        ? (a, b) => a.rank - b.rank
+        ? (a, b) =>
+              (latestPlays.get(chartKey(b)) ?? -Infinity) -
+                  (latestPlays.get(chartKey(a)) ?? -Infinity) || a.rank - b.rank
         : (a, b) => byTime(b, a);
     const chartOrder = new Map();
     if (sort === "plays") {
@@ -402,7 +416,11 @@ export function filterCharts(charts, catalog, query) {
     });
 }
 
-export function searchCharts(catalog, query, limit = 25) {
+export function searchCharts(
+    catalog,
+    query,
+    limit = query.trim() ? Infinity : 25,
+) {
     const search = parseSearch(query);
     const matches = [];
     for (const song of catalog) {
@@ -442,19 +460,47 @@ export function chartPlays(data, musicId, difficulty) {
         .sort((a, b) => b.score - a.score || byTime(b, a));
 }
 
+export const SCORE_GRADES = [
+    [9900000, "S", 105],
+    [9800000, "AAA+", 102],
+    [9700000, "AAA", 100],
+    [9500000, "AA+", 97],
+    [9300000, "AA", 94],
+    [9000000, "A+", 91],
+    [8700000, "A", 88],
+    [7500000, "B", 85],
+    [6500000, "C", 82],
+    [0, "D", 80],
+];
+export const VF_CLEARS = [
+    { type: 2, multiplier: 100 },
+    { type: 3, multiplier: 102 },
+    { type: 4, multiplier: 104 },
+    { type: 5, multiplier: 106 },
+    { type: 6, multiplier: 110 },
+];
+
 export function grade(score) {
-    return (
-        [
-            [9900000, "S"],
-            [9800000, "AAA+"],
-            [9700000, "AAA"],
-            [9500000, "AA+"],
-            [9300000, "AA"],
-            [9000000, "A+"],
-            [8700000, "A"],
-            [7500000, "B"],
-            [6500000, "C"],
-            [0, "D"],
-        ].find(([min]) => score >= min)?.[1] || "—"
-    );
+    return SCORE_GRADES.find(([min]) => score >= min)?.[1] || "—";
+}
+
+export function calculateChartVf(level, score, clearType) {
+    const clear = VF_CLEARS.find(({ type }) => type === clearType);
+    if (
+        !Number.isFinite(level) ||
+        level <= 0 ||
+        !Number.isSafeInteger(score) ||
+        score < 0 ||
+        score > 10000000 ||
+        !clear
+    )
+        return null;
+    const multiplier = SCORE_GRADES.find(([min]) => score >= min)[2];
+    const numerator =
+        BigInt(Math.round(level * 10)) *
+        BigInt(score) *
+        BigInt(multiplier) *
+        BigInt(clear.multiplier) *
+        20n;
+    return Number(numerator / 1000000000000n) / 1000;
 }

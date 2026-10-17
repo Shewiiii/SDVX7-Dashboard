@@ -249,10 +249,7 @@ let dataFingerprint = "";
 const revealedViews = new Set();
 const defaultRecordSorts = { top: "vf", history: "recent" };
 const recordSorts = { ...defaultRecordSorts };
-const calculator = createCalculator(
-    () => updateUrl(true),
-    () => stats,
-);
+const calculator = createCalculator(() => stats, row);
 let pendingScroll = null,
     scrollSaveTimer;
 history.scrollRestoration = "manual";
@@ -1005,7 +1002,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     if (animate) motion.data($("chart-summary"));
 }
 
-$("chart").addEventListener("pointermove", (event) => {
+function showChartTooltip(event) {
     if (!hover) return;
     const bounds = $("chart").getBoundingClientRect();
     const px = ((event.clientX - bounds.left) / bounds.width) * hover.width;
@@ -1066,7 +1063,13 @@ $("chart").addEventListener("pointermove", (event) => {
     }
     tooltip.style.left = `${useRight ? cursorX + gap : cursorX - gap - tooltip.offsetWidth}px`;
     tooltip.style.top = `${Math.max(inset, Math.min(cursorY - tooltip.offsetHeight - gap, wrap.height - tooltip.offsetHeight - inset))}px`;
+}
+$("chart").addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "mouse")
+        $("chart").setPointerCapture(event.pointerId);
+    showChartTooltip(event);
 });
+$("chart").addEventListener("pointermove", showChartTooltip);
 function hideTooltip() {
     $("tooltip").hidden = true;
     if (hover) {
@@ -1074,7 +1077,20 @@ function hideTooltip() {
         hover.markers.replaceChildren();
     }
 }
-$("chart").addEventListener("pointerleave", hideTooltip);
+$("chart").addEventListener("pointerleave", (event) => {
+    if (event.pointerType !== "touch") hideTooltip();
+});
+$("chart").addEventListener("pointerup", (event) => {
+    if (event.pointerType !== "mouse") hideTooltip();
+});
+$("chart").addEventListener("pointercancel", hideTooltip);
+$("chart").addEventListener("lostpointercapture", (event) => {
+    if (event.pointerType !== "mouse") hideTooltip();
+});
+document.addEventListener("pointerdown", (event) => {
+    if (!event.target.closest("#chart-wrap")) hideTooltip();
+});
+window.addEventListener("scroll", hideTooltip, { passive: true });
 
 function rememberScroll() {
     clearTimeout(scrollSaveTimer);
@@ -1128,10 +1144,7 @@ function updateUrl(replace = false) {
             params.set("diff", selected.diff_idx);
         }
         if (songSearchPage) params.set("page", songSearchPage + 1);
-    } else if (view === "calculator") {
-        for (const [key, value] of Object.entries(calculator.parameters()))
-            params.set(key, value);
-    } else {
+    } else if (view === "top" || view === "history") {
         if (page) params.set("page", page + 1);
         if ($("search").value) params.set("q", $("search").value);
         const defaultSort = defaultRecordSorts[view];
@@ -1170,7 +1183,6 @@ function restoreUrl() {
         ? routeName
         : "overview";
     const params = new URLSearchParams(query);
-    if (next === "calculator") calculator.restore(params);
     const pageNumber = Number(params.get("page"));
     const restoredPage =
         Number.isSafeInteger(pageNumber) && pageNumber > 0 ? pageNumber - 1 : 0;
@@ -1737,7 +1749,7 @@ async function load() {
         void loadExchangeRate();
         renderChart({ animate });
         if (view === "search") renderSongSearch({ animate });
-        else if (view === "calculator") calculator.updateReferences();
+        else if (view === "calculator") calculator.updateData({ animate });
         else if (["top", "history"].includes(view)) renderTable({ animate });
         document.body.dataset.ready = "true";
         restoreScroll(pendingScroll);
@@ -1791,8 +1803,7 @@ document.querySelectorAll("[data-view]").forEach((button) =>
             $("song-query").value = "";
             closeMatches();
         }
-        if (button.dataset.view === "calculator")
-            calculator.restore(new URLSearchParams());
+        if (button.dataset.view === "calculator") calculator.reset();
         switchView(button.dataset.view);
     }),
 );

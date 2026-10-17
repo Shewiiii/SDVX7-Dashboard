@@ -583,6 +583,12 @@
                             role="img"
                             aria-label="Chart VolForce calculator"
                         ></svg>
+                        <div
+                            id="calculator-tooltip"
+                            class="calculator-chart-tooltip"
+                            inert
+                            hidden
+                        ></div>
                     </div>
                     <div class="calculator-readout">
                         <div
@@ -615,6 +621,25 @@
                             aria-label="Chart VF by clear type"
                         ></div>
                     </div>
+                    <section
+                        class="calculator-matches"
+                        aria-labelledby="calculator-matches-title"
+                    >
+                        <div class="panel-head compact">
+                            <h2 id="calculator-matches-title">
+                                Matching charts
+                            </h2>
+                            <span
+                                id="calculator-match-count"
+                                class="calculator-match-count"
+                            ></span>
+                        </div>
+                        <p
+                            id="calculator-match-context"
+                            class="calculator-match-context"
+                        ></p>
+                        <div id="calculator-matches" class="play-list"></div>
+                    </section>
                 </section>
             </main>
             <footer>

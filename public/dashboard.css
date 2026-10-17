@@ -304,6 +304,8 @@
 }
 #chart {
     overflow: visible;
+    touch-action: pinch-zoom;
+    user-select: none;
 }
 #chart .crosshair {
     stroke: #cba6f75a;
@@ -435,7 +437,25 @@
     font-size: 12px;
 }
 .calculator-chart-wrap {
+    position: relative;
     padding: 0 12px;
+}
+.calculator-chart-tooltip {
+    position: absolute;
+    z-index: 3;
+    width: 520px;
+    max-width: calc(100% - 16px);
+    border: 1px solid var(--line);
+    border-radius: var(--popup-radius);
+    background: #191823f5;
+    box-shadow: 0 8px 30px #0005;
+    pointer-events: none;
+}
+.calculator-chart-tooltip .play-row {
+    padding: 14px;
+}
+.calculator-chart-tooltip .play-row > div {
+    min-width: 0;
 }
 .calculator-panel [data-clear="2"] {
     --clear-color: #7e758f;
@@ -469,6 +489,46 @@
     fill: var(--clear-color);
     stroke: var(--panel);
     stroke-width: 1.5;
+}
+.calculator-dot-target {
+    fill: transparent;
+}
+.calculator-dot {
+    fill: #8a71a6;
+    opacity: 0.58;
+    pointer-events: none;
+}
+.calculator-chart-dot.is-matching .calculator-dot,
+.calculator-chart-dot:hover .calculator-dot,
+.calculator-chart-dot:focus-visible .calculator-dot {
+    fill: var(--purple);
+    opacity: 1;
+    stroke: var(--panel);
+    stroke-width: 1;
+    r: 3.5;
+}
+.calculator-chart-dot:focus-visible {
+    outline: none;
+}
+.calculator-matches {
+    border-top: 1px solid var(--line);
+}
+.calculator-match-count,
+.calculator-match-context {
+    font-size: 12px;
+    color: var(--muted);
+}
+.calculator-match-count {
+    white-space: nowrap;
+}
+.calculator-match-context {
+    margin: 0 var(--panel-padding-inline) 18px;
+}
+.calculator-matches .empty-list {
+    padding-inline: var(--list-padding-inline);
+}
+.calculator-matches .play-row > div {
+    min-width: 0;
 }
 .calculator-guide,
 .calculator-crosshair {
@@ -562,10 +622,36 @@
     margin-top: 18px;
 }
 .calculator-legend > div {
+    position: relative;
     display: grid;
     gap: 4px;
     font-size: 12px;
     color: var(--muted);
+}
+.calculator-legend-border {
+    position: absolute;
+    inset: -7px;
+    width: calc(100% + 14px);
+    height: calc(100% + 14px);
+    overflow: visible;
+    pointer-events: none;
+}
+.calculator-legend-border rect {
+    rx: var(--control-radius);
+    fill: none;
+    stroke: color-mix(in srgb, var(--clear-color) 65%, transparent);
+    stroke-width: 1;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 650ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.calculator-legend .is-upgrade .calculator-legend-border rect {
+    stroke-dashoffset: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+    .calculator-legend-border rect {
+        transition: none;
+    }
 }
 .calculator-legend span {
     display: flex;

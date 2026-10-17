@@ -3,6 +3,7 @@ const pending = new Map();
 const running = new Set();
 const owners = new WeakMap();
 const swaps = new WeakMap();
+const curveReveals = new WeakMap();
 const ease = "cubic-bezier(.22, 1, .36, 1)";
 // A lighter slowdown at the end of the graph sweeps.
 const graphEase = "cubic-bezier(.25, .1, .155, 1)";
@@ -150,15 +151,17 @@ function draw(root, path, delay = 0, duration = 950) {
     );
 }
 
-function sweep(root, element, delay = 0) {
-    play(
+function sweep(
+    root,
+    element,
+    delay = 0,
+    { from = { opacity: 0, clipPath: "inset(0 100% 0 0)" }, ...options } = {},
+) {
+    return play(
         root,
         element,
-        [
-            { opacity: 0, clipPath: "inset(0 100% 0 0)" },
-            { opacity: 1, clipPath: "inset(0 0% 0 0)" },
-        ],
-        { duration: 1100, delay, easing: graphEase },
+        [from, { opacity: 1, clipPath: "inset(0 0% 0 0)" }],
+        { duration: 1100, delay, easing: graphEase, ...options },
     );
 }
 
@@ -319,7 +322,7 @@ export const motion = {
             svg,
             () => {
                 svg.querySelectorAll(
-                    ".calculator-curve:not([hidden]), .calculator-reference",
+                    ".calculator-curve:not([hidden]), .calculator-chart-points, .calculator-reference",
                 ).forEach((curve, index) => sweep(svg, curve, index * 65));
                 const markers = svg.querySelector(".calculator-markers");
                 if (markers)
@@ -330,6 +333,54 @@ export const motion = {
             },
             0.5,
         );
+    },
+    calculatorCurves(svg, showPuc, animate = true) {
+        const shouldAnimate =
+            animate &&
+            !reducedMotion.matches &&
+            !pending.has(svg) &&
+            visible(svg);
+        for (const curve of svg.querySelectorAll(".calculator-curve")) {
+            const show = (curve.dataset.clear === "6") === showPuc;
+            if (!shouldAnimate) {
+                curveReveals.delete(curve);
+                clearTree(curve);
+                curve.toggleAttribute("hidden", !show);
+                continue;
+            }
+            const active = curveReveals.get(curve);
+            if (active?.show === show) continue;
+            if (!active && curve.hasAttribute("hidden") === !show) continue;
+            const style = getComputedStyle(curve);
+            const from = curve.hasAttribute("hidden")
+                ? { opacity: 0, clipPath: "inset(0 100% 0 0)" }
+                : { opacity: style.opacity, clipPath: style.clipPath };
+            curveReveals.delete(curve);
+            clearTree(curve);
+            curve.removeAttribute("hidden");
+            const animation = show
+                ? sweep(curve, curve, 0, { fill: "both", from })
+                : play(curve, curve, [from, { ...from, opacity: 0 }], {
+                      fill: "both",
+                  });
+            const reveal = { animation, show };
+            curveReveals.set(curve, reveal);
+            animation.addEventListener("finish", () => {
+                if (
+                    curveReveals.get(curve) !== reveal ||
+                    animation.playState !== "finished"
+                )
+                    return;
+                curve.toggleAttribute("hidden", !reveal.show);
+                curveReveals.delete(curve);
+                animation.cancel();
+            });
+            animation.addEventListener("cancel", () => {
+                if (curveReveals.get(curve) !== reveal) return;
+                curve.toggleAttribute("hidden", !reveal.show);
+                curveReveals.delete(curve);
+            });
+        }
     },
     calculatorReferences(root) {
         queue(

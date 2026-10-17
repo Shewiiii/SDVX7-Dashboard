@@ -416,11 +416,7 @@ export function filterCharts(charts, catalog, query) {
     });
 }
 
-export function searchCharts(
-    catalog,
-    query,
-    limit = query.trim() ? Infinity : 25,
-) {
+export function searchCharts(catalog, query, limit = PAGE_SIZE) {
     const search = parseSearch(query);
     const matches = [];
     for (const song of catalog) {

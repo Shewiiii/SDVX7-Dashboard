@@ -13,7 +13,10 @@ import unicodedata
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
 from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 from companion import (
     ROOT,
@@ -33,7 +36,7 @@ except ImportError:
     _kana = None
 
 
-def normalize(text):
+def normalize(text: str) -> str:
     text = unicodedata.normalize("NFKC", text).casefold()
     text = "".join(chr(ord(c) - 0x60) if "ァ" <= c <= "ヶ" else c for c in text)
     return "".join(
@@ -43,7 +46,7 @@ def normalize(text):
     )
 
 
-def search_forms(text):
+def search_forms(text: str) -> list[str]:
     text = unicodedata.normalize("NFKC", text)
     forms = {normalize(text)}
     if _kana:
@@ -77,8 +80,8 @@ GRADES = (
 )
 
 
-def stamp(value):
-    date = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+def stamp(value: str | datetime) -> str:
+    date = datetime.fromisoformat(str(value))
     if date.tzinfo is None:
         date = date.replace(tzinfo=UTC)
     return (
@@ -87,7 +90,7 @@ def stamp(value):
 
 
 class Catalog:
-    def __init__(self, tracker):
+    def __init__(self, tracker: Path) -> None:
         game = tracker.parent
         self.music = tracker_module(tracker, "music").MusicCatalog(
             game / "data/others/music_db.xml"
@@ -106,7 +109,7 @@ class Catalog:
         self.appeal_textures = {}
         self.appeal_mapping_signature = None
 
-    def refresh(self):
+    def refresh(self) -> None:
         self.music.refresh()
         signature = tuple(
             id(mapping)
@@ -152,12 +155,12 @@ class Catalog:
                 }
         self.charts, self.songs, self.signature = charts, songs, signature
 
-    def get(self, mid, diff):
+    def get(self, mid: int, diff: int) -> dict[str, Any]:
         return self.charts.get(
             f"{mid}:{diff}", {"title": f"Chart {mid}", "artist": "", "level": None}
         )
 
-    def prepare_appeal_card(self):
+    def prepare_appeal_card(self) -> None:
         """Read only the selected artwork, never publish the player record."""
         try:
             raw = json.loads(
@@ -233,7 +236,7 @@ class Catalog:
             self.appeal_card = None
             self.appeal_signature = None
 
-    def prepare_covers(self):
+    def prepare_covers(self) -> None:
         """Prepare small web covers for songs with local plays or saved records."""
         self.prepare_appeal_card()
         music_ids = set()
@@ -345,7 +348,7 @@ class Catalog:
         write_json(map_path, cached)
         self.cover_signature = signature
 
-    def public_catalog(self):
+    def public_catalog(self) -> list[dict[str, Any]]:
         return [
             {
                 **song,
@@ -359,7 +362,7 @@ class Catalog:
         ]
 
 
-def play_record(record, catalog):
+def play_record(record: dict[str, Any], catalog: Catalog) -> dict[str, Any]:
     mid, diff, score, clear = (
         int(record[k]) for k in ("music_id", "diff_idx", "score", "clear_type")
     )
@@ -456,7 +459,9 @@ def play_record(record, catalog):
     }
 
 
-def observation_record(record, profile_id):
+def observation_record(
+    record: dict[str, Any], profile_id: str | None
+) -> dict[str, Any]:
     if profile_id and record.get("profile_id") != profile_id:
         raise ValueError("Different profile")
     total, count, minimum = (
@@ -481,7 +486,9 @@ def observation_record(record, profile_id):
     }
 
 
-def snapshot(tracker, catalog, name):
+def snapshot(
+    tracker: Path, catalog: Catalog, name: str
+) -> tuple[dict[str, Any], str | None]:
     playtime = playtime_snapshot(tracker)
     path = tracker / "cache/total_volforce.json"
     if not path.exists():
@@ -535,14 +542,19 @@ def snapshot(tracker, catalog, name):
     return state, raw.get("profile_id")
 
 
-def signature(path):
+def signature(path: Path) -> str:
     if not path.exists():
         return "missing"
     with path.open("rb") as stream:
         return hashlib.sha256(stream.read(128)).hexdigest()
 
 
-def read_batch(path, cursor, convert, limit=150):
+def read_batch(
+    path: Path,
+    cursor: dict[str, Any],
+    convert: Callable[[dict[str, Any]], dict[str, Any]],
+    limit: int = 150,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if not path.exists():
         return [], cursor
     # Cursor updates are acknowledged only after a successful cloud transaction.
@@ -600,7 +612,7 @@ def read_batch(path, cursor, convert, limit=150):
     return records, {"offset": offset, "signature": identity, "index": 0}
 
 
-def write_json(path, data):
+def write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(".tmp")
     temporary.write_text(
@@ -609,7 +621,7 @@ def write_json(path, data):
     temporary.replace(path)
 
 
-def read_checkpoint(path):
+def read_checkpoint(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
     try:
@@ -623,7 +635,7 @@ def read_checkpoint(path):
     return {}
 
 
-def settings():
+def settings() -> dict[str, Any]:
     try:
         config = load_config()
     except (OSError, ValueError, TypeError) as error:
@@ -637,7 +649,9 @@ def settings():
     }
 
 
-def upload(url, token, payload, bypass=None):
+def upload(
+    url: str, token: str, payload: dict[str, Any], bypass: str | None = None
+) -> None:
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     if bypass:
         headers["x-vercel-protection-bypass"] = bypass
@@ -663,7 +677,50 @@ def upload(url, token, payload, bypass=None):
         raise RuntimeError("Cannot reach dashboard") from None
 
 
-def sync_once(config, tracker, catalog):
+def refresh_request(config: dict[str, Any]) -> int | None:
+    headers = {"Authorization": f"Bearer {config['token']}"}
+    if config.get("bypass"):
+        headers["x-vercel-protection-bypass"] = config["bypass"]
+    request = urllib.request.Request(
+        config["url"].rstrip("/") + "/api/sync", headers=headers, method="GET"
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            result = json.load(response)
+    except urllib.error.HTTPError as error:
+        if error.code == 405:
+            return None
+        raise RuntimeError(f"Sync check returned HTTP {error.code}") from None
+    except urllib.error.URLError:
+        raise RuntimeError("Cannot reach dashboard") from None
+    requested, completed = result.get("requested_id"), result.get("completed_id")
+    if (
+        result.get("ok") is not True
+        or type(requested) is not int
+        or type(completed) is not int
+        or not 0 <= completed <= requested <= 2**53 - 1
+    ):
+        raise ValueError("Invalid dashboard sync status")
+    return requested if requested > completed else 0
+
+
+def source_state(tracker: Path) -> tuple[tuple[int, int] | None, ...]:
+    sources = (
+        tracker / "score_log.txt",
+        tracker / "volforce_history.jsonl",
+        tracker / "cache/total_volforce.json",
+    )
+    result = []
+    for path in sources:
+        try:
+            stat = path.stat()
+            result.append((stat.st_mtime_ns, stat.st_size))
+        except FileNotFoundError:
+            result.append(None)
+    return tuple(result)
+
+
+def sync_once(config: dict[str, Any], tracker: Path, catalog: Catalog) -> None:
     state_path = ROOT / ".local/sync-state.json"
     saved = read_checkpoint(state_path)
     endpoint_id = hashlib.sha256(config["url"].encode()).hexdigest()
@@ -744,7 +801,7 @@ def sync_once(config, tracker, catalog):
         print(f"Synced {uploaded} records at {datetime.now().strftime('%H:%M:%S')}.")
 
 
-def export_preview():
+def export_preview() -> None:
     tracker = resolve_tracker()
     config = settings()
     catalog = Catalog(tracker)
@@ -753,7 +810,9 @@ def export_preview():
     catalog.prepare_covers()
     state, profile = snapshot(tracker, catalog, name)
 
-    def all_records(path, convert):
+    def all_records(
+        path: Path, convert: Callable[[dict[str, Any]], dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         records, cursor = [], {}
         while True:
             batch, cursor = read_batch(path, cursor, convert, limit=10000)
@@ -801,7 +860,53 @@ def export_preview():
     )
 
 
-def run(once=False):
+def sync_loop(
+    config: dict[str, Any], tracker: Path, catalog: Catalog, once: bool = False
+) -> None:
+    delay = 30
+    next_sync = next_check = 0
+    previous_source = None
+    while True:
+        try:
+            now = time.monotonic()
+            requested = 0
+            if not once and now >= next_check:
+                status = refresh_request(config)
+                requested = status or 0
+                next_check = time.monotonic() + (30 if status is None else 2)
+            current_source = source_state(tracker)
+            if (
+                once
+                or requested
+                or current_source != previous_source
+                or time.monotonic() >= next_sync
+            ):
+                sync_once(config, tracker, catalog)
+                if requested:
+                    upload(
+                        config["url"],
+                        config["token"],
+                        {"plays": [], "observations": [], "refresh_id": requested},
+                        config.get("bypass"),
+                    )
+                previous_source = current_source
+                next_sync = time.monotonic() + 30
+                delay = 30
+        except (OSError, ValueError, RuntimeError, KeyError) as error:
+            detail = f": {error}" if isinstance(error, RuntimeError) else ""
+            print(f"Sync pending ({type(error).__name__}){detail}. Retrying.")
+            if once:
+                raise SystemExit(1) from None
+            delay = min(300, delay * 2)
+            time.sleep(delay)
+            next_check = 0
+            continue
+        if once:
+            return
+        time.sleep(1)
+
+
+def run(once: bool = False) -> None:
     config = settings()
     tracker = resolve_tracker()
     catalog = Catalog(tracker)
@@ -834,20 +939,7 @@ def run(once=False):
                 return
             raise SystemExit("Dashboard sync is already running.") from None
         print("Dashboard sync running.")
-        delay = 30
-        while True:
-            try:
-                sync_once(config, tracker, catalog)
-                delay = 30
-            except (OSError, ValueError, RuntimeError, KeyError) as error:
-                detail = f": {error}" if isinstance(error, RuntimeError) else ""
-                print(f"Sync pending ({type(error).__name__}){detail}. Retrying.")
-                if once:
-                    raise SystemExit(1) from None
-                delay = min(300, delay * 2)
-            if once:
-                return
-            time.sleep(delay)
+        sync_loop(config, tracker, catalog, once=once)
 
 
 if __name__ == "__main__":

@@ -5,12 +5,14 @@ import json
 import os
 import sys
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / ".local/sync-config.json"
 
 
-def load_config():
+def load_config() -> dict[str, Any]:
     if not CONFIG_PATH.exists():
         return {}
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8-sig"))
@@ -22,14 +24,14 @@ def load_config():
     return config
 
 
-def save_config(config):
+def save_config(config: dict[str, Any]) -> None:
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     temporary = CONFIG_PATH.with_suffix(".tmp")
     temporary.write_text(json.dumps(config, indent=2), encoding="utf-8")
     temporary.replace(CONFIG_PATH)
 
 
-def resolve_tracker():
+def resolve_tracker() -> Path:
     tracker = ROOT.parent
     if not all(
         (tracker / name).is_file()
@@ -39,7 +41,7 @@ def resolve_tracker():
     return tracker
 
 
-def tracker_python(tracker):
+def tracker_python(tracker: Path) -> Path:
     executable = (
         tracker / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     )
@@ -50,7 +52,7 @@ def tracker_python(tracker):
     return executable
 
 
-def tracker_module(tracker, name):
+def tracker_module(tracker: Path, name: str) -> ModuleType:
     # Reuse installed helpers. Never import the bot or start another proxy.
     location = str(tracker)
     if location not in sys.path:
@@ -58,12 +60,12 @@ def tracker_module(tracker, name):
     return importlib.import_module(f"tracker.{name}")
 
 
-def shared_settings(tracker):
+def shared_settings(tracker: Path) -> dict[str, Any]:
     from dotenv import dotenv_values
 
     values = dotenv_values(tracker / ".env", interpolate=False)
 
-    def setting(key, default=""):
+    def setting(key: str, default: str = "") -> str:
         return os.getenv(key) or values.get(key) or default
 
     # Only these public preferences leave this adapter. BOT_TOKEN is never exported.
@@ -79,5 +81,5 @@ def shared_settings(tracker):
     }
 
 
-def display_name(config, tracker):
+def display_name(config: dict[str, Any], tracker: Path) -> str:
     return (shared_settings(tracker)["name"] or config.get("name") or "Player")[:40]

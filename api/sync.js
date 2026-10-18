@@ -1,4 +1,5 @@
 import { database, initialize } from "../lib/database.mjs";
+import { syncStatus, completeRefresh } from "../lib/refresh.mjs";
 import {
     authorized,
     cleanPlay,
@@ -10,11 +11,21 @@ import {
 
 export default async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store");
-    if (req.method !== "POST")
-        return res.status(405).json({ error: "POST required" });
+    if (!["GET", "POST"].includes(req.method))
+        return res.status(405).json({ error: "GET or POST required" });
     if (!authorized(req.headers.authorization, process.env.SYNC_TOKEN))
         return res.status(401).json({ error: "Unauthorized" });
-    let plays, observations, state, covers;
+    if (req.method === "GET") {
+        try {
+            return res.status(200).json({
+                ok: true,
+                ...(await syncStatus(database())),
+            });
+        } catch {
+            return res.status(503).json({ error: "Sync unavailable; retry later" });
+        }
+    }
+    let plays, observations, state, covers, refreshId;
     try {
         const body =
             typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -35,6 +46,12 @@ export default async function handler(req, res) {
         )
             throw new Error("Invalid covers");
         covers = (body.covers || []).map(cleanCover);
+        refreshId = body.refresh_id;
+        if (
+            refreshId !== undefined &&
+            (!Number.isSafeInteger(refreshId) || refreshId < 1)
+        )
+            throw new Error("Invalid refresh acknowledgement");
     } catch {
         return res.status(400).json({ error: "Invalid upload" });
     }
@@ -78,6 +95,7 @@ export default async function handler(req, res) {
           'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb)),
         synced_at = now()`);
         await sql.transaction(queries);
+        if (refreshId !== undefined) await completeRefresh(sql, refreshId);
         return res
             .status(200)
             .json({ ok: true, accepted: rows.length, play_schema: 4 });

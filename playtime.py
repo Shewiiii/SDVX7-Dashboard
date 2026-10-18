@@ -1,8 +1,10 @@
 import json
+from pathlib import Path
+
 from companion import resolve_tracker, shared_settings, tracker_module
 
 
-def playtime_snapshot(tracker):
+def playtime_snapshot(tracker: Path) -> dict[str, int] | None:
     try:
         helpers = tracker_module(tracker, "playtime")
         config = shared_settings(tracker)

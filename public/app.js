@@ -1716,7 +1716,7 @@ $("song-search-next").addEventListener("click", () => {
     scrollToCard();
 });
 
-async function load() {
+async function load({ fresh = false } = {}) {
     if (loading) return;
     loading = true;
     document.body.dataset.loading = data ? "refresh" : "initial";
@@ -1724,7 +1724,12 @@ async function load() {
     setText("load-status-label", data ? "Updating..." : "Loading records...");
     if (!data) prepareLoading();
     try {
-        const response = await fetch("/api/data", { cache: "no-store" });
+        const response = await fetch(
+            fresh ? "/api/data?refresh=1" : "/api/data",
+            {
+                cache: "no-store",
+            },
+        );
         if (!response.ok) throw new Error("Unavailable");
         const next = await response.json();
         if (
@@ -1916,4 +1921,4 @@ window.addEventListener(
 window.addEventListener("resize", hideSpendingPopup);
 restoreUrl();
 updateUrl(true);
-load();
+load({ fresh: true });

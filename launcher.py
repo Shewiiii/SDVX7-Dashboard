@@ -8,7 +8,7 @@ import time
 from companion import ROOT, load_config, resolve_tracker, tracker_python
 
 
-def sync_running():
+def sync_running() -> bool:
     path = ROOT / ".local/sync.lock"
     if not path.exists():
         return False
@@ -29,7 +29,7 @@ def sync_running():
     return False
 
 
-def stop_owned(process):
+def stop_owned(process: subprocess.Popen[bytes] | None) -> None:
     if process is None or process.poll() is not None:
         return
     # Windows venv executables can spawn a Python child. Stop only our own tree.
@@ -49,7 +49,7 @@ def stop_owned(process):
         process.wait()
 
 
-def main():
+def main() -> int:
     config = load_config()
     tracker = resolve_tracker()
     python = tracker_python(tracker)
@@ -66,7 +66,7 @@ def main():
         (local / "sync-errors.log").open("ab") as errors,
     ):
 
-        def start_sync():
+        def start_sync() -> subprocess.Popen[bytes]:
             return subprocess.Popen(
                 [str(python), "-u", str(ROOT / "sync.py")],
                 cwd=ROOT,

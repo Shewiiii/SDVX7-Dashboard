@@ -9,6 +9,8 @@ import secrets
 import shutil
 import subprocess
 import sys
+from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
 
 from companion import (
@@ -24,7 +26,7 @@ from companion import (
 VERCEL_VERSION = "63.1.2"
 
 
-def origin(value):
+def origin(value: str) -> str:
     parsed = urlparse(value.strip().rstrip("/"))
     if (
         parsed.scheme != "https"
@@ -39,12 +41,12 @@ def origin(value):
     return parsed.geturl()
 
 
-def prompt(label, default=""):
+def prompt(label: str, default: str = "") -> str:
     suffix = f" [{default}]" if default else ""
     return input(f"{label}{suffix}: ").strip() or default
 
 
-def prompt_origin(label, default=""):
+def prompt_origin(label: str, default: str = "") -> str:
     while True:
         try:
             return origin(prompt(label, default))
@@ -54,7 +56,7 @@ def prompt_origin(label, default=""):
             )
 
 
-def run(command, *, capture=False, **kwargs):
+def run(command: list[str], *, capture: bool = False, **kwargs: Any) -> str:
     result = subprocess.run(
         command,
         cwd=ROOT,
@@ -66,7 +68,7 @@ def run(command, *, capture=False, **kwargs):
     return result.stdout.strip() if capture else ""
 
 
-def node_tools():
+def node_tools() -> tuple[str, str]:
     node = shutil.which("node")
     npm = shutil.which("npm.cmd" if os.name == "nt" else "npm")
     if not node or not npm:
@@ -77,7 +79,7 @@ def node_tools():
     return node, npm
 
 
-def check_tracker(tracker):
+def check_tracker(tracker: Path) -> Path:
     python = tracker_python(tracker)
     if not (tracker.parent / "data/others/music_db.xml").is_file():
         raise ValueError(
@@ -105,7 +107,7 @@ def check_tracker(tracker):
     return python
 
 
-def vercel(npm, *args, capture=False, **kwargs):
+def vercel(npm: str, *args: str, capture: bool = False, **kwargs: Any) -> str:
     # A ZIP inside the tracker must not inherit the tracker's Git repository.
     kwargs.setdefault(
         "env", {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
@@ -125,7 +127,7 @@ def vercel(npm, *args, capture=False, **kwargs):
     )
 
 
-def configure_connection(config):
+def configure_connection(config: dict[str, Any]) -> None:
     config["url"] = prompt_origin(
         "Existing dashboard HTTPS address", config.get("url", "")
     )
@@ -145,7 +147,9 @@ def configure_connection(config):
     print("Existing website connected. Upload credentials were not displayed.")
 
 
-def deploy(config, tracker, node, npm, update=False):
+def deploy(
+    config: dict[str, Any], tracker: Path, node: str, npm: str, update: bool = False
+) -> dict[str, Any]:
     try:
         vercel(npm, "whoami", capture=True, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
@@ -217,7 +221,7 @@ def deploy(config, tracker, node, npm, update=False):
     return config
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--update", action="store_true")
     args = parser.parse_args(argv)

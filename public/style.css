@@ -38,8 +38,8 @@
     --chart-label-color: #928da7;
     --chart-caption-color: #c0b7d0;
     --chart-grid-color: #ffffff09;
-    --performance-background-dim: 0.7;
-    --performance-panel-dim: 0.7;
+    --performance-background-dim: 0.6;
+    --performance-panel-dim: 0.6;
     --performance-background-blur: 7px;
 }
 * {

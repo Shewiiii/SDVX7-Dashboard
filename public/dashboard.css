@@ -58,8 +58,8 @@
     padding: 13px 18px;
     border: 0;
     border-radius: 8px;
-    background: #bc7bc513;
-    color: #dfcae9;
+    background: color-mix(in srgb, var(--notice-accent) calc(100% * 19 / 255), transparent);
+    color: #cadbe9;
     margin-bottom: 18px;
 }
 .metrics {
@@ -68,7 +68,7 @@
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0;
     border-block: 0;
-    background: rgb(27 27 41 / var(--performance-panel-dim));
+    background: color-mix(in srgb, var(--panel) calc(100% * var(--performance-panel-dim)), transparent);
     border: 0;
     border-radius: var(--panel-radius);
     overflow: hidden;
@@ -114,7 +114,7 @@
     min-width: 0;
 }
 .featured .metric-value {
-    color: #d7b7fa;
+    color: var(--accent);
 }
 .metric-detail {
     font-size: 10px;
@@ -160,7 +160,7 @@
 .tab.active:after {
     content: "";
     height: 2px;
-    background: var(--purple);
+    background: var(--accent);
     position: absolute;
     left: 0;
     right: 0;
@@ -175,7 +175,7 @@
     border: 0;
     overflow: hidden;
     box-shadow: none;
-    background: rgb(27 27 41 / var(--performance-panel-dim));
+    background: color-mix(in srgb, var(--panel) calc(100% * var(--performance-panel-dim)), transparent);
     border-radius: var(--panel-radius);
 }
 .panel-head {
@@ -221,8 +221,8 @@
 }
 .segmented .selected,
 .segmented button:focus-visible {
-    background: #cba6f71b;
-    color: var(--purple);
+    background: var(--accent-wash);
+    color: var(--accent);
 }
 .select-wrap select {
     font-size: 12px;
@@ -262,22 +262,22 @@
     border-radius: 50%;
 }
 .plays {
-    background: #6e5b88;
+    background: var(--chart-plays);
 }
 .best {
-    background: #777095;
+    background: var(--chart-best);
 }
 .avg10 {
-    background: #8e73ad;
+    background: var(--chart-avg10);
 }
 .avg100 {
-    background: #cba6f7;
+    background: var(--chart-avg100);
 }
 .threshold {
-    background: #a3a1b8;
+    background: var(--chart-top50);
 }
 .total {
-    background: #bc7bc5;
+    background: var(--chart-total);
 }
 .chart-wrap {
     position: relative;
@@ -308,13 +308,13 @@
     user-select: none;
 }
 #chart .crosshair {
-    stroke: #cba6f75a;
+    stroke: color-mix(in srgb, var(--accent) calc(100% * 90 / 255), transparent);
     stroke-dasharray: 3 4;
     pointer-events: none;
 }
 #chart .hover-point {
-    fill: #cba6f7;
-    stroke: #1b1b29;
+    fill: var(--accent);
+    stroke: var(--panel);
     stroke-width: 2;
     pointer-events: none;
 }
@@ -348,7 +348,7 @@
 }
 .chart-tooltip .tooltip-value {
     font: 16px var(--sans);
-    color: var(--purple);
+    color: var(--accent);
     margin: 3px 0;
 }
 .chart-tooltip small {
@@ -366,7 +366,7 @@
     gap: 14px;
 }
 .chart-summary strong {
-    color: #d8c6eb;
+    color: #c8dce8;
     font-weight: 400;
 }
 .calculator-controls {
@@ -396,7 +396,7 @@
     color: var(--ink);
 }
 .calculator-field input[aria-invalid="true"] {
-    outline: 1px solid var(--purple);
+    outline: 1px solid var(--accent);
 }
 .calculator-number-control {
     position: relative;
@@ -428,12 +428,12 @@
     line-height: 1;
 }
 .calculator-number-steps button:hover {
-    color: var(--purple);
+    color: var(--accent);
     background: var(--row-hover);
 }
 .calculator-validation {
     margin: 0 var(--panel-padding-inline) 20px;
-    color: var(--purple);
+    color: var(--accent);
     font-size: 12px;
 }
 .calculator-chart-wrap {
@@ -458,19 +458,19 @@
     min-width: 0;
 }
 .calculator-panel [data-clear="2"] {
-    --clear-color: #7e758f;
+    --clear-color: #738594;
 }
 .calculator-panel [data-clear="3"] {
-    --clear-color: #9680ad;
+    --clear-color: #7d9bb3;
 }
 .calculator-panel [data-clear="4"] {
-    --clear-color: #ae8acb;
+    --clear-color: #8db7d0;
 }
 .calculator-panel [data-clear="5"] {
-    --clear-color: #bf98e5;
+    --clear-color: #a0d0e4;
 }
 .calculator-panel [data-clear="6"] {
-    --clear-color: var(--purple);
+    --clear-color: var(--accent);
 }
 .calculator-curve,
 .calculator-markers {
@@ -494,14 +494,14 @@
     fill: transparent;
 }
 .calculator-dot {
-    fill: #8a71a6;
+    fill: var(--chart-play-points);
     opacity: 0.58;
     pointer-events: none;
 }
 .calculator-chart-dot.is-matching .calculator-dot,
 .calculator-chart-dot:hover .calculator-dot,
 .calculator-chart-dot:focus-visible .calculator-dot {
-    fill: var(--purple);
+    fill: var(--accent);
     opacity: 1;
     stroke: var(--panel);
     stroke-width: 1;
@@ -540,18 +540,18 @@
     opacity: 0.45;
 }
 .calculator-crosshair {
-    stroke: var(--purple);
+    stroke: var(--accent);
     opacity: 0.6;
 }
 .calculator-references {
     pointer-events: none;
 }
 .calculator-panel [data-reference="best"] {
-    --reference-color: var(--purple);
+    --reference-color: var(--accent);
     --reference-dash: 10 7;
 }
 .calculator-panel [data-reference="average"] {
-    --reference-color: color-mix(in srgb, var(--purple) 55%, var(--muted));
+    --reference-color: color-mix(in srgb, var(--accent) 55%, var(--muted));
     --reference-dash: 1 6;
 }
 .calculator-panel [data-reference="worst"] {
@@ -604,7 +604,7 @@
     flex: 1;
     min-width: 100px;
     min-height: 32px;
-    accent-color: var(--purple);
+    accent-color: var(--accent);
 }
 .calculator-target output {
     min-width: 200px;
@@ -666,7 +666,7 @@
     color: var(--clear-color);
 }
 .calculator-legend .calculator-grade {
-    --clear-color: var(--total);
+    --clear-color: var(--calculator-grade-color);
 }
 .calculator-legend [data-clear="6"][aria-hidden="true"] {
     visibility: hidden;
@@ -697,7 +697,7 @@
     font-size: 11px;
 }
 .text-button span {
-    color: var(--purple);
+    color: var(--accent);
     margin-left: 5px;
 }
 .session-meta {
@@ -722,9 +722,6 @@
     font: var(--entry-position-size) var(--sans);
     color: var(--faint);
     white-space: nowrap;
-}
-.row-index.leading {
-    color: var(--purple);
 }
 .song-title {
     font-size: var(--entry-title-size);
@@ -911,7 +908,7 @@ td:nth-child(2) {
 }
 .vf-cell {
     font: 12px var(--sans);
-    color: var(--purple);
+    color: var(--entry-vf-color);
 }
 tbody tr:hover {
     background: var(--row-hover);
@@ -967,12 +964,9 @@ footer {
     font-variant-numeric: normal;
     line-height: normal;
 }
-#timing-chart {
-    --timing-curve-color: #504a72;
-}
 .timing-zero,
 .timing-guide {
-    stroke: #a3a1b829;
+    stroke: color-mix(in srgb, var(--chart-top50) calc(100% * 41 / 255), transparent);
     stroke-dasharray: 3 4;
     pointer-events: none;
 }
@@ -980,7 +974,7 @@ footer {
     font-size: 8px;
 }
 .timing-bar {
-    opacity: 0.7;
+    opacity: 1;
     transition: opacity 0.16s;
 }
 .timing-curve {
@@ -995,17 +989,17 @@ footer {
     stop-color: var(--timing-curve-color);
 }
 .timing-bar.early {
-    fill: #bc7bc5;
+    fill: var(--timing-early-color);
 }
 .timing-bar.center {
-    fill: #cba6f7;
+    fill: var(--timing-center-color);
 }
 .timing-bar.late {
-    fill: #8e73ad;
+    fill: var(--timing-late-color);
 }
 .timing-bar:hover,
 .timing-bar:focus-visible {
-    opacity: 1;
+    opacity: 0.7;
 }
 .timing-empty {
     display: grid;
@@ -1132,7 +1126,7 @@ footer {
     display: block;
 }
 .open-chart:hover {
-    color: var(--purple);
+    color: var(--accent);
 }
 .chart-row {
     cursor: pointer;
@@ -1499,8 +1493,8 @@ footer {
 }
 @media (hover: hover) {
     .segmented button:hover {
-        background: #cba6f71b;
-        color: var(--purple);
+        background: var(--accent-wash);
+        color: var(--accent);
     }
     .difficulty-tabs button:hover {
         background: color-mix(in srgb, currentColor 8%, transparent);

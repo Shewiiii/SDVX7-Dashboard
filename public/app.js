@@ -281,7 +281,7 @@ function setText(id, value) {
     $(id).textContent = value;
 }
 function row(p, rank = null) {
-    return `<div class="play-row chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index ${rank === 1 ? "leading" : ""}">${rank ? String(rank).padStart(2, "0") : clock(p.received_at)}</span>${coverMarkup(p)}<div>${chartButton(p)}<div class="song-details">${badge(p)}${clear(p)}</div></div><div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
+    return `<div class="play-row chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank ? String(rank).padStart(2, "0") : clock(p.received_at)}</span>${coverMarkup(p)}<div>${chartButton(p)}<div class="song-details">${badge(p)}${clear(p)}</div></div><div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
 }
 
 function prepareLoading() {
@@ -458,7 +458,7 @@ function renderSpark() {
                 true,
             ),
             fill: "none",
-            stroke: "#cba6f7",
+            stroke: "var(--accent)",
             "stroke-width": 1.5,
         }),
     );
@@ -912,11 +912,11 @@ function renderChart({ animate = true, transition = false } = {}) {
     for (const o of observations) {
         if (o.minimum_vf === null) {
             if (segment.length) segment.push([o.time, segment.at(-1)[1]]);
-            line("threshold", segment, "#a3a1b8", 1.2, y, true, "4 5");
+            line("threshold", segment, "var(--chart-top50)", 1.2, y, true, "4 5");
             segment = [];
         } else segment.push([o.time, o.minimum_vf]);
     }
-    line("threshold", segment, "#a3a1b8", 1.2, y, true, "4 5");
+    line("threshold", segment, "var(--chart-top50)", 1.2, y, true, "4 5");
     let best = 0;
     const bestPoints = plays.map((p) => {
         best = Math.max(best, p.play_vf);
@@ -925,9 +925,9 @@ function renderChart({ animate = true, transition = false } = {}) {
     const avg10Points = rolling(plays, 10),
         avg100Points = rolling(plays, 100);
     const totalPoints = observations.map((o) => [o.time, o.total_vf]);
-    line("best", bestPoints, "#777095", 1.5, y, true);
+    line("best", bestPoints, "var(--chart-best)", 1.5, y, true);
     if (shown.has("plays")) {
-        const group = svgElement("g", { fill: "#8a71a6", opacity: 0.58 });
+        const group = svgElement("g", { fill: "var(--chart-play-points)", opacity: 0.58 });
         plays.forEach((p) =>
             group.append(
                 svgElement("circle", {
@@ -939,9 +939,9 @@ function renderChart({ animate = true, transition = false } = {}) {
         );
         seriesLayer.append(group);
     }
-    line("avg10", avg10Points, "#8e73ad", 1.8);
-    line("avg100", avg100Points, "#cba6f7", 2.8);
-    line("total", totalPoints, "#bc7bc5", 1.6, ty, true);
+    line("avg10", avg10Points, "var(--chart-avg10)", 1.8);
+    line("avg100", avg100Points, "var(--chart-avg100)", 2.8);
+    line("total", totalPoints, "var(--chart-total)", 1.6, ty, true);
     const crosshair = svgElement("line", {
         x1: 0,
         x2: 0,
@@ -959,7 +959,7 @@ function renderChart({ animate = true, transition = false } = {}) {
             key: "total",
             label: "Total VF",
             points: totalPoints,
-            color: "#bc7bc5",
+            color: "var(--chart-total)",
             step: true,
             y: ty,
         },
@@ -967,21 +967,21 @@ function renderChart({ animate = true, transition = false } = {}) {
             key: "avg100",
             label: "Avg 100",
             points: avg100Points,
-            color: "#cba6f7",
+            color: "var(--chart-avg100)",
             y,
         },
         {
             key: "avg10",
             label: "Avg 10",
             points: avg10Points,
-            color: "#8e73ad",
+            color: "var(--chart-avg10)",
             y,
         },
         {
             key: "best",
             label: "Best VF",
             points: bestPoints,
-            color: "#777095",
+            color: "var(--chart-best)",
             step: true,
             y,
         },
@@ -989,7 +989,7 @@ function renderChart({ animate = true, transition = false } = {}) {
             key: "threshold",
             label: "Top 50",
             points: observations.map((o) => [o.time, o.minimum_vf]),
-            color: "#a3a1b8",
+            color: "var(--chart-top50)",
             step: true,
             y,
         },
@@ -1030,7 +1030,7 @@ function showChartTooltip(event) {
                         cy: series.y(value),
                         r: 3.5,
                         fill: series.color,
-                        stroke: "#1b1b29",
+                        stroke: "var(--panel)",
                         "stroke-width": 1.5,
                         "data-line": series.key,
                     }),

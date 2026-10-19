@@ -56,7 +56,7 @@ body[data-loading] .load-status {
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: var(--purple);
+    background: var(--accent);
 }
 body[data-loading] .loading-dots i {
     animation: loading-dot 1.2s ease-in-out infinite;
@@ -87,9 +87,9 @@ body[data-loading="initial"] .metric-detail::after,
 body[data-loading="initial"] #session-meta::after {
     background: linear-gradient(
         100deg,
-        #aaa8bd10 40%,
-        #cba6f726 50%,
-        #aaa8bd10 60%
+        color-mix(in srgb, var(--muted) calc(100% * 16 / 255), transparent) 40%,
+        color-mix(in srgb, var(--accent) calc(100% * 38 / 255), transparent) 50%,
+        color-mix(in srgb, var(--muted) calc(100% * 16 / 255), transparent) 60%
     );
     background-size: 300% 100%;
     background-repeat: no-repeat;
@@ -106,7 +106,7 @@ body[data-loading="initial"] .pagination > span::after {
     position: absolute;
     inset: 3px 0;
     border-radius: 5px;
-    background: #aaa8bd15;
+    background: color-mix(in srgb, var(--muted) calc(100% * 21 / 255), transparent);
     animation: loading-dot 1.2s ease-in-out infinite;
 }
 body[data-loading="initial"] .skeleton-shape,

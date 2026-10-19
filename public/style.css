@@ -38,9 +38,9 @@
     --chart-label-color: #928da7;
     --chart-caption-color: #c0b7d0;
     --chart-grid-color: #ffffff09;
-    --performance-background-dim: 0.8;
-    --performance-panel-dim: 0.8;
-    --performance-background-blur: 10px;
+    --performance-background-dim: 0.7;
+    --performance-panel-dim: 0.7;
+    --performance-background-blur: 7px;
 }
 * {
     box-sizing: border-box;

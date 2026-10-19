@@ -1761,11 +1761,6 @@ footer {
     .metric.featured .metric-spark {
         display: block;
     }
-    .ambient {
-        bottom: auto;
-        height: calc(100lvh + 50px);
-        background-position: 82% center;
-    }
     .records-panel table,
     .song-search-panel table {
         display: block;

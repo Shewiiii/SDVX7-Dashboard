@@ -46,19 +46,18 @@ def normalize(text: str) -> str:
     )
 
 
-def search_forms(text: str) -> list[str]:
+def search_forms(text: str, *, reading: bool = False) -> list[str]:
     text = unicodedata.normalize("NFKC", text)
-    forms = {normalize(text)}
+    normalized = normalize(text)
+    # Placeholder pronunciation hints must not become searchable aliases.
+    if reading and normalized in {normalize("ダミー"), "dummy"}:
+        return []
+    forms = {normalized}
     if _kana:
+        parts = _kana.convert(text)
+        forms.add(normalize("".join(part["hira"] for part in parts)))
         for scheme in ("hepburn", "kunrei", "passport"):
-            roman = re.sub(
-                r"[\u3040-\u30ff]+",
-                lambda m, scheme=scheme: "".join(
-                    p[scheme] for p in _kana.convert(m[0])
-                ),
-                text,
-            )
-            roman = normalize(roman)
+            roman = normalize("".join(part[scheme] for part in parts))
             forms.add(roman)
             forms.add(re.sub(r"aa|ii|uu|ee|oo|ou", lambda m: m[0][0], roman))
     return sorted(f for f in forms if f)
@@ -137,13 +136,10 @@ class Catalog:
                 "title": title,
                 "artist": artist,
                 "forms": [
-                    search_forms(value)
-                    for value in (
-                        title,
-                        self.music.title_readings.get(mid, ""),
-                        artist,
-                        self.music.artist_readings.get(mid, ""),
-                    )
+                    search_forms(title),
+                    search_forms(self.music.title_readings.get(mid, ""), reading=True),
+                    search_forms(artist),
+                    search_forms(self.music.artist_readings.get(mid, ""), reading=True),
                 ],
                 "difficulties": difficulties,
             }

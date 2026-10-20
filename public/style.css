@@ -52,9 +52,9 @@
     --chart-caption-color: #c0b7d0;
     --chart-grid-color: var(--row-separator);
     --performance-background-dim: 0.6;
-    --performance-panel-dim: 0.6;
-    --performance-background-blur: 6px;
-    --performance-background-blur-mobile: 3px;
+    --performance-panel-dim: 0.65;
+    --performance-background-blur: 9px;
+    --performance-background-blur-mobile: 4.5px;
 }
 * {
     box-sizing: border-box;

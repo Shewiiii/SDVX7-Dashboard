@@ -84,7 +84,7 @@ function nextDifficulty(level, direction) {
     return Math.max(limits.level[0], Math.min(limits.level[1], next / 10));
 }
 
-export function createCalculator(getSummary, renderChartRow) {
+export function createCalculator(getSummary, renderChartRow, getChartPlays) {
     const $ = (id) => document.getElementById(`calculator-${id}`);
     const svg = $("chart");
     const target = $("target");
@@ -92,7 +92,18 @@ export function createCalculator(getSummary, renderChartRow) {
     let state = { ...defaults },
         plot,
         rendered = false,
-        chartSignature = "";
+        chartSignature = "",
+        chartFilter = null,
+        plottedCharts = [];
+
+    function getCharts() {
+        const charts = chartFilter
+            ? getChartPlays(chartFilter.music_id, chartFilter.diff_idx).map(
+                  (play) => ({ ...play, ...chartFilter, vf: play.play_vf }),
+              )
+            : getSummary()?.top || [];
+        return charts.map((chart, index) => ({ ...chart, rank: index + 1 }));
+    }
 
     function formatScoreField(preserveCaret = false) {
         const input = $("score");
@@ -253,6 +264,7 @@ export function createCalculator(getSummary, renderChartRow) {
     }
 
     function matchesChart(chart) {
+        if (chartFilter) return true;
         return state.mode === "score"
             ? chart.level === state.level
             : Number.isSafeInteger(chart.score) &&
@@ -260,16 +272,18 @@ export function createCalculator(getSummary, renderChartRow) {
     }
 
     function updateCharts(charts, points) {
+        plottedCharts = charts;
         const matches = charts.filter(matchesChart);
+        const noun = chartFilter ? "play" : "chart";
         $("match-count").textContent =
-            `${matches.length} ${matches.length === 1 ? "chart" : "charts"}`;
-        $("match-context").textContent =
-            state.mode === "score"
-                ? `Difficulty ${state.level}`
-                : `Scores ${formatScoreInput(Math.max(0, state.score - scoreMatchTolerance))}–${formatScoreInput(Math.min(limits.score[1], state.score + scoreMatchTolerance))}`;
+            `${matches.length} ${noun}${matches.length === 1 ? "" : "s"}`;
+        $("filter").hidden = !chartFilter;
+        $("filter-label").textContent = chartFilter
+            ? `Showing: ${chartFilter.artist} - ${chartFilter.title} (${DIFFS[chartFilter.diff_idx]} ${chartFilter.level ?? "—"})`
+            : "";
         $("matches").innerHTML = matches.length
             ? matches.map((chart) => renderChartRow(chart, chart.rank)).join("")
-            : '<div class="empty-list">No matching Top 50 charts.</div>';
+            : `<div class="empty-list">${chartFilter ? "No recorded plays for this chart yet." : "No matching Top 50 charts."}</div>`;
 
         for (const chart of charts) {
             const value = state.mode === "score" ? chart.score : chart.level;
@@ -291,7 +305,7 @@ export function createCalculator(getSummary, renderChartRow) {
                 "data-rank": chart.rank,
                 tabindex: 0,
                 role: "button",
-                "aria-label": `Top ${chart.rank} · ${caption} · ${CLEARS[chart.clear_type]}. View plays`,
+                "aria-label": `${chartFilter ? "Play" : "Top"} ${chart.rank} · ${caption} · ${CLEARS[chart.clear_type]}. View plays`,
             });
             dot.append(
                 svgElement("circle", {
@@ -313,7 +327,7 @@ export function createCalculator(getSummary, renderChartRow) {
 
     function showChartPreview(dot) {
         const rank = Number(dot.dataset.rank);
-        const chart = getSummary()?.top?.[rank - 1];
+        const chart = plottedCharts[rank - 1];
         if (!chart) return;
         tooltip.innerHTML = renderChartRow(chart, rank);
         tooltip.hidden = false;
@@ -371,10 +385,7 @@ export function createCalculator(getSummary, renderChartRow) {
                 variableScore ? point : state.score,
                 type,
             );
-        const charts = (getSummary()?.top || []).map((chart, index) => ({
-            ...chart,
-            rank: index + 1,
-        }));
+        const charts = getCharts();
         chartSignature = JSON.stringify(charts);
         const peak = Math.max(
             valueAt(maximum, 6),
@@ -692,6 +703,11 @@ export function createCalculator(getSummary, renderChartRow) {
         event.preventDefault();
         dot.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
+    $("filter-remove").addEventListener("click", () => {
+        chartFilter = null;
+        hideChartPreview();
+        render({ animate: false });
+    });
     $("legend").innerHTML =
         VF_CLEARS.map(
             ({ type }) =>
@@ -703,12 +719,13 @@ export function createCalculator(getSummary, renderChartRow) {
     return {
         render,
         updateData({ animate = true } = {}) {
-            const charts = (getSummary()?.top || []).map((chart, index) => ({
-                ...chart,
-                rank: index + 1,
-            }));
+            const charts = getCharts();
             const signature = JSON.stringify(charts);
-            if (signature === chartSignature) return;
+            if (signature === chartSignature) {
+                updateReferences({ animate });
+                updateTarget();
+                return;
+            }
             if (!plot || charts.some((chart) => chart.vf > plot.ceiling)) {
                 render({ animate: false });
                 if (animate)
@@ -726,7 +743,21 @@ export function createCalculator(getSummary, renderChartRow) {
             updateReferences({ animate });
             updateTarget();
         },
+        openChart(chart) {
+            chartFilter = { ...chart };
+            const bestScore = getChartPlays(chart.music_id, chart.diff_idx)[0]?.score
+                ?? defaults.score;
+            state = {
+                mode: "score",
+                level: chart.level ?? defaults.level,
+                score: bestScore,
+                targetScore: bestScore,
+                targetLevel: chart.level ?? defaults.targetLevel,
+            };
+            syncControls();
+        },
         reset() {
+            chartFilter = null;
             state = { ...defaults };
             syncControls();
         },

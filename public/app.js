@@ -253,7 +253,11 @@ const recordStates = {
     top: { query: "", page: 0, sort: defaultRecordSorts.top },
     history: { query: "", page: 0, sort: defaultRecordSorts.history },
 };
-const calculator = createCalculator(() => stats, row);
+const calculator = createCalculator(
+    () => stats,
+    row,
+    (musicId, diff) => (data ? chartPlays(data, musicId, diff) : []),
+);
 let pendingScroll = null,
     scrollSaveTimer;
 history.scrollRestoration = "manual";
@@ -1592,7 +1596,7 @@ function renderSongSearch({ animate = true } = {}) {
         saved?.clear_type ??
         (plays.length ? Math.max(...plays.map((p) => p.clear_type)) : null);
     $("selected-chart").innerHTML =
-        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div></div></div>`;
+        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading"><h3>${escape(song.title)}</h3><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div></div></div>`;
     fitDifficultyButtons();
     const pagination = paginate(plays, songSearchPage);
     songSearchPage = pagination.page;
@@ -1728,6 +1732,22 @@ $("song-options").addEventListener("click", (event) => {
 document.addEventListener("click", (event) => {
     if (!event.target.closest('.song-search, [data-view="search"]'))
         closeMatches();
+    if (event.target.closest("[data-view-calculator]") && selected) {
+        const song = songs.get(selected.music_id);
+        const difficulty = song?.difficulties.find(
+            (chart) => chart.diff_idx === selected.diff_idx,
+        );
+        if (difficulty) {
+            calculator.openChart({
+                ...selected,
+                title: song.title,
+                artist: song.artist,
+                level: difficulty.level,
+            });
+            switchView("calculator");
+        }
+        return;
+    }
     const button = event.target.closest(".open-chart, .chart-row");
     if (button)
         selectChart(Number(button.dataset.music), Number(button.dataset.diff));

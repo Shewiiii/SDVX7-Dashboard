@@ -751,10 +751,21 @@
                                 class="calculator-match-count"
                             ></span>
                         </div>
-                        <p
-                            id="calculator-match-context"
-                            class="calculator-match-context"
-                        ></p>
+                        <div
+                            id="calculator-filter"
+                            class="calculator-filter"
+                            hidden
+                        >
+                            <span id="calculator-filter-label"></span>
+                            <button
+                                id="calculator-filter-remove"
+                                type="button"
+                                aria-label="Remove song filter"
+                                title="Remove song filter"
+                            >
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
                         <div id="calculator-matches" class="play-list"></div>
                     </section>
                 </section>

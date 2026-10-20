@@ -599,16 +599,47 @@
 .calculator-matches {
     border-top: 1px solid var(--line);
 }
-.calculator-match-count,
-.calculator-match-context {
+.calculator-match-count {
     font-size: 12px;
     color: var(--muted);
 }
 .calculator-match-count {
     white-space: nowrap;
 }
-.calculator-match-context {
-    margin: 0 var(--panel-padding-inline) 18px;
+.calculator-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    max-width: calc(100% - 2 * var(--panel-padding-inline));
+    margin: 0 var(--panel-padding-inline) 12px;
+    padding: 3px 4px 3px 12px;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: var(--control-radius);
+    background: var(--accent-wash);
+    font-size: 12px;
+}
+.calculator-filter > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.calculator-filter button {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--item-radius);
+    background: none;
+    color: var(--muted);
+    font-size: 24px;
+    line-height: 1;
+}
+.calculator-filter button:hover {
+    color: var(--accent);
+    background: var(--row-hover);
 }
 .calculator-matches .empty-list {
     padding-inline: var(--list-padding-inline);
@@ -1348,6 +1379,26 @@ footer {
     margin: 0 0 5px;
     overflow-wrap: anywhere;
 }
+.selected-song-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-bottom: 5px;
+}
+.selected-song-heading h3 {
+    margin: 0;
+}
+.calculator-link {
+    flex: none;
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 12px;
+    text-underline-offset: 3px;
+}
 .selected-song-info > p {
     color: var(--muted);
     font-size: 12px;
@@ -1898,10 +1949,9 @@ footer {
         flex-wrap: wrap;
     }
     .song-search-panel tbody tr {
-        grid-template-columns: var(--entry-position-width) minmax(
-                0,
-                1fr
-            ) 48px 48px;
+        grid-template-columns:
+            var(--entry-position-width) minmax(0, 1fr)
+            48px 48px;
         grid-template-areas: "position score score vf" ". clear played played";
         column-gap: var(--entry-gap);
     }
@@ -1991,6 +2041,13 @@ footer {
     .selected-song h3 {
         font-size: 20px;
     }
+    .selected-song-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .calculator-link {
+        font-size: 11px;
+    }
     .selected-song-info > p {
         font-size: 10px;
         margin-bottom: 13px;
@@ -2040,8 +2097,11 @@ footer {
     .selected-song .cover-tile.large {
         grid-row: 1 / span 2;
     }
-    .selected-song h3 {
+    .selected-song-heading {
         align-self: end;
+        margin-bottom: 0;
+    }
+    .selected-song h3 {
         margin: 0;
     }
     .selected-song-info > p {

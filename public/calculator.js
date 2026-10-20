@@ -724,8 +724,8 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
     });
     $("legend").innerHTML =
         VF_CLEARS.map(
-            ({ type }) =>
-                `<div data-clear="${type}"><svg class="calculator-legend-border" aria-hidden="true"><rect width="100%" height="100%" pathLength="1"/></svg><span><i class="dot"></i>${CLEARS[type]}</span><output id="calculator-vf-${type}"></output></div>`,
+            ({ type, multiplier }) =>
+                `<div data-clear="${type}"><svg class="calculator-legend-border" aria-hidden="true"><rect width="100%" height="100%" pathLength="1"/></svg><span><i class="dot"></i>${CLEARS[type]} ×${(multiplier / 100).toFixed(2)}</span><output id="calculator-vf-${type}"></output></div>`,
         ).join("") +
         '<div class="calculator-grade" aria-label="Score grade multiplier"><span><i class="dot"></i><span id="calculator-grade-name"></span></span><output id="calculator-grade-multiplier"></output></div>';
     syncControls();

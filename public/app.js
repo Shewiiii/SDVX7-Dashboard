@@ -377,10 +377,23 @@ function renderSummary({ animate = true } = {}) {
         $("vf-class-icon").src = `/assets/vf-classes/${vfClass.number}.png`;
     }
     setText("best-vf", vf(stats.best));
-    setText(
-        "best-title",
-        stats.top.length ? chartTitle(stats.top[0]) : "No saved charts yet",
-    );
+    const bestChart = stats.top[0];
+    if (bestChart) {
+        const song = songs.get(bestChart.music_id);
+        const level =
+            song?.difficulties.find(
+                (chart) => chart.diff_idx === bestChart.diff_idx,
+            )?.level ?? bestChart.level;
+        const label = `${song?.artist ?? bestChart.artist ?? ""} - ${song?.title ?? chartTitle(bestChart)} (${DIFFS[bestChart.diff_idx]} ${level ?? "—"})`;
+        const link = document.createElement("button");
+        link.type = "button";
+        link.className = "metric-chart-link open-chart";
+        link.dataset.music = bestChart.music_id;
+        link.dataset.diff = bestChart.diff_idx;
+        link.textContent = label;
+        link.title = label;
+        $("best-title").replaceChildren(link);
+    } else setText("best-title", "No saved charts yet");
     setText("play-count", number(data.plays.length));
     setText(
         "play-detail",

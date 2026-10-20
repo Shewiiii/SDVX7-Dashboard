@@ -13,7 +13,11 @@
     --faint: #77748d;
     --line: #353346;
     --accent: rgb(147, 225, 243);
-    --accent-wash: color-mix(in srgb, var(--accent) calc(100% * 27 / 255), transparent);
+    --accent-wash: color-mix(
+        in srgb,
+        var(--accent) calc(100% * 27 / 255),
+        transparent
+    );
     --chart-total: #5e8ee6;
     --chart-plays: #607e90;
     --chart-play-points: #6b8fa6;
@@ -26,7 +30,11 @@
     --timing-late-color: #6ba8de;
     --timing-curve-color: #4d6a84;
     --notice-accent: #78a6d6;
-    --calculator-grade-color: #78a6d6;
+    --calculator-grade-color: color-mix(
+        in srgb,
+        var(--accent) 70%,
+        var(--faint)
+    );
     --sans: "Space Grotesk", sans-serif;
     --panel-radius: 16px;
     --control-radius: 10px;
@@ -48,7 +56,11 @@
     --entry-padding-block: 13px;
     --entry-details-gap: 8px;
     --row-separator: #ffffff09;
-    --row-hover: color-mix(in srgb, var(--accent) calc(100% * 17 / 255), transparent);
+    --row-hover: color-mix(
+        in srgb,
+        var(--accent) calc(100% * 17 / 255),
+        transparent
+    );
     --chart-label-color: #928da7;
     --chart-caption-color: #c0b7d0;
     --chart-grid-color: var(--row-separator);

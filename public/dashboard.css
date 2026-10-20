@@ -543,20 +543,47 @@
 .calculator-chart-tooltip .play-row > div {
     min-width: 0;
 }
+.calculator-panel {
+    --calculator-clear-muted: color-mix(
+        in srgb,
+        var(--faint) 35%,
+        var(--panel)
+    );
+}
 .calculator-panel [data-clear="1"] {
-    --clear-color: #5e6c7a;
+    --clear-color: color-mix(
+        in srgb,
+        var(--accent) 15%,
+        var(--calculator-clear-muted)
+    );
 }
 .calculator-panel [data-clear="2"] {
-    --clear-color: #738594;
+    --clear-color: color-mix(
+        in srgb,
+        var(--accent) 35%,
+        var(--calculator-clear-muted)
+    );
 }
 .calculator-panel [data-clear="3"] {
-    --clear-color: #7d9bb3;
+    --clear-color: color-mix(
+        in srgb,
+        var(--accent) 50%,
+        var(--calculator-clear-muted)
+    );
 }
 .calculator-panel [data-clear="4"] {
-    --clear-color: #8db7d0;
+    --clear-color: color-mix(
+        in srgb,
+        var(--accent) 70%,
+        var(--calculator-clear-muted)
+    );
 }
 .calculator-panel [data-clear="5"] {
-    --clear-color: #a0d0e4;
+    --clear-color: color-mix(
+        in srgb,
+        var(--accent) 85%,
+        var(--calculator-clear-muted)
+    );
 }
 .calculator-panel [data-clear="6"] {
     --clear-color: var(--accent);
@@ -583,7 +610,7 @@
     fill: transparent;
 }
 .calculator-dot {
-    fill: var(--chart-play-points);
+    fill: color-mix(in srgb, var(--accent) 45%, var(--calculator-clear-muted));
     opacity: 0.58;
     pointer-events: none;
 }
@@ -675,7 +702,7 @@
     --reference-dash: 1 6;
 }
 .calculator-panel [data-reference="worst"] {
-    --reference-color: var(--faint);
+    --reference-color: color-mix(in srgb, var(--accent) 25%, var(--faint));
     --reference-dash: 4 7;
 }
 .calculator-reference line,

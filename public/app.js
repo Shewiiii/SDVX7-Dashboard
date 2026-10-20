@@ -228,6 +228,7 @@ const clock = (value) =>
         hour12: false,
     });
 const chartTitle = (p) => p.title || `Chart ${p.music_id}`;
+const formatRank = (rank) => String(rank).padStart(2, "0");
 const badge = (p) =>
     `<span class="difficulty-badge d${p.diff_idx}">${DIFFS[p.diff_idx]}${p.level ? " " + escape(p.level) : ""}</span>`;
 const clear = (p) =>
@@ -277,11 +278,15 @@ function coverMarkup(p, size = "small") {
 const chartButton = (p) =>
     `<button class="song-title open-chart" data-music="${p.music_id}" data-diff="${p.diff_idx}" title="View plays for ${escape(chartTitle(p))}">${escape(chartTitle(p))}</button>`;
 
+function chartInfo(p, { artist = false, detailsClass = "" } = {}) {
+    return `<div class="entry-song-info">${chartButton(p)}${artist ? `<div class="artist">${escape(p.artist)}</div>` : ""}<div class="song-details ${detailsClass}">${badge(p)}${clear(p)}</div></div>`;
+}
+
 function setText(id, value) {
     $(id).textContent = value;
 }
 function row(p, rank = null) {
-    return `<div class="play-row chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank ? String(rank).padStart(2, "0") : clock(p.received_at)}</span>${coverMarkup(p)}<div>${chartButton(p)}<div class="song-details">${badge(p)}${clear(p)}</div></div><div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
+    return `<div class="play-row chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p)}${chartInfo(p)}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
 }
 
 function prepareLoading() {
@@ -912,7 +917,15 @@ function renderChart({ animate = true, transition = false } = {}) {
     for (const o of observations) {
         if (o.minimum_vf === null) {
             if (segment.length) segment.push([o.time, segment.at(-1)[1]]);
-            line("threshold", segment, "var(--chart-top50)", 1.2, y, true, "4 5");
+            line(
+                "threshold",
+                segment,
+                "var(--chart-top50)",
+                1.2,
+                y,
+                true,
+                "4 5",
+            );
             segment = [];
         } else segment.push([o.time, o.minimum_vf]);
     }
@@ -927,7 +940,10 @@ function renderChart({ animate = true, transition = false } = {}) {
     const totalPoints = observations.map((o) => [o.time, o.total_vf]);
     line("best", bestPoints, "var(--chart-best)", 1.5, y, true);
     if (shown.has("plays")) {
-        const group = svgElement("g", { fill: "var(--chart-play-points)", opacity: 0.58 });
+        const group = svgElement("g", {
+            fill: "var(--chart-play-points)",
+            opacity: 0.58,
+        });
         plays.forEach((p) =>
             group.append(
                 svgElement("circle", {
@@ -1289,7 +1305,7 @@ function switchView(
 }
 
 function recordPosition(record, { top, grouped, playCounts }) {
-    if (top) return String(record.rank).padStart(2, "0");
+    if (top) return formatRank(record.rank);
     if (grouped) {
         const count = playCounts.get(chartKey(record));
         return `${number(count)}<br>${count === 1 ? "play" : "plays"}`;
@@ -1300,11 +1316,7 @@ function recordPosition(record, { top, grouped, playCounts }) {
 function recordRow(record, options) {
     return `<tr class="chart-row" data-music="${record.music_id}" data-diff="${record.diff_idx}">
         <td class="row-index record-position">${recordPosition(record, options)}</td>
-        <td class="record-song"><div class="table-song">${coverMarkup(record)}<div>
-            ${chartButton(record)}
-            <div class="artist">${escape(record.artist)}</div>
-            <div class="song-details record-details">${badge(record)}${clear(record)}</div>
-        </div></div></td>
+        <td class="record-song"><div class="table-song">${coverMarkup(record)}${chartInfo(record, { artist: true, detailsClass: "record-details" })}</div></td>
         <td class="record-difficulty">${badge(record)}</td>
         <td class="score-cell record-score">${number(record.score)}</td>
         <td class="record-clear">${clear(record)}</td>
@@ -1563,7 +1575,7 @@ function renderSongSearch({ animate = true } = {}) {
               .map((p, index) => {
                   const key = judgementKey(p);
                   const expanded = expandedJudgements.has(key);
-                  return `<tr class="song-search-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${start + index + 1}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+                  return `<tr class="song-search-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
               })
               .join("")
         : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';

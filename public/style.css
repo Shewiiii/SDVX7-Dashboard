@@ -45,6 +45,7 @@
     --entry-vf-color: var(--accent);
     --entry-cover-size: 40px;
     --entry-gap: 11px;
+    --entry-padding-block: 13px;
     --entry-details-gap: 8px;
     --row-separator: #ffffff09;
     --row-hover: color-mix(in srgb, var(--accent) calc(100% * 17 / 255), transparent);

@@ -797,7 +797,7 @@
 .play-row {
     display: grid;
     align-items: center;
-    padding: 13px var(--list-padding-inline);
+    padding: var(--entry-padding-block) var(--list-padding-inline);
     border-top: 0;
     grid-template-columns:
         var(--entry-position-width) var(--entry-cover-size)
@@ -808,6 +808,16 @@
     font: var(--entry-position-size) var(--sans);
     color: var(--faint);
     white-space: nowrap;
+}
+td.row-index {
+    width: calc(var(--list-padding-inline) + var(--entry-position-width));
+    padding-right: 0;
+}
+td.row-index + td {
+    padding-left: var(--entry-gap);
+}
+.entry-song-info {
+    min-width: 0;
 }
 .song-title {
     font-size: var(--entry-title-size);
@@ -856,12 +866,16 @@
 .row-values {
     text-align: right;
 }
-.row-vf {
+.row-vf,
+.vf-cell {
     font-size: var(--entry-vf-size);
     color: var(--entry-vf-color);
 }
-.row-score {
+.row-score,
+.score-cell {
     font-size: var(--entry-score-size);
+}
+.row-score {
     color: var(--faint);
     margin-top: 3px;
 }
@@ -964,14 +978,14 @@ th {
     border-block: 0;
 }
 td {
-    padding: 15px;
+    padding: var(--entry-padding-block) 15px;
     border-bottom: 0;
     font-size: 11px;
     vertical-align: middle;
 }
 th:first-child,
 td:first-child {
-    padding-left: var(--panel-padding-inline);
+    padding-left: var(--list-padding-inline);
 }
 th:last-child,
 td:last-child {
@@ -989,12 +1003,7 @@ td:nth-child(2) {
     max-width: 370px;
 }
 .score-cell {
-    font-size: 12px;
     color: #c8c3d9;
-}
-.vf-cell {
-    font: 12px var(--sans);
-    color: var(--entry-vf-color);
 }
 tbody tr:hover {
     background: var(--row-hover);
@@ -1218,12 +1227,15 @@ footer {
 .open-chart:hover {
     color: var(--accent);
 }
-.chart-row {
+.chart-row,
+.song-search-entry {
     cursor: pointer;
     transition: background 0.16s;
 }
 .chart-row:hover,
-.chart-row:focus-within {
+.chart-row:focus-within,
+.song-search-entry:hover,
+.song-search-entry:focus-within {
     background: var(--row-hover);
 }
 .play-row + .play-row,
@@ -1238,34 +1250,13 @@ footer {
 .table-song {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--entry-gap);
 }
-.table-song > div {
-    min-width: 0;
-}
-/* .records-panel {
-    --entry-position-size: 11px;
-    --entry-detail-size: 11px;
-    --entry-clear-size: 11px;
-    --entry-score-size: 12px;
-} */
 .record-details {
     display: none;
 }
-.records-panel tbody td {
-    font-size: 12px;
-}
-.records-panel .record-position {
-    font-size: var(--entry-position-size);
-}
 .records-panel .artist {
     font-size: 10px;
-}
-.records-panel .score-cell {
-    font-size: var(--entry-score-size);
-}
-.records-panel .vf-cell {
-    font-size: var(--entry-vf-size);
 }
 .song-search-panel {
     overflow: visible;
@@ -1408,7 +1399,7 @@ footer {
     border-top: 0;
 }
 .played-date {
-    font-size: 12px;
+    font-size: var(--entry-position-size);
 }
 .played-date span {
     margin-left: 8px;
@@ -1454,12 +1445,6 @@ footer {
     align-items: center;
     gap: 10px;
     white-space: nowrap;
-}
-.song-search-entry {
-    cursor: pointer;
-}
-.song-search-entry:focus-within {
-    background: var(--row-hover);
 }
 .judgement-toggle,
 .judgement-toggle:hover {
@@ -1635,7 +1620,7 @@ footer {
     .tabs {
         gap: 22px;
     }
-    .play-row {
+    :root {
         --entry-position-width: 30px;
         --entry-cover-size: 34px;
         --entry-gap: 8px;
@@ -1657,10 +1642,9 @@ footer {
         --list-padding-inline: 18px;
         --entry-title-size: 12px;
         --entry-details-gap: 5px;
-    }
-    .play-row,
-    .records-panel {
+        --entry-position-size: 10px;
         --entry-detail-size: 10px;
+        --entry-clear-size: 8px;
         --entry-score-size: 10px;
         --entry-position-width: 32px;
         --entry-cover-size: 38px;
@@ -1767,14 +1751,6 @@ footer {
         align-items: center;
         padding: 20px 18px 8px;
     }
-    .play-row {
-        padding-inline: 18px;
-        --entry-clear-size: 8px;
-        grid-template-columns:
-            var(--entry-position-width) var(--entry-cover-size)
-            minmax(0, 1fr) auto;
-        gap: var(--entry-gap);
-    }
     .session-meta {
         padding-inline: 18px;
     }
@@ -1872,7 +1848,7 @@ footer {
         display: grid;
         gap: 5px 7px;
         align-items: center;
-        padding: 10px 12px;
+        padding: var(--entry-padding-block) var(--list-padding-inline);
         border-top: 0;
     }
     .records-panel tbody td,
@@ -1882,21 +1858,14 @@ footer {
         max-width: none;
         padding: 0;
         border: 0;
-        font-size: 10px;
     }
-    .records-panel {
-        --entry-position-size: 10px;
-        --entry-clear-size: 8px;
-        --entry-score-size: 9px;
-    }
-    .records-panel tbody td {
-        font-size: 11px;
+    td.row-index {
+        width: auto;
     }
     .records-panel tbody tr {
         grid-template-columns: var(--entry-position-width) minmax(0, 1fr) auto;
         grid-template-areas: "position song vf" "position song score";
         gap: 0 var(--entry-gap);
-        padding: 13px var(--list-padding-inline);
     }
     .records-panel .record-position {
         grid-area: position;
@@ -1920,10 +1889,6 @@ footer {
     .records-panel .record-vf {
         grid-area: vf;
         align-self: end;
-        color: var(--entry-vf-color);
-    }
-    .records-panel .table-song {
-        gap: var(--entry-gap);
     }
     .records-panel .table-song > div {
         flex: 1;
@@ -1933,16 +1898,18 @@ footer {
         flex-wrap: wrap;
     }
     .song-search-panel tbody tr {
-        grid-template-columns: 24px minmax(0, 1fr) 48px 48px;
+        grid-template-columns: var(--entry-position-width) minmax(
+                0,
+                1fr
+            ) 48px 48px;
         grid-template-areas: "position score score vf" ". clear played played";
+        column-gap: var(--entry-gap);
     }
     .song-search-panel .score-position {
         grid-area: position;
-        font-size: 9px;
     }
     .song-search-panel .score-cell {
         grid-area: score;
-        font-size: 12px;
     }
     .song-search-panel .score-clear {
         grid-area: clear;
@@ -1957,12 +1924,10 @@ footer {
         justify-content: flex-end;
         flex-wrap: wrap;
         gap: 0 5px;
-        font-size: 9px;
         text-align: right;
     }
     .song-search-panel .vf-cell {
         grid-area: vf;
-        font-size: 12px;
     }
     .song-search-panel .played-date span {
         margin-left: 0;
@@ -2002,13 +1967,6 @@ footer {
     .metric-detail,
     .vf-class {
         min-height: 23px;
-    }
-    .song-details {
-        gap: var(--entry-details-gap);
-        font-size: 8px;
-    }
-    .song-details .clear-label {
-        font-size: var(--entry-clear-size);
     }
     .song-search-panel {
         padding-top: 18px;

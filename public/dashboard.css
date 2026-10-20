@@ -213,8 +213,9 @@
     color: inherit;
     font: inherit;
     text-align: center;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .metric-chart-link.open-chart:hover {
     color: var(--accent);

@@ -173,6 +173,10 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         target.setAttribute("aria-valuetext", $("point").textContent);
         $("grade-name").textContent = scoreGrade;
         $("grade-multiplier").textContent = `×${(multiplier / 100).toFixed(2)}`;
+        $("formula-level").textContent = level;
+        $("formula-score").textContent = formatScoreInput(score);
+        $("formula-grade").textContent = (multiplier / 100).toFixed(2);
+        $("formula-grade").title = `${scoreGrade} grade coefficient`;
         plot.markers.replaceChildren(
             svgElement("line", {
                 x1: plot.x(point),

@@ -478,6 +478,21 @@
     gap: 18px;
     padding: 14px var(--panel-padding-inline) 20px;
 }
+.calculator-formula {
+    flex: 1 0 auto;
+    margin-left: 0;
+    color: var(--faint);
+    text-align: center;
+}
+.calculator-formula math {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: inherit;
+}
+.calculator-formula p {
+    margin: 12px 0 0;
+    font-size: 10px;
+}
 .calculator-controls .segmented button {
     padding: 11px 14px;
     font-size: 12px;
@@ -1724,6 +1739,9 @@ footer {
     }
 }
 @media (max-width: 700px) {
+    .calculator-formula {
+        display: none;
+    }
     .ambient {
         filter: blur(var(--performance-background-blur-mobile));
     }

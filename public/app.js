@@ -249,7 +249,10 @@ let data = null,
 let dataFingerprint = "";
 const revealedViews = new Set();
 const defaultRecordSorts = { top: "vf", history: "recent" };
-const recordSorts = { ...defaultRecordSorts };
+const recordStates = {
+    top: { query: "", page: 0, sort: defaultRecordSorts.top },
+    history: { query: "", page: 0, sort: defaultRecordSorts.history },
+};
 const calculator = createCalculator(() => stats, row);
 let pendingScroll = null,
     scrollSaveTimer;
@@ -1233,22 +1236,23 @@ function restoreUrl() {
     $("difficulty").value = String(difficulty);
     const musicId = Number(params.get("song")),
         diff = Number(params.get("diff"));
-    selected =
-        next === "search" &&
-        params.has("diff") &&
-        Number.isSafeInteger(musicId) &&
-        musicId > 0 &&
-        Number.isInteger(diff) &&
-        diff >= 0 &&
-        diff < DIFFS.length
-            ? { music_id: musicId, diff_idx: diff }
-            : null;
-    songSearchPage = next === "search" ? restoredPage : 0;
+    if (next === "search") {
+        selected =
+            params.has("diff") &&
+            Number.isSafeInteger(musicId) &&
+            musicId > 0 &&
+            Number.isInteger(diff) &&
+            diff >= 0 &&
+            diff < DIFFS.length
+                ? { music_id: musicId, diff_idx: diff }
+                : null;
+        songSearchPage = restoredPage;
+        $("song-query").value =
+            selected && songs.has(musicId)
+                ? `${songs.get(musicId).title} ${DIFFS[diff]}`
+                : "";
+    }
     closeMatches();
-    $("song-query").value =
-        selected && songs.has(musicId)
-            ? `${songs.get(musicId).title} ${DIFFS[diff]}`
-            : "";
     if (data && next === "overview" && view === "overview") {
         if (days !== previousDays) renderChart({ transition: true });
         else if (previousChart !== JSON.stringify([difficulty, [...shown]]))
@@ -1261,7 +1265,11 @@ function restoreUrl() {
         $("sort").value = ["vf", "score", "recent", "plays"].includes(sort)
             ? sort
             : defaultRecordSorts[next];
-        recordSorts[next] = $("sort").value;
+        recordStates[next] = {
+            query: $("search").value,
+            page,
+            sort: $("sort").value,
+        };
         renderTable({ animate: false });
     }
     restoreScroll(savedScroll);
@@ -1276,9 +1284,15 @@ function switchView(
         pendingScroll = null;
         rememberScroll();
     }
-    if (view in recordSorts) recordSorts[view] = $("sort").value;
+    if (view in recordStates) {
+        recordStates[view] = {
+            query: $("search").value,
+            page,
+            sort: $("sort").value,
+        };
+    }
+    if (next !== view) closeMatches();
     view = next;
-    page = 0;
     document.querySelectorAll(".tab").forEach((button) => {
         const active = button.dataset.view === view;
         button.classList.toggle("active", active);
@@ -1289,8 +1303,12 @@ function switchView(
     $("records-view").hidden = !["top", "history"].includes(view);
     $("song-search-view").hidden = view !== "search";
     $("calculator-view").hidden = view !== "calculator";
-    $("search").value = "";
-    $("sort").value = recordSorts[view] || defaultRecordSorts.history;
+    if (view in recordStates) {
+        const saved = recordStates[view];
+        $("search").value = saved.query;
+        $("sort").value = saved.sort;
+        page = saved.page;
+    }
     updateSearchClearButtons();
     if (view === "overview") renderChart({ animate });
     else if (view === "search") renderSongSearch({ animate });
@@ -1421,7 +1439,12 @@ function closeMatches() {
 
 function renderMatches() {
     updateSearchClearButtons();
-    if (!data) return;
+    if (!data || !$("song-query").value.trim()) {
+        matches = [];
+        $("song-options").replaceChildren();
+        closeMatches();
+        return;
+    }
     matches = searchCharts(catalog, $("song-query").value);
     activeMatch = -1;
     const list = $("song-options");
@@ -1531,7 +1554,11 @@ function renderSongSearch({ animate = true } = {}) {
     $("selected-chart").hidden = !selected;
     $("song-search-empty").hidden = !!selected;
     $("song-search-results").hidden = !selected;
-    if (!selected) return;
+    if (!selected) {
+        if ($("song-query").value.trim()) renderMatches();
+        else closeMatches();
+        return;
+    }
     const song = songs.get(selected.music_id);
     if (
         !song ||
@@ -1643,7 +1670,16 @@ window.visualViewport?.addEventListener("resize", () => {
 window.visualViewport?.addEventListener("scroll", updateSearchOptionsHeight);
 window.addEventListener("scroll", updateSearchOptionsHeight, { passive: true });
 
-$("song-query").addEventListener("input", renderMatches);
+$("song-query").addEventListener("input", () => {
+    if (!$("song-query").value.trim()) {
+        selected = null;
+        songSearchPage = 0;
+        expandedJudgements.clear();
+        renderSongSearch({ animate: false });
+        updateUrl(true);
+    }
+    renderMatches();
+});
 $("song-query").addEventListener("focus", renderMatches);
 $("song-query").addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -1690,7 +1726,8 @@ $("song-options").addEventListener("click", (event) => {
     }
 });
 document.addEventListener("click", (event) => {
-    if (!event.target.closest(".song-search")) closeMatches();
+    if (!event.target.closest('.song-search, [data-view="search"]'))
+        closeMatches();
     const button = event.target.closest(".open-chart, .chart-row");
     if (button)
         selectChart(Number(button.dataset.music), Number(button.dataset.diff));
@@ -1814,14 +1851,21 @@ document.querySelector(".brand").addEventListener("click", (event) => {
 
 document.querySelectorAll("[data-view]").forEach((button) =>
     button.addEventListener("click", () => {
-        if (button.dataset.view === "search") {
-            selected = null;
-            songSearchPage = 0;
-            $("song-query").value = "";
-            closeMatches();
+        const next = button.dataset.view;
+        if (next === view) {
+            if (next in recordStates) {
+                page = 0;
+                $("search").value = "";
+                $("sort").value = defaultRecordSorts[next];
+            } else if (next === "search") {
+                selected = null;
+                songSearchPage = 0;
+                expandedJudgements.clear();
+                $("song-query").value = "";
+                closeMatches();
+            } else if (next === "calculator") calculator.reset();
         }
-        if (button.dataset.view === "calculator") calculator.reset();
-        switchView(button.dataset.view);
+        switchView(next);
     }),
 );
 document.querySelectorAll("[data-days]").forEach((button) =>

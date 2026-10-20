@@ -60,7 +60,7 @@ function difficultyAtPosition(position) {
 
 function parseScore(value) {
     const digits = value.replace(/[\s,]/g, "");
-    return /^\d+$/.test(digits) ? Number(digits) : NaN;
+    return /^-?\d+$/.test(digits) ? Number(digits) : NaN;
 }
 
 function difficultyStep(level, direction = 1) {
@@ -639,7 +639,21 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             if (!changed) return;
             render();
         });
+        $(key).addEventListener("blur", () => {
+            const input = $(key);
+            const value =
+                key === "score" ? parseScore(input.value) : input.valueAsNumber;
+            const [min, max] = limits[key];
+            if (Number.isNaN(value) || (value >= min && value <= max)) return;
+            input.value = Math.max(min, Math.min(max, value));
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
         $(key).addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && !event.isComposing) {
+                event.preventDefault();
+                $(key).blur();
+                return;
+            }
             if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
             event.preventDefault();
             stepInput(key, event.key === "ArrowUp" ? 1 : -1);
@@ -745,14 +759,14 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         },
         openChart(chart) {
             chartFilter = { ...chart };
-            const bestScore = getChartPlays(chart.music_id, chart.diff_idx)[0]?.score
-                ?? defaults.score;
+            const bestScore =
+                getChartPlays(chart.music_id, chart.diff_idx)[0]?.score ??
+                defaults.score;
             state = {
+                ...state,
                 mode: "score",
                 level: chart.level ?? defaults.level,
                 score: bestScore,
-                targetScore: bestScore,
-                targetLevel: chart.level ?? defaults.targetLevel,
             };
             syncControls();
         },

@@ -543,6 +543,9 @@
 .calculator-chart-tooltip .play-row > div {
     min-width: 0;
 }
+.calculator-panel [data-clear="1"] {
+    --clear-color: #5e6c7a;
+}
 .calculator-panel [data-clear="2"] {
     --clear-color: #738594;
 }
@@ -734,7 +737,7 @@
 }
 .calculator-legend {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 18px 24px;
     margin-top: 18px;
 }

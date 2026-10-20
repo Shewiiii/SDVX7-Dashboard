@@ -469,6 +469,7 @@ export const SCORE_GRADES = [
     [0, "D", 80],
 ];
 export const VF_CLEARS = [
+    { type: 1, multiplier: 50 },
     { type: 2, multiplier: 100 },
     { type: 3, multiplier: 102 },
     { type: 4, multiplier: 104 },

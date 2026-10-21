@@ -267,6 +267,7 @@
     height: 30px;
 }
 .navigation-row {
+    container-type: inline-size;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -276,15 +277,20 @@
 }
 .tabs {
     display: flex;
+    flex-wrap: nowrap;
+    max-width: 100%;
     gap: 29px;
+    font-size: min(14px, 3.5cqw);
 }
 .tab {
     position: relative;
+    flex-shrink: 0;
     border: 0;
     background: none;
     color: var(--muted);
     padding: 0 0 14px;
-    font-size: 14px;
+    font-size: inherit;
+    white-space: nowrap;
 }
 .tab.active {
     color: var(--ink);
@@ -1878,8 +1884,8 @@ footer {
         justify-content: center;
     }
     .tabs {
-        gap: 12px 19px;
-        flex-wrap: wrap;
+        gap: min(22px, 3cqw);
+        font-size: min(14px, 3.4cqw);
         justify-content: center;
     }
     .tab-caption {

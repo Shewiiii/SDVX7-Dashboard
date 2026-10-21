@@ -22,7 +22,7 @@ export default async function handler(req, res) {
                 ...(await syncStatus(database())),
             });
         } catch {
-            return res.status(503).json({ error: "Sync unavailable; retry later" });
+            return res.status(503).json({ error: "Sync unavailable. Retry later" });
         }
     }
     let plays, observations, state, covers, refreshId;
@@ -102,6 +102,6 @@ export default async function handler(req, res) {
     } catch {
         return res
             .status(503)
-            .json({ error: "Database unavailable; retry later" });
+            .json({ error: "Database unavailable. Retry later" });
     }
 }

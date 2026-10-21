@@ -34,6 +34,6 @@ export default async function handler(req, res) {
         res.setHeader("Cache-Control", "no-store");
         return res
             .status(503)
-            .json({ error: "Data unavailable; try again shortly" });
+            .json({ error: "Data unavailable. Try again shortly" });
     }
 }

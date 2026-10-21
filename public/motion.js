@@ -165,6 +165,49 @@ function sweep(
     );
 }
 
+export function initSegmentedControls() {
+    for (const group of document.querySelectorAll(".segmented")) {
+        const buttons = [...group.querySelectorAll("button")];
+        const update = () => {
+            const button = buttons.find((item) =>
+                item.classList.contains("selected"),
+            );
+            if (!button) return;
+            const bounds = group.getBoundingClientRect();
+            if (!bounds.width || !bounds.height) {
+                group.classList.remove("segmented-animated");
+                return;
+            }
+            const target = button.getBoundingClientRect();
+            const values = {
+                x: target.left - bounds.left,
+                y: target.top - bounds.top,
+                width: target.width,
+                height: target.height,
+            };
+            for (const [name, value] of Object.entries(values)) {
+                const property = `--segment-${name}`;
+                const next = `${value}px`;
+                // Re-selecting the same option leaves the highlight still.
+                if (group.style.getPropertyValue(property) !== next)
+                    group.style.setProperty(property, next);
+            }
+            group.classList.add("segmented-animated");
+        };
+        const selectionObserver = new MutationObserver(update);
+        const resizeObserver = new ResizeObserver(update);
+        for (const button of buttons) {
+            selectionObserver.observe(button, {
+                attributes: true,
+                attributeFilter: ["class"],
+            });
+            resizeObserver.observe(button);
+        }
+        resizeObserver.observe(group);
+        update();
+    }
+}
+
 export const motion = {
     isPending(root) {
         return pending.has(root);

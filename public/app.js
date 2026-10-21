@@ -23,7 +23,7 @@ import {
     timingHistogram,
     TIMING_OFFSETS,
 } from "./metrics.js";
-import { motion } from "./motion.js";
+import { motion, initSegmentedControls } from "./motion.js";
 import { svgElement, pathData } from "./svg.js";
 import { createCalculator } from "./calculator.js";
 
@@ -2008,6 +2008,7 @@ window.addEventListener(
     { capture: true, passive: true },
 );
 window.addEventListener("resize", hideSpendingPopup);
+initSegmentedControls();
 restoreUrl();
 updateUrl(true);
 load({ fresh: true });

@@ -335,6 +335,8 @@
     align-items: center;
 }
 .segmented {
+    position: relative;
+    isolation: isolate;
     display: flex;
     border: 0;
     background: #12121b7a;
@@ -351,8 +353,31 @@
 }
 .segmented .selected,
 .segmented button:focus-visible {
-    background: var(--accent-wash);
     color: var(--accent);
+}
+.segmented:not(.segmented-animated) .selected,
+.segmented:not(.segmented-animated) button:focus-visible {
+    background: var(--accent-wash);
+}
+.segmented-animated::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--segment-width);
+    height: var(--segment-height);
+    transform: translate(var(--segment-x), var(--segment-y));
+    border-radius: var(--item-radius);
+    background: var(--accent-wash);
+    pointer-events: none;
+    transition:
+        transform 260ms cubic-bezier(.22, 1, .36, 1),
+        width 260ms cubic-bezier(.22, 1, .36, 1),
+        height 260ms cubic-bezier(.22, 1, .36, 1);
+}
+.segmented-animated button {
+    position: relative;
+    z-index: 1;
 }
 .select-wrap select {
     font-size: 12px;
@@ -1704,6 +1729,7 @@ footer {
         transition: none !important;
         scroll-behavior: auto !important;
     }
+    .segmented-animated::before,
     .timing-bar {
         transition: none;
     }
@@ -1712,8 +1738,10 @@ footer {
     }
 }
 @media (hover: hover) {
-    .segmented button:hover {
+    .segmented:not(.segmented-animated) button:hover {
         background: var(--accent-wash);
+    }
+    .segmented button:hover {
         color: var(--accent);
     }
     .difficulty-tabs button:hover {

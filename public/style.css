@@ -14,16 +14,15 @@
     --line: #353346;
     /* Theme palettes */
     --exceed-background: url("/assets/background.png");
-    /* Mobile horizontal offset to center the face for example, >0px shifts to the right  */
-    --exceed-background-offset-x-mobile: 0px;
-    --exceed-accent: rgb(147, 225, 243);
+    --exceed-background-offset-x-mobile: 0px; /* Mobile horizontal offset to center the face for example, >0px shifts to the right  */
+    --exceed-accent: rgb(147, 225, 243); /*And avg100, ...*/
     --exceed-chart-total: #5e8ee6;
     --exceed-chart-plays: #607e90;
     --exceed-chart-play-points: #6b8fa6;
     --exceed-chart-best: #708295;
     --exceed-chart-avg10: #6d93ad;
     --exceed-chart-top50: #a3afb8;
-    --exceed-timing-early-color: #5ddfdb;
+    --exceed-timing-early-color: #72d4d1;
     --exceed-timing-late-color: #6ba8de;
     --exceed-timing-curve-color: #4d6a84;
     --exceed-notice-accent: #78a6d6;
@@ -32,15 +31,15 @@
 
     --nabla-background: url("/assets/background-nabla.png");
     --nabla-background-offset-x-mobile: 300px;
-    --nabla-accent: #c8efa5;
-    --nabla-chart-total: #a5ce74;
+    --nabla-accent: #c8efa5; /*And avg100, ...*/
+    --nabla-chart-total: #47ca91;
     --nabla-chart-plays: #7e9174;
     --nabla-chart-play-points: #91aa7f;
-    --nabla-chart-best: #849879;
-    --nabla-chart-avg10: #99b38a;
+    --nabla-chart-best: #868f81;
+    --nabla-chart-avg10: #64855f;
     --nabla-chart-top50: #b4c5a5;
-    --nabla-timing-early-color: #b4e49b;
-    --nabla-timing-late-color: #d4e88f;
+    --nabla-timing-early-color: #d5e08d;
+    --nabla-timing-late-color: #83ca89;
     --nabla-timing-curve-color: #7f9b68;
     --nabla-notice-accent: #a4c77f;
     --nabla-notice-text: #d4e8c9;

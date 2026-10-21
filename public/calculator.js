@@ -149,7 +149,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         const showPuc = score === limits.score[1];
         $("vf-6")
             .closest("[data-clear]")
-            .setAttribute("aria-hidden", String(!showPuc));
+            .setAttribute("aria-disabled", String(!showPuc));
         if (plot.showPuc !== showPuc) {
             motion.calculatorCurves(svg, showPuc, plot.showPuc !== undefined);
             plot.showPuc = showPuc;

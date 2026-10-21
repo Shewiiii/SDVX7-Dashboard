@@ -14,6 +14,8 @@
     --line: #353346;
     /* Theme palettes */
     --exceed-background: url("/assets/background.png");
+    /* Mobile horizontal offset to center the face for example, >0px shifts to the right  */
+    --exceed-background-offset-x-mobile: 0px;
     --exceed-accent: rgb(147, 225, 243);
     --exceed-chart-total: #5e8ee6;
     --exceed-chart-plays: #607e90;
@@ -29,6 +31,7 @@
     --exceed-chart-summary-color: #c8dce8;
 
     --nabla-background: url("/assets/background-nabla.png");
+    --nabla-background-offset-x-mobile: 300px;
     --nabla-accent: #c8efa5;
     --nabla-chart-total: #a5ce74;
     --nabla-chart-plays: #7e9174;

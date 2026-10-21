@@ -1777,6 +1777,14 @@ footer {
     }
     .ambient {
         filter: blur(var(--performance-background-blur-mobile));
+        background-position:
+            center,
+            calc(50% + var(--exceed-background-offset-x-mobile)) center;
+    }
+    .ambient::after {
+        background-position:
+            center,
+            calc(50% + var(--nabla-background-offset-x-mobile)) center;
     }
     .calculator-target output {
         flex-basis: 100%;

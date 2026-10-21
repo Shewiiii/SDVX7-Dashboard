@@ -754,7 +754,7 @@ function renderTimingHistogram({ animate = true } = {}) {
 function renderChart({ animate = true, transition = false } = {}) {
     if (!data) return;
     if (transition) {
-        hideTooltip();
+        hidePopup();
         hover = null;
         return motion.swap(
             [
@@ -783,7 +783,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     svg.replaceChildren();
     svg.removeAttribute("aria-hidden");
     hover = null;
-    $("tooltip").hidden = true;
+    $("popup").hidden = true;
     $("chart-empty").hidden = !!plays.length;
     if (!plays.length) {
         setText(
@@ -1038,12 +1038,12 @@ function renderChart({ animate = true, transition = false } = {}) {
     if (animate) motion.data($("chart-summary"));
 }
 
-function showChartTooltip(event) {
+function showChartPopup(event) {
     if (!hover) return;
     const bounds = $("chart").getBoundingClientRect();
     const px = ((event.clientX - bounds.left) / bounds.width) * hover.width;
     if (px < hover.left || px > hover.right) {
-        hideTooltip();
+        hidePopup();
         return;
     }
     const time =
@@ -1071,17 +1071,17 @@ function showChartTooltip(event) {
                         "data-line": series.key,
                     }),
                 );
-            return `<div class="tooltip-line"><span><i class="dot ${series.key}"></i>${series.label}</span><b>${vf(value)}</b></div>`;
+            return `<div class="popup-line"><span><i class="dot ${series.key}"></i>${series.label}</span><b>${vf(value)}</b></div>`;
         });
     if (!lines.length) {
-        hideTooltip();
+        hidePopup();
         return;
     }
-    const tooltip = $("tooltip");
-    tooltip.innerHTML = `<strong>${date(time)} · ${clock(time)}</strong>${lines.join("")}`;
-    tooltip.classList.remove("compact");
-    tooltip.style.maxWidth = "";
-    tooltip.hidden = false;
+    const popup = $("popup");
+    popup.innerHTML = `<strong>${date(time)} · ${clock(time)}</strong>${lines.join("")}`;
+    popup.classList.remove("compact");
+    popup.style.maxWidth = "";
+    popup.hidden = false;
     const wrap = $("chart-wrap").getBoundingClientRect();
     const cursorX = event.clientX - wrap.left,
         cursorY = event.clientY - wrap.top;
@@ -1090,43 +1090,43 @@ function showChartTooltip(event) {
     const rightSpace = wrap.width - cursorX - gap - inset;
     const leftSpace = cursorX - gap - inset;
     const useRight =
-        rightSpace >= tooltip.offsetWidth ||
-        (leftSpace < tooltip.offsetWidth && rightSpace >= leftSpace);
+        rightSpace >= popup.offsetWidth ||
+        (leftSpace < popup.offsetWidth && rightSpace >= leftSpace);
     const available = useRight ? rightSpace : leftSpace;
-    if (available < tooltip.offsetWidth) {
-        tooltip.classList.add("compact");
-        tooltip.style.maxWidth = `${available}px`;
+    if (available < popup.offsetWidth) {
+        popup.classList.add("compact");
+        popup.style.maxWidth = `${available}px`;
     }
-    tooltip.style.left = `${useRight ? cursorX + gap : cursorX - gap - tooltip.offsetWidth}px`;
-    tooltip.style.top = `${Math.max(inset, Math.min(cursorY - tooltip.offsetHeight - gap, wrap.height - tooltip.offsetHeight - inset))}px`;
+    popup.style.left = `${useRight ? cursorX + gap : cursorX - gap - popup.offsetWidth}px`;
+    popup.style.top = `${Math.max(inset, Math.min(cursorY - popup.offsetHeight - gap, wrap.height - popup.offsetHeight - inset))}px`;
 }
 $("chart").addEventListener("pointerdown", (event) => {
     if (event.pointerType !== "mouse")
         $("chart").setPointerCapture(event.pointerId);
-    showChartTooltip(event);
+    showChartPopup(event);
 });
-$("chart").addEventListener("pointermove", showChartTooltip);
-function hideTooltip() {
-    $("tooltip").hidden = true;
+$("chart").addEventListener("pointermove", showChartPopup);
+function hidePopup() {
+    $("popup").hidden = true;
     if (hover) {
         hover.crosshair.setAttribute("visibility", "hidden");
         hover.markers.replaceChildren();
     }
 }
 $("chart").addEventListener("pointerleave", (event) => {
-    if (event.pointerType !== "touch") hideTooltip();
+    if (event.pointerType !== "touch") hidePopup();
 });
 $("chart").addEventListener("pointerup", (event) => {
-    if (event.pointerType !== "mouse") hideTooltip();
+    if (event.pointerType !== "mouse") hidePopup();
 });
-$("chart").addEventListener("pointercancel", hideTooltip);
+$("chart").addEventListener("pointercancel", hidePopup);
 $("chart").addEventListener("lostpointercapture", (event) => {
-    if (event.pointerType !== "mouse") hideTooltip();
+    if (event.pointerType !== "mouse") hidePopup();
 });
 document.addEventListener("pointerdown", (event) => {
-    if (!event.target.closest("#chart-wrap")) hideTooltip();
+    if (!event.target.closest("#chart-wrap")) hidePopup();
 });
-window.addEventListener("scroll", hideTooltip, { passive: true });
+window.addEventListener("scroll", hidePopup, { passive: true });
 
 function rememberScroll() {
     clearTimeout(scrollSaveTimer);

@@ -359,21 +359,13 @@
                                 role="img"
                                 aria-label="VolForce performance over time"
                             ></svg>
-                            <div
-                                class="chart-tooltip"
-                                id="tooltip"
-                                hidden
-                            ></div>
+                            <div class="chart-popup" id="popup" hidden></div>
                             <div class="chart-empty" id="chart-empty" hidden>
                                 No cleared plays in this range.
                             </div>
                         </div>
                         <div class="chart-summary">
-                            <span id="chart-summary">Loading...</span
-                            ><span class="chart-hint"
-                                >Hover to inspect · Click a legend to
-                                toggle</span
-                            >
+                            <span id="chart-summary">Loading...</span>
                         </div>
                         <section
                             class="timing-section"
@@ -764,8 +756,8 @@
                             aria-label="Chart VolForce calculator"
                         ></svg>
                         <div
-                            id="calculator-tooltip"
-                            class="calculator-chart-tooltip"
+                            id="calculator-popup"
+                            class="calculator-chart-popup"
                             inert
                             hidden
                         ></div>

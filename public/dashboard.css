@@ -491,32 +491,40 @@
     color: var(--muted);
     font-size: 12px;
 }
-.chart-tooltip {
+.chart-popup,
+.calculator-chart-popup,
+.spending-popup {
+    border: 0;
+    border-radius: var(--popup-radius);
+    background: var(--popup-bg);
+    color: var(--popup-color);
+    box-shadow: var(--popup-shadow);
+    font: var(--popup-font-size)/1.5 var(--sans);
+}
+.chart-popup,
+.spending-popup {
+    padding: var(--popup-padding);
+}
+.chart-popup {
     position: absolute;
     z-index: 3;
-    padding: 12px 14px;
     max-width: 250px;
-    border: 0;
-    background: #191823f5;
-    box-shadow: 0 8px 30px #0005;
     pointer-events: none;
-    font-size: 11px;
-    border-radius: var(--popup-radius);
     box-sizing: border-box;
     width: max-content;
 }
-.chart-tooltip strong {
+.chart-popup strong {
     font-weight: 500;
     color: var(--ink);
     display: block;
     margin-bottom: 7px;
 }
-.chart-tooltip .tooltip-value {
+.chart-popup .popup-value {
     font: 16px var(--sans);
     color: var(--accent);
     margin: 3px 0;
 }
-.chart-tooltip small {
+.chart-popup small {
     color: var(--muted);
     font-size: 9px;
 }
@@ -621,21 +629,17 @@
     position: relative;
     padding: 0 12px;
 }
-.calculator-chart-tooltip {
+.calculator-chart-popup {
     position: absolute;
     z-index: 3;
     width: 520px;
     max-width: calc(100% - 16px);
-    border: 1px solid var(--line);
-    border-radius: var(--popup-radius);
-    background: #191823f5;
-    box-shadow: 0 8px 30px #0005;
     pointer-events: none;
 }
-.calculator-chart-tooltip .play-row {
-    padding: 14px;
+.calculator-chart-popup .play-row {
+    padding: var(--popup-padding);
 }
-.calculator-chart-tooltip .play-row > div {
+.calculator-chart-popup .play-row > div {
     min-width: 0;
 }
 .calculator-panel {
@@ -920,10 +924,6 @@
 .calculator-legend [data-clear="6"][aria-disabled="true"] {
     --clear-color: var(--faint);
     color: var(--faint);
-}
-.chart-hint {
-    color: var(--faint);
-    font: 11px var(--sans);
 }
 .lower-grid {
     display: grid;
@@ -1285,13 +1285,6 @@ footer {
     width: min(300px, calc(100vw - 24px));
     max-height: calc(100vh - 24px);
     overflow-y: auto;
-    padding: 10px 12px;
-    border: 0;
-    border-radius: 8px;
-    background: #20202e;
-    color: var(--muted);
-    box-shadow: 0 5px 18px #0004;
-    font: 10.5px/1.45 var(--sans);
     opacity: 0;
     transform: translateY(4px);
     transition:
@@ -1604,17 +1597,17 @@ footer {
 .pagination button {
     border-radius: var(--item-radius);
 }
-.chart-tooltip.compact {
+.chart-popup.compact {
     padding: 10px 8px;
     font-size: 10px;
 }
-.chart-tooltip.compact strong {
+.chart-popup.compact strong {
     font-size: 9px;
 }
-.chart-tooltip.compact .tooltip-line {
+.chart-popup.compact .popup-line {
     gap: 8px;
 }
-.chart-tooltip.compact .tooltip-line b {
+.chart-popup.compact .popup-line b {
     font-size: 10px;
 }
 .grade-icon {
@@ -1675,20 +1668,20 @@ footer {
     font: 11px var(--sans);
     color: var(--muted);
 }
-.tooltip-line {
+.popup-line {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
     margin-top: 7px;
 }
-.tooltip-line span {
+.popup-line span {
     display: flex;
     align-items: center;
     gap: 7px;
     color: var(--muted);
 }
-.tooltip-line b {
+.popup-line b {
     font: 11px var(--sans);
     color: var(--ink);
 }
@@ -1788,9 +1781,6 @@ footer {
     .lower-grid {
         gap: 14px;
         grid-template-columns: 1fr 1fr;
-    }
-    .chart-hint {
-        display: none;
     }
     .tab-caption {
         font-size: 8px;

@@ -80,6 +80,11 @@
     --control-radius: 10px;
     --item-radius: 7px;
     --popup-radius: 12px;
+    --popup-bg: #1d1d23f5;
+    --popup-color: var(--muted);
+    --popup-shadow: 0 8px 30px #0005;
+    --popup-padding: 12px 14px;
+    --popup-font-size: 11px;
     --panel-padding-inline: 27px;
     --list-padding-inline: 25px;
     --search-width: 320px;

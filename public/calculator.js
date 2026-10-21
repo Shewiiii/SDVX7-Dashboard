@@ -88,7 +88,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
     const $ = (id) => document.getElementById(`calculator-${id}`);
     const svg = $("chart");
     const target = $("target");
-    const tooltip = $("tooltip");
+    const popup = $("popup");
     let state = { ...defaults },
         plot,
         rendered = false,
@@ -333,25 +333,22 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         const rank = Number(dot.dataset.rank);
         const chart = plottedCharts[rank - 1];
         if (!chart) return;
-        tooltip.innerHTML = renderChartRow(chart, rank);
-        tooltip.hidden = false;
+        popup.innerHTML = renderChartRow(chart, rank);
+        popup.hidden = false;
         const wrap = svg.parentElement.getBoundingClientRect();
         const bounds = dot
             .querySelector(".calculator-dot")
             .getBoundingClientRect();
         const left =
-            bounds.left +
-            bounds.width / 2 -
-            wrap.left -
-            tooltip.offsetWidth / 2;
-        const above = bounds.top - wrap.top - tooltip.offsetHeight - 12;
+            bounds.left + bounds.width / 2 - wrap.left - popup.offsetWidth / 2;
+        const above = bounds.top - wrap.top - popup.offsetHeight - 12;
         const fitsAbove = above >= 0 && wrap.top + above >= 8;
-        tooltip.style.left = `${Math.max(8, Math.min(left, wrap.width - tooltip.offsetWidth - 8))}px`;
-        tooltip.style.top = `${fitsAbove ? above : bounds.bottom - wrap.top + 12}px`;
+        popup.style.left = `${Math.max(8, Math.min(left, wrap.width - popup.offsetWidth - 8))}px`;
+        popup.style.top = `${fitsAbove ? above : bounds.bottom - wrap.top + 12}px`;
     }
 
     function hideChartPreview() {
-        tooltip.hidden = true;
+        popup.hidden = true;
     }
 
     function render({ animate = true } = {}) {

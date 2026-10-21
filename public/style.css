@@ -12,24 +12,60 @@
     --muted: #aaa8bd;
     --faint: #77748d;
     --line: #353346;
-    --accent: rgb(147, 225, 243);
+    /* Theme palettes */
+    --exceed-background: url("/assets/background.png");
+    --exceed-accent: rgb(147, 225, 243);
+    --exceed-chart-total: #5e8ee6;
+    --exceed-chart-plays: #607e90;
+    --exceed-chart-play-points: #6b8fa6;
+    --exceed-chart-best: #708295;
+    --exceed-chart-avg10: #6d93ad;
+    --exceed-chart-top50: #a3afb8;
+    --exceed-timing-early-color: #5ddfdb;
+    --exceed-timing-late-color: #6ba8de;
+    --exceed-timing-curve-color: #4d6a84;
+    --exceed-notice-accent: #78a6d6;
+    --exceed-notice-text: #cadbe9;
+    --exceed-chart-summary-color: #c8dce8;
+
+    --nabla-background: url("/assets/background-nabla.png");
+    --nabla-accent: #c8efa5;
+    --nabla-chart-total: #a5ce74;
+    --nabla-chart-plays: #7e9174;
+    --nabla-chart-play-points: #91aa7f;
+    --nabla-chart-best: #849879;
+    --nabla-chart-avg10: #99b38a;
+    --nabla-chart-top50: #b4c5a5;
+    --nabla-timing-early-color: #b4e49b;
+    --nabla-timing-late-color: #d4e88f;
+    --nabla-timing-curve-color: #7f9b68;
+    --nabla-notice-accent: #a4c77f;
+    --nabla-notice-text: #d4e8c9;
+    --nabla-chart-summary-color: #d3e5c3;
+
+    --theme-transition-duration: 520ms;
+    --theme-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --accent: var(--exceed-accent);
     --accent-wash: color-mix(
         in srgb,
         var(--accent) calc(100% * 27 / 255),
         transparent
     );
-    --chart-total: #5e8ee6;
-    --chart-plays: #607e90;
-    --chart-play-points: #6b8fa6;
-    --chart-best: #708295;
-    --chart-avg10: #6d93ad;
+    --chart-total: var(--exceed-chart-total);
+    --chart-plays: var(--exceed-chart-plays);
+    --chart-play-points: var(--exceed-chart-play-points);
+    --chart-best: var(--exceed-chart-best);
+    --chart-avg10: var(--exceed-chart-avg10);
     --chart-avg100: var(--accent);
-    --chart-top50: #a3afb8;
+    --chart-top50: var(--exceed-chart-top50);
     --timing-center-color: var(--accent);
-    --timing-early-color: #5ddfdb;
-    --timing-late-color: #6ba8de;
-    --timing-curve-color: #4d6a84;
-    --notice-accent: #78a6d6;
+    --timing-early-color: var(--exceed-timing-early-color);
+    --timing-late-color: var(--exceed-timing-late-color);
+    --timing-curve-color: var(--exceed-timing-curve-color);
+    --notice-accent: var(--exceed-notice-accent);
+    --notice-text: var(--exceed-notice-text);
+    --chart-summary-color: var(--exceed-chart-summary-color);
     --calculator-grade-color: color-mix(
         in srgb,
         var(--accent) 70%,
@@ -68,6 +104,21 @@
     --performance-panel-dim: 0.65;
     --performance-background-blur: 9px;
     --performance-background-blur-mobile: 4.5px;
+}
+:root[data-theme="nabla"] {
+    --accent: var(--nabla-accent);
+    --chart-total: var(--nabla-chart-total);
+    --chart-plays: var(--nabla-chart-plays);
+    --chart-play-points: var(--nabla-chart-play-points);
+    --chart-best: var(--nabla-chart-best);
+    --chart-avg10: var(--nabla-chart-avg10);
+    --chart-top50: var(--nabla-chart-top50);
+    --timing-early-color: var(--nabla-timing-early-color);
+    --timing-late-color: var(--nabla-timing-late-color);
+    --timing-curve-color: var(--nabla-timing-curve-color);
+    --notice-accent: var(--nabla-notice-accent);
+    --notice-text: var(--nabla-notice-text);
+    --chart-summary-color: var(--nabla-chart-summary-color);
 }
 * {
     box-sizing: border-box;

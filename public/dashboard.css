@@ -8,9 +8,31 @@
             rgb(30 30 46 / var(--performance-background-dim)),
             rgb(30 30 46 / var(--performance-background-dim))
         ),
-        url("/assets/background.png") center/cover no-repeat;
+        var(--exceed-background) center/cover no-repeat;
     filter: blur(var(--performance-background-blur));
     opacity: 1;
+}
+.ambient::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            rgb(30 30 46 / var(--performance-background-dim)),
+            rgb(30 30 46 / var(--performance-background-dim))
+        ),
+        var(--nabla-background) center/cover no-repeat;
+    opacity: 0;
+    transition: opacity var(--theme-transition-duration)
+        var(--theme-transition-easing);
+}
+:root[data-theme="nabla"] .ambient::after {
+    opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+    .ambient::after {
+        transition: none;
+    }
 }
 .shell {
     max-width: 1370px;
@@ -61,12 +83,22 @@
     z-index: 6;
     width: min(300px, calc(100vw - 36px));
     max-height: calc(100dvh - 88px);
+    overflow-y: auto;
     padding: 23px var(--panel-padding-inline);
 }
 .appearance-panel h2 {
     margin: 0 0 22px;
     font-size: 17px;
     font-weight: 500;
+}
+.appearance-theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+    font-size: 12px;
+    color: var(--muted);
 }
 .appearance-control {
     display: grid;
@@ -133,7 +165,7 @@
         var(--notice-accent) calc(100% * 19 / 255),
         transparent
     );
-    color: #cadbe9;
+    color: var(--notice-text);
     margin-bottom: 18px;
 }
 .metrics {
@@ -468,7 +500,7 @@
     gap: 14px;
 }
 .chart-summary strong {
-    color: #c8dce8;
+    color: var(--chart-summary-color);
     font-weight: 400;
 }
 .calculator-controls {
@@ -493,7 +525,8 @@
     margin: 12px 0 0;
     font-size: 10px;
 }
-.calculator-controls .segmented button {
+.calculator-controls .segmented button,
+.appearance-theme .segmented button {
     padding: 11px 14px;
     font-size: 12px;
 }

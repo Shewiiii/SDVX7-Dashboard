@@ -24,6 +24,41 @@
         // Malformed or unavailable storage must not prevent dashboard loading.
     }
 
+    const themeColors = [
+        "--accent",
+        "--chart-total",
+        "--chart-plays",
+        "--chart-play-points",
+        "--chart-best",
+        "--chart-avg10",
+        "--chart-top50",
+        "--timing-early-color",
+        "--timing-late-color",
+        "--timing-curve-color",
+        "--notice-accent",
+        "--notice-text",
+        "--chart-summary-color",
+    ];
+    const animatedColors = [];
+    // Typed color variables interpolate without overriding existing button animations.
+    if (window.CSS?.registerProperty) {
+        for (const name of themeColors) {
+            try {
+                CSS.registerProperty({
+                    name,
+                    syntax: "<color>",
+                    inherits: true,
+                    initialValue: styles.getPropertyValue(name).trim(),
+                });
+                animatedColors.push(name);
+            } catch {
+                // Theme colors still switch when typed properties are unavailable.
+            }
+        }
+    }
+    let theme = saved.theme === "nabla" ? "nabla" : "exceed";
+    root.dataset.theme = theme;
+
     // Restore before the page renders to avoid flashing the default appearance.
     for (const control of controls) {
         const value = saved[control.name];
@@ -41,6 +76,36 @@
         const toggle = document.getElementById("appearance-toggle");
         const panel = document.getElementById("appearance-panel");
         const container = toggle.closest(".appearance-settings");
+        const themeButtons = panel.querySelectorAll("[data-theme-option]");
+        const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+        function updateThemeMotion() {
+            root.style.transition = reducedMotion.matches || !animatedColors.length
+                ? "none"
+                : animatedColors.map((name) =>
+                    `${name} var(--theme-transition-duration) var(--theme-transition-easing)`,
+                ).join(", ");
+        }
+        updateThemeMotion();
+        reducedMotion.addEventListener("change", updateThemeMotion);
+
+        function setTheme(value) {
+            theme = value;
+            root.dataset.theme = theme;
+            for (const button of themeButtons) {
+                const selected = button.dataset.themeOption === theme;
+                button.classList.toggle("selected", selected);
+                button.setAttribute("aria-pressed", String(selected));
+            }
+        }
+        setTheme(theme);
+        for (const button of themeButtons) {
+            button.addEventListener("click", () => {
+                if (theme === button.dataset.themeOption) return;
+                setTheme(button.dataset.themeOption);
+                persist();
+            });
+        }
 
         function persist(reset = false) {
             try {
@@ -49,12 +114,15 @@
                     localStorage.setItem(
                         storageKey,
                         JSON.stringify(
-                            Object.fromEntries(
-                                controls.map(({ name, value }) => [
-                                    name,
-                                    value,
-                                ]),
-                            ),
+                            {
+                                theme,
+                                ...Object.fromEntries(
+                                    controls.map(({ name, value }) => [
+                                        name,
+                                        value,
+                                    ]),
+                                ),
+                            },
                         ),
                     );
                 storageAvailable = true;
@@ -96,7 +164,7 @@
         function setOpen(open) {
             panel.hidden = !open;
             toggle.setAttribute("aria-expanded", String(open));
-            if (open) controls[0].input.focus();
+            if (open) panel.querySelector("[data-theme-option].selected").focus();
         }
 
         toggle.addEventListener("click", () => setOpen(panel.hidden));
@@ -115,6 +183,7 @@
         document
             .getElementById("appearance-reset")
             .addEventListener("click", () => {
+                setTheme("exceed");
                 for (const control of controls) {
                     control.value = control.defaultValue;
                     update(control);

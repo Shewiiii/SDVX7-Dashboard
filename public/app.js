@@ -26,6 +26,7 @@ import {
 import { motion, initSegmentedControls } from "./motion.js";
 import { svgElement, pathData } from "./svg.js";
 import { createCalculator } from "./calculator.js";
+import { createAppealCardHelper } from "./appeal-cards.js";
 
 const $ = (id) => document.getElementById(id);
 const STANDARD_START_YEN = 267;
@@ -247,6 +248,7 @@ let data = null,
     page = 0,
     loading = false;
 let dataFingerprint = "";
+const appealHelper = createAppealCardHelper(() => data?.state);
 const revealedViews = new Set();
 const defaultRecordSorts = { top: "vf", history: "recent" };
 const recordStates = {
@@ -370,6 +372,7 @@ function renderSummary({ animate = true } = {}) {
     );
     if (!card.hidden) card.src = `/api/cover?id=${appeal}`;
     else card.removeAttribute("src");
+    $("appeal-helper-open").hidden = card.hidden;
     const vfClass = volforceClass(stats.total);
     $("vf-class").hidden = !vfClass;
     if (vfClass) {
@@ -1439,6 +1442,7 @@ function scheduleSearchReveal() {
         const input = document.activeElement;
         if (
             !input?.matches(".search-wrap input") ||
+            input.closest("dialog") ||
             !matchMedia("(max-width: 700px)").matches
         )
             return;
@@ -1829,6 +1833,7 @@ async function load({ fresh = false } = {}) {
         const animate = !data || fingerprint !== dataFingerprint;
         dataFingerprint = fingerprint;
         data = next;
+        appealHelper.update();
         catalog = songCatalog(data);
         songs = new Map(catalog.map((song) => [song.music_id, song]));
         $("notice").hidden = true;

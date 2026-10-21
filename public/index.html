@@ -36,12 +36,14 @@
                     <span>Rasis Tracker</span>
                 </a>
                 <div class="load-status" role="status" aria-live="polite">
-                    <span class="loading-dots" aria-hidden="true"
-                        ><i></i><i></i><i></i
-                    ></span>
-                    <span class="load-status-label" id="load-status-label"
-                        >Loading records...</span
-                    >
+                    <span class="loading-dots" aria-hidden="true">
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                    </span>
+                    <span class="load-status-label" id="load-status-label">
+                        Loading records...
+                    </span>
                 </div>
                 <div class="appearance-settings">
                     <button
@@ -106,8 +108,9 @@
                             <output
                                 id="appearance-background-dim-value"
                                 for="appearance-background-dim"
-                                >60%</output
                             >
+                                60%
+                            </output>
                             <input
                                 id="appearance-background-dim"
                                 type="range"
@@ -125,8 +128,9 @@
                             <output
                                 id="appearance-panel-dim-value"
                                 for="appearance-panel-dim"
-                                >60%</output
                             >
+                                60%
+                            </output>
                             <input
                                 id="appearance-panel-dim"
                                 type="range"
@@ -144,8 +148,9 @@
                             <output
                                 id="appearance-background-blur-value"
                                 for="appearance-background-blur"
-                                >6px</output
                             >
+                                6px
+                            </output>
                             <input
                                 id="appearance-background-blur"
                                 type="range"
@@ -163,8 +168,9 @@
                             <output
                                 id="appearance-background-blur-mobile-value"
                                 for="appearance-background-blur-mobile"
-                                >3px</output
                             >
+                                3px
+                            </output>
                             <input
                                 id="appearance-background-blur-mobile"
                                 type="range"
@@ -192,14 +198,25 @@
                                 class="appeal-card skeleton-shape profile-card-placeholder"
                                 aria-hidden="true"
                             ></span>
-                            <img
-                                id="appeal-card"
-                                class="appeal-card"
-                                alt="Current appeal card"
-                                width="64"
-                                height="82"
+                            <button
+                                id="appeal-helper-open"
+                                class="appeal-card-trigger"
+                                type="button"
+                                aria-label="Open Appeal Card Helper"
+                                aria-haspopup="dialog"
+                                aria-controls="appeal-helper"
                                 hidden
-                            />
+                            >
+                                <img
+                                    id="appeal-card"
+                                    class="appeal-card"
+                                    alt="Current appeal card"
+                                    width="64"
+                                    height="82"
+                                    hidden
+                                />
+                                <span>Open Appeal Card Helper</span>
+                            </button>
                             <div>
                                 <h1 id="player-name">Player</h1>
                                 <p class="hero-subtitle">
@@ -282,12 +299,14 @@
                             data-view="overview"
                             aria-current="page"
                         >
-                            Overview</button
-                        ><button class="tab" data-view="top">Top 50</button
-                        ><button class="tab" data-view="history">
-                            Play history</button
-                        ><button class="tab" data-view="search">Search</button
-                        ><button class="tab" data-view="calculator">
+                            Overview
+                        </button>
+                        <button class="tab" data-view="top">Top 50</button>
+                        <button class="tab" data-view="history">
+                            Play history
+                        </button>
+                        <button class="tab" data-view="search">Search</button>
+                        <button class="tab" data-view="calculator">
                             VF Calculator
                         </button>
                     </nav>
@@ -307,25 +326,26 @@
                                     role="group"
                                     aria-label="Time range"
                                 >
-                                    <button data-days="7">7D</button
-                                    ><button data-days="30">30D</button
-                                    ><button data-days="90">90D</button
-                                    ><button class="selected" data-days="0">
+                                    <button data-days="7">7D</button>
+                                    <button data-days="30">30D</button>
+                                    <button data-days="90">90D</button>
+                                    <button class="selected" data-days="0">
                                         ALL
                                     </button>
                                 </div>
-                                <label class="select-wrap"
-                                    ><span class="sr-only"
-                                        >Minimum difficulty</span
-                                    ><select id="difficulty">
+                                <label class="select-wrap">
+                                    <span class="sr-only">
+                                        Minimum difficulty
+                                    </span>
+                                    <select id="difficulty">
                                         <option value="1">ADV and above</option>
                                         <option value="2">EXH and above</option>
                                         <option value="4">MXM and above</option>
                                         <option value="0">
                                             All difficulties
                                         </option>
-                                    </select></label
-                                >
+                                    </select>
+                                </label>
                             </div>
                         </div>
                         <div
@@ -335,20 +355,28 @@
                             aria-label="Visible chart series"
                         >
                             <button data-series="plays" aria-pressed="true">
-                                <i class="dot plays"></i>Plays</button
-                            ><button data-series="best" aria-pressed="true">
-                                <i class="dot best"></i>Best VF</button
-                            ><button data-series="avg10" aria-pressed="true">
-                                <i class="dot avg10"></i>Avg 10</button
-                            ><button data-series="avg100" aria-pressed="true">
-                                <i class="dot avg100"></i>Avg 100</button
-                            ><button
-                                data-series="threshold"
-                                aria-pressed="true"
-                            >
-                                <i class="dot threshold"></i>Top 50</button
-                            ><button data-series="total" aria-pressed="true">
-                                <i class="dot total"></i>Total VF
+                                <i class="dot plays"></i>
+                                Plays
+                            </button>
+                            <button data-series="best" aria-pressed="true">
+                                <i class="dot best"></i>
+                                Best VF
+                            </button>
+                            <button data-series="avg10" aria-pressed="true">
+                                <i class="dot avg10"></i>
+                                Avg 10
+                            </button>
+                            <button data-series="avg100" aria-pressed="true">
+                                <i class="dot avg100"></i>
+                                Avg 100
+                            </button>
+                            <button data-series="threshold" aria-pressed="true">
+                                <i class="dot threshold"></i>
+                                Top 50
+                            </button>
+                            <button data-series="total" aria-pressed="true">
+                                <i class="dot total"></i>
+                                Total VF
                             </button>
                         </div>
                         <div class="chart-wrap" id="chart-wrap">
@@ -401,7 +429,9 @@
                     <div class="lower-grid">
                         <article class="panel recent-panel">
                             <div class="panel-head compact">
-                                <div><h2>Latest session</h2></div>
+                                <div>
+                                    <h2>Latest session</h2>
+                                </div>
                                 <button class="text-button" id="all-plays">
                                     All plays
                                 </button>
@@ -411,7 +441,9 @@
                         </article>
                         <article class="panel top-panel">
                             <div class="panel-head compact">
-                                <div><h2>Best charts</h2></div>
+                                <div>
+                                    <h2>Best charts</h2>
+                                </div>
                                 <button class="text-button" id="all-top">
                                     Top 50
                                 </button>
@@ -465,15 +497,16 @@
                                 </svg>
                             </button>
                         </div>
-                        <label class="select-wrap"
-                            ><span class="sr-only">Sort records</span
-                            ><select id="sort">
+                        <label class="select-wrap">
+                            <span class="sr-only">Sort records</span>
+                            <select id="sort">
                                 <option value="vf">Highest VolForce</option>
                                 <option value="score">Highest score</option>
                                 <option value="recent">Most recent</option>
                                 <option value="plays">Most played</option>
-                            </select></label
-                        ><span class="result-count" id="result-count"></span>
+                            </select>
+                        </label>
+                        <span class="result-count" id="result-count"></span>
                     </div>
                     <div class="table-scroll">
                         <table>
@@ -494,8 +527,9 @@
                         <span id="page-info"></span>
                         <div>
                             <button id="previous" aria-label="Previous page">
-                                ←</button
-                            ><button id="next" aria-label="Next page">→</button>
+                                ←
+                            </button>
+                            <button id="next" aria-label="Next page">→</button>
                         </div>
                     </div>
                 </section>
@@ -577,8 +611,9 @@
                                     id="song-search-previous"
                                     aria-label="Previous song scores page"
                                 >
-                                    ←</button
-                                ><button
+                                    ←
+                                </button>
+                                <button
                                     id="song-search-next"
                                     aria-label="Next song scores page"
                                 >
@@ -713,23 +748,26 @@
                                     <mn
                                         id="calculator-formula-level"
                                         title="Level"
-                                        >—</mn
                                     >
+                                        —
+                                    </mn>
                                     <mo>×</mo>
                                     <mfrac>
                                         <mn
                                             id="calculator-formula-score"
                                             title="Score"
-                                            >—</mn
                                         >
+                                            —
+                                        </mn>
                                         <mn>10&#8239;000&#8239;000</mn>
                                     </mfrac>
                                     <mo>×</mo>
                                     <mn
                                         id="calculator-formula-grade"
                                         title="Grade coefficient"
-                                        >—</mn
                                     >
+                                        —
+                                    </mn>
                                     <mo>×</mo>
                                     <mi>Clear Coeff</mi>
                                     <mo>×</mo>
@@ -770,9 +808,9 @@
                             hidden
                         ></div>
                         <label class="calculator-target">
-                            <span id="calculator-target-label"
-                                >Target score</span
-                            >
+                            <span id="calculator-target-label">
+                                Target score
+                            </span>
                             <input
                                 id="calculator-target"
                                 type="range"
@@ -832,10 +870,149 @@
                     href="https://x.com/Lida_2617"
                     target="_blank"
                     rel="noopener noreferrer"
-                    >Artwork by 蒼流リダ</a
-                ><span>Rasis my oshi ❤️</span>
+                >
+                    Artwork by 蒼流リダ
+                </a>
+                <span>Rasis my oshi ❤️</span>
             </footer>
         </div>
+        <dialog
+            class="panel appeal-helper"
+            id="appeal-helper"
+            aria-labelledby="appeal-helper-title"
+        >
+            <div class="appeal-helper-heading">
+                <h2 id="appeal-helper-title">Appeal Card Helper</h2>
+                <button
+                    type="button"
+                    id="appeal-helper-close"
+                    aria-label="Close Appeal Card Helper"
+                >
+                    ×
+                </button>
+            </div>
+            <div id="appeal-helper-browser">
+                <div class="table-tools appeal-helper-tools">
+                    <div class="search-wrap">
+                        <span aria-hidden="true">⌕</span>
+                        <input
+                            type="text"
+                            role="searchbox"
+                            inputmode="search"
+                            enterkeyhint="search"
+                            id="appeal-helper-search"
+                            aria-label="Search appeal cards by number or title"
+                            placeholder="Type anything..."
+                            autocomplete="off"
+                        />
+                        <button
+                            type="button"
+                            class="search-clear"
+                            id="appeal-helper-search-clear"
+                            data-clear-input="appeal-helper-search"
+                            aria-label="Clear appeal card search"
+                            hidden
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 16 16"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="m4 4 8 8m0-8-8 8"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                    <label class="select-wrap">
+                        <span class="sr-only">Sort appeal cards</span>
+                        <select id="appeal-helper-sort">
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                        </select>
+                    </label>
+                    <div
+                        class="pagination appeal-helper-pagination"
+                        role="group"
+                        aria-label="Appeal card pages"
+                    >
+                        <button
+                            type="button"
+                            id="appeal-helper-previous"
+                            aria-label="Previous appeal cards"
+                        >
+                            ←
+                        </button>
+                        <span
+                            class="appeal-helper-page"
+                            id="appeal-helper-page"
+                        >
+                            <button
+                                type="button"
+                                id="appeal-helper-page-number"
+                                class="appeal-helper-page-number"
+                                title="Enter page number"
+                            >
+                                1
+                            </button>
+                            <input
+                                type="number"
+                                id="appeal-helper-page-input"
+                                class="appeal-helper-page-input"
+                                min="1"
+                                step="1"
+                                inputmode="numeric"
+                                aria-label="Page number"
+                                hidden
+                            />
+                            /
+                            <span id="appeal-helper-total-pages">1</span>
+                        </span>
+                        <button
+                            type="button"
+                            id="appeal-helper-next"
+                            aria-label="Next appeal cards"
+                        >
+                            →
+                        </button>
+                    </div>
+                </div>
+                <p
+                    class="appeal-helper-count"
+                    id="appeal-helper-count"
+                    aria-live="polite"
+                ></p>
+                <div class="appeal-helper-grid" id="appeal-helper-grid"></div>
+            </div>
+            <div class="appeal-helper-detail" id="appeal-helper-detail" hidden>
+                <button
+                    type="button"
+                    class="text-button"
+                    id="appeal-helper-back"
+                >
+                    ← All appeal cards
+                </button>
+                <div id="appeal-helper-artwork"></div>
+                <h3 id="appeal-helper-card-title"></h3>
+                <p>
+                    To apply, log in to
+                    <a
+                        href="https://x.ryu7w7.xyz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Ryu's WebUI</a
+                    >, then go to Games > SDVX > Profile > Customization, choose
+                    the matching card, submit at the bottom, then log into the
+                    game with your card !
+                </p>
+            </div>
+        </dialog>
         <div
             id="spending-popup"
             class="spending-popup"

@@ -18,6 +18,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from scripts.appeal_cards import prepare_appeal_cards
 from scripts.companion import (
     ROOT,
     display_name,
@@ -104,6 +105,7 @@ class Catalog:
         self.cover_index = None
         self.cover_signature = None
         self.appeal_card = None
+        self.appeal_cards: list[dict[str, Any]] = []
         self.appeal_signature = None
         self.appeal_textures = {}
         self.appeal_mapping_signature = None
@@ -235,6 +237,7 @@ class Catalog:
     def prepare_covers(self) -> None:
         """Prepare small web covers for songs with local plays or saved records."""
         self.prepare_appeal_card()
+        self.appeal_cards = prepare_appeal_cards(self.game, ROOT / ".local")
         music_ids = set()
         cache_path = self.tracker / "cache/total_volforce.json"
         if cache_path.exists():
@@ -494,6 +497,7 @@ def snapshot(
             "updated_at": None,
             "charts": [],
             "appeal_card": getattr(catalog, "appeal_card", None),
+            "appeal_cards": getattr(catalog, "appeal_cards", []),
             "playtime": playtime,
             "skill_level": None,
         }
@@ -530,6 +534,7 @@ def snapshot(
         "updated_at": stamp(raw["updated_at"]),
         "charts": charts,
         "appeal_card": getattr(catalog, "appeal_card", None),
+        "appeal_cards": getattr(catalog, "appeal_cards", []),
         "playtime": playtime,
         "skill_level": skill_level,
     }
@@ -734,6 +739,7 @@ def sync_once(config: dict[str, Any], tracker: Path, catalog: Catalog) -> None:
             acknowledged = {"endpoint": endpoint_id, "ids": []}
         known_ids = set(acknowledged["ids"])
         image_ids = set(catalog.cover_ids.values())
+        image_ids.update(card["image"] for card in getattr(catalog, "appeal_cards", []))
         if catalog.appeal_card:
             image_ids.add(catalog.appeal_card)
         pending_ids = sorted(image_ids - known_ids)

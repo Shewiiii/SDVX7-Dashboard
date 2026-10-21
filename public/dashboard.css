@@ -396,7 +396,7 @@
     color: var(--muted);
     border: 0;
     border-radius: 6px;
-    background: #161620;
+    background: var(--control-bg);
     padding: 10px 25px 10px 11px;
     cursor: pointer;
     max-width: 170px;
@@ -1084,7 +1084,7 @@ td.row-index + td {
     gap: 9px;
     border: 0;
     border-radius: 6px;
-    background: #161620;
+    background: var(--control-bg);
     padding: 0 12px;
     width: var(--search-width);
 }
@@ -1185,7 +1185,7 @@ tbody tr:hover {
     justify-content: space-between;
 }
 .pagination span {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--faint);
 }
 .pagination button {
@@ -1708,6 +1708,207 @@ footer {
     border-radius: 8px;
     flex: none;
 }
+.appeal-card-trigger {
+    position: relative;
+    flex: none;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+}
+.appeal-card-trigger .appeal-card {
+    transition: filter 180ms;
+}
+.appeal-card-trigger > span {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    padding: 4px;
+    color: var(--ink);
+    font-size: 9px;
+    line-height: 1.35;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 180ms;
+    pointer-events: none;
+}
+.appeal-card-trigger:hover .appeal-card,
+.appeal-card-trigger:focus-visible .appeal-card {
+    filter: brightness(0.35);
+}
+.appeal-card-trigger:hover > span,
+.appeal-card-trigger:focus-visible > span {
+    opacity: 1;
+}
+.appeal-helper {
+    width: min(1000px, calc(100vw - 36px));
+    max-width: none;
+    max-height: calc(100dvh - 36px);
+    padding: 0;
+    overflow: auto;
+    color: var(--ink);
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+.appeal-helper::backdrop {
+    background: rgb(0 0 0 / 65%);
+}
+.appeal-helper-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px var(--panel-padding-inline);
+}
+.appeal-helper-heading h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+}
+.appeal-helper-heading button {
+    border: 0;
+    background: none;
+    color: var(--muted);
+    padding: 4px 8px;
+    font-size: 24px;
+    line-height: 1;
+}
+.appeal-helper-heading button:hover {
+    color: var(--accent);
+}
+#appeal-helper-browser,
+.appeal-helper-detail {
+    padding: 0 var(--panel-padding-inline) 24px;
+}
+.appeal-helper-tools.table-tools {
+    padding: 0;
+    flex-wrap: wrap;
+}
+.appeal-helper-tools .search-wrap {
+    flex: 1 1 240px;
+    min-width: 0;
+    width: auto;
+}
+.appeal-helper-pagination.pagination {
+    padding: 0;
+    margin-left: auto;
+    flex: none;
+    gap: 6px;
+}
+.appeal-helper-page {
+    white-space: nowrap;
+}
+.appeal-helper-pagination .appeal-helper-page-number {
+    width: auto;
+    height: auto;
+    min-width: 1.5ch;
+    margin: 0;
+    padding: 2px;
+    font: inherit;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.appeal-helper-pagination .appeal-helper-page-number:hover {
+    color: var(--accent);
+}
+.appeal-helper-page-input {
+    width: 4ch;
+    padding: 2px;
+    border: 0;
+    border-radius: 3px;
+    background: var(--control-bg);
+    color: var(--ink);
+    font: inherit;
+    appearance: textfield;
+}
+.appeal-helper-page-input::-webkit-inner-spin-button,
+.appeal-helper-page-input::-webkit-outer-spin-button {
+    appearance: none;
+}
+.appeal-helper-card.is-current {
+    background: var(--accent-wash);
+}
+.appeal-helper-count {
+    margin: 16px 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+.appeal-helper-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 112px), 1fr));
+    gap: 12px;
+}
+.appeal-helper-card {
+    min-width: 0;
+    padding: 12px 8px;
+    border: 0;
+    border-radius: var(--item-radius);
+    background: none;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+}
+.appeal-helper-card:hover,
+.appeal-helper-card:focus-visible {
+    background: var(--row-hover);
+    color: var(--accent);
+}
+.appeal-helper-card img {
+    display: block;
+    width: 80px;
+    height: 103px;
+    margin: 0 auto 10px;
+    object-fit: contain;
+}
+.appeal-helper-card span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+.appeal-helper-empty {
+    grid-column: 1 / -1;
+    padding: 24px 0;
+    color: var(--muted);
+    text-align: center;
+}
+.appeal-helper-detail {
+    display: grid;
+    justify-items: center;
+    gap: 20px;
+    text-align: center;
+}
+#appeal-helper-back {
+    justify-self: start;
+}
+#appeal-helper-artwork {
+    max-width: 100%;
+}
+#appeal-helper-artwork img {
+    display: block;
+    width: 256px;
+    max-width: 100%;
+    height: auto;
+    max-height: 50dvh;
+    object-fit: contain;
+}
+.appeal-helper-detail h3 {
+    max-width: 100%;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+.appeal-helper-detail p {
+    margin: 0;
+    color: var(--muted);
+}
+.appeal-helper-detail p a {
+    color: var(--accent);
+}
 .vf-class {
     display: flex;
     align-items: center;
@@ -1810,6 +2011,22 @@ footer {
     }
 }
 @media (max-width: 700px) {
+    .appeal-helper-tools .search-wrap {
+        flex-basis: 100%;
+    }
+    .appeal-helper-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 60px), 1fr));
+        gap: 8px;
+    }
+    .appeal-helper-card {
+        padding: 6px 2px;
+        font-size: 9px;
+    }
+    .appeal-helper-card img {
+        width: 48px;
+        height: 62px;
+        margin-bottom: 6px;
+    }
     .calculator-formula {
         display: none;
     }

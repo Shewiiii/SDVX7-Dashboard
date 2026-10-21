@@ -56,7 +56,7 @@
             }
         }
     }
-    let theme = saved.theme === "nabla" ? "nabla" : "exceed";
+    let theme = saved.theme === "exceed" ? "exceed" : "nabla";
     const themeSettings = Object.fromEntries(
         ["exceed", "nabla"].map((name) => {
             // Keep legacy shared settings for the theme they were saved with.

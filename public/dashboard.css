@@ -29,6 +29,13 @@
 :root[data-theme="nabla"] .ambient::after {
     opacity: 1;
 }
+@media (max-width: 700px), (hover: none) {
+    .ambient {
+        /* Use a stable height to prevent rescaling on scroll */
+        bottom: auto;
+        height: calc(100lvh + 50px);
+    }
+}
 @media (prefers-reduced-motion: reduce) {
     .ambient::after {
         transition: none;

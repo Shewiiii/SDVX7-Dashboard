@@ -11,6 +11,7 @@
     --ink: #eeedf8;
     --muted: #aaa8bd;
     --faint: #77748d;
+    --footer-color: var(--muted);
     --line: #353346;
 
     /* -----------Theme palettes----------- */

@@ -254,7 +254,7 @@
     color: var(--accent);
 }
 .artwork-credit {
-    color: var(--muted);
+    color: var(--footer-color);
     font-size: 10px;
     transition: color 0.16s;
 }
@@ -1195,7 +1195,7 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    color: var(--faint);
+    color: var(--footer-color);
     font: 11px var(--sans);
     font-size: 11px;
     padding-top: 24px;

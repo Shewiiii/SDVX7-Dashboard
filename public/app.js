@@ -104,22 +104,32 @@ function renderPlaytime() {
     );
 }
 
-let spendingHideTimer,
-    spendingCloseVersion = 0;
-function hideSpendingPopup() {
-    clearTimeout(spendingHideTimer);
-    const popup = $("spending-popup");
+const popupVersions = new WeakMap();
+function hideAnimatedPopup(popup) {
     if (!popup.matches(":popover-open") || popup.classList.contains("closing"))
         return;
-    const version = ++spendingCloseVersion;
+    const version = (popupVersions.get(popup) || 0) + 1;
+    popupVersions.set(popup, version);
     popup.classList.add("closing");
     Promise.allSettled(
         popup.getAnimations().map((animation) => animation.finished),
     ).then(() => {
-        if (version !== spendingCloseVersion) return;
+        if (version !== popupVersions.get(popup)) return;
         popup.hidePopover();
         popup.classList.remove("closing");
     });
+}
+function showAnimatedPopup(popup, trigger) {
+    popupVersions.set(popup, (popupVersions.get(popup) || 0) + 1);
+    popup.classList.remove("closing");
+    popup.showPopover();
+    positionPopup(popup, trigger);
+}
+
+let spendingHideTimer;
+function hideSpendingPopup() {
+    clearTimeout(spendingHideTimer);
+    hideAnimatedPopup($("spending-popup"));
 }
 function scheduleSpendingHide() {
     clearTimeout(spendingHideTimer);
@@ -133,9 +143,10 @@ function showSpendingPopup() {
     const popup = $("spending-popup");
     const trigger = document.querySelector(".spending-price");
     if (!trigger) return;
-    spendingCloseVersion++;
-    popup.classList.remove("closing");
-    popup.showPopover();
+    showAnimatedPopup(popup, trigger);
+}
+
+function positionPopup(popup, trigger) {
     const anchor = trigger.getBoundingClientRect();
     const box = popup.getBoundingClientRect();
     popup.style.left = `${Math.max(12, Math.min(anchor.left + anchor.width / 2 - box.width / 2, innerWidth - box.width - 12))}px`;
@@ -144,6 +155,35 @@ function showSpendingPopup() {
             ? anchor.bottom + 10
             : anchor.top - box.height - 10;
     popup.style.top = `${Math.max(12, Math.min(top, innerHeight - box.height - 12))}px`;
+}
+
+let songReadingHideTimer;
+function hideSongReadingPopup() {
+    clearTimeout(songReadingHideTimer);
+    hideAnimatedPopup($("song-reading-popup"));
+}
+function scheduleSongReadingHide() {
+    clearTimeout(songReadingHideTimer);
+    songReadingHideTimer = setTimeout(() => {
+        if (!document.activeElement?.matches(".song-reading-title"))
+            hideSongReadingPopup();
+    }, 150);
+}
+function bindSongReadingPopup(reading) {
+    const title = document.querySelector(".song-reading-title");
+    if (!title || !reading) return;
+    const show = () => {
+        clearTimeout(songReadingHideTimer);
+        const popup = $("song-reading-popup");
+        popup.textContent = reading;
+        showAnimatedPopup(popup, title);
+    };
+    title.addEventListener("pointerenter", (event) => {
+        if (event.pointerType === "mouse") show();
+    });
+    title.addEventListener("pointerleave", scheduleSongReadingHide);
+    title.addEventListener("focus", show);
+    title.addEventListener("blur", scheduleSongReadingHide);
 }
 
 async function loadExchangeRate() {
@@ -1300,6 +1340,7 @@ function switchView(
     recordHistory = true,
     { animate = true, scroll = false } = {},
 ) {
+    hideSongReadingPopup();
     if (recordHistory) {
         pendingScroll = null;
         rememberScroll();
@@ -1561,6 +1602,7 @@ function fitDifficultyButtons() {
 }
 
 function renderSongSearch({ animate = true } = {}) {
+    hideSongReadingPopup();
     updateSearchClearButtons();
     if (!data) return;
     if (selected) animate = revealOnce(`song:${selected.music_id}`, animate);
@@ -1612,8 +1654,11 @@ function renderSongSearch({ animate = true } = {}) {
     const mark =
         saved?.clear_type ??
         (plays.length ? Math.max(...plays.map((p) => p.clear_type)) : null);
+    const reading = typeof song.title_ascii === "string" ? song.title_ascii : "";
+    const songTitle = `<h3 class="song-reading-title"${reading ? ' tabindex="0" aria-describedby="song-reading-popup"' : ""}>${escape(song.title)}</h3>`;
     $("selected-chart").innerHTML =
-        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading"><h3>${escape(song.title)}</h3><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div></div></div>`;
+        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}<button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div></div></div>`;
+    bindSongReadingPopup(reading);
     fitDifficultyButtons();
     const pagination = paginate(plays, songSearchPage);
     songSearchPage = pagination.page;
@@ -1998,21 +2043,32 @@ $("spending-popup").addEventListener("pointerenter", () =>
     clearTimeout(spendingHideTimer),
 );
 $("spending-popup").addEventListener("pointerleave", scheduleSpendingHide);
+$("song-reading-popup").addEventListener("pointerenter", () =>
+    clearTimeout(songReadingHideTimer),
+);
+$("song-reading-popup").addEventListener("pointerleave", scheduleSongReadingHide);
 document.addEventListener("click", (event) => {
     if (!event.target.closest(".spending-price, #spending-popup"))
         hideSpendingPopup();
+    if (!event.target.closest(".song-reading-title, #song-reading-popup"))
+        hideSongReadingPopup();
 });
 document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") hideSpendingPopup();
+    if (event.key === "Escape") {
+        hideSpendingPopup();
+        hideSongReadingPopup();
+    }
 });
 window.addEventListener(
     "scroll",
     (event) => {
         if (event.target !== $("spending-popup")) hideSpendingPopup();
+        if (event.target !== $("song-reading-popup")) hideSongReadingPopup();
     },
     { capture: true, passive: true },
 );
 window.addEventListener("resize", hideSpendingPopup);
+window.addEventListener("resize", hideSongReadingPopup);
 initSegmentedControls();
 restoreUrl();
 updateUrl(true);

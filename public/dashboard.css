@@ -514,7 +514,8 @@
 }
 .chart-popup,
 .calculator-chart-popup,
-.spending-popup {
+.spending-popup,
+.song-reading-popup {
     border: 0;
     border-radius: var(--popup-radius);
     background: var(--popup-bg);
@@ -523,7 +524,8 @@
     font: var(--popup-font-size)/1.5 var(--sans);
 }
 .chart-popup,
-.spending-popup {
+.spending-popup,
+.song-reading-popup {
     padding: var(--popup-padding);
 }
 .chart-popup {
@@ -1306,15 +1308,20 @@ footer {
     width: min(300px, calc(100vw - 24px));
     max-height: calc(100vh - 24px);
     overflow-y: auto;
-    opacity: 0;
-    transform: translateY(4px);
-    transition:
-        opacity 0.14s,
-        transform 0.14s;
 }
-.spending-popup:popover-open:not(.closing) {
+.spending-popup,
+.song-reading-popup {
+    opacity: 0;
+    transform: translateY(var(--popup-offset));
+    transition:
+        opacity var(--popup-exit-duration) var(--popup-easing),
+        transform var(--popup-exit-duration) var(--popup-easing);
+}
+.spending-popup:popover-open:not(.closing),
+.song-reading-popup:popover-open:not(.closing) {
     opacity: 1;
     transform: translateY(0);
+    transition-duration: var(--popup-enter-duration);
 }
 .spending-popup p {
     margin: 0 0 6px;
@@ -1536,6 +1543,24 @@ footer {
 }
 .selected-song-heading h3 {
     margin: 0;
+}
+.song-reading-title:hover,
+.song-reading-title:focus-visible {
+    color: var(--accent);
+    cursor: default;
+}
+@media (hover: none) {
+    .song-reading-title:focus {
+        color: var(--accent);
+    }
+}
+.song-reading-popup {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    width: max-content;
+    max-width: min(360px, calc(100vw - 24px));
+    overflow-wrap: anywhere;
 }
 .calculator-link {
     flex: none;
@@ -1970,9 +1995,10 @@ footer {
     }
 }
 @starting-style {
-    .spending-popup:popover-open:not(.closing) {
+    .spending-popup:popover-open:not(.closing),
+    .song-reading-popup:popover-open:not(.closing) {
         opacity: 0;
-        transform: translateY(4px);
+        transform: translateY(var(--popup-offset));
     }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1984,7 +2010,8 @@ footer {
     .timing-bar {
         transition: none;
     }
-    .spending-popup {
+    .spending-popup,
+    .song-reading-popup {
         transition: none;
     }
 }

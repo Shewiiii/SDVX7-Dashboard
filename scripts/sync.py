@@ -120,6 +120,7 @@ class Catalog:
                 self.music.levels,
                 self.music.title_readings,
                 self.music.artist_readings,
+                self.music.title_ascii,
             )
         )
         if signature == self.signature:
@@ -136,6 +137,7 @@ class Catalog:
             songs[mid] = {
                 "music_id": mid,
                 "title": title,
+                "title_ascii": self.music.title_ascii.get(mid, "")[:200],
                 "artist": artist,
                 "forms": [
                     search_forms(title),

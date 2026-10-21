@@ -90,11 +90,18 @@
     --popup-shadow: 0 8px 30px #0005;
     --popup-padding: 12px 14px;
     --popup-font-size: 11px;
+
+    /* Popup animation */
+    --popup-enter-duration: 240ms;
+    --popup-exit-duration: 240ms;
+    --popup-offset: 2px;
+    --popup-easing: cubic-bezier(0.16, 1, 0.3, 1);
+
     --panel-padding-inline: 27px;
     --list-padding-inline: 25px;
     --search-width: 320px;
     --entry-title-size: 15px;
-    --entry-position-size: 12px; /*Very left column, Top 1 2 3 etc*/
+    --entry-position-size: 12px; /* Very left column, Top 1 2 3 etc*/
     --entry-position-width: 38px;
     --entry-detail-size: 13px;
     --entry-clear-size: 11px;

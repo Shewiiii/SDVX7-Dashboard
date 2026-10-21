@@ -12,10 +12,11 @@
     --muted: #aaa8bd;
     --faint: #77748d;
     --line: #353346;
-    /* Theme palettes */
+
+    /* -----------Theme palettes----------- */
     --exceed-background: url("/assets/background.png");
     --exceed-background-offset-x-mobile: 0px; /* Mobile horizontal offset to center the face for example, >0px shifts to the right  */
-    --exceed-accent: rgb(147, 225, 243); /*And avg100, ...*/
+    --exceed-accent: rgb(147, 225, 243); /* And avg100, ...*/
     --exceed-chart-total: #5e8ee6;
     --exceed-chart-plays: #607e90;
     --exceed-chart-play-points: #6b8fa6;
@@ -44,6 +45,7 @@
     --nabla-notice-accent: #a4c77f;
     --nabla-notice-text: #d4e8c9;
     --nabla-chart-summary-color: #d3e5c3;
+    /* ------------------------------------ */
 
     --theme-transition-duration: 520ms;
     --theme-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);

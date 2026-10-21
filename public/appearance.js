@@ -77,14 +77,23 @@
         const panel = document.getElementById("appearance-panel");
         const container = toggle.closest(".appearance-settings");
         const themeButtons = panel.querySelectorAll("[data-theme-option]");
+        const artworkCredit = document.getElementById("artwork-credit");
+        const artworkCredits = {
+            exceed: { artist: "蒼流リダ", url: "https://x.com/Lida_2617" },
+            nabla: { artist: "ルト", url: "https://x.com/ruto_desu" },
+        };
         const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
         function updateThemeMotion() {
-            root.style.transition = reducedMotion.matches || !animatedColors.length
-                ? "none"
-                : animatedColors.map((name) =>
-                    `${name} var(--theme-transition-duration) var(--theme-transition-easing)`,
-                ).join(", ");
+            root.style.transition =
+                reducedMotion.matches || !animatedColors.length
+                    ? "none"
+                    : animatedColors
+                          .map(
+                              (name) =>
+                                  `${name} var(--theme-transition-duration) var(--theme-transition-easing)`,
+                          )
+                          .join(", ");
         }
         updateThemeMotion();
         reducedMotion.addEventListener("change", updateThemeMotion);
@@ -92,6 +101,9 @@
         function setTheme(value) {
             theme = value;
             root.dataset.theme = theme;
+            const credit = artworkCredits[theme];
+            artworkCredit.textContent = `Artwork by ${credit.artist}`;
+            artworkCredit.href = credit.url;
             for (const button of themeButtons) {
                 const selected = button.dataset.themeOption === theme;
                 button.classList.toggle("selected", selected);
@@ -113,17 +125,15 @@
                 else
                     localStorage.setItem(
                         storageKey,
-                        JSON.stringify(
-                            {
-                                theme,
-                                ...Object.fromEntries(
-                                    controls.map(({ name, value }) => [
-                                        name,
-                                        value,
-                                    ]),
-                                ),
-                            },
-                        ),
+                        JSON.stringify({
+                            theme,
+                            ...Object.fromEntries(
+                                controls.map(({ name, value }) => [
+                                    name,
+                                    value,
+                                ]),
+                            ),
+                        }),
                     );
                 storageAvailable = true;
             } catch {
@@ -164,7 +174,8 @@
         function setOpen(open) {
             panel.hidden = !open;
             toggle.setAttribute("aria-expanded", String(open));
-            if (open) panel.querySelector("[data-theme-option].selected").focus();
+            if (open)
+                panel.querySelector("[data-theme-option].selected").focus();
         }
 
         toggle.addEventListener("click", () => setOpen(panel.hidden));

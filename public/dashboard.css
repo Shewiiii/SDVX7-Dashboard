@@ -249,8 +249,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.metric-chart-link.open-chart:hover {
+.metric-chart-link.open-chart:hover,
+.artwork-credit:hover {
     color: var(--accent);
+}
+.artwork-credit {
+    color: var(--muted);
+    font-size: 10px;
+    transition: color 0.16s;
 }
 .metric-spark {
     position: absolute;
@@ -371,9 +377,9 @@
     background: var(--accent-wash);
     pointer-events: none;
     transition:
-        transform 260ms cubic-bezier(.22, 1, .36, 1),
-        width 260ms cubic-bezier(.22, 1, .36, 1),
-        height 260ms cubic-bezier(.22, 1, .36, 1);
+        transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        width 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        height 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .segmented-animated button {
     position: relative;

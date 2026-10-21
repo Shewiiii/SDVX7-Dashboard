@@ -535,7 +535,7 @@
     border-top: 0;
     padding: 14px 27px;
     color: var(--muted);
-    font: 11px var(--sans);
+    font: 12px var(--sans);
     gap: 14px;
 }
 .chart-summary strong {
@@ -1179,7 +1179,7 @@ tbody tr:hover {
     justify-content: space-between;
 }
 .pagination span {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--faint);
 }
 .pagination button {

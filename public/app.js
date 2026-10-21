@@ -412,14 +412,14 @@ function renderSummary({ animate = true } = {}) {
     setText(
         "archive-dates",
         sorted.length
-            ? `${date(sorted[0].received_at)} — ${date(sorted.at(-1).received_at)}`
+            ? `Tracking since ${date(sorted[0].received_at)}`
             : "No plays yet",
     );
     const updated = data.state.updated_at || data.synced_at;
     setText(
         "updated",
         updated
-            ? `Updated ${shortDate(updated)} ${clock(updated)}`
+            ? `Last update ${shortDate(updated)} ${clock(updated)}`
             : "Waiting for sync",
     );
     const latest = stats.sessions.at(-1) || [];

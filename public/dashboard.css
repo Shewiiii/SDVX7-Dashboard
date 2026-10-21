@@ -2048,6 +2048,9 @@ footer {
     }
 }
 @media (max-width: 700px) {
+    #appeal-helper-artwork {
+        width: 160px;
+    }
     .appeal-helper-tools .search-wrap {
         flex-basis: 100%;
     }

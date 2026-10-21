@@ -18,7 +18,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from companion import (
+from scripts.companion import (
     ROOT,
     display_name,
     load_config,
@@ -26,7 +26,7 @@ from companion import (
     shared_settings,
     tracker_module,
 )
-from playtime import playtime_snapshot
+from scripts.playtime import playtime_snapshot
 
 try:
     from pykakasi import kakasi

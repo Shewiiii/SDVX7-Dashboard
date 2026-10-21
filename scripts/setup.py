@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from companion import (
+from scripts.companion import (
     ROOT,
     display_name,
     load_config,
@@ -144,7 +144,7 @@ def configure_connection(config: dict[str, Any]) -> None:
     if bypass:
         config["bypass"] = bypass
     save_config(config)
-    print("Existing website connected. Upload credentials were not displayed.")
+    print("Existing website connected.")
 
 
 def deploy(
@@ -213,7 +213,7 @@ def deploy(
     print(
         "Copy the and paste the ALIASED URL you see above (it should be https://[what you typed before].vercel.app), OR your custom domain put in Vercel."
     )
-    config["url"] = prompt_origin("Aliased URL:", config.get("url", ""))
+    config["url"] = prompt_origin("Aliased URL", config.get("url", ""))
     save_config(config)
     print(
         "For a public dashboard, production Deployment Protection must allow public access."
@@ -243,7 +243,7 @@ def main(argv: list[str] | None = None) -> int:
         configure_connection(config)
     else:
         raise ValueError("Choose 1 or 2.")
-    run([str(python), "-c", "from sync import run; run(once=True)"])
+    run([str(python), "-c", "from scripts.sync import run; run(once=True)"])
     print("Ready. Use Start-tracker-with-dashboard.bat for future sessions.")
     return 0
 

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from companion import resolve_tracker, shared_settings, tracker_module
+from scripts.companion import resolve_tracker, shared_settings, tracker_module
 
 
 def playtime_snapshot(tracker: Path) -> dict[str, int] | None:

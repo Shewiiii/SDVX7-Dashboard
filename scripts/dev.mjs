@@ -30,7 +30,7 @@ function refresh() {
     exportTask = new Promise((resolve, reject) => {
         const child = spawn(
             python,
-            ["-c", "from sync import export_preview; export_preview()"],
+            ["-c", "from scripts.sync import export_preview; export_preview()"],
             {
                 cwd: root,
             },
@@ -76,11 +76,9 @@ createServer(async (req, res) => {
                     "utf8",
                 ),
             );
-            const playtime = await runFile(
-                python,
-                [path.join(root, "playtime.py")],
-                { cwd: root },
-            );
+            const playtime = await runFile(python, ["-m", "scripts.playtime"], {
+                cwd: root,
+            });
             data.state.playtime = JSON.parse(playtime.stdout);
             res.writeHead(200, {
                 "Content-Type": types[".json"],

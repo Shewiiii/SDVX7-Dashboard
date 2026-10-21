@@ -1,11 +1,6 @@
 .env*
 .local/
 tests/
-sync.py
-playtime.py
-companion.py
-setup.py
-launcher.py
 *.ps1
 *.bat
 README.md

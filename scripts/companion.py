@@ -8,7 +8,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / ".local/sync-config.json"
 
 

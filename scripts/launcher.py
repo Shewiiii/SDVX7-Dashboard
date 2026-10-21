@@ -5,7 +5,8 @@ import subprocess
 import sys
 import time
 
-from companion import ROOT, load_config, resolve_tracker, tracker_python
+from scripts.companion import ROOT, load_config, resolve_tracker, tracker_python
+from scripts.process_lifetime import contain_process_tree, stop_orphaned_sync
 
 
 def sync_running() -> bool:
@@ -54,6 +55,9 @@ def main() -> int:
     tracker = resolve_tracker()
     python = tracker_python(tracker)
     connected = bool(config.get("url") and len(config.get("token", "")) >= 32)
+    if connected and sync_running():
+        # Also recover workers launched before the scripts/ reorganization.
+        stop_orphaned_sync(python, ROOT / "sync.py")
     local = ROOT / ".local"
     local.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
@@ -68,7 +72,7 @@ def main() -> int:
 
         def start_sync() -> subprocess.Popen[bytes]:
             return subprocess.Popen(
-                [str(python), "-u", str(ROOT / "sync.py")],
+                [str(python), "-u", "-m", "scripts.sync"],
                 cwd=ROOT,
                 env=env,
                 stdout=output,
@@ -126,7 +130,7 @@ def main() -> int:
                             str(python),
                             "-u",
                             "-c",
-                            "from sync import run; run(once=True)",
+                            "from scripts.sync import run; run(once=True)",
                         ],
                         cwd=ROOT,
                         env=env,
@@ -147,7 +151,8 @@ def main() -> int:
 
 if __name__ == "__main__":
     try:
+        contain_process_tree()
         raise SystemExit(main())
-    except (OSError, ValueError, TypeError) as error:
+    except (OSError, ValueError, TypeError, subprocess.SubprocessError) as error:
         print(f"Cannot start dashboard companion: {error}", file=sys.stderr)
         raise SystemExit(1) from None

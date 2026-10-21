@@ -402,7 +402,7 @@
 }
 #chart {
     overflow: visible;
-    touch-action: pinch-zoom;
+    touch-action: pan-y pinch-zoom;
     user-select: none;
 }
 #chart .crosshair {

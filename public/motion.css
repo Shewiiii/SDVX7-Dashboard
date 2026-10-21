@@ -106,7 +106,11 @@ body[data-loading="initial"] .pagination > span::after {
     position: absolute;
     inset: 3px 0;
     border-radius: 5px;
-    background: color-mix(in srgb, var(--muted) calc(100% * 21 / 255), transparent);
+    background: color-mix(
+        in srgb,
+        var(--muted) calc(100% * 21 / 255),
+        transparent
+    );
     animation: loading-dot 1.2s ease-in-out infinite;
 }
 body[data-loading="initial"] .skeleton-shape,
@@ -239,7 +243,59 @@ body[data-loading="initial"] .panel-foot {
         width: 44px;
     }
 }
+.appearance-panel,
+.appeal-helper {
+    opacity: 0;
+    transition:
+        opacity 240ms ease,
+        transform 320ms var(--theme-transition-easing);
+}
+.appearance-panel {
+    transform: translateY(10px) scale(0.985);
+    transform-origin: top right;
+}
+.appeal-helper {
+    transform: scale(0.985);
+    transform-origin: center;
+}
+.appearance-panel.is-visible,
+.appeal-helper.is-visible {
+    opacity: 1;
+    transform: none;
+}
+.appearance-backdrop,
+.appeal-helper::backdrop {
+    opacity: 0;
+    transition: opacity var(--panel-backdrop-duration) ease-out;
+}
+.appearance-backdrop.is-visible,
+.appeal-helper.is-visible::backdrop {
+    opacity: 1;
+}
+.appeal-helper-image > .skeleton-shape {
+    animation: loading-shimmer 1.6s ease-in-out infinite;
+}
+.appeal-helper-image img {
+    opacity: 0;
+}
+.appeal-helper-image.is-loaded > .skeleton-shape,
+.appeal-helper-image.has-error > .skeleton-shape {
+    animation: none;
+    opacity: 0;
+}
+.appeal-helper-image.is-loaded img {
+    opacity: 1;
+}
 @media (prefers-reduced-motion: reduce) {
+    .appearance-panel,
+    .appearance-backdrop,
+    .appeal-helper,
+    .appeal-helper::backdrop {
+        transition: none;
+    }
+    .appeal-helper-image > .skeleton-shape {
+        animation: none;
+    }
     .reveal-pending {
         opacity: 1;
     }

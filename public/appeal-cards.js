@@ -22,17 +22,53 @@ export function createAppealCardHelper(getState) {
         pageSize = TARGET_PAGE_SIZE,
         totalPages = 1;
     let scrollPosition = 0,
-        previousOverflow = "";
+        previousOverflow = "",
+        closing = false;
 
     function image(card, lazy = true) {
+        const frame = document.createElement("span");
+        frame.className = "appeal-helper-image is-loading";
+        frame.setAttribute("aria-busy", "true");
+        const skeleton = document.createElement("span");
+        skeleton.className = "skeleton-shape";
+        skeleton.setAttribute("aria-hidden", "true");
+        const error = document.createElement("span");
+        error.className = "appeal-helper-image-error";
+        error.textContent = "Image unavailable";
+        error.hidden = true;
         const img = document.createElement("img");
-        img.src = `/api/cover?id=${card.image}`;
         img.alt = card.title;
         img.loading = lazy ? "lazy" : "eager";
         img.decoding = "async";
         img.width = 128;
         img.height = 164;
-        return img;
+        function failed() {
+            frame.classList.remove("is-loading");
+            frame.classList.add("has-error");
+            frame.setAttribute("aria-busy", "false");
+            img.hidden = true;
+            error.hidden = false;
+        }
+        img.addEventListener("error", failed, { once: true });
+        img.addEventListener(
+            "load",
+            async () => {
+                try {
+                    await img.decode();
+                } catch {
+                    failed();
+                    return;
+                }
+                if (!frame.isConnected) return;
+                frame.classList.remove("is-loading");
+                frame.classList.add("is-loaded");
+                frame.setAttribute("aria-busy", "false");
+            },
+            { once: true },
+        );
+        frame.append(skeleton, img, error);
+        img.src = `/api/cover?id=${card.image}`;
+        return frame;
     }
 
     function matchingCards() {
@@ -42,17 +78,25 @@ export function createAppealCardHelper(getState) {
             .map(normalizeSearch)
             .filter(Boolean);
         return cards
-            .filter((card) => tokens.every((token) => card.search.includes(token)))
-            .sort((a, b) => sort.value === "oldest" ? a.id - b.id : b.id - a.id);
+            .filter((card) =>
+                tokens.every((token) => card.search.includes(token)),
+            )
+            .sort((a, b) =>
+                sort.value === "oldest" ? a.id - b.id : b.id - a.id,
+            );
     }
 
     function fitPageSize() {
         if (!grid.clientWidth) return false;
-        const columns = getComputedStyle(grid).gridTemplateColumns.split(/\s+/).length;
-        const nextSize = Math.max(columns, Math.round(TARGET_PAGE_SIZE / columns) * columns);
+        const columns =
+            getComputedStyle(grid).gridTemplateColumns.split(/\s+/).length;
+        const nextSize = Math.max(
+            columns,
+            Math.round(TARGET_PAGE_SIZE / columns) * columns,
+        );
         if (nextSize === pageSize) return false;
         // Keep the current range visible when the grid changes width.
-        page = Math.floor((page - 1) * pageSize / nextSize) + 1;
+        page = Math.floor(((page - 1) * pageSize) / nextSize) + 1;
         pageSize = nextSize;
         return true;
     }
@@ -72,11 +116,16 @@ export function createAppealCardHelper(getState) {
         previous.disabled = page === 1;
         next.disabled = page === totalPages;
         pageNumber.textContent = page;
-        pageNumber.setAttribute("aria-label", `Page ${page}. Enter page number`);
+        pageNumber.setAttribute(
+            "aria-label",
+            `Page ${page}. Enter page number`,
+        );
         pageInput.max = totalPages;
         if (pageInput.hidden) pageInput.value = page;
-        document.getElementById("appeal-helper-total-pages").textContent = totalPages;
-        document.getElementById("appeal-helper-search-clear").hidden = !search.value;
+        document.getElementById("appeal-helper-total-pages").textContent =
+            totalPages;
+        document.getElementById("appeal-helper-search-clear").hidden =
+            !search.value;
         const fragment = document.createDocumentFragment();
         for (const card of matches.slice(
             (page - 1) * pageSize,
@@ -119,6 +168,14 @@ export function createAppealCardHelper(getState) {
         dialog.scrollTop = 0;
     }
 
+    function returnToBrowser() {
+        renderBrowser({ anchorId: selectedId });
+        dialog.scrollTop = scrollPosition;
+        grid.querySelector(`[data-appeal-id="${selectedId}"]`)?.focus({
+            preventScroll: true,
+        });
+    }
+
     function update() {
         const source = getState()?.appeal_cards || [];
         const nextSignature = JSON.stringify(source);
@@ -145,7 +202,12 @@ export function createAppealCardHelper(getState) {
     document
         .getElementById("appeal-helper-open")
         .addEventListener("click", () => {
-            if (dialog.open) return;
+            if (dialog.open || closing) return;
+            document.dispatchEvent(
+                new CustomEvent("dashboard:panel-open", {
+                    detail: "appeal-helper",
+                }),
+            );
             update();
             search.value = "";
             const current = cards.find(
@@ -161,6 +223,10 @@ export function createAppealCardHelper(getState) {
             document.documentElement.style.overflow = "hidden";
             dialog.showModal();
             renderBrowser({ anchorId: current?.id ?? null });
+            // Establish both starting styles before fading the panel/backdrop in.
+            getComputedStyle(dialog).opacity;
+            getComputedStyle(dialog, "::backdrop").opacity;
+            dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
             // Browsing on a phone should not immediately open its keyboard.
             const initialFocus = matchMedia(
@@ -170,10 +236,26 @@ export function createAppealCardHelper(getState) {
                 : document.getElementById("appeal-helper-close");
             initialFocus.focus({ preventScroll: true });
         });
+    async function closeDialog() {
+        if (!dialog.open || closing) return;
+        closing = true;
+        dialog.classList.remove("is-visible");
+        // Only wait for the panel; its children may still have loading shimmers.
+        await Promise.allSettled(
+            dialog.getAnimations().map((animation) => animation.finished),
+        );
+        if (dialog.open) dialog.close();
+    }
     document
         .getElementById("appeal-helper-close")
-        .addEventListener("click", () => dialog.close());
+        .addEventListener("click", closeDialog);
+    dialog.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        void closeDialog();
+    });
     dialog.addEventListener("close", () => {
+        closing = false;
+        dialog.classList.remove("is-visible");
         document.documentElement.style.overflow = previousOverflow;
         // Release thumbnails after closing; reopening starts with the full catalog.
         grid.replaceChildren();
@@ -190,8 +272,10 @@ export function createAppealCardHelper(getState) {
             event.clientX > bounds.right ||
             event.clientY < bounds.top ||
             event.clientY > bounds.bottom
-        )
-            dialog.close();
+        ) {
+            if (!detail.hidden) returnToBrowser();
+            else void closeDialog();
+        }
     });
     grid.addEventListener("click", (event) => {
         const button = event.target.closest("[data-appeal-id]");
@@ -204,13 +288,7 @@ export function createAppealCardHelper(getState) {
         showDetail(card);
         back.focus({ preventScroll: true });
     });
-    back.addEventListener("click", () => {
-        renderBrowser({ anchorId: selectedId });
-        dialog.scrollTop = scrollPosition;
-        grid.querySelector(`[data-appeal-id="${selectedId}"]`)?.focus({
-            preventScroll: true,
-        });
-    });
+    back.addEventListener("click", returnToBrowser);
     search.addEventListener("input", () => {
         page = 1;
         renderBrowser();

@@ -60,6 +60,21 @@
     position: relative;
     margin-left: 12px;
 }
+:root.appearance-open {
+    overflow: hidden;
+}
+.appearance-settings.is-active {
+    z-index: 6;
+}
+.appearance-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    touch-action: none;
+}
+.appearance-backdrop:not(.is-visible) {
+    pointer-events: none;
+}
 .appearance-toggle {
     display: grid;
     place-items: center;
@@ -1752,7 +1767,12 @@ footer {
     scrollbar-gutter: stable;
 }
 .appeal-helper::backdrop {
-    background: rgb(0 0 0 / 65%);
+    background: transparent;
+}
+.appeal-helper::backdrop,
+.appearance-panel {
+    -webkit-backdrop-filter: blur(var(--panel-backdrop-blur));
+    backdrop-filter: blur(var(--panel-backdrop-blur));
 }
 .appeal-helper-heading {
     display: flex;
@@ -1855,14 +1875,13 @@ footer {
     background: var(--row-hover);
     color: var(--accent);
 }
-.appeal-helper-card img {
+.appeal-helper-card .appeal-helper-image {
     display: block;
     width: 80px;
     height: 103px;
     margin: 0 auto 10px;
-    object-fit: contain;
 }
-.appeal-helper-card span {
+.appeal-helper-card > span:last-child {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -1885,15 +1904,37 @@ footer {
     justify-self: start;
 }
 #appeal-helper-artwork {
-    max-width: 100%;
-}
-#appeal-helper-artwork img {
-    display: block;
     width: 256px;
     max-width: 100%;
-    height: auto;
+}
+#appeal-helper-artwork .appeal-helper-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 128 / 164;
     max-height: 50dvh;
+}
+.appeal-helper-image {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--item-radius);
+}
+.appeal-helper-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+}
+.appeal-helper-image > .skeleton-shape,
+.appeal-helper-image-error {
+    position: absolute;
+    inset: 0;
+}
+.appeal-helper-image-error {
+    display: grid;
+    place-content: center;
+    color: var(--faint);
+    font-size: 9px;
 }
 .appeal-helper-detail h3 {
     max-width: 100%;
@@ -2022,7 +2063,7 @@ footer {
         padding: 6px 2px;
         font-size: 9px;
     }
-    .appeal-helper-card img {
+    .appeal-helper-card .appeal-helper-image {
         width: 48px;
         height: 62px;
         margin-bottom: 6px;

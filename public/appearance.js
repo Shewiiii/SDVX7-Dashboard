@@ -57,15 +57,32 @@
         }
     }
     let theme = saved.theme === "nabla" ? "nabla" : "exceed";
+    const themeSettings = Object.fromEntries(
+        ["exceed", "nabla"].map((name) => {
+            // Keep legacy shared settings for the theme they were saved with.
+            const stored =
+                saved.themes?.[name] ?? (name === theme ? saved : {});
+            return [
+                name,
+                Object.fromEntries(
+                    controls.map((control) => {
+                        const value = stored[control.name];
+                        return [
+                            control.name,
+                            typeof value === "number" && Number.isFinite(value)
+                                ? Math.max(0, Math.min(control.max, value))
+                                : control.defaultValue,
+                        ];
+                    }),
+                ),
+            ];
+        }),
+    );
     root.dataset.theme = theme;
 
     // Restore before the page renders to avoid flashing the default appearance.
     for (const control of controls) {
-        const value = saved[control.name];
-        control.value =
-            typeof value === "number" && Number.isFinite(value)
-                ? Math.max(0, Math.min(control.max, value))
-                : control.defaultValue;
+        control.value = themeSettings[theme][control.name];
         root.style.setProperty(
             control.property,
             `${control.value}${control.unit}`,
@@ -109,32 +126,21 @@
                 button.classList.toggle("selected", selected);
                 button.setAttribute("aria-pressed", String(selected));
             }
-        }
-        setTheme(theme);
-        for (const button of themeButtons) {
-            button.addEventListener("click", () => {
-                if (theme === button.dataset.themeOption) return;
-                setTheme(button.dataset.themeOption);
-                persist();
-            });
+            for (const control of controls) {
+                control.value = themeSettings[theme][control.name];
+                update(control);
+            }
         }
 
-        function persist(reset = false) {
+        function persist() {
+            themeSettings[theme] = Object.fromEntries(
+                controls.map(({ name, value }) => [name, value]),
+            );
             try {
-                if (reset) localStorage.removeItem(storageKey);
-                else
-                    localStorage.setItem(
-                        storageKey,
-                        JSON.stringify({
-                            theme,
-                            ...Object.fromEntries(
-                                controls.map(({ name, value }) => [
-                                    name,
-                                    value,
-                                ]),
-                            ),
-                        }),
-                    );
+                localStorage.setItem(
+                    storageKey,
+                    JSON.stringify({ theme, themes: themeSettings }),
+                );
                 storageAvailable = true;
             } catch {
                 storageAvailable = false;
@@ -163,10 +169,17 @@
             control.output = document.getElementById(
                 `appearance-${control.name}-value`,
             );
-            update(control);
             control.input.addEventListener("input", () => {
                 control.value = Number(control.input.value);
                 update(control);
+                persist();
+            });
+        }
+        setTheme(theme);
+        for (const button of themeButtons) {
+            button.addEventListener("click", () => {
+                if (theme === button.dataset.themeOption) return;
+                setTheme(button.dataset.themeOption);
                 persist();
             });
         }
@@ -194,12 +207,11 @@
         document
             .getElementById("appearance-reset")
             .addEventListener("click", () => {
-                setTheme("exceed");
                 for (const control of controls) {
                     control.value = control.defaultValue;
                     update(control);
                 }
-                persist(true);
+                persist();
             });
     });
 })();

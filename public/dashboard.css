@@ -883,12 +883,18 @@
     fill: none;
     stroke: color-mix(in srgb, var(--clear-color) 65%, transparent);
     stroke-width: 1;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    transition: stroke-dashoffset 650ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    stroke-dasharray: 1.01 1.01; /* Extend past the perimeter to avoid a gap from rounding */
+    stroke-dashoffset: 1.01;
+    visibility: hidden;
+    transition:
+        stroke-dashoffset 650ms cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear 650ms; /* To prevent ghost pixel when unboxed */
 }
 .calculator-legend .is-upgrade .calculator-legend-border rect {
     stroke-dashoffset: 0;
+    visibility: visible;
+    transition-delay: 0s;
 }
 @media (prefers-reduced-motion: reduce) {
     .calculator-legend-border rect {

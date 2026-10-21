@@ -57,15 +57,33 @@ def prompt_origin(label: str, default: str = "") -> str:
 
 
 def run(command: list[str], *, capture: bool = False, **kwargs: Any) -> str:
-    result = subprocess.run(
-        command,
-        cwd=ROOT,
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE if capture else None,
-        **kwargs,
-    )
-    return result.stdout.strip() if capture else ""
+    if not capture:
+        subprocess.run(command, cwd=ROOT, check=True, text=True, **kwargs)
+        return ""
+    timeout = kwargs.pop("timeout", 45)
+    with subprocess.Popen(
+        command, cwd=ROOT, text=True, stdout=subprocess.PIPE, **kwargs
+    ) as process:
+        try:
+            output, _ = process.communicate(timeout=timeout)
+        except (subprocess.TimeoutExpired, KeyboardInterrupt):
+            # npm.cmd starts other processes. Stop its whole tree on cancellation.
+            if os.name == "nt":
+                subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                )
+            if process.poll() is None:
+                process.kill()
+            process.communicate()
+            raise
+        if process.returncode:
+            raise subprocess.CalledProcessError(
+                process.returncode, command, output=output
+            )
+        return output.strip()
 
 
 def node_tools() -> tuple[str, str]:
@@ -112,6 +130,15 @@ def vercel(npm: str, *args: str, capture: bool = False, **kwargs: Any) -> str:
     kwargs.setdefault(
         "env", {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
     )
+    if capture:
+        labels = {
+            "whoami": "Checking Vercel login...",
+            "project": "Checking the saved Vercel project...",
+            "env": "Checking dashboard environment variables...",
+        }
+        print(labels.get(args[0], "Checking Vercel..."), flush=True)
+        args = (*args, "--non-interactive")
+        kwargs.setdefault("stdin", subprocess.DEVNULL)
     return run(
         [
             npm,
@@ -147,14 +174,36 @@ def configure_connection(config: dict[str, Any]) -> None:
     print("Existing website connected.")
 
 
-def deploy(
-    config: dict[str, Any], tracker: Path, node: str, npm: str, update: bool = False
-) -> dict[str, Any]:
-    try:
-        vercel(npm, "whoami", capture=True, stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-        vercel(npm, "login")
+def linked_project(npm: str, config: dict[str, Any], tracker: Path) -> dict[str, Any]:
     project_path = ROOT / ".vercel/project.json"
+    if project_path.exists():
+        try:
+            vercel(npm, "project", "inspect", capture=True, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as error:
+            details = (error.output or "").lower()
+            if (
+                '"link_required"' not in details
+                and "project was either deleted" not in details
+            ):
+                raise
+            print(
+                "The saved Vercel project link is no longer accessible. "
+                "Select the correct account or team and your dashboard project."
+            )
+            previous = project_path.read_bytes()
+            project_path.unlink()
+            try:
+                vercel(npm, "link")
+                if not project_path.exists():
+                    raise ValueError(
+                        "Vercel did not save a project link. Run setup again."
+                    )
+                vercel(
+                    npm, "project", "inspect", capture=True, stderr=subprocess.STDOUT
+                )
+            except BaseException:
+                project_path.write_bytes(previous)
+                raise
     if not project_path.exists():
         default = re.sub(
             r"[^a-z0-9-]+", "-", display_name(config, tracker).lower()
@@ -165,7 +214,17 @@ def deploy(
                 "Use lowercase letters, numbers, and hyphens for the project name."
             )
         vercel(npm, "link", "--yes", "--project", project)
-    project = json.loads(project_path.read_text(encoding="utf-8"))
+    return json.loads(project_path.read_text(encoding="utf-8"))
+
+
+def deploy(
+    config: dict[str, Any], tracker: Path, node: str, npm: str, update: bool = False
+) -> dict[str, Any]:
+    try:
+        vercel(npm, "whoami", capture=True, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        vercel(npm, "login")
+    project = linked_project(npm, config, tracker)
     stages_path = ROOT / ".local/setup-state.json"
     try:
         stages = (
@@ -252,9 +311,18 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except (OSError, ValueError, TypeError, subprocess.CalledProcessError) as error:
+        if isinstance(error, subprocess.CalledProcessError) and error.output:
+            print(error.output, file=sys.stderr)
         print(f"Dashboard setup did not finish: {error}", file=sys.stderr)
         print(
             "Run setup again to resume. Existing tracker files were not changed.",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from None
+    except subprocess.TimeoutExpired:
+        print(
+            "Vercel did not respond within 45 seconds. Setup stopped. "
+            "Check your connection and rerun setup.",
             file=sys.stderr,
         )
         raise SystemExit(1) from None

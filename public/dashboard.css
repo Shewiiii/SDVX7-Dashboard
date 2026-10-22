@@ -402,12 +402,13 @@
     height: var(--segment-height);
     transform: translate(var(--segment-x), var(--segment-y));
     border-radius: var(--item-radius);
-    background: var(--accent-wash);
+    background: var(--segment-background, var(--accent-wash));
     pointer-events: none;
     transition:
         transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
         width 260ms cubic-bezier(0.22, 1, 0.36, 1),
-        height 260ms cubic-bezier(0.22, 1, 0.36, 1);
+        height 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .segmented-animated button {
     position: relative;
@@ -1673,6 +1674,13 @@ footer {
     }
 }
 .difficulty-tabs {
+    --segment-background: color-mix(
+        in srgb,
+        var(--segment-color, var(--muted)) 8%,
+        transparent
+    );
+    position: relative;
+    isolation: isolate;
     display: flex;
     gap: calc(6px * var(--difficulty-scale, 1));
     flex-wrap: nowrap;
@@ -1692,8 +1700,8 @@ footer {
     font-size: calc(11px * var(--difficulty-scale, 1));
     margin-left: calc(4px * var(--difficulty-scale, 1));
 }
-.difficulty-tabs button.selected,
-.difficulty-tabs button:focus-visible {
+.difficulty-tabs:not(.segmented-animated) button.selected,
+.difficulty-tabs:not(.segmented-animated) button:focus-visible {
     background: color-mix(in srgb, currentColor 8%, transparent);
 }
 .selected-chart-details {
@@ -2118,7 +2126,7 @@ footer {
     .segmented button:hover {
         color: var(--accent);
     }
-    .difficulty-tabs button:hover {
+    .difficulty-tabs:not(.segmented-animated) button:hover {
         background: color-mix(in srgb, currentColor 8%, transparent);
     }
 }

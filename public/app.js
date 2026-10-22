@@ -23,7 +23,11 @@ import {
     timingHistogram,
     TIMING_OFFSETS,
 } from "./metrics.js";
-import { motion, initSegmentedControls } from "./motion.js";
+import {
+    motion,
+    initSegmentedControl,
+    initSegmentedControls,
+} from "./motion.js";
 import { svgElement, pathData } from "./svg.js";
 import { createCalculator } from "./calculator.js";
 import { createAppealCardHelper } from "./appeal-cards.js";
@@ -319,6 +323,7 @@ let catalog = [],
     songSearchPage = 0,
     matches = [],
     activeMatch = -1;
+let cleanupDifficultyControl = null;
 
 function coverMarkup(p, size = "small") {
     const song = songs.get(p.music_id);
@@ -1671,11 +1676,53 @@ function renderSongSearch({ animate = true } = {}) {
     const difficulty = song.difficulties.find(
         (d) => d.diff_idx === selected.diff_idx,
     );
-    $("selected-chart").innerHTML =
-        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div>${radarMarkup(difficulty.radar)}</div>`;
+    const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div>${radarMarkup(difficulty.radar)}</div>`;
+    const chart = $("selected-chart");
+    const tabs = chart.querySelector(".difficulty-tabs");
+    const buttons = [...(tabs?.querySelectorAll("button") || [])];
+    const reuseTabs =
+        chart.dataset.musicId === String(selected.music_id) &&
+        buttons.length === song.difficulties.length &&
+        buttons.every(
+            (button, i) =>
+                Number(button.dataset.chartDiff) ===
+                song.difficulties[i].diff_idx,
+        );
+    if (reuseTabs) {
+        // Keep the control connected so its highlight can transition and the
+        // clicked button keeps keyboard focus while the chart data updates.
+        const updated = document.createElement("div");
+        updated.innerHTML = songMarkup;
+        for (const selector of [
+            ".cover-tile.large",
+            ".selected-song-heading",
+            ".selected-song-info > p",
+            ".selected-summary",
+            ".song-radar",
+        ])
+            chart
+                .querySelector(selector)
+                .replaceWith(updated.querySelector(selector));
+        for (const [i, button] of buttons.entries()) {
+            const active =
+                Number(button.dataset.chartDiff) === selected.diff_idx;
+            button.classList.toggle("selected", active);
+            button.setAttribute("aria-pressed", String(active));
+            button.querySelector("span").textContent =
+                song.difficulties[i].level ?? "—";
+        }
+    } else {
+        cleanupDifficultyControl?.();
+        chart.innerHTML = songMarkup;
+        chart.dataset.musicId = selected.music_id;
+    }
     paintRadar($("selected-chart"), difficulty.radar);
     bindSongReadingPopup(reading);
     fitDifficultyButtons();
+    if (!reuseTabs)
+        cleanupDifficultyControl = initSegmentedControl(
+            chart.querySelector(".difficulty-tabs"),
+        );
     const pagination = paginate(plays, songSearchPage);
     songSearchPage = pagination.page;
     const { items: chunk, pages, start } = pagination;

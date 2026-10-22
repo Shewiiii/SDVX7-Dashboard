@@ -75,7 +75,7 @@ export function libraryEntries(data, catalog, mode, query = "") {
     );
 }
 
-export function sortLibraryEntries(entries, order = "name-asc") {
+export function sortLibraryEntries(entries, order = "date-desc") {
     const name = (a, b) =>
         a.song.title.localeCompare(b.song.title, undefined, {
             numeric: true,

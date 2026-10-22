@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import codecs
-from contextlib import contextmanager
 import threading
+from contextlib import contextmanager
 
 
 @contextmanager

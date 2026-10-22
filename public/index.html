@@ -582,51 +582,60 @@
                     aria-label="Search"
                     hidden
                 >
-                    <div class="song-search">
-                        <div class="search-wrap">
-                            <span aria-hidden="true">⌕</span>
-                            <input
-                                id="song-query"
-                                type="text"
-                                inputmode="search"
-                                enterkeyhint="search"
-                                aria-label="Search songs by title or artist"
-                                placeholder="Type anything..."
-                                autocomplete="off"
-                                role="combobox"
-                                aria-autocomplete="list"
-                                aria-expanded="false"
-                                aria-controls="song-options"
-                            />
-                            <button
-                                type="button"
-                                class="search-clear"
-                                data-clear-input="song-query"
-                                aria-label="Clear song search"
-                                hidden
-                            >
-                                <svg
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 16 16"
-                                    aria-hidden="true"
+                    <div class="song-search-tools">
+                        <div class="song-search">
+                            <div class="search-wrap">
+                                <span aria-hidden="true">⌕</span>
+                                <input
+                                    id="song-query"
+                                    type="text"
+                                    inputmode="search"
+                                    enterkeyhint="search"
+                                    aria-label="Search songs by title or artist"
+                                    placeholder="Type anything..."
+                                    autocomplete="off"
+                                    role="combobox"
+                                    aria-autocomplete="list"
+                                    aria-expanded="false"
+                                    aria-controls="song-options"
+                                />
+                                <button
+                                    type="button"
+                                    class="search-clear"
+                                    data-clear-input="song-query"
+                                    aria-label="Clear song search"
+                                    hidden
                                 >
-                                    <path
-                                        d="m4 4 8 8m0-8-8 8"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                    />
-                                </svg>
-                            </button>
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 16 16"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d="m4 4 8 8m0-8-8 8"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div
+                                id="song-options"
+                                role="listbox"
+                                aria-label="Matching songs and difficulties"
+                                hidden
+                            ></div>
                         </div>
-                        <div
-                            id="song-options"
-                            role="listbox"
-                            aria-label="Matching songs and difficulties"
-                            hidden
-                        ></div>
+                        <button
+                            type="button"
+                            id="open-library"
+                            class="library-open"
+                        >
+                            Open Library
+                        </button>
                     </div>
                     <div id="selected-chart" hidden></div>
                     <div id="song-search-empty" class="song-search-empty">
@@ -926,6 +935,67 @@
                 <span>Rasis my oshi ❤️</span>
             </footer>
         </div>
+        <dialog
+            id="song-library"
+            class="panel appeal-helper song-library"
+            aria-labelledby="library-title"
+        >
+            <header class="appeal-helper-heading">
+                <h2 id="library-title">Song Library</h2>
+                <button
+                    type="button"
+                    id="library-close"
+                    aria-label="Close Song Library"
+                >
+                    ×
+                </button>
+            </header>
+            <div class="library-body">
+                <div class="library-tools">
+                    <div class="search-wrap">
+                        <span aria-hidden="true">⌕</span
+                        ><input
+                            id="library-query"
+                            type="search"
+                            inputmode="search"
+                            placeholder="Type anything..."
+                            aria-label="Search library"
+                            autocomplete="off"
+                        />
+                    </div>
+                    <div class="select-wrap">
+                        <select id="library-group" aria-label="Group songs by">
+                            <option value="category">Category</option>
+                            <option value="level">Level</option>
+                            <option value="year">Release year</option>
+                            <option value="clear">Clear mark</option>
+                            <option value="grade">Score grade</option>
+                            <option value="top">Top 50</option>
+                        </select>
+                    </div>
+                    <div class="select-wrap">
+                        <select
+                            id="library-sort"
+                            aria-label="Sort within folders"
+                        >
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="level-desc">Level (highest)</option>
+                            <option value="level-asc">Level (lowest)</option>
+                            <option value="date-desc">
+                                Release date (newest)
+                            </option>
+                            <option value="date-asc">
+                                Release date (oldest)
+                            </option>
+                            <option value="artist">Artist (A-Z)</option>
+                        </select>
+                    </div>
+                </div>
+                <p id="library-count" class="library-count" role="status"></p>
+                <div id="library-results"></div>
+            </div>
+        </dialog>
         <dialog
             id="chart-details"
             class="panel appeal-helper chart-details"

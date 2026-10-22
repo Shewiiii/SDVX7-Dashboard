@@ -116,7 +116,7 @@ export default async function handler(req, res) {
             accepted: rows.length,
             play_schema: 4,
             details_schema: 2,
-            catalog_schema: 1,
+            catalog_schema: 3,
         });
     } catch {
         return res

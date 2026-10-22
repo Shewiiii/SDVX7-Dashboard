@@ -1,3 +1,4 @@
+import { SONG_CATEGORIES as CATEGORIES } from "./song-metadata.js";
 import { DIFFS } from "./metrics.js";
 
 const VERSIONS = [
@@ -9,17 +10,6 @@ const VERSIONS = [
     "VIVID WAVE",
     "EXCEED GEAR",
     "∇",
-];
-const CATEGORIES = [
-    [1, "EXIT TUNES"],
-    [2, "FLOOR"],
-    [4, "Touhou"],
-    [8, "VOCALOID"],
-    [16, "BEMANI"],
-    [32, "SDVX originals"],
-    [64, "Pop & anime"],
-    [128, "ひなビタ♪"],
-    [256, "Extended tracks"],
 ];
 const LANES = [
     "VOL-L",

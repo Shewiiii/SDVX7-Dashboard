@@ -188,7 +188,11 @@ export function createAppealCardHelper(getState) {
     }
 
     function leaveDetailHistory() {
-        if (!detailHistoryActive || historyReturning || !history.state?.appealCardHelper)
+        if (
+            !detailHistoryActive ||
+            historyReturning ||
+            !history.state?.appealCardHelper
+        )
             return;
         historyReturning = true;
         history.back();
@@ -369,7 +373,7 @@ export function createAppealCardHelper(getState) {
         if (!cancel && pageInput.value.trim() && Number.isFinite(requested))
             page = Math.max(1, Math.min(totalPages, Math.trunc(requested)));
         renderBrowser();
-        dialog.scrollTop = 0;
+        scrollToBrowserTop();
     }
     pageNumber.addEventListener("click", () => {
         pageNumber.hidden = true;
@@ -403,7 +407,15 @@ export function createAppealCardHelper(getState) {
         button.addEventListener("click", () => {
             page += direction;
             renderBrowser();
-            dialog.scrollTop = 0;
+            scrollToBrowserTop();
+        });
+    }
+    function scrollToBrowserTop() {
+        dialog.scrollTo({
+            top: 0,
+            behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "instant"
+                : "smooth",
         });
     }
     new ResizeObserver(() => {

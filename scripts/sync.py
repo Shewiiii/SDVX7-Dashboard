@@ -131,7 +131,13 @@ class Catalog:
         if signature == self.signature:
             return
         charts, songs = {}, {}
+        self.details.refresh()
         for mid, levels in self.music.levels.items():
+            metadata = [
+                self.details.metadata.get(f"{mid}:{diff}", {}) for diff in levels
+            ]
+            info = next((item for item in metadata if item), {})
+            date = info.get("distribution_date") or ""
             title = self.music.titles.get(mid, f"Chart {mid}")[:200]
             artist = self.music.artists.get(mid, "")[:200]
             difficulties = [
@@ -148,6 +154,10 @@ class Catalog:
                 "title": title,
                 "title_ascii": self.music.title_ascii.get(mid, "")[:200],
                 "artist": artist,
+                "genre": info.get("genre"),
+                "is_custom": any(item.get("is_custom", False) for item in metadata),
+                "release_year": int(date[:4]) if date[:4].isdigit() else None,
+                "release_date": date or None,
                 "forms": [
                     search_forms(title),
                     search_forms(self.music.title_readings.get(mid, ""), reading=True),
@@ -688,7 +698,7 @@ def upload(
                 )
             if (
                 payload.get("state", {}).get("catalog")
-                and result.get("catalog_schema") != 1
+                and result.get("catalog_schema") != 3
             ):
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing radar metadata"
@@ -785,7 +795,7 @@ def sync_once(
         )
         changed = (
             force
-            or saved.get("catalog_schema") != 1
+            or saved.get("catalog_schema") != 3
             or saved.get("snapshot") != current_hash
         )
         if plays or observations or changed:
@@ -800,7 +810,7 @@ def sync_once(
             observations=oc,
             snapshot=current_hash,
             play_schema=PLAY_SCHEMA,
-            catalog_schema=1,
+            catalog_schema=3,
         )
         write_json(state_path, saved)
         force = False

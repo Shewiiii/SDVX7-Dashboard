@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "check": "node --check public/app.js && node --check public/appearance.js && node --check public/appeal-cards.js && node --check public/motion.js && node --check public/metrics.js && node --check public/calculator.js && node --check public/radar.js && node --check public/chart-details.js && node --check public/svg.js && node --check api/data.js && node --check api/chart.js && node --check api/sync.js && node --check api/cover.js && node --check lib/records.mjs && node --check lib/refresh.mjs"
+    "check": "node --check public/app.js && node --check public/appearance.js && node --check public/appeal-cards.js && node --check public/motion.js && node --check public/metrics.js && node --check public/calculator.js && node --check public/radar.js && node --check public/library.js && node --check public/song-metadata.js && node --check public/chart-details.js && node --check public/svg.js && node --check api/data.js && node --check api/chart.js && node --check api/sync.js && node --check api/cover.js && node --check lib/records.mjs && node --check lib/refresh.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2"

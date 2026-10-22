@@ -1,3 +1,4 @@
+import { createLibrary } from "./library.js";
 import {
     DIFFS,
     CLEARS,
@@ -326,6 +327,13 @@ let catalog = [],
     activeMatch = -1;
 let cleanupDifficultyControl = null;
 const chartDetails = createChartDetails();
+const songLibrary = createLibrary(
+    () => data,
+    () => catalog,
+    (song) =>
+        `${coverMarkup(song)}<span class="option-song"><span>${escape(song.title)}</span><small>${escape(song.artist)}</small></span>${difficultyRange(song)}`,
+    (mid, diff) => selectChart(mid, diff),
+);
 
 function coverMarkup(p, size = "small") {
     const song = songs.get(p.music_id);
@@ -1972,6 +1980,7 @@ async function load({ fresh = false } = {}) {
         appealHelper.update();
         catalog = songCatalog(data);
         songs = new Map(catalog.map((song) => [song.music_id, song]));
+        songLibrary.update();
         $("notice").hidden = true;
         renderSummary({ animate });
         void loadExchangeRate();

@@ -1744,7 +1744,7 @@ function renderSongSearch({ animate = true } = {}) {
     if (animate) {
         motion.data(
             $("selected-chart"),
-            ".cover-tile.large, .selected-song-info, .song-radar",
+            ".cover-tile.large, .selected-song-info",
         );
         motion.data(
             $("song-search-records"),

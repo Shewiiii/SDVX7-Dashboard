@@ -1530,13 +1530,21 @@ footer {
     color: var(--muted);
     font-size: 12px;
 }
+.song-search-panel {
+    --song-cover-size: 154px;
+    --song-info-gap: 25px;
+}
 .selected-song {
     display: flex;
     align-items: center;
-    gap: 25px;
-    margin: 0 27px 25px;
+    gap: var(--song-info-gap);
+    margin: 0 var(--panel-padding-inline) 25px;
     padding-top: 20px;
     border-top: 0;
+}
+.selected-song > .cover-tile.large {
+    width: var(--song-cover-size);
+    height: var(--song-cover-size);
 }
 .selected-song-info {
     min-width: 0;
@@ -1712,8 +1720,8 @@ footer {
     display: flex;
     gap: 17px;
     align-items: center;
-    justify-content: center;
-    text-align: center;
+    justify-content: flex-start;
+    text-align: left;
     flex-wrap: wrap;
     font-size: 12px;
     color: var(--muted);
@@ -1733,7 +1741,33 @@ footer {
     color: var(--faint);
 }
 .song-search-panel table {
-    min-width: 580px;
+    min-width: 700px;
+    table-layout: fixed;
+}
+.song-rank-column {
+    /* The next column's 15px cell padding lands on the song-info left edge. */
+    width: calc(
+        var(--panel-padding-inline) + var(--song-cover-size) +
+            var(--song-info-gap) - 15px
+    );
+}
+.song-score-column {
+    width: 28%;
+}
+.song-clear-column {
+    width: 15%;
+}
+.song-vf-column {
+    width: 10%;
+}
+@media (min-width: 701px) {
+    .song-search-panel .score-cell {
+        padding-left: 15px;
+    }
+    .song-search-panel th:first-child,
+    .song-search-panel td:first-child {
+        padding-left: var(--panel-padding-inline);
+    }
 }
 .song-search-panel .pagination {
     border-radius: 0 0 var(--panel-radius) var(--panel-radius);
@@ -2423,6 +2457,9 @@ footer {
         overflow: hidden;
         clip-path: inset(50%);
         white-space: nowrap;
+    }
+    .song-search-panel colgroup {
+        display: none;
     }
     .records-panel tbody,
     .song-search-panel tbody {

@@ -21,10 +21,13 @@ export default async function handler(req, res) {
             return res
                 .status(404)
                 .json({ error: "Details have not synced yet" });
-        res.setHeader(
-            "Cache-Control",
-            "public, max-age=300, s-maxage=300, stale-if-error=86400",
-        );
+        // Older summaries are usable while the tracker backfills laser starts,
+        // but must not cache their missing series after an updated sync arrives.
+        if (!rows[0].record.chart || rows[0].record.chart.laser_density)
+            res.setHeader(
+                "Cache-Control",
+                "public, max-age=300, s-maxage=300, stale-if-error=86400",
+            );
         return res.status(200).json(rows[0].record);
     } catch {
         return res

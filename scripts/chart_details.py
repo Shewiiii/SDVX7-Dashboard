@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 BINS = 64
-SCHEMA = 1
+SCHEMA = 2
 logger = logging.getLogger(__name__)
 
 
@@ -92,6 +92,7 @@ def parse_chart(path):
         raise ValueError("Invalid chart duration")
     lanes = [[0] * BINS for _ in range(8)]
     density = [0] * BINS
+    laser_density = [0] * BINS
     counts = {
         "bt_taps": 0,
         "bt_holds": 0,
@@ -114,6 +115,7 @@ def parse_chart(path):
                 flag = int(row[2])
                 if not active or flag == 1:
                     counts["laser_sections"] += 1
+                    laser_density[index] += 1
                     active = True
                 elif previous_time is not None:
                     for j in range(bin_at(previous_time), index + 1):
@@ -138,6 +140,7 @@ def parse_chart(path):
         "duration": round(duration, 3),
         "counts": counts,
         "density": density,
+        "laser_density": laser_density,
         "lanes": lanes,
         "bpm_changes": changes,
         "bpm_change_count": max(0, len(tempos) - 1),

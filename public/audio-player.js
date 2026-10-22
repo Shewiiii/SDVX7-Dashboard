@@ -17,7 +17,7 @@ export function mountAudioPlayer(host, chart, plots) {
         seeking = false;
 
     host.className = "details-audio";
-    host.innerHTML = `<div class="details-audio-heading"><span>Song audio</span><span class="details-audio-actions"><span class="details-audio-status" role="status">Loading audio...</span><span class="details-audio-download-action" hidden><span aria-hidden="true"> · </span><button type="button" class="text-button details-audio-download">Download</button></span></span></div>
+    host.innerHTML = `<div class="details-audio-heading"><span>Song audio</span><span class="details-audio-actions"><span class="details-audio-status" role="status">Loading audio...</span><span class="details-audio-download-action" hidden><span aria-hidden="true"> · </span><span class="details-audio-download-wrap"><button type="button" class="text-button details-audio-download" aria-describedby="details-audio-download-tooltip">Download</button><span id="details-audio-download-tooltip" class="details-audio-download-popup" role="tooltip">No lossy transcoding has been applied, but the audio is already compressed in-game, so the audio is not lossless !</span></span></span></span></div>
         <div class="details-audio-controls" hidden>
             <button type="button" class="details-audio-toggle" aria-label="Play song" title="Play song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
             <div class="details-audio-track"><div class="details-audio-wave"><svg viewBox="0 0 512 48" preserveAspectRatio="none" aria-hidden="true"></svg><input class="details-audio-seek" type="range" min="0" step="0.01" value="0" aria-label="Seek in song"></div><span class="details-audio-time">0:00</span></div>
@@ -32,6 +32,7 @@ export function mountAudioPlayer(host, chart, plots) {
     const retry = host.querySelector(".details-audio-retry");
     const downloadAction = host.querySelector(".details-audio-download-action");
     const download = host.querySelector(".details-audio-download");
+    const downloadPopup = host.querySelector(".details-audio-download-popup");
     const fileFormat = () =>
         record?.format === "flac" ||
         (record &&
@@ -218,6 +219,8 @@ export function mountAudioPlayer(host, chart, plots) {
         status.textContent = "Loading audio...";
         controls.hidden = true;
         downloadAction.hidden = true;
+        downloadPopup.hidden = true;
+        download.removeAttribute("aria-describedby");
         retry.hidden = true;
         const key = `${chart.music_id}:${chart.diff_idx}`;
         try {
@@ -278,6 +281,10 @@ export function mountAudioPlayer(host, chart, plots) {
                 record.variant === "preview" ? "Preview" : "Full song";
             controls.hidden = false;
             download.textContent = downloadLabel();
+            if (fileFormat() === "flac") {
+                downloadPopup.hidden = false;
+                download.setAttribute("aria-describedby", downloadPopup.id);
+            }
             downloadAction.hidden = false;
             update();
         } catch {

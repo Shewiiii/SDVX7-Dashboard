@@ -692,7 +692,7 @@ def upload(
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing audio"
                 )
-            if payload.get("details") and result.get("details_schema", 0) < 2:
+            if payload.get("details") and result.get("details_schema", 0) < 3:
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing chart details"
                 )

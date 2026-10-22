@@ -31,13 +31,19 @@ const time = (value) =>
 
 function timeline(chart) {
     const density = chart.density.map((value) => value / (chart.duration / 64));
-    const peak = Math.max(1, ...density);
-    const points = density
-        .map(
-            (value, i) =>
-                `${52 + ((i + 0.5) * 456) / 64},${76 - (value / peak) * 58}`,
-        )
-        .join(" ");
+    const lasers = chart.laser_density?.map(
+        (value) => value / (chart.duration / 64),
+    );
+    const peak = Math.max(1, ...density, ...(lasers || []));
+    const seriesPoints = (series) =>
+        series
+            .map(
+                (value, i) =>
+                    `${52 + ((i + 0.5) * 456) / 64},${76 - (value / peak) * 58}`,
+            )
+            .join(" ");
+    const points = seriesPoints(density);
+    const laserPoints = lasers ? seriesPoints(lasers) : null;
     const tempos = chart.bpm_changes.filter((p) => p[0] <= chart.duration);
     const low = Math.min(...tempos.map((p) => p[1])),
         high = Math.max(...tempos.map((p) => p[1]));
@@ -64,13 +70,13 @@ function timeline(chart) {
                     `<text x="44" y="${y + 3}" text-anchor="end">${Number(value.toFixed(1)).toLocaleString()}</text>`,
             )
             .join("");
-    return `<section class="details-chart" data-plot="density"><h3>Note density <span>Tap/hold starts per second</span></h3><svg viewBox="0 0 520 96" role="img" aria-label="Note density across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
+    return `<section class="details-chart" data-plot="density"><h3>Note density <span>Starts per second</span></h3><div class="details-density-legend"><span><i class="dot details-btfx-dot" aria-hidden="true"></i>BT/FX</span><span><i class="dot details-laser-dot" aria-hidden="true"></i>Laser${lasers ? "" : " · awaiting sync"}</span></div><svg viewBox="0 0 520 96" role="img" aria-label="BT/FX and laser start density across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
         [
             [18, peak],
             [47, peak / 2],
             [76, 0],
         ],
-    )}<polygon class="details-density-fill" points="52,76 ${points} 508,76"/><polyline class="details-density-line" points="${points}"/><text x="52" y="93">0:00</text><text x="508" y="93" text-anchor="end">${time(chart.duration)}</text></svg></section>
+    )}<polygon class="details-density-fill" points="52,76 ${points} 508,76"/><polyline class="details-density-line" points="${points}"/>${laserPoints ? `<polygon class="details-laser-density-fill" points="52,76 ${laserPoints} 508,76"/><polyline class="details-laser-density-line" points="${laserPoints}"/>` : ""}<text x="52" y="93">0:00</text><text x="508" y="93" text-anchor="end">${time(chart.duration)}</text></svg></section>
         <section class="details-chart" data-plot="tempo"><h3>Tempo <span>${count(low)}${high !== low ? `–${count(high)}` : ""} BPM</span></h3><svg viewBox="0 0 520 96" role="img" aria-label="BPM changes across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
             high === low
                 ? [[47, low]]
@@ -92,6 +98,28 @@ function inspectPlots(plots, chart) {
         popup.className = "details-popup";
         popup.hidden = true;
         popup.setAttribute("role", "status");
+        let densityHeading, densityValues;
+        if (section.dataset.plot === "density") {
+            popup.classList.add("details-density-popup");
+            densityHeading = document.createElement("strong");
+            popup.append(densityHeading);
+            densityValues = ["BT/FX", "Laser", "Total"].map((label, i) => {
+                const row = document.createElement("div");
+                row.className = "details-density-row";
+                const name = document.createElement("span");
+                if (i < 2) {
+                    const dot = document.createElement("i");
+                    dot.className = `dot ${i === 0 ? "details-btfx-dot" : "details-laser-dot"}`;
+                    dot.setAttribute("aria-hidden", "true");
+                    name.append(dot);
+                }
+                name.append(label);
+                const value = document.createElement("b");
+                row.append(name, value);
+                popup.append(row);
+                return value;
+            });
+        }
         section.append(popup);
         const cursor = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -132,7 +160,20 @@ function inspectPlots(plots, chart) {
                 popup.textContent = `${preciseTime(at)} · ${count(point[1])} BPM`;
             } else if (kind === "density") {
                 const starts = chart.density[index];
-                popup.textContent = `${preciseTime(start)}–${preciseTime(end)} · ${starts} starts · ${(starts / (end - start)).toFixed(2)}/s`;
+                const laserStarts = chart.laser_density?.[index];
+                densityHeading.textContent = `${preciseTime(start)}–${preciseTime(end)}`;
+                [
+                    starts,
+                    laserStarts,
+                    laserStarts === undefined
+                        ? undefined
+                        : starts + laserStarts,
+                ].forEach((value, i) => {
+                    densityValues[i].textContent =
+                        value === undefined
+                            ? "—"
+                            : `${count(value)} starts · ${(value / (end - start)).toFixed(2)}/s`;
+                });
             } else {
                 popup.textContent = `${preciseTime(start)}–${preciseTime(end)}\n${LANES.map(
                     (label, lane) => {
@@ -228,7 +269,7 @@ export function createChartDetails() {
     const body = document.getElementById("chart-details-body");
     const closeButton = document.getElementById("chart-details-close");
     const cache = new Map();
-    const cacheKey = "chart-details-cache-v2";
+    const cacheKey = "chart-details-cache-v3";
     try {
         for (const [key, entry] of JSON.parse(
             localStorage.getItem(cacheKey) || "[]",
@@ -354,9 +395,13 @@ export function createChartDetails() {
         const fallback = cache.get(key);
         try {
             let saved = fallback;
-            if (!saved || Date.now() - saved.at > 3600000) {
+            if (
+                !saved ||
+                Date.now() - saved.at > 3600000 ||
+                (saved.record.chart && !saved.record.chart.laser_density)
+            ) {
                 const response = await fetch(
-                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}`,
+                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=2`,
                     { signal: request.signal },
                 );
                 if (!response.ok)

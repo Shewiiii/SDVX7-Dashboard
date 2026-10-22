@@ -121,6 +121,16 @@
     --chart-label-color: #928da7;
     --chart-caption-color: #c0b7d0;
     --chart-grid-color: var(--row-separator);
+
+    /* Should not be changed to match in-game radar */
+    --radar-center-color: #4948ff;
+    --radar-gradient-start: #365ab8;
+    --radar-gradient-middle: #d22eab;
+    --radar-gradient-end: #ff0030;
+    --radar-fill-opacity: 0.85;
+    --radar-grid-bg: #101714a6;
+    --radar-grid-color: #e4e9e0a6;
+
     --performance-background-dim: 0.6;
     --performance-panel-dim: 0.65;
     --performance-background-blur: 9px;

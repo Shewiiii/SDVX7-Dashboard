@@ -27,6 +27,7 @@ import { motion, initSegmentedControls } from "./motion.js";
 import { svgElement, pathData } from "./svg.js";
 import { createCalculator } from "./calculator.js";
 import { createAppealCardHelper } from "./appeal-cards.js";
+import { radarMarkup, paintRadar } from "./radar.js";
 
 const $ = (id) => document.getElementById(id);
 const STANDARD_START_YEN = 267;
@@ -1667,8 +1668,12 @@ function renderSongSearch({ animate = true } = {}) {
     const reading =
         typeof song.title_ascii === "string" ? song.title_ascii : "";
     const songTitle = `<h3 class="song-reading-title"${reading ? ' tabindex="0" aria-describedby="song-reading-popup"' : ""}>${escape(song.title)}</h3>`;
+    const difficulty = song.difficulties.find(
+        (d) => d.diff_idx === selected.diff_idx,
+    );
     $("selected-chart").innerHTML =
-        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}<button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div></div></div>`;
+        `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div>${radarMarkup(difficulty.radar)}</div>`;
+    paintRadar($("selected-chart"), difficulty.radar);
     bindSongReadingPopup(reading);
     fitDifficultyButtons();
     const pagination = paginate(plays, songSearchPage);
@@ -1692,7 +1697,7 @@ function renderSongSearch({ animate = true } = {}) {
     if (animate) {
         motion.data(
             $("selected-chart"),
-            ".cover-tile.large, .selected-song-info",
+            ".cover-tile.large, .selected-song-info, .song-radar",
         );
         motion.data(
             $("song-search-records"),

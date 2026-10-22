@@ -121,6 +121,7 @@ class Catalog:
                 self.music.title_readings,
                 self.music.artist_readings,
                 self.music.title_ascii,
+                self.music.radars,
             )
         )
         if signature == self.signature:
@@ -130,7 +131,11 @@ class Catalog:
             title = self.music.titles.get(mid, f"Chart {mid}")[:200]
             artist = self.music.artists.get(mid, "")[:200]
             difficulties = [
-                {"diff_idx": diff, "level": level}
+                {
+                    "diff_idx": diff,
+                    "level": level,
+                    "radar": self.music.radars.get(mid, {}).get(diff),
+                }
                 for diff, level in sorted(levels.items())
                 if math.isfinite(level) and level > 0
             ]

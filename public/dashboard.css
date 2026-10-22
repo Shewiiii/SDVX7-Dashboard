@@ -2308,6 +2308,7 @@ footer {
     margin: 0 auto 10px;
 }
 .appeal-helper-card > span:last-child {
+    line-clamp: 2;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -2579,7 +2580,7 @@ footer {
         justify-content: center;
     }
     .tabs {
-        gap: min(22px, 3cqw);
+        gap: min(22px, 4cqw);
         font-size: min(14px, 3.4cqw);
         justify-content: center;
     }

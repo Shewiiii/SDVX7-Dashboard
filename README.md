@@ -74,4 +74,4 @@ Songs upload will occur during the first sync, which may take a long time.
 - Go back to R2 Object Storage, copy your account ID and paste it in the setup.
 - Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
-*While the games stores the audio files under a format similar to WAV, the audio content is precompressed, so it is not lossless.
+*While the game stores the audio files under a format similar to WAV, the audio content in it is already compressed, so it is not lossless.

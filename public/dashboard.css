@@ -1101,17 +1101,17 @@ td.row-index + td {
     align-items: center;
     gap: 12px;
 }
-.records-panel .table-tools {
+:is(.records-panel .table-tools, .library-tools) {
     align-items: stretch;
 }
-.records-panel .table-tools > .select-wrap {
+:is(.records-panel .table-tools, .library-tools) > .select-wrap {
     display: flex;
 }
-.records-panel .table-tools .search-wrap,
-.records-panel .table-tools select {
+:is(.records-panel .table-tools, .library-tools) .search-wrap,
+:is(.records-panel .table-tools, .library-tools) select {
     min-height: 40px;
 }
-.records-panel .table-tools .select-wrap select {
+:is(.records-panel .table-tools, .library-tools) .select-wrap select {
     padding-block: 0;
 }
 .search-wrap {
@@ -1571,10 +1571,19 @@ footer {
     width: 100%;
     min-width: 0;
     border-radius: var(--control-radius);
-    padding: 10px;
+    padding: var(--entry-padding-block) var(--entry-gap);
+    gap: var(--entry-gap);
+}
+.library-song .cover-tile {
+    width: calc(var(--entry-cover-size) + 4px);
+    height: calc(var(--entry-cover-size) + 4px);
 }
 .library-song .option-song {
     min-width: 0;
+    font-size: var(--entry-title-size);
+}
+.library-song .option-song small {
+    font-size: var(--entry-detail-size);
 }
 .library-song .option-song > span,
 .library-song .option-song small {
@@ -1655,7 +1664,7 @@ footer {
     white-space: nowrap;
 }
 .song-option .difficulty-badge {
-    font-size: 9px;
+    font-size: 10px;
 }
 .song-option-range {
     display: flex;

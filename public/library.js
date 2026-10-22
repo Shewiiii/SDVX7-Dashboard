@@ -344,7 +344,10 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         getComputedStyle(dialog, "::backdrop").opacity;
         dialog.classList.add("is-visible");
         render(true);
-        query.focus({ preventScroll: true });
+        const initialFocus = matchMedia("(hover: hover) and (pointer: fine)").matches
+            ? query
+            : closeButton;
+        initialFocus.focus({ preventScroll: true });
     });
     dialog.addEventListener("close", () => {
         closing = false;

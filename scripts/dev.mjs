@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { spawn, execFile } from "node:child_process";
@@ -25,8 +25,45 @@ const types = {
     ".json": "application/json",
 };
 let exportTask = null;
-function refresh() {
+let exportedSignature = null;
+let exportedAt = 0;
+const tracker = path.dirname(root);
+const game = path.dirname(tracker);
+const previewSources = [
+    path.join(tracker, "score_log.txt"),
+    path.join(tracker, "volforce_history.jsonl"),
+    path.join(tracker, "cache/total_volforce.json"),
+    path.join(tracker, "cache/playtime.json"),
+    path.join(tracker, ".env"),
+    path.join(root, ".local/sync-config.json"),
+    path.join(root, ".local/preview-data.json"),
+    path.join(game, "data/others/music_db.xml"),
+    path.join(game, "data/others/appeal_card.xml"),
+    path.join(game, "data/music"),
+    path.join(game, "data_mods/ryunet_custom/others/music_db.merged.xml"),
+    path.join(game, "data_mods/ryunet_custom/music"),
+];
+async function sourceSignature() {
+    return JSON.stringify(
+        await Promise.all(
+            previewSources.map(async (file) => {
+                try {
+                    const info = await stat(file);
+                    return [info.mtimeMs, info.size];
+                } catch (error) {
+                    if (error.code === "ENOENT") return null;
+                    throw error;
+                }
+            }),
+        ),
+    );
+}
+async function refresh() {
+    const signature = await sourceSignature();
     if (exportTask) return exportTask;
+    // Source edits invalidate immediately; periodically rescan nested artwork too.
+    if (signature === exportedSignature && Date.now() - exportedAt < 60000)
+        return;
     exportTask = new Promise((resolve, reject) => {
         const child = spawn(
             python,
@@ -41,9 +78,22 @@ function refresh() {
         child.on("close", (code) =>
             code === 0 ? resolve() : reject(new Error("Export failed")),
         );
-    }).finally(() => {
-        exportTask = null;
-    });
+    })
+        .then(async () => {
+            // The export itself rewrites preview-data.json.
+            exportedSignature = await sourceSignature();
+            exportedAt = Date.now();
+            // Do not swallow an input change that happened while exporting.
+            const before = JSON.parse(signature),
+                after = JSON.parse(exportedSignature);
+            const outputIndex = 6;
+            before[outputIndex] = after[outputIndex];
+            if (JSON.stringify(before) !== JSON.stringify(after))
+                exportedSignature = null;
+        })
+        .finally(() => {
+            exportTask = null;
+        });
     return exportTask;
 }
 await refresh();

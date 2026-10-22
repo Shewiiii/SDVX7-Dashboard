@@ -1948,6 +1948,10 @@ async function load({ fresh = false } = {}) {
             next.observations,
             next.state,
         ]);
+        if (data && fingerprint === dataFingerprint) {
+            $("notice").hidden = true;
+            return;
+        }
         const animate = !data || fingerprint !== dataFingerprint;
         dataFingerprint = fingerprint;
         data = next;
@@ -2149,4 +2153,7 @@ window.addEventListener("resize", hideSongReadingPopup);
 initSegmentedControls();
 restoreUrl();
 updateUrl(true);
-load({ fresh: true });
+// Show the saved cloud archive before waiting for the local sync worker.
+load().then(() => {
+    if (data) void load({ fresh: true });
+});

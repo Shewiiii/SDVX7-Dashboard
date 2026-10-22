@@ -133,7 +133,7 @@
     --radar-transition-duration: 220ms;
 
     --performance-background-dim: 0.6;
-    --performance-panel-dim: 0.65;
+    --performance-panel-dim: 0.75;
     --performance-background-blur: 9px;
     --performance-background-blur-mobile: 4.5px;
 }

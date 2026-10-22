@@ -32,6 +32,7 @@ import { svgElement, pathData } from "./svg.js";
 import { createCalculator } from "./calculator.js";
 import { createAppealCardHelper } from "./appeal-cards.js";
 import { radarMarkup, paintRadar } from "./radar.js";
+import { createChartDetails } from "./chart-details.js";
 
 const $ = (id) => document.getElementById(id);
 const STANDARD_START_YEN = 267;
@@ -324,6 +325,7 @@ let catalog = [],
     matches = [],
     activeMatch = -1;
 let cleanupDifficultyControl = null;
+const chartDetails = createChartDetails();
 
 function coverMarkup(p, size = "small") {
     const song = songs.get(p.music_id);
@@ -1379,7 +1381,8 @@ function switchView(
     }
     updateSearchClearButtons();
     if (view === "overview") renderChart({ animate });
-    else if (view === "search") renderSongSearch({ animate });
+    else if (view === "search")
+        renderSongSearch({ animate, restartRadar: true });
     else if (view === "calculator")
         calculator.render({ animate: revealOnce("calculator", animate) });
     else renderTable({ animate });
@@ -1551,7 +1554,7 @@ function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
     closeMatches();
     if (view !== "search") switchView("search", true, { animate, scroll });
     else {
-        renderSongSearch({ animate });
+        renderSongSearch({ animate, restartRadar: true });
         updateUrl();
         if (scroll) scrollToCard();
     }
@@ -1617,7 +1620,7 @@ function fitDifficultyButtons() {
         );
 }
 
-function renderSongSearch({ animate = true } = {}) {
+function renderSongSearch({ animate = true, restartRadar = false } = {}) {
     hideSongReadingPopup();
     updateSearchClearButtons();
     if (!data) return;
@@ -1676,7 +1679,7 @@ function renderSongSearch({ animate = true } = {}) {
     const difficulty = song.difficulties.find(
         (d) => d.diff_idx === selected.diff_idx,
     );
-    const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div>${radarMarkup(difficulty.radar)}</div>`;
+    const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><div class="selected-song-actions"><button type="button" class="calculator-link" data-chart-details>Details <span aria-hidden="true">↗</span></button><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div></div>${radarMarkup(difficulty.radar)}</div>`;
     const chart = $("selected-chart");
     const tabs = chart.querySelector(".difficulty-tabs");
     const buttons = [...(tabs?.querySelectorAll("button") || [])];
@@ -1716,7 +1719,9 @@ function renderSongSearch({ animate = true } = {}) {
         chart.innerHTML = songMarkup;
         chart.dataset.musicId = selected.music_id;
     }
-    paintRadar($("selected-chart"), difficulty.radar);
+    paintRadar($("selected-chart"), difficulty.radar, {
+        restart: restartRadar,
+    });
     bindSongReadingPopup(reading);
     fitDifficultyButtons();
     if (!reuseTabs)
@@ -1857,6 +1862,11 @@ $("song-options").addEventListener("click", (event) => {
 document.addEventListener("click", (event) => {
     if (!event.target.closest('.song-search, [data-view="search"]'))
         closeMatches();
+    const detailsButton = event.target.closest("[data-chart-details]");
+    if (detailsButton && selected) {
+        chartDetails.open(selected, detailsButton);
+        return;
+    }
     if (event.target.closest("[data-view-calculator]") && selected) {
         const song = songs.get(selected.music_id);
         const difficulty = song?.difficulties.find(
@@ -1948,7 +1958,8 @@ async function load({ fresh = false } = {}) {
         renderSummary({ animate });
         void loadExchangeRate();
         renderChart({ animate });
-        if (view === "search") renderSongSearch({ animate });
+        if (view === "search")
+            renderSongSearch({ animate, restartRadar: fresh });
         else if (view === "calculator") calculator.updateData({ animate });
         else if (["top", "history"].includes(view)) renderTable({ animate });
         document.body.dataset.ready = "true";

@@ -55,6 +55,38 @@ createServer(async (req, res) => {
             return;
         }
         const url = new URL(req.url, "http://localhost");
+        if (url.pathname === "/api/chart") {
+            const music = url.searchParams.get("music"),
+                diff = url.searchParams.get("diff");
+            if (
+                !/^[1-9]\d{0,7}$/.test(music || "") ||
+                Number(music) > 10000000 ||
+                !/^[0-5]$/.test(diff || "")
+            ) {
+                res.writeHead(400);
+                res.end();
+                return;
+            }
+            const result = await runFile(
+                python,
+                [
+                    "-c",
+                    "from scripts.chart_details import preview; preview(" +
+                        music +
+                        "," +
+                        diff +
+                        ")",
+                ],
+                { cwd: root, maxBuffer: 100000 },
+            );
+            const record = JSON.parse(result.stdout);
+            res.writeHead(record ? 200 : 404, {
+                "Content-Type": types[".json"],
+                "Cache-Control": "no-store",
+            });
+            res.end(JSON.stringify(record || { error: "Chart not found" }));
+            return;
+        }
         if (url.pathname === "/api/cover") {
             const id = url.searchParams.get("id");
             if (!/^[a-f0-9]{64}$/.test(id || "")) {

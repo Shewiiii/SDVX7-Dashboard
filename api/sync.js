@@ -6,6 +6,7 @@ import {
     cleanObservation,
     cleanState,
     cleanCover,
+    cleanChartDetail,
     recordId,
 } from "../lib/records.mjs";
 
@@ -27,7 +28,7 @@ export default async function handler(req, res) {
                 .json({ error: "Sync unavailable. Retry later" });
         }
     }
-    let plays, observations, state, covers, refreshId;
+    let plays, observations, state, covers, details, refreshId;
     try {
         const body =
             typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -48,6 +49,12 @@ export default async function handler(req, res) {
         )
             throw new Error("Invalid covers");
         covers = (body.covers || []).map(cleanCover);
+        if (
+            body.details !== undefined &&
+            (!Array.isArray(body.details) || body.details.length > 24)
+        )
+            throw new Error("Invalid chart details batch");
+        details = (body.details || []).map(cleanChartDetail);
         refreshId = body.refresh_id;
         if (
             refreshId !== undefined &&
@@ -76,6 +83,11 @@ export default async function handler(req, res) {
                 id: record.id,
                 record,
             })),
+            ...details.map((record) => ({
+                kind: "chart_detail",
+                id: `${record.music_id}:${record.diff_idx}`,
+                record,
+            })),
         ];
         const rows = [
             ...new Map(
@@ -99,9 +111,13 @@ export default async function handler(req, res) {
         synced_at = now()`);
         await sql.transaction(queries);
         if (refreshId !== undefined) await completeRefresh(sql, refreshId);
-        return res
-            .status(200)
-            .json({ ok: true, accepted: rows.length, play_schema: 4 });
+        return res.status(200).json({
+            ok: true,
+            accepted: rows.length,
+            play_schema: 4,
+            details_schema: 2,
+            catalog_schema: 1,
+        });
     } catch {
         return res
             .status(503)

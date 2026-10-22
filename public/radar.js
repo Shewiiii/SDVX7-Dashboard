@@ -152,24 +152,10 @@ function drawRadar(svg, values, resolution) {
     );
 }
 
-function radarVisible(svg) {
-    const bounds = svg.getBoundingClientRect();
-    const top = window.visualViewport?.offsetTop || 0;
-    const bottom = top + (window.visualViewport?.height || innerHeight);
-    const height = Math.min(bounds.bottom, bottom) - Math.max(bounds.top, top);
-    return (
-        !document.hidden &&
-        bounds.width > 0 &&
-        bounds.height > 0 &&
-        height >= Math.min(bounds.height * 0.35, (bottom - top) * 0.5)
-    );
-}
-
-export function paintRadar(container, values) {
+export function paintRadar(container, values, { restart = false } = {}) {
     const previous = transitions.get(container);
     if (previous) {
         cancelAnimationFrame(previous.frame);
-        previous.dispose?.();
     }
     const svg = container.querySelector(".song-radar svg");
     if (!svg) {
@@ -177,14 +163,16 @@ export function paintRadar(container, values) {
         return;
     }
     delete svg.dataset.radarAnimating;
-    delete svg.dataset.radarPending;
     const { x, y, width, height } = svg.viewBox.baseVal;
     const targetBox = [x, y, width, height];
-    const visible = radarVisible(svg);
     const keepShape =
-        previous && (previous.visible || (!previous.dispose && visible));
-    let from = keepShape ? previous.values : values.map(() => 0);
-    let fromBox = keepShape ? previous.box : targetBox;
+        previous &&
+        !(
+            restart &&
+            previous.values.every((value, axis) => value === values[axis])
+        );
+    const from = keepShape ? previous.values : values.map(() => 0);
+    const fromBox = keepShape ? previous.box : targetBox;
     const timing = getComputedStyle(svg)
         .getPropertyValue("--radar-transition-duration")
         .trim();
@@ -195,7 +183,6 @@ export function paintRadar(container, values) {
         values: [...from],
         box: [...fromBox],
         frame: 0,
-        visible,
     };
     transitions.set(container, state);
     const area = svg.querySelector(".song-radar-area");
@@ -228,13 +215,8 @@ export function paintRadar(container, values) {
         render(1);
         return;
     }
-    const begin = (entrance = false) => {
+    const begin = () => {
         cancelAnimationFrame(state.frame);
-        delete svg.dataset.radarPending;
-        if (entrance) {
-            from = values.map(() => 0);
-            fromBox = targetBox;
-        }
         if (reducedMotion.matches) {
             render(1);
             delete svg.dataset.radarAnimating;
@@ -258,53 +240,6 @@ export function paintRadar(container, values) {
         };
         state.frame = requestAnimationFrame(tick);
     };
-    if (!state.visible) {
-        from = values.map(() => 0);
-        fromBox = targetBox;
-        render(0);
-        svg.dataset.radarPending = "true";
-    } else if (from.some((value, axis) => value !== values[axis])) begin();
+    if (from.some((value, axis) => value !== values[axis])) begin();
     else render(1);
-
-    const observer =
-        "IntersectionObserver" in window
-            ? new IntersectionObserver(
-                  ([entry]) => {
-                      if (!svg.isConnected) {
-                          state.dispose();
-                          return;
-                      }
-                      // Re-arm only once it leaves entirely, so scrolling near an edge
-                      // does not keep restarting the entrance.
-                      if (!entry.isIntersecting) {
-                          state.visible = false;
-                          cancelAnimationFrame(state.frame);
-                          state.frame = 0;
-                          from = values.map(() => 0);
-                          fromBox = targetBox;
-                          render(reducedMotion.matches ? 1 : 0);
-                          delete svg.dataset.radarAnimating;
-                          svg.dataset.radarPending = "true";
-                      } else if (!state.visible && radarVisible(svg)) {
-                          state.visible = true;
-                          begin(true);
-                      }
-                  },
-                  { threshold: [0, 0.35] },
-              )
-            : null;
-    const visibilityChange = () => {
-        if (document.hidden) state.visible = false;
-        else if (!state.visible && radarVisible(svg)) {
-            state.visible = true;
-            begin(true);
-        }
-    };
-    state.dispose = () => {
-        observer?.disconnect();
-        document.removeEventListener("visibilitychange", visibilityChange);
-    };
-    observer?.observe(svg);
-    document.addEventListener("visibilitychange", visibilityChange);
-    if (!observer && !state.visible) begin(true);
 }

@@ -890,6 +890,24 @@
             </footer>
         </div>
         <dialog
+            id="chart-details"
+            class="panel appeal-helper chart-details"
+            aria-labelledby="chart-details-title"
+            closedby="closerequest"
+        >
+            <header class="appeal-helper-heading">
+                <h2 id="chart-details-title">Details</h2>
+                <button
+                    type="button"
+                    id="chart-details-close"
+                    aria-label="Close chart details"
+                >
+                    ×
+                </button>
+            </header>
+            <div id="chart-details-body" aria-live="polite"></div>
+        </dialog>
+        <dialog
             class="panel appeal-helper"
             id="appeal-helper"
             aria-labelledby="appeal-helper-title"

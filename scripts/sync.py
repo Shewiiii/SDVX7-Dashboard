@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.appeal_cards import prepare_appeal_cards
+from scripts.chart_details import ChartDetails
 from scripts.companion import (
     ROOT,
     display_name,
@@ -94,6 +95,9 @@ class Catalog:
         game = tracker.parent
         self.music = tracker_module(tracker, "music").MusicCatalog(
             game / "data/others/music_db.xml"
+        )
+        self.details = ChartDetails(
+            self.music, ROOT / ".local/chart-details-cache.json"
         )
         self.paths = self.music.paths
         self.signature = None
@@ -678,6 +682,17 @@ def upload(
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing timing histograms"
                 )
+            if payload.get("details") and result.get("details_schema", 0) < 2:
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing chart details"
+                )
+            if (
+                payload.get("state", {}).get("catalog")
+                and result.get("catalog_schema") != 1
+            ):
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing radar metadata"
+                )
     except urllib.error.HTTPError as error:
         # Do not expose secrets, request headers, response contents, or connection URLs.
         raise RuntimeError(f"Upload returned HTTP {error.code}") from None
@@ -728,7 +743,9 @@ def source_state(tracker: Path) -> tuple[tuple[int, int] | None, ...]:
     return tuple(result)
 
 
-def sync_once(config: dict[str, Any], tracker: Path, catalog: Catalog) -> None:
+def sync_once(
+    config: dict[str, Any], tracker: Path, catalog: Catalog, *, force=False
+) -> None:
     state_path = ROOT / ".local/sync-state.json"
     saved = read_checkpoint(state_path)
     endpoint_id = hashlib.sha256(config["url"].encode()).hexdigest()
@@ -750,6 +767,49 @@ def sync_once(config: dict[str, Any], tracker: Path, catalog: Catalog) -> None:
         if catalog.appeal_card:
             image_ids.add(catalog.appeal_card)
         pending_ids = sorted(image_ids - known_ids)
+    current, profile = snapshot(tracker, catalog, display_name(config, tracker))
+    current_hash = hashlib.sha256(
+        json.dumps(current, sort_keys=True).encode()
+    ).hexdigest()
+    uploaded = 0
+    while True:
+        plays, pc = read_batch(
+            tracker / "score_log.txt",
+            saved.get("plays", {}),
+            lambda p: play_record(p, catalog),
+        )
+        observations, oc = read_batch(
+            tracker / "volforce_history.jsonl",
+            saved.get("observations", {}),
+            lambda o: observation_record(o, profile),
+        )
+        changed = (
+            force
+            or saved.get("catalog_schema") != 1
+            or saved.get("snapshot") != current_hash
+        )
+        if plays or observations or changed:
+            payload = {"plays": plays, "observations": observations}
+            if changed:
+                payload["state"] = current
+            upload(config["url"], config["token"], payload, config.get("bypass"))
+            uploaded += len(plays) + len(observations)
+        saved.update(
+            endpoint=endpoint_id,
+            plays=pc,
+            observations=oc,
+            snapshot=current_hash,
+            play_schema=PLAY_SCHEMA,
+            catalog_schema=1,
+        )
+        write_json(state_path, saved)
+        force = False
+        if len(plays) < 150 and len(observations) < 150:
+            break
+    if uploaded:
+        print(f"Synced {uploaded} records at {datetime.now().strftime('%H:%M:%S')}.")
+    sync_details(config, catalog, endpoint_id, current.get("charts", []))
+    if hasattr(catalog, "prepare_covers"):
         for start in range(0, len(pending_ids), 30):
             batch = pending_ids[start : start + 30]
             covers = [
@@ -773,41 +833,59 @@ def sync_once(config: dict[str, Any], tracker: Path, catalog: Catalog) -> None:
             write_json(cover_state_path, acknowledged)
         if pending_ids:
             print(f"Synced {len(pending_ids)} artwork images.")
-    current, profile = snapshot(tracker, catalog, display_name(config, tracker))
-    current_hash = hashlib.sha256(
-        json.dumps(current, sort_keys=True).encode()
-    ).hexdigest()
-    uploaded = 0
-    while True:
-        plays, pc = read_batch(
-            tracker / "score_log.txt",
-            saved.get("plays", {}),
-            lambda p: play_record(p, catalog),
+
+
+def sync_details(config, catalog, endpoint_id, priority=()):
+    if not hasattr(catalog, "details"):
+        return
+    checkpoint = ROOT / ".local/chart-details-sync.json"
+    saved = read_checkpoint(checkpoint)
+    if saved.get("endpoint") != endpoint_id:
+        saved = {"endpoint": endpoint_id, "hashes": {}}
+    hashes = saved.setdefault("hashes", {})
+    catalog.details.refresh()
+    batch, batch_keys, total = [], [], 0
+
+    def flush():
+        nonlocal total
+        if not batch:
+            return
+        # 24 summaries x a 24 KB server-side ceiling stays below 600 KB.
+        upload(
+            config["url"],
+            config["token"],
+            {"plays": [], "observations": [], "details": batch},
+            config.get("bypass"),
         )
-        observations, oc = read_batch(
-            tracker / "volforce_history.jsonl",
-            saved.get("observations", {}),
-            lambda o: observation_record(o, profile),
-        )
-        changed = saved.get("snapshot") != current_hash
-        if plays or observations or changed:
-            payload = {"plays": plays, "observations": observations}
-            if changed:
-                payload["state"] = current
-            upload(config["url"], config["token"], payload, config.get("bypass"))
-            uploaded += len(plays) + len(observations)
-        saved.update(
-            endpoint=endpoint_id,
-            plays=pc,
-            observations=oc,
-            snapshot=current_hash,
-            play_schema=PLAY_SCHEMA,
-        )
-        write_json(state_path, saved)
-        if len(plays) < 150 and len(observations) < 150:
-            break
-    if uploaded:
-        print(f"Synced {uploaded} records at {datetime.now().strftime('%H:%M:%S')}.")
+        hashes.update(batch_keys)
+        write_json(checkpoint, saved)
+        total += len(batch)
+        batch.clear()
+        batch_keys.clear()
+
+    priority_keys = [f"{c['music_id']}:{c['diff_idx']}" for c in priority]
+    keys = dict.fromkeys([*priority_keys, *catalog.details.metadata])
+    catalog.details_pending = False
+    for key in keys:
+        entry = catalog.details.get(key)
+        if entry is None:
+            continue
+        if hashes.get(key) == entry["hash"]:
+            continue
+        if not total and not batch:
+            print("Syncing chart details...", flush=True)
+        batch.append(entry["record"])
+        batch_keys.append((key, entry["hash"]))
+        if len(batch) == 24:
+            flush()
+            # Keep checking for fresh plays/refresh requests during first-time backfill.
+            if total >= 192:
+                catalog.details_pending = True
+                break
+    flush()
+    catalog.details.save()
+    if total:
+        print(f"Synced {total} compact chart summaries.")
 
 
 def export_preview() -> None:
@@ -872,14 +950,14 @@ def export_preview() -> None:
 def sync_loop(
     config: dict[str, Any], tracker: Path, catalog: Catalog, once: bool = False
 ) -> None:
-    delay = 30
+    delay = 5
     next_sync = next_check = 0
     previous_source = None
     while True:
         try:
             now = time.monotonic()
             requested = 0
-            if not once and now >= next_check:
+            if not once and previous_source is not None and now >= next_check:
                 status = refresh_request(config)
                 requested = status or 0
                 next_check = time.monotonic() + (30 if status is None else 2)
@@ -890,7 +968,7 @@ def sync_loop(
                 or current_source != previous_source
                 or time.monotonic() >= next_sync
             ):
-                sync_once(config, tracker, catalog)
+                sync_once(config, tracker, catalog, force=previous_source is None)
                 if requested:
                     upload(
                         config["url"],
@@ -899,14 +977,16 @@ def sync_loop(
                         config.get("bypass"),
                     )
                 previous_source = current_source
-                next_sync = time.monotonic() + 30
-                delay = 30
+                next_sync = time.monotonic() + (
+                    2 if getattr(catalog, "details_pending", False) else 30
+                )
+                delay = 5
         except (OSError, ValueError, RuntimeError, KeyError) as error:
             detail = f": {error}" if isinstance(error, RuntimeError) else ""
             print(f"Sync pending ({type(error).__name__}){detail}. Retrying.")
             if once:
                 raise SystemExit(1) from None
-            delay = min(300, delay * 2)
+            delay = min(30, delay * 2)
             time.sleep(delay)
             next_check = 0
             continue

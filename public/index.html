@@ -636,6 +636,22 @@
                         >
                             Open Library
                         </button>
+                        <button
+                            type="button"
+                            class="calculator-link search-help-trigger"
+                            data-search-help
+                        >
+                            <span class="action-info-icon" aria-hidden="true"
+                                >?</span
+                            >
+                            Help
+                        </button>
+                        <span
+                            id="search-metadata-status"
+                            class="search-metadata-status"
+                            role="status"
+                            hidden
+                        ></span>
                     </div>
                     <div id="selected-chart" hidden></div>
                     <div id="song-search-empty" class="song-search-empty">
@@ -936,6 +952,156 @@
             </footer>
         </div>
         <dialog
+            id="search-help"
+            class="panel appeal-helper search-help"
+            aria-labelledby="search-help-title"
+        >
+            <header class="appeal-helper-heading">
+                <h2 id="search-help-title">Search Help</h2>
+                <button
+                    id="search-help-close"
+                    type="button"
+                    aria-label="Close Search Help"
+                >
+                    ×
+                </button>
+            </header>
+            <div class="search-help-body">
+                <p>
+                    Search titles, artists, ASCII titles, effectors,
+                    illustrators, or categories.
+                </p>
+                <p>
+                    You can combine the following keywords with a space to
+                    narrow the results:
+                </p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Keyword</th>
+                                <th>Examples</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>level</code></td>
+                                <td>
+                                    <code>level&gt;=18 level&lt;19</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>diff</code></td>
+                                <td>
+                                    <code>diff=EXH</code>, Diff names are NOV,
+                                    ADV, EXH, INF/VVD/GRV/HVN/XCD/NBL, MXM and
+                                    ULT.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>bpm</code>, <code>bpmmin</code>,
+                                    <code>bpmmax</code>
+                                </td>
+                                <td>
+                                    <code>bpm&gt;=200</code>, bpm defaults to
+                                    bpmmax.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>length</code></td>
+                                <td>
+                                    <code>length&gt;120</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>notes</code>, <code>peak</code>,
+                                    <code>tsumami</code>, <code>tricky</code>,
+                                    <code>handtrip</code>, <code>onehand</code>
+                                </td>
+                                <td>
+                                    <code>tsumami&gt;120</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>effector</code>,
+                                    <code>illustrator</code>
+                                </td>
+                                <td>
+                                    <code>effector=Saint</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>title</code>, <code>artist</code></td>
+                                <td>
+                                    <code>artist="Houshou Marine"</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>category</code>, <code>custom</code>
+                                </td>
+                                <td>
+                                    <code>category=FLOOR</code>,
+                                    <code>category=Touhou</code>,
+                                    <code>custom=true</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>year</code>, <code>version</code></td>
+                                <td>
+                                    <code>year=2026</code>,
+                                    <code>version=7</code>, Version 1 is BOOTH,
+                                    2 is Infinite Infection etc.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>score</code>, <code>grade</code>,
+                                    <code>clear</code>
+                                </td>
+                                <td>
+                                    <code>clear>noclear</code> (show played
+                                    songs)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>top50</code></td>
+                                <td>
+                                    <code>top50=true</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>bt_taps</code>, <code>bt_holds</code>,
+                                    <code>fx_taps</code>, <code>fx_holds</code>
+                                </td>
+                                <td>
+                                    <code>bt_taps&gt;500</code>, Hold ticks are
+                                    not separate notes.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>laser_sections</code>,
+                                    <code>tempo_changes</code>,
+                                    <code>exscore</code>
+                                </td>
+                                <td>
+                                    <code
+                                        >laser_sections&gt;50 tempo_changes&gt;0
+                                        exscore&gt;5000</code
+                                    >
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </dialog>
+        <dialog
             id="song-library"
             class="panel appeal-helper song-library"
             aria-labelledby="library-title"
@@ -991,6 +1157,16 @@
                             <option value="artist">Artist (A-Z)</option>
                         </select>
                     </div>
+                    <button
+                        type="button"
+                        class="calculator-link library-help"
+                        data-search-help
+                    >
+                        <span class="action-info-icon" aria-hidden="true"
+                            >?</span
+                        >
+                        Help
+                    </button>
                 </div>
                 <p id="library-count" class="library-count" role="status"></p>
                 <div id="library-results"></div>

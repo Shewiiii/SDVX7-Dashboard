@@ -1479,9 +1479,57 @@ footer {
 }
 .song-search-tools {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 12px;
     margin: 0 var(--panel-padding-inline) 24px;
+}
+.search-help-trigger.calculator-link {
+    margin-left: auto;
+    align-self: center;
+    white-space: nowrap;
+    padding: 8px 0;
+}
+.action-info-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1.15em;
+    height: 1.15em;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 0.85em;
+    line-height: 1;
+    margin-right: 3px;
+}
+.search-metadata-status {
+    flex-basis: 100%;
+    color: var(--muted);
+    font-size: 11px;
+}
+.search-help {
+    width: min(760px, calc(100vw - 36px));
+}
+.search-help-body {
+    padding: 0 var(--panel-padding-inline) 24px;
+    font-size: 13px;
+    line-height: 1.65;
+}
+.search-help-body p {
+    margin: 0 0 16px;
+}
+.search-help-body code {
+    color: var(--accent);
+    overflow-wrap: anywhere;
+}
+.search-help-body th,
+.search-help-body td {
+    white-space: normal;
+    padding: 10px;
+    vertical-align: top;
+}
+.search-help-body th:first-child,
+.search-help-body td:first-child {
+    width: 38%;
 }
 .song-search-tools .song-search {
     margin: 0;
@@ -1519,6 +1567,12 @@ footer {
 .library-tools .select-wrap select {
     max-width: 100%;
     width: 100%;
+}
+.library-tools .library-help {
+    margin-left: auto;
+    align-self: center;
+    flex: none;
+    white-space: nowrap;
 }
 .library-count {
     color: var(--muted);

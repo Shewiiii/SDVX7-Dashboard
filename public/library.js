@@ -1,3 +1,4 @@
+import { parseSearch } from "./search-query.js";
 import {
     CLEARS,
     SCORE_GRADES,
@@ -314,7 +315,9 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
             folder.open = state.open || !!query.value.trim();
             if (folder.open) populate();
         }
-        if (!visibleFolders) results.textContent = "No matching songs.";
+        if (!visibleFolders)
+            results.textContent =
+                parseSearch(query.value).errors[0] || "No matching songs.";
         document.getElementById("library-count").textContent = chartFolderMode(
             mode.value,
         )
@@ -344,7 +347,8 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         getComputedStyle(dialog, "::backdrop").opacity;
         dialog.classList.add("is-visible");
         render(true);
-        const initialFocus = matchMedia("(hover: hover) and (pointer: fine)").matches
+        const initialFocus = matchMedia("(hover: hover) and (pointer: fine)")
+            .matches
             ? query
             : closeButton;
         initialFocus.focus({ preventScroll: true });
@@ -371,13 +375,20 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         )
             void close();
     });
-    query.addEventListener("input", () => {
+    let queryTimer;
+    function updateQuery() {
         for (const state of folderState.values()) state.page = 0;
         render(true);
+    }
+    query.addEventListener("input", () => {
+        clearTimeout(queryTimer);
+        queryTimer = setTimeout(updateQuery, 120);
     });
     query.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
+            clearTimeout(queryTimer);
+            updateQuery();
             query.blur();
         }
     });

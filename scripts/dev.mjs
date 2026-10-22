@@ -1,3 +1,4 @@
+import { packSearchIndex } from "../lib/search-index.mjs";
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -25,6 +26,9 @@ const types = {
     ".json": "application/json",
 };
 let exportTask = null;
+let searchTask = null,
+    searchCache = null,
+    searchAt = 0;
 let exportedSignature = null;
 let exportedAt = 0;
 const tracker = path.dirname(root);
@@ -121,6 +125,37 @@ createServer(async (req, res) => {
             return;
         }
         const url = new URL(req.url, "http://localhost");
+        if (url.pathname === "/api/search") {
+            if (!searchCache || Date.now() - searchAt > 60000) {
+                if (!searchTask)
+                    searchTask = runFile(
+                        python,
+                        [
+                            "-c",
+                            "from scripts.chart_details import search_preview; search_preview()",
+                        ],
+                        { cwd: root, maxBuffer: 16000000 },
+                    )
+                        .then((result) => {
+                            if (result.stderr)
+                                process.stderr.write(result.stderr);
+                            searchCache = JSON.stringify(
+                                packSearchIndex(JSON.parse(result.stdout)),
+                            );
+                            searchAt = Date.now();
+                        })
+                        .finally(() => {
+                            searchTask = null;
+                        });
+                await searchTask;
+            }
+            res.writeHead(200, {
+                "Content-Type": types[".json"],
+                "Cache-Control": "no-store",
+            });
+            res.end(searchCache);
+            return;
+        }
         if (url.pathname === "/api/chart") {
             const music = url.searchParams.get("music"),
                 diff = url.searchParams.get("diff");

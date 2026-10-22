@@ -287,3 +287,25 @@ def preview(mid, diff):
     )
     record = details.get(f"{mid}:{diff}")
     print(json.dumps(record["record"] if record else None, ensure_ascii=True))
+
+
+def search_preview():
+    """Project cached chart summaries into search metadata; omit graph arrays."""
+    from scripts.companion import resolve_tracker
+    from scripts.sync import Catalog
+
+    catalog = Catalog(resolve_tracker())
+    catalog.details.refresh()
+    records = []
+    for key in catalog.details.metadata:
+        record = catalog.details.get(key)["record"]
+        chart = record.get("chart") or {}
+        records.append(
+            {
+                **{k: v for k, v in record.items() if k != "chart"},
+                "length": chart.get("duration"),
+                "counts": chart.get("counts"),
+                "tempo_changes": chart.get("bpm_change_count"),
+            }
+        )
+    print(json.dumps(records, ensure_ascii=True, separators=(",", ":")))

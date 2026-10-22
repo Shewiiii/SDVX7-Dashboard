@@ -1,3 +1,5 @@
+import { initSearchTools } from "./search-tools.js";
+import { setSearchData, parseSearch } from "./search-query.js";
 import { createLibrary } from "./library.js";
 import {
     DIFFS,
@@ -334,6 +336,13 @@ const songLibrary = createLibrary(
         `${coverMarkup(song)}<span class="option-song"><span>${escape(song.title)}</span><small>${escape(song.artist)}</small></span>${difficultyRange(song)}`,
     (mid, diff) => selectChart(mid, diff),
 );
+
+const searchTools = initSearchTools(() => {
+    if (!data) return;
+    if (view === "search" && !$("song-options").hidden) renderMatches();
+    if (["top", "history"].includes(view)) renderTable({ animate: false });
+    songLibrary.update();
+});
 
 function coverMarkup(p, size = "small") {
     const song = songs.get(p.music_id);
@@ -1453,7 +1462,7 @@ function renderTable({ animate = true } = {}) {
         ? chunk
               .map((record) => recordRow(record, { top, grouped, playCounts }))
               .join("")
-        : '<tr><td colspan="6">No matching charts.</td></tr>';
+        : `<tr><td colspan="6">${escape(parseSearch($("search").value).errors[0] || "No matching charts.")}</td></tr>`;
     setText(
         "result-count",
         grouped
@@ -1549,7 +1558,7 @@ function renderMatches() {
                       `<button type="button" role="option" id="song-option-${index}" aria-selected="false" tabindex="-1" class="song-option" data-option="${index}">${coverMarkup(p)}<span class="option-song"><span>${escape(chartTitle(p))}</span><small>${escape(p.artist)}</small></span>${difficultyRange(p)}</button>`,
               )
               .join("")
-        : '<div class="search-empty">No matching song.</div>';
+        : `<div class="search-empty">${escape(parseSearch($("song-query").value).errors[0] || "No matching song.")}</div>`;
     list.scrollTop = 0;
     list.hidden = false;
     $("song-query").setAttribute("aria-expanded", "true");
@@ -1701,7 +1710,7 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
     const difficulty = song.difficulties.find(
         (d) => d.diff_idx === selected.diff_idx,
     );
-    const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><div class="selected-song-actions"><button type="button" class="calculator-link" data-chart-details>Details <span aria-hidden="true">↗</span></button><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div></div>${radarMarkup(difficulty.radar)}</div>`;
+    const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><div class="selected-song-actions"><button type="button" class="calculator-link" data-chart-details><span class="action-info-icon" aria-hidden="true">i</span> Details</button><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div></div>${radarMarkup(difficulty.radar)}</div>`;
     const chart = $("selected-chart");
     const tabs = chart.querySelector(".difficulty-tabs");
     const buttons = [...(tabs?.querySelectorAll("button") || [])];
@@ -1826,6 +1835,7 @@ window.visualViewport?.addEventListener("resize", () => {
 window.visualViewport?.addEventListener("scroll", updateSearchOptionsHeight);
 window.addEventListener("scroll", updateSearchOptionsHeight, { passive: true });
 
+let matchesTimer = 0;
 $("song-query").addEventListener("input", () => {
     if (!$("song-query").value.trim()) {
         selected = null;
@@ -1834,10 +1844,19 @@ $("song-query").addEventListener("input", () => {
         renderSongSearch({ animate: false });
         updateUrl(true);
     }
-    renderMatches();
+    clearTimeout(matchesTimer);
+    matchesTimer = setTimeout(() => {
+        matchesTimer = 0;
+        renderMatches();
+    }, 120);
 });
 $("song-query").addEventListener("focus", renderMatches);
 $("song-query").addEventListener("keydown", (event) => {
+    if (matchesTimer && ["Enter", "ArrowDown", "ArrowUp"].includes(event.key)) {
+        clearTimeout(matchesTimer);
+        matchesTimer = 0;
+        renderMatches();
+    }
     if (event.key === "Escape") {
         event.preventDefault();
         closeMatches();
@@ -1977,10 +1996,13 @@ async function load({ fresh = false } = {}) {
         const animate = !data || fingerprint !== dataFingerprint;
         dataFingerprint = fingerprint;
         data = next;
+        setSearchData(data);
         appealHelper.update();
         catalog = songCatalog(data);
         songs = new Map(catalog.map((song) => [song.music_id, song]));
         songLibrary.update();
+        if ($("song-query").value.trim() || $("search").value.trim())
+            void searchTools.ensure();
         $("notice").hidden = true;
         renderSummary({ animate });
         void loadExchangeRate();
@@ -2079,10 +2101,14 @@ $("difficulty").addEventListener("change", () => {
     renderChart();
     updateUrl();
 });
+let recordsSearchTimer;
 $("search").addEventListener("input", () => {
     page = 0;
-    renderTable({ animate: false });
-    updateUrl(true);
+    clearTimeout(recordsSearchTimer);
+    recordsSearchTimer = setTimeout(() => {
+        renderTable({ animate: false });
+        updateUrl(true);
+    }, 120);
 });
 $("sort").addEventListener("change", () => {
     rememberScroll();

@@ -1,3 +1,10 @@
+import {
+    normalizeSearch,
+    parseSearch,
+    extraSearchText,
+    matchesSearchFilters,
+} from "./search-query.js";
+export { normalizeSearch } from "./search-query.js";
 export const DIFFS = ["NOV", "ADV", "EXH", "INF/VVD", "MXM", "ULT"];
 export const CLEARS = [
     "No clear",
@@ -309,16 +316,6 @@ export function paginate(records, page, pageSize = PAGE_SIZE) {
     };
 }
 
-export function normalizeSearch(value) {
-    return String(value)
-        .normalize("NFKC")
-        .toLocaleLowerCase()
-        .replace(/ß/g, "ss")
-        .replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60))
-        .normalize("NFKD")
-        .replace(/[^\p{L}\p{N}\u3099\u309a]/gu, "");
-}
-
 export function songCatalog(data) {
     if (data.state.catalog?.length) return data.state.catalog;
     const songs = new Map();
@@ -348,18 +345,7 @@ export function songCatalog(data) {
     return [...songs.values()];
 }
 
-function parseSearch(query) {
-    const words = query.trim().split(/\s+/).filter(Boolean);
-    const last = words.at(-1)?.toUpperCase();
-    let difficulty = DIFFS.findIndex((name) => name === last);
-    if (last === "INF" || last === "VVD") difficulty = 3;
-    if (difficulty >= 0) words.pop();
-    const tokens = words.map(normalizeSearch).filter(Boolean),
-        term = tokens.join("");
-    return { difficulty, tokens, term };
-}
-
-function songSearchRank(song, { tokens, term }) {
+function songSearchRank(song, { tokens, term }, extra = []) {
     const groups = song.forms?.some((forms) => forms.length)
         ? [...song.forms]
         : [
@@ -370,6 +356,7 @@ function songSearchRank(song, { tokens, term }) {
           ];
     if (song.title_ascii)
         groups[0] = [...groups[0], normalizeSearch(song.title_ascii)];
+    groups.push(extra);
     let rank = tokens.length ? null : [0, 0];
     for (
         let priority = 0;
@@ -405,16 +392,18 @@ export function filterCharts(charts, catalog, query) {
     if (!query.trim()) return charts;
     const search = parseSearch(query);
     const songs = new Map(catalog.map((song) => [song.music_id, song]));
-    const ranks = new Map();
     return charts.filter((chart) => {
         if (search.difficulty >= 0 && chart.diff_idx !== search.difficulty)
             return false;
-        if (!ranks.has(chart.music_id))
-            ranks.set(
-                chart.music_id,
-                songSearchRank(songs.get(chart.music_id) || chart, search),
-            );
-        return ranks.get(chart.music_id) !== null;
+        const song = songs.get(chart.music_id) || chart;
+        const difficulty =
+            song.difficulties?.find((d) => d.diff_idx === chart.diff_idx) ||
+            chart;
+        return (
+            matchesSearchFilters(song, difficulty, search) &&
+            songSearchRank(song, search, extraSearchText(song, difficulty)) !==
+                null
+        );
     });
 }
 
@@ -422,11 +411,16 @@ export function searchCharts(catalog, query, limit = PAGE_SIZE) {
     const search = parseSearch(query);
     const matches = [];
     for (const song of catalog) {
-        const rank = songSearchRank(song, search);
-        if (!rank) continue;
-        for (const d of song.difficulties)
-            if (search.difficulty < 0 || d.diff_idx === search.difficulty)
-                matches.push({ ...song, ...d, rank });
+        const baseRank = songSearchRank(song, search);
+        for (const d of song.difficulties) {
+            if (search.difficulty >= 0 && d.diff_idx !== search.difficulty)
+                continue;
+            if (!matchesSearchFilters(song, d, search)) continue;
+            const rank =
+                baseRank ||
+                songSearchRank(song, search, extraSearchText(song, d));
+            if (rank) matches.push({ ...song, ...d, rank });
+        }
     }
     return matches
         .sort(

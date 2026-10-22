@@ -64,10 +64,16 @@ async function refresh() {
     // Source edits invalidate immediately; periodically rescan nested artwork too.
     if (signature === exportedSignature && Date.now() - exportedAt < 60000)
         return;
+    const started = performance.now();
+    console.log("[preview] Building archive...");
     exportTask = new Promise((resolve, reject) => {
         const child = spawn(
             python,
-            ["-c", "from scripts.sync import export_preview; export_preview()"],
+            [
+                "-u",
+                "-c",
+                "from scripts.sync import export_preview; export_preview()",
+            ],
             {
                 cwd: root,
             },
@@ -80,6 +86,9 @@ async function refresh() {
         );
     })
         .then(async () => {
+            console.log(
+                `[preview] Archive ready in ${Math.round(performance.now() - started)} ms`,
+            );
             // The export itself rewrites preview-data.json.
             exportedSignature = await sourceSignature();
             exportedAt = Date.now();
@@ -98,6 +107,13 @@ async function refresh() {
 }
 await refresh();
 createServer(async (req, res) => {
+    const started = performance.now();
+    const requestPath = new URL(req.url, "http://localhost").pathname;
+    res.on("finish", () =>
+        console.log(
+            `[preview] ${req.method} ${requestPath} ${res.statusCode} ${Math.round(performance.now() - started)} ms`,
+        ),
+    );
     try {
         if (req.method !== "GET") {
             res.writeHead(405);
@@ -130,6 +146,7 @@ createServer(async (req, res) => {
                 { cwd: root, maxBuffer: 100000 },
             );
             const record = JSON.parse(result.stdout);
+            if (result.stderr) process.stderr.write(result.stderr);
             res.writeHead(record ? 200 : 404, {
                 "Content-Type": types[".json"],
                 "Cache-Control": "no-store",
@@ -162,6 +179,7 @@ createServer(async (req, res) => {
                 cwd: root,
             });
             data.state.playtime = JSON.parse(playtime.stdout);
+            if (playtime.stderr) process.stderr.write(playtime.stderr);
             res.writeHead(200, {
                 "Content-Type": types[".json"],
                 "Cache-Control": "no-store",
@@ -185,9 +203,14 @@ createServer(async (req, res) => {
             "X-Content-Type-Options": "nosniff",
         });
         res.end(body);
-    } catch {
-        res.writeHead(404);
-        res.end("Not found");
+    } catch (error) {
+        console.error(
+            `[preview] ${req.method} ${requestPath} failed:`,
+            error.stderr || error.message,
+        );
+        const status = error.code === "ENOENT" ? 404 : 500;
+        res.writeHead(status);
+        res.end(status === 404 ? "Not found" : "Preview request failed");
     }
 }).listen(port, "127.0.0.1", () =>
     console.log(`Local dashboard: http://localhost:${port}`),

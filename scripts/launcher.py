@@ -6,6 +6,7 @@ import sys
 import time
 
 from scripts.companion import ROOT, load_config, resolve_tracker, tracker_python
+from scripts.console_logs import forward_log
 from scripts.process_lifetime import contain_process_tree, stop_orphaned_sync
 
 
@@ -68,6 +69,8 @@ def main() -> int:
     with (
         (local / "sync.log").open("ab") as output,
         (local / "sync-errors.log").open("ab") as errors,
+        forward_log(local / "sync.log", sys.stdout),
+        forward_log(local / "sync-errors.log", sys.stderr),
     ):
 
         def start_sync() -> subprocess.Popen[bytes]:

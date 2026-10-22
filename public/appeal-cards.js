@@ -24,6 +24,9 @@ export function createAppealCardHelper(getState) {
     let scrollPosition = 0,
         previousOverflow = "",
         closing = false;
+    let detailHistoryActive = false,
+        historyReturning = false,
+        detailHistoryUrl = "";
 
     function image(card, lazy = true) {
         const frame = document.createElement("span");
@@ -102,6 +105,7 @@ export function createAppealCardHelper(getState) {
     }
 
     function renderBrowser({ anchorId = null } = {}) {
+        dialog.setAttribute("closedby", "closerequest");
         browser.hidden = false;
         detail.hidden = true;
         fitPageSize();
@@ -157,6 +161,8 @@ export function createAppealCardHelper(getState) {
     }
 
     function showDetail(card) {
+        // Let Back traverse the detail history entry instead of dismissing the modal.
+        dialog.setAttribute("closedby", "none");
         selectedId = card.id;
         browser.hidden = true;
         detail.hidden = false;
@@ -169,11 +175,50 @@ export function createAppealCardHelper(getState) {
     }
 
     function returnToBrowser() {
+        restoreBrowser();
+        leaveDetailHistory();
+    }
+
+    function restoreBrowser() {
         renderBrowser({ anchorId: selectedId });
         dialog.scrollTop = scrollPosition;
         grid.querySelector(`[data-appeal-id="${selectedId}"]`)?.focus({
             preventScroll: true,
         });
+    }
+
+    function leaveDetailHistory() {
+        if (!detailHistoryActive || historyReturning || !history.state?.appealCardHelper)
+            return;
+        historyReturning = true;
+        history.back();
+    }
+
+    function restoreHistory() {
+        const cardId = history.state?.appealCardHelper;
+        if (detailHistoryActive && !cardId) {
+            const samePage = location.href === detailHistoryUrl;
+            detailHistoryActive = false;
+            historyReturning = false;
+            if (dialog.open && !closing) {
+                if (samePage) restoreBrowser();
+                else void closeDialog();
+            }
+            // Preserve the dashboard's filters and scroll when only the card changed.
+            return samePage;
+        }
+        if (dialog.open && !closing && !historyReturning && cardId) {
+            const card = cards.find((item) => item.id === cardId);
+            if (card) {
+                detailHistoryActive = true;
+                detailHistoryUrl = location.href;
+                if (detail.hidden) scrollPosition = dialog.scrollTop;
+                showDetail(card);
+                back.focus({ preventScroll: true });
+                return true;
+            }
+        }
+        return false;
     }
 
     function update() {
@@ -202,7 +247,11 @@ export function createAppealCardHelper(getState) {
     document
         .getElementById("appeal-helper-open")
         .addEventListener("click", () => {
-            if (dialog.open || closing) return;
+            if (dialog.open || closing || historyReturning) return;
+            if (history.state?.appealCardHelper) {
+                const { appealCardHelper, ...state } = history.state;
+                history.replaceState(state, "");
+            }
             document.dispatchEvent(
                 new CustomEvent("dashboard:panel-open", {
                     detail: "appeal-helper",
@@ -239,6 +288,7 @@ export function createAppealCardHelper(getState) {
     async function closeDialog() {
         if (!dialog.open || closing) return;
         closing = true;
+        leaveDetailHistory();
         dialog.classList.remove("is-visible");
         // Only wait for the panel; its children may still have loading shimmers.
         await Promise.allSettled(
@@ -251,9 +301,18 @@ export function createAppealCardHelper(getState) {
         .addEventListener("click", closeDialog);
     dialog.addEventListener("cancel", (event) => {
         event.preventDefault();
-        void closeDialog();
+        if (!detail.hidden) returnToBrowser();
+        else void closeDialog();
+    });
+    dialog.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || event.defaultPrevented) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (!detail.hidden) returnToBrowser();
+        else void closeDialog();
     });
     dialog.addEventListener("close", () => {
+        leaveDetailHistory();
         closing = false;
         dialog.classList.remove("is-visible");
         document.documentElement.style.overflow = previousOverflow;
@@ -278,6 +337,7 @@ export function createAppealCardHelper(getState) {
         }
     });
     grid.addEventListener("click", (event) => {
+        if (historyReturning || closing) return;
         const button = event.target.closest("[data-appeal-id]");
         if (!button) return;
         const card = cards.find(
@@ -285,6 +345,9 @@ export function createAppealCardHelper(getState) {
         );
         if (!card) return;
         scrollPosition = dialog.scrollTop;
+        detailHistoryUrl = location.href;
+        history.pushState({ ...history.state, appealCardHelper: card.id }, "");
+        detailHistoryActive = true;
         showDetail(card);
         back.focus({ preventScroll: true });
     });
@@ -346,5 +409,5 @@ export function createAppealCardHelper(getState) {
     new ResizeObserver(() => {
         if (dialog.open && !browser.hidden && fitPageSize()) renderBrowser();
     }).observe(grid);
-    return { update };
+    return { update, restoreHistory };
 }

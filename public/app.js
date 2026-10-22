@@ -11,7 +11,7 @@ import {
     summary,
     byTime,
     songCatalog,
-    searchCharts,
+    searchSongs,
     recordList,
     chartKey,
     paginate,
@@ -1240,6 +1240,7 @@ function updateUrl(replace = false) {
 }
 
 function restoreUrl() {
+    if (appealHelper.restoreHistory()) return;
     const savedScroll = history.state?.dashboardScroll;
     const previousDays = days;
     const previousChart = JSON.stringify([difficulty, [...shown]]);
@@ -1507,14 +1508,14 @@ function renderMatches() {
         closeMatches();
         return;
     }
-    matches = searchCharts(catalog, $("song-query").value);
+    matches = searchSongs(catalog, $("song-query").value, data.plays);
     activeMatch = -1;
     const list = $("song-options");
     list.innerHTML = matches.length
         ? matches
               .map(
                   (p, index) =>
-                      `<button type="button" role="option" id="song-option-${index}" aria-selected="false" tabindex="-1" class="song-option" data-option="${index}">${coverMarkup(p)}<span class="option-song"><span>${escape(chartTitle(p))}</span><small>${escape(p.artist)}</small></span>${badge(p)}</button>`,
+                      `<button type="button" role="option" id="song-option-${index}" aria-selected="false" tabindex="-1" class="song-option" data-option="${index}">${coverMarkup(p)}<span class="option-song"><span>${escape(chartTitle(p))}</span><small>${escape(p.artist)}</small></span>${difficultyRange(p)}</button>`,
               )
               .join("")
         : '<div class="search-empty">No matching song.</div>';
@@ -1523,6 +1524,15 @@ function renderMatches() {
     $("song-query").setAttribute("aria-expanded", "true");
     $("song-query").removeAttribute("aria-activedescendant");
     updateSearchOptionsHeight();
+}
+
+function difficultyRange(song) {
+    const difficulties = [...song.difficulties].sort(
+        (a, b) => a.diff_idx - b.diff_idx,
+    );
+    const first = difficulties[0],
+        last = difficulties.at(-1);
+    return `<span class="song-option-range">${badge(first)}${first.diff_idx === last.diff_idx ? "" : `<span aria-hidden="true">~</span>${badge(last)}`}</span>`;
 }
 
 function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
@@ -1654,7 +1664,8 @@ function renderSongSearch({ animate = true } = {}) {
     const mark =
         saved?.clear_type ??
         (plays.length ? Math.max(...plays.map((p) => p.clear_type)) : null);
-    const reading = typeof song.title_ascii === "string" ? song.title_ascii : "";
+    const reading =
+        typeof song.title_ascii === "string" ? song.title_ascii : "";
     const songTitle = `<h3 class="song-reading-title"${reading ? ' tabindex="0" aria-describedby="song-reading-popup"' : ""}>${escape(song.title)}</h3>`;
     $("selected-chart").innerHTML =
         `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}<button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div></div></div>`;
@@ -2046,7 +2057,10 @@ $("spending-popup").addEventListener("pointerleave", scheduleSpendingHide);
 $("song-reading-popup").addEventListener("pointerenter", () =>
     clearTimeout(songReadingHideTimer),
 );
-$("song-reading-popup").addEventListener("pointerleave", scheduleSongReadingHide);
+$("song-reading-popup").addEventListener(
+    "pointerleave",
+    scheduleSongReadingHide,
+);
 document.addEventListener("click", (event) => {
     if (!event.target.closest(".spending-price, #spending-popup"))
         hideSpendingPopup();

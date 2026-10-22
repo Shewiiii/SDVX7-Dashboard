@@ -361,13 +361,15 @@ function parseSearch(query) {
 
 function songSearchRank(song, { tokens, term }) {
     const groups = song.forms?.some((forms) => forms.length)
-        ? song.forms
+        ? [...song.forms]
         : [
               [normalizeSearch(song.title)],
               [],
               [normalizeSearch(song.artist)],
               [],
           ];
+    if (song.title_ascii)
+        groups[0] = [...groups[0], normalizeSearch(song.title_ascii)];
     let rank = tokens.length ? null : [0, 0];
     for (
         let priority = 0;
@@ -440,6 +442,42 @@ export function searchCharts(catalog, query, limit = PAGE_SIZE) {
                 b.diff_idx - a.diff_idx,
         )
         .slice(0, limit);
+}
+
+export function searchSongs(catalog, query, plays = [], limit = PAGE_SIZE) {
+    const counts = new Map();
+    for (const play of plays) {
+        if (
+            play.score > 0 &&
+            play.clear_type >= 1 &&
+            play.clear_type <= 6 &&
+            Number.isFinite(play.play_vf)
+        ) {
+            const key = chartKey(play);
+            counts.set(key, (counts.get(key) || 0) + 1);
+        }
+    }
+    const songs = new Map();
+    for (const chart of searchCharts(catalog, query, Infinity)) {
+        let match = songs.get(chart.music_id);
+        if (!match) {
+            match = { ...chart, difficulties: [] };
+            songs.set(chart.music_id, match);
+        }
+        match.difficulties.push({
+            diff_idx: chart.diff_idx,
+            level: chart.level,
+        });
+        if (
+            (counts.get(chartKey(chart)) || 0) >
+            (counts.get(chartKey(match)) || 0)
+        ) {
+            match.diff_idx = chart.diff_idx;
+            match.level = chart.level;
+            match.cover = chart.cover;
+        }
+    }
+    return [...songs.values()].slice(0, limit);
 }
 
 export function chartPlays(data, musicId, difficulty) {

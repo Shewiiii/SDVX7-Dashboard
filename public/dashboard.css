@@ -1516,6 +1516,14 @@ footer {
 .song-option .difficulty-badge {
     font-size: 9px;
 }
+.song-option-range {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    color: var(--muted);
+}
 .search-empty {
     padding: 18px;
     color: var(--muted);
@@ -2118,6 +2126,12 @@ footer {
     .calculator-target output {
         flex-basis: 100%;
         font-size: 22px;
+        text-align: left;
+    }
+    .calculator-legend .calculator-grade {
+        grid-column: 1 / -1;
+        justify-items: end;
+        text-align: right;
     }
     :root {
         --panel-padding-inline: 18px;

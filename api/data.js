@@ -11,7 +11,10 @@ export default async function handler(req, res) {
         return res.status(503).json({ error: "Data is not connected yet" });
     try {
         const sql = database();
-        if (new URL(req.url, "http://localhost").searchParams.get("refresh") === "1")
+        if (
+            new URL(req.url, "http://localhost").searchParams.get("refresh") ===
+            "1"
+        )
             await requestRefresh(sql);
         const [records, states] = await sql.transaction([
             sql`SELECT kind, jsonb_agg(record ORDER BY COALESCE(record->>'received_at', record->>'timestamp')) AS items
@@ -21,15 +24,13 @@ export default async function handler(req, res) {
         const grouped = Object.fromEntries(
             records.map((r) => [r.kind, r.items]),
         );
-        return res
-            .status(200)
-            .json({
-                plays: grouped.play || [],
-                observations: grouped.observation || [],
-                state: states[0]?.record || { name: "Player", charts: [] },
-                synced_at: states[0]?.synced_at || null,
-                source: "cloud",
-            });
+        return res.status(200).json({
+            plays: grouped.play || [],
+            observations: grouped.observation || [],
+            state: states[0]?.record || { name: "Player", charts: [] },
+            synced_at: states[0]?.synced_at || null,
+            source: "cloud",
+        });
     } catch {
         res.setHeader("Cache-Control", "no-store");
         return res

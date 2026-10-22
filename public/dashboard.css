@@ -2100,7 +2100,8 @@ footer {
 .appeal-helper-page {
     white-space: nowrap;
 }
-.appeal-helper-pagination .appeal-helper-page-number {
+.appeal-helper-pagination .appeal-helper-page-number,
+.pagination .pagination-page-number {
     width: auto;
     height: auto;
     min-width: 1.5ch;
@@ -2111,10 +2112,12 @@ footer {
     text-decoration: underline;
     text-underline-offset: 2px;
 }
-.appeal-helper-pagination .appeal-helper-page-number:hover {
+.appeal-helper-pagination .appeal-helper-page-number:hover,
+.pagination .pagination-page-number:hover {
     color: var(--accent);
 }
-.appeal-helper-page-input {
+.appeal-helper-page-input,
+.pagination-page-input {
     width: 4ch;
     padding: 2px;
     border: 0;
@@ -2125,7 +2128,9 @@ footer {
     appearance: textfield;
 }
 .appeal-helper-page-input::-webkit-inner-spin-button,
-.appeal-helper-page-input::-webkit-outer-spin-button {
+.appeal-helper-page-input::-webkit-outer-spin-button,
+.pagination-page-input::-webkit-inner-spin-button,
+.pagination-page-input::-webkit-outer-spin-button {
     appearance: none;
 }
 .appeal-helper-card.is-current {

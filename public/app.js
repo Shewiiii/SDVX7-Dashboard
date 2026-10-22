@@ -362,6 +362,9 @@ function prepareLoading() {
     for (const id of [
         "previous",
         "next",
+        "first-page",
+        "last-page",
+        "records-page-number",
         "song-search-previous",
         "song-search-next",
     ])
@@ -1449,9 +1452,20 @@ function renderTable({ animate = true } = {}) {
             ? `${number(totalPlays)} ${totalPlays === 1 ? "play" : "plays"} across ${number(records.length)} ${records.length === 1 ? "chart" : "charts"}`
             : `${number(records.length)} ${top ? "charts" : "plays"}`,
     );
-    setText("page-info", `Page ${page + 1} / ${pages}`);
+    setText("records-page-number", page + 1);
+    setText("records-total-pages", pages);
+    $("records-page-number").disabled = false;
+    $("records-page-number").setAttribute(
+        "aria-label",
+        `Page ${page + 1} of ${pages}. Enter page number`,
+    );
+    $("records-page-input").max = pages;
+    if ($("records-page-input").hidden)
+        $("records-page-input").value = page + 1;
     $("previous").disabled = page === 0;
     $("next").disabled = page + 1 >= pages;
+    $("first-page").disabled = page === 0;
+    $("last-page").disabled = page + 1 >= pages;
     if (animate) {
         motion.data($("records"), ".chart-row, tr:not(.chart-row)");
         motion.data($("page-info"));
@@ -2067,19 +2081,54 @@ $("sort").addEventListener("change", () => {
     renderTable();
     updateUrl();
 });
-$("previous").addEventListener("click", () => {
+function goToRecordsPage(requested) {
+    if (!data || !["top", "history"].includes(view)) return;
     rememberScroll();
-    page--;
+    page = Math.max(
+        0,
+        Math.min(
+            Number($("records-total-pages").textContent) - 1,
+            Math.trunc(requested),
+        ),
+    );
     renderTable();
     updateUrl();
     scrollToCard();
+}
+$("previous").addEventListener("click", () => goToRecordsPage(page - 1));
+$("next").addEventListener("click", () => goToRecordsPage(page + 1));
+$("first-page").addEventListener("click", () => goToRecordsPage(0));
+$("last-page").addEventListener("click", () =>
+    goToRecordsPage(Number($("records-total-pages").textContent) - 1),
+);
+function finishRecordsPageEdit(cancel = false) {
+    const input = $("records-page-input");
+    if (input.hidden) return;
+    const requested = Number(input.value);
+    input.hidden = true;
+    $("records-page-number").hidden = false;
+    if (!cancel && input.value.trim() && Number.isFinite(requested))
+        goToRecordsPage(requested - 1);
+}
+$("records-page-number").addEventListener("click", () => {
+    $("records-page-number").hidden = true;
+    const input = $("records-page-input");
+    input.hidden = false;
+    input.value = page + 1;
+    input.focus({ preventScroll: true });
+    input.select();
 });
-$("next").addEventListener("click", () => {
-    rememberScroll();
-    page++;
-    renderTable();
-    updateUrl();
-    scrollToCard();
+$("records-page-input").addEventListener("blur", () => finishRecordsPageEdit());
+$("records-page-input").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        $("records-page-input").blur();
+    } else if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        finishRecordsPageEdit(true);
+        $("records-page-number").focus({ preventScroll: true });
+    }
 });
 $("all-plays").addEventListener("click", () =>
     switchView("history", true, { scroll: true }),

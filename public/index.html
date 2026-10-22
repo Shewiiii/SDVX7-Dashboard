@@ -530,12 +530,49 @@
                         </table>
                     </div>
                     <div class="pagination">
-                        <span id="page-info"></span>
+                        <span id="page-info"
+                            >Page
+                            <button
+                                type="button"
+                                id="records-page-number"
+                                class="pagination-page-number"
+                                title="Enter page number"
+                                aria-label="Enter page number"
+                            >
+                                1</button
+                            ><input
+                                type="number"
+                                id="records-page-input"
+                                class="pagination-page-input"
+                                min="1"
+                                step="1"
+                                inputmode="numeric"
+                                aria-label="Page number"
+                                hidden
+                            />
+                            / <span id="records-total-pages">1</span></span
+                        >
                         <div>
+                            <button
+                                type="button"
+                                id="first-page"
+                                aria-label="First page"
+                                title="First page"
+                            >
+                                ⇇
+                            </button>
                             <button id="previous" aria-label="Previous page">
                                 ←
                             </button>
                             <button id="next" aria-label="Next page">→</button>
+                            <button
+                                type="button"
+                                id="last-page"
+                                aria-label="Last page"
+                                title="Last page"
+                            >
+                                ⇉
+                            </button>
                         </div>
                     </div>
                 </section>

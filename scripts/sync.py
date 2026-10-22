@@ -256,34 +256,10 @@ class Catalog:
             self.appeal_signature = None
 
     def prepare_covers(self) -> None:
-        """Prepare small web covers for songs with local plays or saved records."""
+        """Prepare cached web covers for every song in the library."""
         self.prepare_appeal_card()
         self.appeal_cards = prepare_appeal_cards(self.game, ROOT / ".local")
-        music_ids = set()
-        cache_path = self.tracker / "cache/total_volforce.json"
-        if cache_path.exists():
-            try:
-                music_ids.update(
-                    int(k.split(":")[0])
-                    for k in json.loads(cache_path.read_text(encoding="utf-8"))[
-                        "chart_volforce"
-                    ]
-                )
-            except (ValueError, KeyError):
-                pass
-        log_path = self.tracker / "score_log.txt"
-        if log_path.exists():
-            decoder = json.JSONDecoder()
-            for line in log_path.read_text(encoding="utf-8").splitlines():
-                pos = 0
-                while pos < len(line):
-                    try:
-                        record, pos = decoder.raw_decode(line, pos)
-                        music_ids.add(int(record["music_id"]))
-                        while pos < len(line) and line[pos].isspace():
-                            pos += 1
-                    except (ValueError, KeyError, TypeError):
-                        break
+        music_ids = set(self.songs)
         signature = (tuple(sorted(music_ids)), self.signature)
         if signature == self.cover_signature:
             return
@@ -778,6 +754,13 @@ def sync_once(
             image_ids.add(catalog.appeal_card)
         pending_ids = sorted(image_ids - known_ids)
     current, profile = snapshot(tracker, catalog, display_name(config, tracker))
+    # Do not advertise a new jacket before its image upload is acknowledged.
+    # The next pass publishes it, changing the snapshot and updating open clients.
+    if hasattr(catalog, "prepare_covers"):
+        for song in current.get("catalog", []):
+            for difficulty in song["difficulties"]:
+                if difficulty.get("cover") not in known_ids:
+                    difficulty["cover"] = None
     current_hash = hashlib.sha256(
         json.dumps(current, sort_keys=True).encode()
     ).hexdigest()
@@ -820,7 +803,8 @@ def sync_once(
         print(f"Synced {uploaded} records at {datetime.now().strftime('%H:%M:%S')}.")
     sync_details(config, catalog, endpoint_id, current.get("charts", []))
     if hasattr(catalog, "prepare_covers"):
-        for start in range(0, len(pending_ids), 30):
+        catalog.covers_pending = len(pending_ids) > 240
+        for start in range(0, min(len(pending_ids), 240), 30):
             batch = pending_ids[start : start + 30]
             covers = [
                 {
@@ -842,7 +826,11 @@ def sync_once(
             acknowledged["ids"] = sorted(known_ids)
             write_json(cover_state_path, acknowledged)
         if pending_ids:
-            print(f"Synced {len(pending_ids)} artwork images.")
+            print(
+                f"Synced {min(len(pending_ids), 240)} artwork images "
+                f"({max(0, len(pending_ids) - 240)} remaining)."
+            )
+            catalog.covers_pending = True
 
 
 def sync_details(config, catalog, endpoint_id, priority=()):
@@ -988,7 +976,12 @@ def sync_loop(
                     )
                 previous_source = current_source
                 next_sync = time.monotonic() + (
-                    2 if getattr(catalog, "details_pending", False) else 30
+                    2
+                    if (
+                        getattr(catalog, "details_pending", False)
+                        or getattr(catalog, "covers_pending", False)
+                    )
+                    else 30
                 )
                 delay = 5
         except (OSError, ValueError, RuntimeError, KeyError) as error:

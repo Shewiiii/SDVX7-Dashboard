@@ -1,3 +1,4 @@
+import { createArchiveLoader } from "./archive.js";
 import { initSearchTools } from "./search-tools.js";
 import { setSearchData, parseSearch } from "./search-query.js";
 import { createLibrary } from "./library.js";
@@ -1961,6 +1962,8 @@ $("song-search-next").addEventListener("click", () => {
     scrollToCard();
 });
 
+const readArchive = createArchiveLoader();
+
 async function load({ fresh = false } = {}) {
     if (loading) return;
     loading = true;
@@ -1969,14 +1972,11 @@ async function load({ fresh = false } = {}) {
     setText("load-status-label", data ? "Updating..." : "Loading records...");
     if (!data) prepareLoading();
     try {
-        const response = await fetch(
-            fresh ? "/api/data?refresh=1" : "/api/data",
-            {
-                cache: "no-store",
-            },
-        );
-        if (!response.ok) throw new Error("Unavailable");
-        const next = await response.json();
+        const next = await readArchive({ fresh });
+        if (data && next === data) {
+            $("notice").hidden = true;
+            return;
+        }
         if (
             !Array.isArray(next.plays) ||
             !Array.isArray(next.observations) ||
@@ -2013,12 +2013,14 @@ async function load({ fresh = false } = {}) {
         else if (["top", "history"].includes(view)) renderTable({ animate });
         document.body.dataset.ready = "true";
         restoreScroll(pendingScroll);
-    } catch {
+    } catch (error) {
         setText(
             "notice",
-            data
-                ? "Could not update. Showing the last loaded records. Retrying automatically."
-                : "No data available. Try again after syncing.",
+            error.code === "DATABASE_QUOTA_EXCEEDED"
+                ? "Database quota exceeded. Check Neon usage to restore access. Your local records are still saved."
+                : data
+                  ? "Could not update. Showing the last loaded records. Retrying automatically."
+                  : "No data available. Try again after syncing.",
         );
         $("notice").hidden = false;
         if (!data) {

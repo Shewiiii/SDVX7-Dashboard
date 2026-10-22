@@ -1,0 +1,311 @@
+const metadata = new Map();
+const clock = (seconds) =>
+    `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+const clamp = (value, maximum) => Math.max(0, Math.min(maximum, value));
+
+// Waveforms are prepared alongside the audio; opening Details never downloads a track.
+export function mountAudioPlayer(host, chart, plots) {
+    const request = new AbortController();
+    const { signal } = request;
+    const audio = new Audio();
+    audio.preload = "none";
+    audio.crossOrigin = "anonymous";
+    let record,
+        frame,
+        disposed = false,
+        position = 0,
+        seeking = false;
+
+    host.className = "details-audio";
+    host.innerHTML = `<div class="details-audio-heading"><span>Song audio</span><span class="details-audio-actions"><span class="details-audio-status" role="status">Loading audio...</span><span class="details-audio-download-action" hidden><span aria-hidden="true"> · </span><button type="button" class="text-button details-audio-download">Download</button></span></span></div>
+        <div class="details-audio-controls" hidden>
+            <button type="button" class="details-audio-toggle" aria-label="Play song" title="Play song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
+            <div class="details-audio-track"><div class="details-audio-wave"><svg viewBox="0 0 512 48" preserveAspectRatio="none" aria-hidden="true"></svg><input class="details-audio-seek" type="range" min="0" step="0.01" value="0" aria-label="Seek in song"></div><span class="details-audio-time">0:00</span></div>
+        </div><button type="button" class="text-button details-audio-retry" hidden>Try again</button>`;
+    const status = host.querySelector(".details-audio-status");
+    const controls = host.querySelector(".details-audio-controls");
+    const toggle = host.querySelector(".details-audio-toggle");
+    const wave = host.querySelector(".details-audio-wave");
+    const svg = wave.querySelector("svg");
+    const seek = host.querySelector(".details-audio-seek");
+    const time = host.querySelector(".details-audio-time");
+    const retry = host.querySelector(".details-audio-retry");
+    const downloadAction = host.querySelector(".details-audio-download-action");
+    const download = host.querySelector(".details-audio-download");
+    const fileFormat = () =>
+        record?.format === "flac" ||
+        (record &&
+            (new URL(record.url, location.href).pathname.endsWith(".flac") ||
+                new URL(record.url, location.href).searchParams.get(
+                    "format",
+                ) === "flac"))
+            ? "flac"
+            : "opus";
+    const downloadLabel = () =>
+        `Download (${fileFormat() === "flac" ? "FLAC" : `Opus${record?.bitrate ? ` · ${record.bitrate} kbps` : ""}`})`;
+
+    download.addEventListener(
+        "click",
+        async () => {
+            if (!record || download.disabled) return;
+            download.disabled = true;
+            download.textContent = "Downloading...";
+            try {
+                // A blob download works for CORS-enabled R2 URLs as well as preview.
+                const response = await fetch(record.url, { signal });
+                if (!response.ok) throw new Error("Download failed");
+                const blob = await response.blob();
+                if (disposed) return;
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download =
+                    `${chart.title || "Song"}${record.variant === "preview" ? " (preview)" : ""}`.replace(
+                        /[<>:"/\\|?*\x00-\x1f]/g,
+                        "_",
+                    ) +
+                    "." +
+                    fileFormat();
+                document.body.append(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } catch {
+                if (!disposed) status.textContent = "Could not download audio.";
+            } finally {
+                download.disabled = false;
+                download.textContent = downloadLabel();
+            }
+        },
+        { signal },
+    );
+    const lines = [...(plots?.querySelectorAll(".details-chart") || [])].map(
+        (section) => {
+            const line = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "line",
+            );
+            line.classList.add("details-playhead");
+            line.setAttribute(
+                "y1",
+                section.dataset.plot === "lanes" ? "0" : "18",
+            );
+            line.setAttribute(
+                "y2",
+                section.dataset.plot === "lanes" ? "112" : "76",
+            );
+            line.style.display = "none";
+            section.querySelector("svg").append(line);
+            return line;
+        },
+    );
+    let progress;
+    function update() {
+        if (!record || disposed) return;
+        if (audio.readyState && !seeking)
+            position = clamp(audio.currentTime, record.duration);
+        seek.value = position;
+        seek.setAttribute(
+            "aria-valuetext",
+            `${clock(position)} of ${clock(record.duration)}`,
+        );
+        time.textContent = `${clock(position)} / ${clock(record.duration)}`;
+        progress?.setAttribute("width", (512 * position) / record.duration);
+        const at = position + record.start - record.chart_offset;
+        const duration = chart.chart?.duration;
+        for (const line of lines) {
+            line.style.display =
+                duration > 0 && at >= 0 && at <= duration ? "" : "none";
+            const x = 52 + clamp(at / duration, 1) * 456;
+            line.setAttribute("x1", x);
+            line.setAttribute("x2", x);
+        }
+    }
+    function tick() {
+        update();
+        if (!disposed && !audio.paused && !audio.ended)
+            frame = requestAnimationFrame(tick);
+    }
+    function button() {
+        const playing = !audio.paused;
+        toggle.setAttribute("aria-label", playing ? "Pause song" : "Play song");
+        toggle.title = playing ? "Pause song" : "Play song";
+        toggle
+            .querySelector("path")
+            .setAttribute(
+                "d",
+                playing ? "M6 5h4v14H6zM14 5h4v14h-4z" : "M8 5v14l11-7z",
+            );
+    }
+    seek.addEventListener(
+        "input",
+        () => {
+            seeking = true;
+            position = Number(seek.value);
+            if (audio.readyState) audio.currentTime = position;
+            update();
+            seeking = false;
+        },
+        { signal },
+    );
+
+    function failed() {
+        status.textContent = "Could not play this audio.";
+        retry.hidden = false;
+        button();
+    }
+    toggle.addEventListener(
+        "click",
+        async () => {
+            if (!record) return;
+            if (!audio.paused) {
+                audio.pause();
+                return;
+            }
+            retry.hidden = true;
+            status.textContent = "Loading...";
+            try {
+                if (!audio.getAttribute("src")) audio.src = record.url;
+                if (audio.ended) position = 0;
+                await audio.play();
+            } catch {
+                if (!disposed) failed();
+            }
+        },
+        { signal },
+    );
+    audio.addEventListener(
+        "loadedmetadata",
+        () => {
+            audio.currentTime = clamp(position, audio.duration);
+            update();
+        },
+        { signal },
+    );
+    audio.addEventListener(
+        "playing",
+        () => {
+            status.textContent =
+                record.variant === "preview" ? "Preview" : "Full song";
+            button();
+            cancelAnimationFrame(frame);
+            tick();
+        },
+        { signal },
+    );
+    audio.addEventListener(
+        "waiting",
+        () => {
+            status.textContent = "Buffering...";
+        },
+        { signal },
+    );
+    for (const event of ["pause", "ended"])
+        audio.addEventListener(
+            event,
+            () => {
+                cancelAnimationFrame(frame);
+                update();
+                button();
+            },
+            { signal },
+        );
+    for (const event of ["timeupdate", "seeked"])
+        audio.addEventListener(event, update, { signal });
+    audio.addEventListener("error", failed, { signal });
+
+    async function load(force = false) {
+        status.textContent = "Loading audio...";
+        controls.hidden = true;
+        downloadAction.hidden = true;
+        retry.hidden = true;
+        const key = `${chart.music_id}:${chart.diff_idx}`;
+        try {
+            let saved = metadata.get(key);
+            if (force || !saved || Date.now() - saved.at > 300000) {
+                const response = await fetch(
+                    `/api/audio?music=${chart.music_id}&diff=${chart.diff_idx}`,
+                    { signal, cache: force ? "reload" : "default" },
+                );
+                if (!response.ok) throw new Error("unavailable");
+                const value = await response.json();
+                const url = new URL(value.url, location.href);
+                if (
+                    !(
+                        url.origin === location.origin &&
+                        url.pathname === "/api/audio-file"
+                    ) &&
+                    !/\.(opus|flac)$/.test(url.pathname)
+                )
+                    throw new Error("Unsupported audio format");
+                if (
+                    value.music_id !== chart.music_id ||
+                    value.diff_idx !== chart.diff_idx ||
+                    !(value.duration > 0 && value.duration <= 7200) ||
+                    !Number.isFinite(value.start) ||
+                    !Number.isFinite(value.chart_offset) ||
+                    !Array.isArray(value.peaks) ||
+                    value.peaks.length !== 128 ||
+                    !value.peaks.every(
+                        (v) => Number.isInteger(v) && v >= 0 && v <= 255,
+                    ) ||
+                    !(
+                        url.protocol === "https:" ||
+                        url.origin === location.origin
+                    )
+                )
+                    throw new Error("invalid");
+                saved = { at: Date.now(), record: value };
+                metadata.set(key, saved);
+                if (metadata.size > 64)
+                    metadata.delete(metadata.keys().next().value);
+            }
+            if (disposed) return;
+            record = saved.record;
+            seek.max = record.duration;
+            // Each path is local to this SVG; no document-wide clip IDs to collide.
+            const bars = Array.from({ length: 64 }, (_, i) => {
+                const height = Math.max(
+                    2,
+                    (Math.max(...record.peaks.slice(i * 2, i * 2 + 2)) / 255) *
+                        44,
+                );
+                return `M${i * 8 + 2} ${24 - height / 2}h4v${height}h-4z`;
+            }).join("");
+            svg.innerHTML = `<path class="details-audio-bars" d="${bars}"/><svg class="details-audio-progress" x="0" y="0" width="0" height="48" overflow="hidden"><path d="${bars}"/></svg>`;
+            progress = svg.querySelector(".details-audio-progress");
+            status.textContent =
+                record.variant === "preview" ? "Preview" : "Full song";
+            controls.hidden = false;
+            download.textContent = downloadLabel();
+            downloadAction.hidden = false;
+            update();
+        } catch {
+            if (disposed) return;
+            status.textContent = "Audio isn’t available for this chart yet.";
+            retry.hidden = false;
+        }
+    }
+    retry.addEventListener(
+        "click",
+        () => {
+            if (record) {
+                audio.pause();
+                audio.removeAttribute("src");
+                audio.load();
+            }
+            void load(true);
+        },
+        { signal },
+    );
+    void load();
+    return () => {
+        disposed = true;
+        request.abort();
+        cancelAnimationFrame(frame);
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+        lines.forEach((line) => line.remove());
+    };
+}

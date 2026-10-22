@@ -647,6 +647,26 @@ def settings() -> dict[str, Any]:
     }
 
 
+class DatabaseQuotaError(RuntimeError):
+    pass
+
+
+def http_failure(error, operation):
+    # Inspect only a known diagnostic code, never echo raw server responses.
+    try:
+        failure = json.loads(error.read(8192))
+        if (
+            isinstance(failure, dict)
+            and failure.get("code") == "DATABASE_QUOTA_EXCEEDED"
+        ):
+            return DatabaseQuotaError(
+                "Neon database quota exceeded. Check the project's Usage page. local records are preserved"
+            )
+    except (ValueError, OSError):
+        pass
+    return RuntimeError(f"{operation} returned HTTP {error.code}")
+
+
 def upload(
     url: str, token: str, payload: dict[str, Any], bypass: str | None = None
 ) -> None:
@@ -668,6 +688,10 @@ def upload(
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing timing histograms"
                 )
+            if payload.get("audio") and result.get("audio_schema") != 1:
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing audio"
+                )
             if payload.get("details") and result.get("details_schema", 0) < 2:
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing chart details"
@@ -681,7 +705,7 @@ def upload(
                 )
     except urllib.error.HTTPError as error:
         # Do not expose secrets, request headers, response contents, or connection URLs.
-        raise RuntimeError(f"Upload returned HTTP {error.code}") from None
+        raise http_failure(error, "Upload") from None
     except urllib.error.URLError:
         raise RuntimeError("Cannot reach dashboard") from None
 
@@ -699,7 +723,7 @@ def refresh_request(config: dict[str, Any]) -> int | None:
     except urllib.error.HTTPError as error:
         if error.code == 405:
             return None
-        raise RuntimeError(f"Sync check returned HTTP {error.code}") from None
+        raise http_failure(error, "Sync check") from None
     except urllib.error.URLError:
         raise RuntimeError("Cannot reach dashboard") from None
     requested, completed = result.get("requested_id"), result.get("completed_id")
@@ -710,6 +734,13 @@ def refresh_request(config: dict[str, Any]) -> int | None:
         or not 0 <= completed <= requested <= 2**53 - 1
     ):
         raise ValueError("Invalid dashboard sync status")
+    database_id = result.get("database_id")
+    if database_id is not None:
+        if not isinstance(database_id, str) or not re.fullmatch(
+            r"[a-f0-9]{32}", database_id
+        ):
+            raise ValueError("Invalid dashboard database identity")
+        config["database_id"] = database_id
     return requested if requested > completed else 0
 
 
@@ -730,12 +761,27 @@ def source_state(tracker: Path) -> tuple[tuple[int, int] | None, ...]:
 
 
 def sync_once(
-    config: dict[str, Any], tracker: Path, catalog: Catalog, *, force=False
+    config: dict[str, Any],
+    tracker: Path,
+    catalog: Catalog,
+    *,
+    force=False,
+    background_audio=False,
 ) -> None:
     state_path = ROOT / ".local/sync-state.json"
     saved = read_checkpoint(state_path)
-    endpoint_id = hashlib.sha256(config["url"].encode()).hexdigest()
+    # The public URL can stay unchanged when Vercel/Neon is replaced. Bind all
+    # database acknowledgements to the persistent identity returned by /api/sync.
+    destination = config["url"]
+    if config.get("database_id"):
+        destination += "\n" + config["database_id"]
+    endpoint_id = hashlib.sha256(destination.encode()).hexdigest()
     if saved.get("endpoint") != endpoint_id:
+        if saved:
+            print(
+                "Sync destination changed, replaying local history and metadata.",
+                flush=True,
+            )
         saved = {}
     # Replay old captures once to enrich existing plays without changing their IDs.
     if saved.get("play_schema") != PLAY_SCHEMA:
@@ -831,6 +877,19 @@ def sync_once(
                 f"({max(0, len(pending_ids) - 240)} remaining)."
             )
             catalog.covers_pending = True
+
+    # Optional audio failures must never stop scores, jackets, or details syncing.
+    try:
+        from scripts.audio import start_audio_sync, sync_audio
+
+        audio_sync = start_audio_sync if background_audio else sync_audio
+        audio_sync(config, tracker, catalog, endpoint_id)
+    except Exception as error:  # noqa: BLE001
+        catalog.audio_pending = False
+        print(
+            f"Audio sync pending ({type(error).__name__}). Check setup-audio.bat configuration. other syncing continues.",
+            flush=True,
+        )
 
 
 def sync_details(config, catalog, endpoint_id, priority=()):
@@ -955,18 +1014,27 @@ def sync_loop(
         try:
             now = time.monotonic()
             requested = 0
-            if not once and previous_source is not None and now >= next_check:
+            previous_database = config.get("database_id")
+            if now >= next_check:
                 status = refresh_request(config)
                 requested = status or 0
                 next_check = time.monotonic() + (30 if status is None else 2)
+            destination_changed = config.get("database_id") != previous_database
             current_source = source_state(tracker)
             if (
                 once
                 or requested
+                or destination_changed
                 or current_source != previous_source
                 or time.monotonic() >= next_sync
             ):
-                sync_once(config, tracker, catalog, force=previous_source is None)
+                sync_once(
+                    config,
+                    tracker,
+                    catalog,
+                    force=previous_source is None,
+                    background_audio=not once,
+                )
                 if requested:
                     upload(
                         config["url"],
@@ -980,6 +1048,7 @@ def sync_loop(
                     if (
                         getattr(catalog, "details_pending", False)
                         or getattr(catalog, "covers_pending", False)
+                        or getattr(catalog, "audio_pending", False)
                     )
                     else 30
                 )
@@ -989,7 +1058,7 @@ def sync_loop(
             print(f"Sync pending ({type(error).__name__}){detail}. Retrying.")
             if once:
                 raise SystemExit(1) from None
-            delay = min(30, delay * 2)
+            delay = 300 if isinstance(error, DatabaseQuotaError) else min(30, delay * 2)
             time.sleep(delay)
             next_check = 0
             continue

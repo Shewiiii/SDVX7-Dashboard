@@ -12,6 +12,14 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / ".local/sync-config.json"
 
 
+def with_https(value: str) -> str:
+    """Accept pasted hostnames while preserving an explicitly supplied scheme."""
+    value = value.strip()
+    if value.startswith("//"):
+        return "https:" + value
+    return "https://" + value if value and "://" not in value else value
+
+
 def load_config() -> dict[str, Any]:
     if not CONFIG_PATH.exists():
         return {}

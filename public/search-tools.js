@@ -32,8 +32,8 @@ export function initSearchTools(onReady) {
         }
         message(
             installed
-                ? "Checking search metadata…"
-                : "Loading additional search metadata…",
+                ? "Checking search metadata..."
+                : "Loading additional search metadata...",
         );
         task = (async () => {
             try {

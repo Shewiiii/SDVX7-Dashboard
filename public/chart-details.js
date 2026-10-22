@@ -1,5 +1,6 @@
 import { SONG_CATEGORIES as CATEGORIES } from "./song-metadata.js";
 import { DIFFS } from "./metrics.js";
+import { mountAudioPlayer } from "./audio-player.js";
 
 const VERSIONS = [
     "—",
@@ -242,13 +243,15 @@ export function createChartDetails() {
     } catch {
         /* Storage can be disabled or cleared. */
     }
-    let controller,
+    let disposeAudio,
+        controller,
         trigger,
         previousOverflow = "",
         closing = false,
         current;
 
     function showDetails(record) {
+        disposeAudio?.();
         body.replaceChildren();
         const subtitle = document.createElement("p");
         subtitle.className = "details-song";
@@ -318,8 +321,12 @@ export function createChartDetails() {
             list.append(cell);
         }
         body.append(subtitle, artist, list);
+        const player = document.createElement("section");
+        player.setAttribute("aria-label", "Song player");
+        body.append(player);
+        let plots;
         if (chart) {
-            const plots = document.createElement("div");
+            plots = document.createElement("div");
             plots.className = "details-plots";
             plots.innerHTML = timeline(chart);
             body.append(plots);
@@ -331,15 +338,18 @@ export function createChartDetails() {
                 "Chart statistics are unavailable for this difficulty.";
             body.append(note);
         }
+        disposeAudio = mountAudioPlayer(player, record, plots);
     }
 
     async function load() {
+        disposeAudio?.();
+        disposeAudio = null;
         controller?.abort();
         controller = new AbortController();
         const request = controller;
         body.setAttribute("aria-busy", "true");
         body.innerHTML =
-            '<p class="details-message" role="status">Loading details…</p>';
+            '<p class="details-message" role="status">Loading details...</p>';
         const key = `${current.music_id}:${current.diff_idx}`;
         const fallback = cache.get(key);
         try {
@@ -400,6 +410,8 @@ export function createChartDetails() {
     async function close() {
         if (!dialog.open || closing) return;
         closing = true;
+        disposeAudio?.();
+        disposeAudio = null;
         controller?.abort();
         dialog.classList.remove("is-visible");
         await Promise.allSettled(
@@ -431,6 +443,8 @@ export function createChartDetails() {
             void close();
     });
     dialog.addEventListener("close", () => {
+        disposeAudio?.();
+        disposeAudio = null;
         controller?.abort();
         closing = false;
         dialog.classList.remove("is-visible");

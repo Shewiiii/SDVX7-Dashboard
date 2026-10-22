@@ -2200,6 +2200,98 @@ footer {
     display: grid;
     gap: 14px;
 }
+.details-audio {
+    margin-bottom: 22px;
+    font-size: 12px;
+}
+.details-audio-heading {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-bottom: 8px;
+}
+.details-audio-status,
+.details-audio-time {
+    color: var(--muted);
+    font-size: 10px;
+}
+.details-audio-actions {
+    color: var(--muted);
+    font-size: 10px;
+}
+.details-audio-download {
+    font: inherit;
+    padding: 0;
+}
+.details-audio-controls:not([hidden]) {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+.details-audio-toggle {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+    border: 0;
+    border-radius: var(--control-radius);
+    background: var(--control-bg);
+    color: var(--accent);
+}
+.details-audio-toggle:hover {
+    background: var(--accent-wash);
+}
+.details-audio-toggle svg {
+    width: 20px;
+    fill: currentColor;
+}
+.details-audio-track {
+    min-width: 0;
+}
+.details-audio-wave {
+    position: relative;
+    border-radius: 4px;
+}
+.details-audio-wave > svg {
+    display: block;
+    width: 100%;
+    height: 36px;
+    pointer-events: none;
+}
+.details-audio-bars {
+    fill: var(--muted);
+    opacity: 0.45;
+}
+.details-audio-progress {
+    fill: var(--accent);
+}
+.details-audio-seek {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    touch-action: pan-y;
+}
+.details-audio-wave:has(.details-audio-seek:focus-visible) {
+    outline: 1px solid var(--accent);
+    outline-offset: 3px;
+}
+.details-audio-time {
+    display: block;
+    font-variant-numeric: tabular-nums;
+}
+.details-playhead {
+    stroke: var(--accent);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
 .details-chart h3 {
     display: flex;
     justify-content: space-between;

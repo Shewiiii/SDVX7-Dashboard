@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { sendAudioFile } from "./audio-http.mjs";
 import { packSearchIndex } from "../lib/search-index.mjs";
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
@@ -26,6 +28,7 @@ const types = {
     ".json": "application/json",
 };
 let exportTask = null;
+const audioTasks = new Map();
 let searchTask = null,
     searchCache = null,
     searchAt = 0;
@@ -119,12 +122,69 @@ createServer(async (req, res) => {
         ),
     );
     try {
-        if (req.method !== "GET") {
+        if (
+            req.method !== "GET" &&
+            !(req.method === "HEAD" && requestPath === "/api/audio-file")
+        ) {
             res.writeHead(405);
             res.end();
             return;
         }
         const url = new URL(req.url, "http://localhost");
+        if (url.pathname === "/api/audio-file") {
+            const id = url.searchParams.get("id");
+            const format = url.searchParams.get("format") || "opus";
+            if (
+                !/^[a-f0-9]{64}$/.test(id || "") ||
+                !["opus", "flac"].includes(format)
+            ) {
+                res.writeHead(400);
+                res.end();
+                return;
+            }
+            await sendAudioFile(
+                req,
+                res,
+                path.join(root, ".local/audio", id + "." + format),
+            );
+            return;
+        }
+        if (url.pathname === "/api/audio") {
+            const mid = url.searchParams.get("music"),
+                diff = url.searchParams.get("diff");
+            if (
+                !/^[1-9]\d{0,7}$/.test(mid || "") ||
+                Number(mid) > 10000000 ||
+                !/^[0-5]$/.test(diff || "")
+            ) {
+                res.writeHead(400);
+                res.end();
+                return;
+            }
+            const key = mid + ":" + diff;
+            if (!audioTasks.has(key))
+                audioTasks.set(
+                    key,
+                    runFile(
+                        python,
+                        [
+                            "-u",
+                            "-c",
+                            `from scripts.audio import preview; preview(${mid},${diff})`,
+                        ],
+                        { cwd: root, maxBuffer: 100000, timeout: 200000 },
+                    ).finally(() => audioTasks.delete(key)),
+                );
+            const result = await audioTasks.get(key);
+            if (result.stderr) process.stderr.write(result.stderr);
+            const record = JSON.parse(result.stdout);
+            res.writeHead(record ? 200 : 404, {
+                "Content-Type": types[".json"],
+                "Cache-Control": "no-store",
+            });
+            res.end(JSON.stringify(record || { error: "Audio unavailable" }));
+            return;
+        }
         if (url.pathname === "/api/search") {
             if (!searchCache || Date.now() - searchAt > 60000) {
                 if (!searchTask)
@@ -210,16 +270,58 @@ createServer(async (req, res) => {
                     "utf8",
                 ),
             );
-            const playtime = await runFile(python, ["-m", "scripts.playtime"], {
-                cwd: root,
-            });
-            data.state.playtime = JSON.parse(playtime.stdout);
-            if (playtime.stderr) process.stderr.write(playtime.stderr);
+            const section = url.searchParams.get("section") || "full";
+            const library = {
+                catalog: data.state.catalog || [],
+                appeal_cards: data.state.appeal_cards || [],
+            };
+            const versions = {
+                revision: data.synced_at || "empty",
+                catalog_revision: createHash("md5")
+                    .update(JSON.stringify(library))
+                    .digest("hex"),
+            };
+            const expected =
+                section === "catalog"
+                    ? versions.catalog_revision
+                    : versions.revision;
+            if (
+                url.searchParams.has("revision") &&
+                url.searchParams.get("revision") !== expected
+            ) {
+                res.writeHead(409, {
+                    "Content-Type": types[".json"],
+                    "Cache-Control": "no-store",
+                });
+                res.end(JSON.stringify({ code: "REVISION_CHANGED" }));
+                return;
+            }
+            let result;
+            if (section === "revision") result = versions;
+            else if (section === "catalog")
+                result = {
+                    catalog_revision: versions.catalog_revision,
+                    state: library,
+                };
+            else {
+                const playtime = await runFile(
+                    python,
+                    ["-m", "scripts.playtime"],
+                    { cwd: root },
+                );
+                data.state.playtime = JSON.parse(playtime.stdout);
+                if (playtime.stderr) process.stderr.write(playtime.stderr);
+                if (section === "archive") {
+                    delete data.state.catalog;
+                    delete data.state.appeal_cards;
+                }
+                result = { ...data, ...versions };
+            }
             res.writeHead(200, {
                 "Content-Type": types[".json"],
                 "Cache-Control": "no-store",
             });
-            res.end(JSON.stringify(data));
+            res.end(JSON.stringify(result));
             return;
         }
         const relative = decodeURIComponent(
@@ -244,8 +346,10 @@ createServer(async (req, res) => {
             error.stderr || error.message,
         );
         const status = error.code === "ENOENT" ? 404 : 500;
-        res.writeHead(status);
-        res.end(status === 404 ? "Not found" : "Preview request failed");
+        if (!res.headersSent) {
+            res.writeHead(status);
+            res.end(status === 404 ? "Not found" : "Preview request failed");
+        } else res.destroy();
     }
 }).listen(port, "127.0.0.1", () =>
     console.log(`Local dashboard: http://localhost:${port}`),

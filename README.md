@@ -43,6 +43,35 @@ In addition to the requirements for the tracker, you also need a [Vercel account
 
 Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `start-tracker-with-dashboard.bat`.
 
-I may also change the caching or database structure, so you may want to recreate a new project on Vercel, and delete the old one and its database, if the site is not responding anymore. You will not lose data by doing so.
+I may also change the caching or database structure, so you may want to recreate a new project on Vercel, and delete the old one and its database, if the site is not responding anymore, as well as `.local/` and `.vercel/`. You will not lose data by doing so.
 
 Connection settings and sync logs are in `.local/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
+
+## Optional song preview
+
+The dashboard supports audio playback in search details. By default, it only plays the preview on Vercel, and cannot play locally. To solve this, additional setup is required.
+
+### Local preview:
+
+- Install [FFmpeg](https://ffmpeg.org/download.html) and add its `bin` folder to PATH.
+- Run `preview-dashboard.bat` to run the website locally.
+
+### Full song on Vercel:
+
+> [!CAUTION]
+> This setup is overkill for most people: a custom domain and an R2 API token are needed, which requires an R2 subscription. **You cannot hard cap storage, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** The Opus option should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
+>
+> Instead, [use my dashboard](https://sdvx.shewi.app/): it serves FLAC files*.
+
+Songs upload will occur during the first sync, which may take a long time.
+
+- Create a [Cloudflare account](https://dash.cloudflare.com/login).
+- Under [R2 Object Storage](https://dash.cloudflare.com/?to=/:account/r2/overview), create a bucket. Leave the options to default.
+- Under Domains > Overview, Regiser a custom domain.
+- Click on "Continue to activation" and follow the instructions.
+- After a few hours, go back to your bucket' settings, and add a custom domain (e.g. `audio.[yourdomain]`). Alternatively, use the public development URL for now.
+- Run `setup-audio.bat`, select [2], and follow the instructions until "Cloudflare account ID".
+- Go back to R2 Object Storage, copy your account ID and paste it in the setup.
+- Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
+
+*While the games stores the audio files under a format similar to WAV, the audio content is precompressed, so it is not lossless.

@@ -23,7 +23,7 @@ export default async function handler(req, res) {
                 .json({ error: "Details have not synced yet" });
         res.setHeader(
             "Cache-Control",
-            "private, max-age=300, stale-if-error=86400",
+            "public, max-age=300, s-maxage=300, stale-if-error=86400",
         );
         return res.status(200).json(rows[0].record);
     } catch {

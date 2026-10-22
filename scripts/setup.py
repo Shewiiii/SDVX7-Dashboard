@@ -21,13 +21,14 @@ from scripts.companion import (
     save_config,
     shared_settings,
     tracker_python,
+    with_https,
 )
 
 VERCEL_VERSION = "63.1.2"
 
 
 def origin(value: str) -> str:
-    parsed = urlparse(value.strip().rstrip("/"))
+    parsed = urlparse(with_https(value).rstrip("/"))
     if (
         parsed.scheme != "https"
         or not parsed.hostname
@@ -287,6 +288,10 @@ def main(argv: list[str] | None = None) -> int:
     config = load_config()
     tracker = resolve_tracker()
     python = check_tracker(tracker)
+    from scripts.audio import configuration
+    from scripts.audio_setup import apply_media_policy
+
+    apply_media_policy(configuration())
     node, npm = node_tools()
     run([npm, "ci", "--no-audit", "--no-fund"])
     if args.update:
@@ -304,6 +309,7 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("Choose 1 or 2.")
     run([str(python), "-c", "from scripts.sync import run; run(once=True)"])
     print("Ready. Use Start-tracker-with-dashboard.bat for future sessions.")
+    print("Optional song playback: See README.")
     return 0
 
 

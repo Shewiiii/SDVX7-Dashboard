@@ -1,4 +1,5 @@
-import { database, initialize } from "../lib/database.mjs";
+import { cleanAudio } from "../lib/audio.mjs";
+import { database, initialize, databaseFailure } from "../lib/database.mjs";
 import { syncStatus, completeRefresh } from "../lib/refresh.mjs";
 import {
     authorized,
@@ -22,13 +23,13 @@ export default async function handler(req, res) {
                 ok: true,
                 ...(await syncStatus(database())),
             });
-        } catch {
+        } catch (error) {
             return res
                 .status(503)
-                .json({ error: "Sync unavailable. Retry later" });
+                .json(databaseFailure(error, "Sync unavailable. Retry later"));
         }
     }
-    let plays, observations, state, covers, details, refreshId;
+    let plays, observations, state, covers, details, audio, refreshId;
     try {
         const body =
             typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -55,6 +56,12 @@ export default async function handler(req, res) {
         )
             throw new Error("Invalid chart details batch");
         details = (body.details || []).map(cleanChartDetail);
+        if (
+            body.audio !== undefined &&
+            (!Array.isArray(body.audio) || body.audio.length > 24)
+        )
+            throw Error("Invalid audio batch");
+        audio = (body.audio || []).map(cleanAudio);
         refreshId = body.refresh_id;
         if (
             refreshId !== undefined &&
@@ -68,6 +75,11 @@ export default async function handler(req, res) {
         const sql = database();
         await initialize(sql);
         const candidates = [
+            ...audio.map((record) => ({
+                kind: "audio",
+                id: `${record.music_id}:${record.diff_idx}`,
+                record,
+            })),
             ...plays.map((record) => ({
                 kind: "play",
                 id: recordId(record),
@@ -109,6 +121,12 @@ export default async function handler(req, res) {
           'playtime', COALESCE(EXCLUDED.record->'playtime', dashboard_state.record->'playtime', 'null'::jsonb),
           'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb)),
         synced_at = now()`);
+        // Any changed play/observation batch must advance the lightweight archive
+        // revision, even when the accompanying profile state is unchanged.
+        if (!state && (plays.length || observations.length))
+            queries.push(
+                sql`UPDATE dashboard_state SET synced_at = now() WHERE id = 1`,
+            );
         await sql.transaction(queries);
         if (refreshId !== undefined) await completeRefresh(sql, refreshId);
         return res.status(200).json({
@@ -116,11 +134,12 @@ export default async function handler(req, res) {
             accepted: rows.length,
             play_schema: 4,
             details_schema: 2,
+            audio_schema: 1,
             catalog_schema: 3,
         });
-    } catch {
+    } catch (error) {
         return res
             .status(503)
-            .json({ error: "Database unavailable. Retry later" });
+            .json(databaseFailure(error, "Database unavailable. Retry later"));
     }
 }

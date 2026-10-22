@@ -43,7 +43,8 @@ In addition to the requirements for the tracker, you also need a [Vercel account
 
 Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `start-tracker-with-dashboard.bat`.
 
-I may also change the caching or database structure, so you may want to recreate a new project on Vercel, and delete the old one and its database, if the site is not responding anymore, as well as `.local/` and `.vercel/`. You will not lose data by doing so.
+I might change the caching or database structure later with no backward compatibility possible.  
+If the site is not responding anymore because of this. delete your current Vercel project, its database, as well as `.local/` and `.vercel/`, then run again `setup.bat`. You will not lose data by doing so, except cache.
 
 Connection settings and sync logs are in `.local/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
 
@@ -61,7 +62,7 @@ The dashboard supports audio playback in search details. By default, it only pla
 > [!CAUTION]
 > This setup is overkill for most people: a custom domain and an R2 API token are needed, which requires an R2 subscription. **You cannot hard cap storage, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** The Opus option should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
 >
-> Instead, [use my dashboard](https://sdvx.shewi.app/): it serves FLAC files*.
+> Instead, [use my dashboard](https://sdvx.shewi.app/): it serves FLAC files\*.
 
 Songs upload will occur during the first sync, which may take a long time.
 
@@ -74,4 +75,4 @@ Songs upload will occur during the first sync, which may take a long time.
 - Go back to R2 Object Storage, copy your account ID and paste it in the setup.
 - Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
-*While the game stores the audio files under a format similar to WAV, the audio content in it is already compressed, so it is not lossless.
+\*While the game stores the audio files under a format similar to WAV, the audio content in it is already compressed, so it is not lossless.

@@ -31,9 +31,10 @@ const time = (value) =>
 
 function timeline(chart) {
     const density = chart.density.map((value) => value / (chart.duration / 64));
-    const lasers = chart.laser_density?.map(
-        (value) => value / (chart.duration / 64),
-    );
+    const lasers =
+        chart.laser_density_version === 2
+            ? chart.laser_density?.map((value) => value / (chart.duration / 64))
+            : null;
     const peak = Math.max(1, ...density, ...(lasers || []));
     const seriesPoints = (series) =>
         series
@@ -70,7 +71,7 @@ function timeline(chart) {
                     `<text x="44" y="${y + 3}" text-anchor="end">${Number(value.toFixed(1)).toLocaleString()}</text>`,
             )
             .join("");
-    return `<section class="details-chart" data-plot="density"><h3>Note density <span>Starts per second</span></h3><div class="details-density-legend"><span><i class="dot details-btfx-dot" aria-hidden="true"></i>BT/FX</span><span><i class="dot details-laser-dot" aria-hidden="true"></i>Laser${lasers ? "" : " · awaiting sync"}</span></div><svg viewBox="0 0 520 96" role="img" aria-label="BT/FX and laser start density across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
+    return `<section class="details-chart" data-plot="density"><h3>Note density <span>Actions per second</span></h3><div class="details-density-legend"><span><i class="dot details-btfx-dot" aria-hidden="true"></i>BT/FX</span><span><i class="dot details-laser-dot" aria-hidden="true"></i>Laser${lasers ? "" : " · awaiting sync"}</span></div><svg viewBox="0 0 520 96" role="img" aria-label="BT/FX and laser action density across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
         [
             [18, peak],
             [47, peak / 2],
@@ -160,19 +161,22 @@ function inspectPlots(plots, chart) {
                 popup.textContent = `${preciseTime(at)} · ${count(point[1])} BPM`;
             } else if (kind === "density") {
                 const starts = chart.density[index];
-                const laserStarts = chart.laser_density?.[index];
+                const laserActions =
+                    chart.laser_density_version === 2
+                        ? chart.laser_density?.[index]
+                        : undefined;
                 densityHeading.textContent = `${preciseTime(start)}–${preciseTime(end)}`;
                 [
                     starts,
-                    laserStarts,
-                    laserStarts === undefined
+                    laserActions,
+                    laserActions === undefined
                         ? undefined
-                        : starts + laserStarts,
+                        : starts + laserActions,
                 ].forEach((value, i) => {
                     densityValues[i].textContent =
                         value === undefined
                             ? "—"
-                            : `${count(value)} starts · ${(value / (end - start)).toFixed(2)}/s`;
+                            : `${count(value)} ${i === 0 ? "starts" : "actions"} · ${(value / (end - start)).toFixed(2)}/s`;
                 });
             } else {
                 popup.textContent = `${preciseTime(start)}–${preciseTime(end)}\n${LANES.map(
@@ -269,7 +273,7 @@ export function createChartDetails() {
     const body = document.getElementById("chart-details-body");
     const closeButton = document.getElementById("chart-details-close");
     const cache = new Map();
-    const cacheKey = "chart-details-cache-v3";
+    const cacheKey = "chart-details-cache-v4";
     try {
         for (const [key, entry] of JSON.parse(
             localStorage.getItem(cacheKey) || "[]",
@@ -398,10 +402,11 @@ export function createChartDetails() {
             if (
                 !saved ||
                 Date.now() - saved.at > 3600000 ||
-                (saved.record.chart && !saved.record.chart.laser_density)
+                (saved.record.chart &&
+                    saved.record.chart.laser_density_version !== 2)
             ) {
                 const response = await fetch(
-                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=2`,
+                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=3`,
                     { signal: request.signal },
                 );
                 if (!response.ok)

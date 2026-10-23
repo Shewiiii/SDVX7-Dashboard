@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 BINS = 64
-SCHEMA = 2
+SCHEMA = 3
 logger = logging.getLogger(__name__)
 
 
@@ -106,6 +106,7 @@ def parse_chart(path):
 
     for lane in range(8):
         active, previous_time = False, None
+        previous_position, previous_direction = None, None
         for row in sections.get(f"TRACK{lane + 1}", []):
             if len(row) < 3 or not positions.match(row[0]):
                 continue
@@ -113,15 +114,37 @@ def parse_chart(path):
             index = bin_at(time)
             if lane in (0, 7):
                 flag = int(row[2])
+                position = float(row[1])
+                if not math.isfinite(position):
+                    raise ValueError("Invalid laser position")
                 if not active or flag == 1:
                     counts["laser_sections"] += 1
                     laser_density[index] += 1
                     active = True
+                    previous_direction = None
                 elif previous_time is not None:
                     for j in range(bin_at(previous_time), index + 1):
                         lanes[lane][j] = 1
+                    delta = position - previous_position
+                    # Compare consecutive segment directions, not speeds. The
+                    # action occurs at the shared vertex (previous_time).
+                    # Ignore duplicate points, but retain same-time slams.
+                    if time > previous_time or not math.isclose(delta, 0, abs_tol=1e-6):
+                        direction = (
+                            0
+                            if math.isclose(delta, 0, abs_tol=1e-6)
+                            else (1 if delta > 0 else -1)
+                        )
+                        if (
+                            direction != 0
+                            and previous_direction is not None
+                            and direction != previous_direction
+                        ):
+                            laser_density[bin_at(previous_time)] += 1
+                        previous_direction = direction
                 lanes[lane][index] = 1
                 previous_time = time
+                previous_position = position
                 if flag == 2:
                     active = False
             else:
@@ -141,6 +164,7 @@ def parse_chart(path):
         "counts": counts,
         "density": density,
         "laser_density": laser_density,
+        "laser_density_version": 2,
         "lanes": lanes,
         "bpm_changes": changes,
         "bpm_change_count": max(0, len(tempos) - 1),

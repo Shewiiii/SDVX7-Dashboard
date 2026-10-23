@@ -75,6 +75,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     let record,
         frame,
         disposed = false,
+        pageHidden = false,
         position = 0,
         seeking = false,
         buffering = false,
@@ -257,7 +258,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         button();
     }
     async function togglePlayback() {
-        if (!record) return;
+        if (disposed || pageHidden || !record) return;
         if (preparing) {
             playRequest++;
             preparing = false;
@@ -427,6 +428,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         lines.forEach((line) => line.remove());
     };
     dispose.refreshSource = () => {
+        if (disposed || pageHidden) return;
         const resume = preparing || !audio.paused;
         playRequest++;
         preparing = false;
@@ -447,5 +449,30 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         audio.preservesPitch = true;
         update(true);
     };
+    // Navigation can leave an effect render or play() request pending.
+    window.addEventListener(
+        "pagehide",
+        () => {
+            pageHidden = true;
+            playRequest++;
+            preparing = false;
+            audio.pause();
+            cancelAnimationFrame(frame);
+            audio.removeAttribute("src");
+            audio.load();
+            sourceLabel = undefined;
+            status.textContent = "Paused";
+            button();
+        },
+        { signal },
+    );
+    // A pageshow stays paused, but the user can explicitly play it again.
+    window.addEventListener(
+        "pageshow",
+        () => {
+            pageHidden = false;
+        },
+        { signal },
+    );
     return dispose;
 }

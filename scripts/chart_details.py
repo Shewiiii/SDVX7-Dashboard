@@ -138,7 +138,9 @@ def parse_chart(path, *, full=False):
                     active = True
                     previous_direction = None
                     if full:
-                        lasers.append({"side": 0 if lane == 0 else 1, "points": []})
+                        lasers.append(
+                            {"side": 0 if lane == 0 else 1, "points": [], "ranges": []}
+                        )
                         effects["laser_filters"].append([])
                 elif previous_time is not None:
                     for j in range(bin_at(previous_time), index + 1):
@@ -165,6 +167,11 @@ def parse_chart(path, *, full=False):
                 previous_position = position
                 if full:
                     lasers[-1]["points"].append([round(time, 6), position])
+                    # Keep authored positions for density and audio effects,
+                    # extended range is a separate visual transform.
+                    lasers[-1]["ranges"].append(
+                        2 if len(row) > 5 and int(row[5]) == 2 else 1
+                    )
                     effects["laser_filters"][-1].append(
                         int(row[4]) if len(row) > 4 else 0
                     )
@@ -181,6 +188,9 @@ def parse_chart(path, *, full=False):
                 for j in range(index, bin_at(end) + 1):
                     lanes[lane][j] += 1
     if full:
+        for laser in lasers:
+            if 2 not in laser["ranges"]:
+                del laser["ranges"]
         return {
             "schema": 1,
             "duration": round(duration, 6),

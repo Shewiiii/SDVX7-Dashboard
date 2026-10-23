@@ -9,7 +9,7 @@ from pathlib import Path
 from scripts.chart_details import parse_chart
 from scripts.companion import ROOT, resolve_tracker
 
-SCHEMA = 4  # Full audio effect schedules and shared samples, including legacy timing.
+SCHEMA = 5  # Preserve extended laser ranges.
 
 
 def prepare(details, mid, diff):

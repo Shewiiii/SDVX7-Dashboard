@@ -41,6 +41,13 @@ export function validTimeline(value, chart) {
             50000,
             (l) =>
                 (l.side === 0 || l.side === 1) &&
+                (l.ranges === undefined ||
+                    (rows(
+                        l.ranges,
+                        200000,
+                        (range) => range === 1 || range === 2,
+                    ) &&
+                        l.ranges.length === l.points?.length)) &&
                 rows(
                     l.points,
                     200000,
@@ -80,6 +87,7 @@ export function validTimeline(value, chart) {
 const timingCache = new WeakMap();
 const SPEED_KEY = "sdvx-chart-mod-speed";
 const FPS_KEY = "sdvx-chart-fps";
+const EXTENDED_LASERS_KEY = "sdvx-chart-extended-lasers";
 
 export function createFrameLimiter(getLimit) {
     let last = -Infinity;
@@ -150,10 +158,21 @@ export function chartTiming(chart) {
             beatAt(b),
             lane,
         ]),
-        lasers: chart.lasers.map((l) => ({
-            side: l.side,
-            points: l.points.map(([at, x]) => [beatAt(at), x]),
-        })),
+        lasers: chart.lasers.map((l) => {
+            const points = l.points.map(([at, x]) => [beatAt(at), x]);
+            return {
+                side: l.side,
+                points,
+                // USC's extended range doubles the span about its midpoint.
+                // Cache both views without changing audio/filter coordinates.
+                extendedPoints: l.ranges?.includes(2)
+                    ? points.map(([at, x], i) => [
+                          at,
+                          l.ranges[i] === 2 ? x * 2 - 0.5 : x,
+                      ])
+                    : points,
+            };
+        }),
         measures: chart.measures.map(([at, n]) => [beatAt(at), n]),
     };
     timing.chips = timing.buttons.filter(([a, b]) => a === b);
@@ -169,22 +188,14 @@ export function chartTiming(chart) {
     });
     timing.chipSeconds = chart.buttons.filter(([a, b]) => a === b);
     timing.holdSeconds = chart.buttons.filter(([a, b]) => a !== b);
-    timing.extent = 1;
-    for (const laser of timing.lasers)
-        for (const [, x] of laser.points)
-            timing.extent = Math.max(
-                timing.extent,
-                1 - (x * 5) / 3,
-                1 + ((x - 1) * 5) / 3,
-            );
     timingCache.set(chart, timing);
     return timing;
 }
 
 // Six lane widths, as in USC: four BT lanes between the two laser lanes.
-// Reserve horizontal room for chart positions outside the usual 0..1 range.
-export function chartLayout(width, height, timing) {
-    const track = Math.min(340, (width - 56) / timing.extent);
+// Keep the lane size fixed; extended lasers may leave the canvas on mobile.
+export function chartLayout(width, height) {
+    const track = Math.min(340, width - 56);
     const lane = track / 6,
         left = (width - track) / 2;
     return {
@@ -240,7 +251,13 @@ export function chartHitEffects(chart, at) {
     return effects;
 }
 
-export function drawChart(canvas, chart, time, hiSpeed = 1) {
+export function drawChart(
+    canvas,
+    chart,
+    time,
+    hiSpeed = 1,
+    extendedLasers = true,
+) {
     const width = canvas.clientWidth,
         height = canvas.clientHeight;
     if (!width || !height) return;
@@ -259,7 +276,6 @@ export function drawChart(canvas, chart, time, hiSpeed = 1) {
     const { track, lane, left, bottom, laneBottom, laserX } = chartLayout(
         width,
         height,
-        timing,
     );
     const speed = ((bottom - 20) * hiSpeed) / 8;
     const now = timing.beatAt(time),
@@ -365,7 +381,7 @@ export function drawChart(canvas, chart, time, hiSpeed = 1) {
         ctx.stroke();
     };
     for (const laser of timing.lasers) {
-        const points = laser.points;
+        const points = extendedLasers ? laser.extendedPoints : laser.points;
         if (
             !points.length ||
             points.at(-1)[0] < now ||
@@ -607,6 +623,7 @@ export function createChartViewer() {
                             </div>
                             <label class="settings-control" for="chart-fps"><span>FPS limit</span><output for="chart-fps"></output><input id="chart-fps" type="range" min="15" max="245" step="5" value="245"></label>
                             <label class="settings-control" for="chart-offset" title="Positive values delay chart visuals relative to the audio."><span>Offset</span><output for="chart-offset">0 ms</output><input id="chart-offset" type="range" min="-500" max="500" step="1" value="0"></label>
+                            <div class="settings-row"><span id="chart-extended-lasers-label">Extended lasers</span><div class="segmented" role="group" aria-labelledby="chart-extended-lasers-label"><button type="button" data-extended-lasers="on" aria-pressed="true">On</button><button type="button" data-extended-lasers="off" aria-pressed="false">Off</button></div></div>
                             <div class="settings-group"><div class="settings-row"><span id="chart-effects-label">Sound effects</span><div class="segmented" role="group" aria-labelledby="chart-effects-label" aria-describedby="chart-effects-hint"><button type="button" data-chart-effects="on" aria-pressed="true">On</button><button type="button" data-chart-effects="off" aria-pressed="false">Off</button></div></div><small id="chart-effects-hint" class="settings-hint">May differ from the game</small></div>
                             <div class="settings-footer"><button class="text-button chart-viewer-settings-reset" type="button">Reset</button></div>
                         </section>
@@ -636,22 +653,24 @@ export function createChartViewer() {
                 hiSpeed = 1,
                 modSpeed = 700,
                 fpsLimit = 0,
-                offsetMs = 0;
+                offsetMs = 0,
+                extendedLasers = true;
             const playback = createChartPlayback({ signal });
             const effects = createChartAudio({
                 getChart: () => timeline,
                 signal,
             });
-            const setEffects = (enabled, persist = false) => {
-                effects.enabled = enabled;
-                for (const button of body.querySelectorAll(
-                    "[data-chart-effects]",
-                )) {
+            const selectToggle = (attribute, enabled) => {
+                for (const button of body.querySelectorAll(`[${attribute}]`)) {
                     const selected =
-                        (button.dataset.chartEffects === "on") === enabled;
+                        (button.getAttribute(attribute) === "on") === enabled;
                     button.setAttribute("aria-pressed", String(selected));
                     button.classList.toggle("selected", selected);
                 }
+            };
+            const setEffects = (enabled, persist = false) => {
+                effects.enabled = enabled;
+                selectToggle("data-chart-effects", enabled);
                 if (persist) {
                     try {
                         localStorage.setItem(
@@ -676,12 +695,10 @@ export function createChartViewer() {
             // Reuse its sliding highlight and release the observers on close.
             void import("./motion.js").then(({ initSegmentedControl }) => {
                 if (signal.aborted) return;
-                const cleanup = initSegmentedControl(
-                    settings.querySelector(
-                        '[aria-labelledby="chart-effects-label"]',
-                    ),
-                );
-                signal.addEventListener("abort", cleanup, { once: true });
+                for (const control of settings.querySelectorAll(".segmented")) {
+                    const cleanup = initSegmentedControl(control);
+                    signal.addEventListener("abort", cleanup, { once: true });
+                }
             });
             for (const button of body.querySelectorAll("[data-chart-effects]"))
                 button.addEventListener(
@@ -694,6 +711,8 @@ export function createChartViewer() {
                 const saved = Number(localStorage.getItem(SPEED_KEY));
                 if (Number.isFinite(saved) && saved > 0) modSpeed = saved;
                 const savedFps = Number(localStorage.getItem(FPS_KEY));
+                extendedLasers =
+                    localStorage.getItem(EXTENDED_LASERS_KEY) !== "false";
                 if (
                     Number.isFinite(savedFps) &&
                     savedFps >= 15 &&
@@ -711,8 +730,37 @@ export function createChartViewer() {
                         timeline,
                         time - offsetMs / 1000,
                         hiSpeed,
+                        extendedLasers,
                     );
             };
+            const setExtendedLasers = (enabled, persist = false) => {
+                extendedLasers = enabled;
+                selectToggle("data-extended-lasers", enabled);
+                if (persist) {
+                    try {
+                        localStorage.setItem(
+                            EXTENDED_LASERS_KEY,
+                            String(enabled),
+                        );
+                    } catch {
+                        /* Optional storage. */
+                    }
+                }
+                draw();
+            };
+            setExtendedLasers(extendedLasers);
+            for (const button of body.querySelectorAll(
+                "[data-extended-lasers]",
+            ))
+                button.addEventListener(
+                    "click",
+                    () =>
+                        setExtendedLasers(
+                            button.dataset.extendedLasers === "on",
+                            true,
+                        ),
+                    { signal },
+                );
             const setFps = (value, persist = false) => {
                 fpsLimit = value >= 245 ? 0 : value;
                 fpsSlider.value = fpsLimit || 245;
@@ -826,6 +874,7 @@ export function createChartViewer() {
                     setLaneSpeed(7);
                     setFps(245, true);
                     setEffects(true, true);
+                    setExtendedLasers(true, true);
                 },
                 { signal },
             );

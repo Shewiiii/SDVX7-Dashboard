@@ -134,7 +134,7 @@ export default async function handler(req, res) {
             accepted: rows.length,
             play_schema: 4,
             details_schema: 4,
-            audio_schema: 1,
+            audio_schema: 2,
             catalog_schema: 3,
         });
     } catch (error) {

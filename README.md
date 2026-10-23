@@ -48,9 +48,9 @@ If the site is not responding anymore because of this. delete your current Verce
 
 Connection settings and sync logs are in `.local/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
 
-## Optional song preview
+## Optional song and chart preview
 
-The dashboard supports audio playback in search details. By default, it only plays the preview on Vercel, and cannot play locally. To solve this, additional setup is required.
+The dashboard supports audio playback in search details and chart preview with sound effects. But default, it only plays the preview on Vercel, and cannot play anything locally. To solve this, additional setup is required.
 
 ### Local preview:
 
@@ -62,7 +62,7 @@ The dashboard supports audio playback in search details. By default, it only pla
 > [!CAUTION]
 > This setup is overkill for most people: a custom domain and an R2 API token are needed, which requires an R2 subscription. **You cannot hard cap storage, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** The Opus option should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
 >
-> Instead, [use my dashboard](https://sdvx.shewi.app/): it serves FLAC files\*.
+> Instead, [use my dashboard](https://sdvx.shewi.app/).
 
 Songs upload will occur during the first sync, which may take a long time.
 
@@ -75,4 +75,7 @@ Songs upload will occur during the first sync, which may take a long time.
 - Go back to R2 Object Storage, copy your account ID and paste it in the setup.
 - Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
-\*While the game stores the audio files under a format similar to WAV, the audio content in it is already compressed, so it is not lossless.
+## Credits
+
+- The local proxy reuses the e-amusement decoding utilities from [RyuNET-core](https://github.com/Ryu7w7/RyuNET-core).
+- Chart view and scroll speed logic from [Unnamed SDVC Clone](https://github.com/Drewol/unnamed-sdvx-clone).

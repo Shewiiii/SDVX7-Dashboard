@@ -5,7 +5,11 @@ import { pipeline } from "node:stream/promises";
 export async function sendAudioFile(req, res, file) {
     const { size } = await stat(file);
     const headers = {
-        "Content-Type": file.endsWith(".flac") ? "audio/flac" : "audio/ogg",
+        "Content-Type": file.endsWith(".wav")
+            ? "audio/wav"
+            : file.endsWith(".flac")
+              ? "audio/flac"
+              : "audio/ogg",
         "Accept-Ranges": "bytes",
         "Cache-Control": "public, max-age=31536000, immutable",
     };

@@ -36,6 +36,7 @@ import { svgElement, pathData } from "./svg.js";
 import { createCalculator } from "./calculator.js";
 import { createAppealCardHelper } from "./appeal-cards.js";
 import { radarMarkup, paintRadar } from "./radar.js";
+import { createChartViewer } from "./chart-viewer.js";
 import { createChartDetails } from "./chart-details.js";
 
 const $ = (id) => document.getElementById(id);
@@ -330,6 +331,7 @@ let catalog = [],
     activeMatch = -1;
 let cleanupDifficultyControl = null;
 const chartDetails = createChartDetails();
+const chartViewer = createChartViewer();
 const songLibrary = createLibrary(
     () => data,
     () => catalog,
@@ -1711,7 +1713,7 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
     const difficulty = song.difficulties.find(
         (d) => d.diff_idx === selected.diff_idx,
     );
-    const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><div class="selected-song-actions"><button type="button" class="calculator-link" data-chart-details><span class="action-info-icon" aria-hidden="true">i</span> Details</button><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div></div>${radarMarkup(difficulty.radar)}</div>`;
+    const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div><div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((p) => p.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div></div><div class="selected-song-actions"><button type="button" class="calculator-link" data-chart-details><span class="action-info-icon" aria-hidden="true">i</span> Details</button><button type="button" class="calculator-link" data-view-chart hidden>View chart</button><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div></div>${radarMarkup(difficulty.radar)}</div>`;
     const chart = $("selected-chart");
     const tabs = chart.querySelector(".difficulty-tabs");
     const buttons = [...(tabs?.querySelectorAll("button") || [])];
@@ -1751,6 +1753,7 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
         chart.innerHTML = songMarkup;
         chart.dataset.musicId = selected.music_id;
     }
+    void chartViewer.updateButton(chart.querySelector("[data-view-chart]"), selected);
     paintRadar($("selected-chart"), difficulty.radar, {
         restart: restartRadar,
     });
@@ -1904,6 +1907,18 @@ $("song-options").addEventListener("click", (event) => {
 document.addEventListener("click", (event) => {
     if (!event.target.closest('.song-search, [data-view="search"]'))
         closeMatches();
+    const viewerButton = event.target.closest("[data-view-chart]");
+    if (viewerButton && selected) {
+        const song = songs.get(selected.music_id);
+        const diff = song?.difficulties.find(
+            (d) => d.diff_idx === selected.diff_idx,
+        );
+        chartViewer.open(
+            { ...selected, title: song?.title, level: diff?.level },
+            viewerButton,
+        );
+        return;
+    }
     const detailsButton = event.target.closest("[data-chart-details]");
     if (detailsButton && selected) {
         chartDetails.open(selected, detailsButton);

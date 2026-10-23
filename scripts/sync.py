@@ -688,7 +688,9 @@ def upload(
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing timing histograms"
                 )
-            if payload.get("audio") and result.get("audio_schema") != 1:
+            if payload.get("audio") and result.get("audio_schema", 0) < (
+                2 if any(a.get("chart_url") for a in payload["audio"]) else 1
+            ):
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing audio"
                 )

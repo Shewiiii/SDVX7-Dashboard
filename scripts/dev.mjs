@@ -124,13 +124,25 @@ createServer(async (req, res) => {
     try {
         if (
             req.method !== "GET" &&
-            !(req.method === "HEAD" && requestPath === "/api/audio-file")
+            !(
+                req.method === "HEAD" &&
+                (requestPath === "/api/audio-file" ||
+                    /^\/effects\/[a-f0-9]{64}\.wav$/.test(requestPath))
+            )
         ) {
             res.writeHead(405);
             res.end();
             return;
         }
         const url = new URL(req.url, "http://localhost");
+        if (/^\/effects\/[a-f0-9]{64}\.wav$/.test(url.pathname)) {
+            await sendAudioFile(
+                req,
+                res,
+                path.join(root, ".local", url.pathname.slice(1)),
+            );
+            return;
+        }
         if (url.pathname === "/api/audio-file") {
             const id = url.searchParams.get("id");
             const format = url.searchParams.get("format") || "opus";
@@ -216,7 +228,10 @@ createServer(async (req, res) => {
             res.end(searchCache);
             return;
         }
-        if (url.pathname === "/api/chart") {
+        if (
+            url.pathname === "/api/chart" ||
+            url.pathname === "/api/chart-view"
+        ) {
             const music = url.searchParams.get("music"),
                 diff = url.searchParams.get("diff");
             if (
@@ -232,13 +247,15 @@ createServer(async (req, res) => {
                 python,
                 [
                     "-c",
-                    "from scripts.chart_details import preview; preview(" +
+                    (url.pathname === "/api/chart-view"
+                        ? "from scripts.chart_view import preview; preview("
+                        : "from scripts.chart_details import preview; preview(") +
                         music +
                         "," +
                         diff +
                         ")",
                 ],
-                { cwd: root, maxBuffer: 100000 },
+                { cwd: root, maxBuffer: 8 * 1024 * 1024 },
             );
             const record = JSON.parse(result.stdout);
             if (result.stderr) process.stderr.write(result.stderr);

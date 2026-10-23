@@ -21,7 +21,10 @@ export default async function handler(req, res) {
             return res
                 .status(404)
                 .json({ error: "Audio has not synced for this chart" });
-        res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
+        // A full-song record may still be waiting for its chart timeline during
+        // backfill. Let the next open see its newly synced URL immediately.
+        if (rows[0].record.variant !== "full" || rows[0].record.chart_url)
+            res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
         return res.status(200).json(rows[0].record);
     } catch {
         return res.status(503).json({ error: "Audio metadata unavailable" });

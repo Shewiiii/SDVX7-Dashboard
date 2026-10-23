@@ -98,7 +98,7 @@
     background: var(--accent-wash);
     color: var(--accent);
 }
-.appearance-panel {
+.settings-panel {
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
@@ -108,12 +108,12 @@
     overflow-y: auto;
     padding: 23px var(--panel-padding-inline);
 }
-.appearance-panel h2 {
+.settings-panel h2 {
     margin: 0 0 22px;
     font-size: 17px;
     font-weight: 500;
 }
-.appearance-theme {
+.settings-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -122,7 +122,7 @@
     font-size: 12px;
     color: var(--muted);
 }
-.appearance-control {
+.settings-control {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 8px 12px;
@@ -130,17 +130,29 @@
     font-size: 12px;
     color: var(--muted);
 }
-.appearance-control output {
+.settings-control output {
     color: var(--ink);
 }
-.appearance-control input {
+.settings-control input {
     grid-column: 1 / -1;
     width: 100%;
     margin: 0;
     accent-color: var(--accent);
     cursor: pointer;
 }
-.appearance-footer {
+.settings-group {
+    margin-bottom: 18px;
+}
+.settings-group .settings-row {
+    margin-bottom: 0;
+}
+.settings-hint {
+    display: block;
+    margin-top: 8px;
+    color: var(--faint);
+    font-size: 10px;
+}
+.settings-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -148,11 +160,7 @@
     padding-top: 12px;
     border-top: 1px solid var(--row-separator);
 }
-.appearance-footer small {
-    color: var(--faint);
-    font-size: 10px;
-}
-.appearance-footer .text-button {
+.settings-footer .text-button {
     margin-left: auto;
 }
 .hero {
@@ -598,7 +606,7 @@
     font-size: 10px;
 }
 .calculator-controls .segmented button,
-.appearance-theme .segmented button {
+.settings-row .segmented button {
     padding: 11px 14px;
     font-size: 12px;
 }
@@ -2137,7 +2145,7 @@ footer {
     background: transparent;
 }
 .appeal-helper::backdrop,
-.appearance-panel {
+.settings-panel {
     -webkit-backdrop-filter: blur(var(--panel-backdrop-blur));
     backdrop-filter: blur(var(--panel-backdrop-blur));
 }
@@ -2201,6 +2209,138 @@ footer {
 .details-plots {
     display: grid;
     gap: 14px;
+}
+.chart-viewer {
+    width: min(920px, calc(100vw - 32px));
+}
+#chart-viewer-body {
+    padding: 0 var(--panel-padding-inline) 24px;
+}
+.chart-viewer-tools {
+    margin-bottom: 10px;
+}
+.chart-viewer-settings {
+    margin-left: 0;
+}
+.chart-viewer-settings-toggle {
+    margin-left: auto;
+}
+.chart-viewer-settings-panel {
+    max-width: 100%;
+}
+.chart-viewer-lane-controls {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 64px;
+    align-items: center;
+    gap: 12px;
+}
+.chart-viewer-lane-controls input {
+    grid-column: auto;
+    min-width: 0;
+}
+.chart-viewer-lane-number {
+    box-sizing: border-box;
+    padding: 6px;
+    border: 0;
+    border-radius: var(--control-radius);
+    background: var(--control-bg);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+.chart-viewer-stage {
+    height: clamp(360px, 72dvh, 1100px);
+    overflow: hidden;
+}
+.chart-viewer-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.chart-viewer-player {
+    margin-top: 16px;
+}
+.chart-playback .details-audio-heading > span:first-child {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+}
+.chart-playback .details-audio-wave > svg {
+    height: 56px;
+}
+.chart-playback .details-audio-wave {
+    cursor: pointer;
+    touch-action: pan-y;
+    user-select: none;
+}
+.chart-playback .details-audio-seek {
+    /* The plot handles pointers for exact coordinates; the range keeps keyboard controls. */
+    pointer-events: none;
+}
+.chart-playback
+    .details-audio-wave.is-pointer-seeking:has(
+        .details-audio-seek:focus-visible
+    ) {
+    outline: none;
+}
+.chart-playback-grid {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 1;
+}
+.chart-playback-buttons {
+    fill: var(--accent-wash);
+    stroke: var(--accent);
+    stroke-width: 1.25;
+}
+.chart-playback-lasers {
+    fill: color-mix(in srgb, var(--chart-total) 15%, transparent);
+    stroke: var(--chart-total);
+    stroke-width: 1.25;
+}
+.chart-playback-hover {
+    stroke: var(--muted);
+    stroke-dasharray: 3 3;
+}
+.chart-playback-head {
+    stroke: var(--ink);
+    stroke-width: 1.5;
+}
+.chart-playback .details-audio-wave > svg * {
+    vector-effect: non-scaling-stroke;
+}
+.chart-playback-readout {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+}
+.chart-playback-context {
+    white-space: nowrap;
+}
+.chart-playback .chart-playback-popup {
+    top: auto;
+    bottom: calc(100% + 8px);
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(var(--popup-offset));
+    transition:
+        opacity var(--popup-exit-duration) var(--popup-easing),
+        transform var(--popup-exit-duration) var(--popup-easing),
+        visibility 0s linear var(--popup-exit-duration);
+}
+.chart-playback .chart-playback-popup.is-visible {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    transition-duration:
+        var(--popup-enter-duration), var(--popup-enter-duration), 0s;
+    transition-delay: 0s;
 }
 .details-audio {
     margin-bottom: 22px;

@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 BINS = 64
-SCHEMA = 3
+SCHEMA = 4
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +31,7 @@ def number(node, tag, divisor=1):
         return None
 
 
-def parse_chart(path):
+def parse_chart(path, *, full=False):
     sections, section = {}, None
     for raw in path.read_text(encoding="cp932", errors="replace").splitlines():
         line = raw.split("//", 1)[0].strip()
@@ -43,6 +43,13 @@ def parse_chart(path):
             sections[section].append(line.split())
     if not sections.get("BPM INFO") or not sections.get("END POSITION"):
         raise ValueError("Missing chart timing")
+    # VOX 10/11 stores laser coordinates as integers, unlike the normalized
+    # floating-point coordinates in VOX 12+. Keep one coordinate space downstream.
+    version = int(sections.get("FORMAT VERSION", [["12"]])[0][0])
+    laser_scale = 127.0 if version < 12 else 1.0
+    resolution = int(sections.get("BEAT RESOLUTION", [["48"]])[0][0])
+    if not 1 <= resolution <= 10000:
+        raise ValueError("Invalid beat resolution")
     positions = re.compile(r"^(\d+),(\d+),(\d+)$")
     beat_info = {}
     for row in sections.get("BEAT INFO", []):
@@ -50,7 +57,7 @@ def parse_chart(path):
             measure = int(row[0].split(",")[0])
             top, bottom = int(row[1]), int(row[2])
             if 0 < top <= 64 and 0 < bottom <= 64:
-                beat_info[measure] = top * 4 / bottom
+                beat_info[measure] = (top * 4 / bottom, 4 / bottom)
     last_measure = max(
         int(row[0].split(",")[0])
         for rows in sections.values()
@@ -59,15 +66,18 @@ def parse_chart(path):
     )
     if not 1 <= last_measure <= 10000:
         raise ValueError("Invalid chart length")
-    bar_beats, cursor, beats = {}, 0, 4
+    bar_beats, beat_units, cursor, beats, unit = {}, {}, 0, 4, 1
     for measure in range(1, last_measure + 2):
         bar_beats[measure] = cursor
-        beats = beat_info.get(measure, beats)
+        beats, unit = beat_info.get(measure, (beats, unit))
+        beat_units[measure] = unit
         cursor += beats
 
     def beat(position):
         measure, pulse, tick = map(int, position.split(","))
-        return bar_beats[measure] + pulse - 1 + tick / 48
+        return (
+            bar_beats[measure] + (pulse - 1) * beat_units[measure] + tick / resolution
+        )
 
     tempos = sorted(
         {beat(row[0]): float(row[1]) for row in sections["BPM INFO"]}.items()
@@ -93,6 +103,11 @@ def parse_chart(path):
     lanes = [[0] * BINS for _ in range(8)]
     density = [0] * BINS
     laser_density = [0] * BINS
+    buttons, lasers = [], []
+    if full:
+        from scripts.chart_effects import schedule
+
+        effects = schedule(sections, seconds, beat, resolution)
     counts = {
         "bt_taps": 0,
         "bt_holds": 0,
@@ -114,7 +129,7 @@ def parse_chart(path):
             index = bin_at(time)
             if lane in (0, 7):
                 flag = int(row[2])
-                position = float(row[1])
+                position = float(row[1]) / laser_scale
                 if not math.isfinite(position):
                     raise ValueError("Invalid laser position")
                 if not active or flag == 1:
@@ -122,6 +137,9 @@ def parse_chart(path):
                     laser_density[index] += 1
                     active = True
                     previous_direction = None
+                    if full:
+                        lasers.append({"side": 0 if lane == 0 else 1, "points": []})
+                        effects["laser_filters"].append([])
                 elif previous_time is not None:
                     for j in range(bin_at(previous_time), index + 1):
                         lanes[lane][j] = 1
@@ -145,6 +163,11 @@ def parse_chart(path):
                 lanes[lane][index] = 1
                 previous_time = time
                 previous_position = position
+                if full:
+                    lasers[-1]["points"].append([round(time, 6), position])
+                    effects["laser_filters"][-1].append(
+                        int(row[4]) if len(row) > 4 else 0
+                    )
                 if flag == 2:
                     active = False
             else:
@@ -152,11 +175,28 @@ def parse_chart(path):
                 kind = "fx" if lane in (1, 6) else "bt"
                 counts[f"{kind}_{'holds' if hold_ticks else 'taps'}"] += 1
                 density[index] += 1
-                end = seconds(beat(row[0]) + hold_ticks / 48)
+                end = seconds(beat(row[0]) + hold_ticks / resolution)
+                if full:
+                    buttons.append([round(time, 6), round(end, 6), lane])
                 for j in range(index, bin_at(end) + 1):
                     lanes[lane][j] += 1
+    if full:
+        return {
+            "schema": 1,
+            "duration": round(duration, 6),
+            "buttons": sorted(buttons),
+            "lasers": lasers,
+            "measures": [
+                [round(seconds(value), 6), measure]
+                for measure, value in bar_beats.items()
+                if seconds(value) <= duration
+            ],
+            # Scrolling integrates beats over time, so it needs every change.
+            "tempos": [[round(seconds(position), 6), bpm] for position, bpm in tempos],
+            "effects": effects,
+        }
     changes = [[round(seconds(position), 3), bpm] for position, bpm in tempos]
-    # Bound even pathological custom charts; retain first and last tempo points.
+    # Compact summaries stay bounded; full timelines above retain exact timing.
     if len(changes) > 128:
         changes = [changes[round(i * (len(changes) - 1) / 127)] for i in range(128)]
     return {

@@ -366,6 +366,7 @@ def preview(mid, diff):
         record["url"] = (
             "/api/audio-file?id=" + record["id"] + "&format=" + record["format"]
         )
+        record["chart_url"] = f"/api/chart-view?music={mid}&diff={diff}"
     print(json.dumps(record))
 
 
@@ -552,6 +553,34 @@ def sync_audio(config, tracker, catalog, endpoint_id):
             {item["Key"]: item["Size"] for item in page.get("Contents", [])}
         )
     used_bytes = sum(inventory.values())
+    # One small bank serves every chart. Effects are rendered by the viewer;
+    # never upload a second full-song mix for each difficulty.
+    if audio.get("variant", "full") == "full":
+        from scripts.chart_effects import prepare_bank
+
+        bank = prepare_bank(catalog.details.music.base_root)
+        if bank:
+            bank_key = f"effects/{bank['id']}.wav"
+            bank_file = ROOT / ".local" / bank_key
+            if bank_key not in inventory:
+                size = bank_file.stat().st_size
+                if limit_bytes and used_bytes + size > limit_bytes:
+                    print(
+                        "Chart effect samples exceed the configured bucket budget.",
+                        flush=True,
+                    )
+                    return
+                client.upload_file(
+                    str(bank_file),
+                    audio["bucket"],
+                    bank_key,
+                    ExtraArgs={
+                        "ContentType": "audio/wav",
+                        "CacheControl": "public, max-age=31536000, immutable",
+                    },
+                )
+                inventory[bank_key] = size
+                used_bytes += size
     # Audio objects belong to the bucket, while chart acknowledgements belong to
     # the dashboard database. Reuse immutable objects after a database replacement.
     known = {
@@ -603,6 +632,33 @@ def sync_audio(config, tracker, catalog, endpoint_id):
             continue
         object_key = f"audio/{record['id']}.{codec}"
         record["url"] = public + "/" + quote(object_key, safe="/")
+        if record["variant"] == "full":
+            from scripts.chart_view import prepare
+
+            timeline = prepare(catalog.details, mid, diff)
+            if timeline:
+                chart_id, chart_file = timeline
+                chart_key = f"charts/{chart_id}.json"
+                size = chart_file.stat().st_size
+                if (
+                    chart_key in inventory
+                    or not limit_bytes
+                    or used_bytes + size <= limit_bytes
+                ):
+                    if chart_key not in inventory:
+                        client.upload_file(
+                            str(chart_file),
+                            audio["bucket"],
+                            chart_key,
+                            ExtraArgs={
+                                "ContentType": "application/json",
+                                "ContentEncoding": "gzip",
+                                "CacheControl": "public, max-age=31536000, immutable",
+                            },
+                        )
+                        inventory[chart_key] = size
+                        used_bytes += size
+                    record["chart_url"] = public + "/" + chart_key
         digest = hashlib.sha256(json.dumps(record, sort_keys=True).encode()).hexdigest()
         if state["charts"].get(key) == digest and record["id"] in known:
             continue

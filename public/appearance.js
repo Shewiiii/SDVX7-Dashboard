@@ -89,12 +89,12 @@
         );
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+        const { createSettingsPanel } = await import("./settings-panel.js");
         const toggle = document.getElementById("appearance-toggle");
         const panel = document.getElementById("appearance-panel");
         const backdrop = document.getElementById("appearance-backdrop");
         const container = toggle.closest(".appearance-settings");
-        let panelVersion = 0;
         const themeButtons = panel.querySelectorAll("[data-theme-option]");
         const artworkCredit = document.getElementById("artwork-credit");
         const artworkCredits = {
@@ -186,64 +186,18 @@
             });
         }
 
-        function setOpen(open, immediate = false) {
-            if (open && document.querySelector("dialog[open]")) return;
-            const isOpen = toggle.getAttribute("aria-expanded") === "true";
-            if (open === isOpen && (!immediate || panel.hidden)) return;
-            const version = ++panelVersion;
-            toggle.setAttribute("aria-expanded", String(open));
-            if (open) {
-                root.classList.add("appearance-open");
-                container.classList.add("is-active");
-                panel.hidden = false;
-                panel.inert = false;
-                backdrop.hidden = false;
-                getComputedStyle(panel).opacity;
-                getComputedStyle(backdrop).opacity;
-                panel.classList.add("is-visible");
-                backdrop.classList.add("is-visible");
-                panel.querySelector("[data-theme-option].selected").focus();
-                return;
-            }
-            panel.inert = true;
-            panel.classList.remove("is-visible");
-            backdrop.classList.remove("is-visible");
-            const finish = () => {
-                if (version !== panelVersion) return;
-                panel.hidden = true;
-                backdrop.hidden = true;
-                container.classList.remove("is-active");
-                root.classList.remove("appearance-open");
-            };
-            if (immediate) finish();
-            else
-                Promise.allSettled(
-                    [...panel.getAnimations(), ...backdrop.getAnimations()].map(
-                        (animation) => animation.finished,
-                    ),
-                ).then(finish);
-        }
-
-        toggle.addEventListener("click", () =>
-            setOpen(toggle.getAttribute("aria-expanded") !== "true"),
-        );
+        const { setOpen } = createSettingsPanel({
+            toggle,
+            panel,
+            backdrop,
+            container,
+            canOpen: () => !document.querySelector("dialog[open]"),
+            focus: "[data-theme-option].selected",
+            onOpen: () => root.classList.add("appearance-open"),
+            onClosed: () => root.classList.remove("appearance-open"),
+        });
         document.addEventListener("dashboard:panel-open", (event) => {
             if (event.detail !== "appearance") setOpen(false, true);
-        });
-        document.addEventListener("pointerdown", (event) => {
-            if (!container.contains(event.target)) setOpen(false);
-        });
-        container.addEventListener("focusout", (event) => {
-            if (!container.contains(event.relatedTarget)) setOpen(false);
-        });
-        document.addEventListener("keydown", (event) => {
-            if (
-                event.key === "Escape" &&
-                toggle.getAttribute("aria-expanded") === "true"
-            ) {
-                setOpen(false);
-                toggle.focus();
-            }
         });
         document
             .getElementById("appearance-reset")

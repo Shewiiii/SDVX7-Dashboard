@@ -28,8 +28,8 @@ def origin(value):
 
 
 def apply_media_policy(config):
-    """Allow only the configured bucket domain, including on dashboard updates."""
-    allowed = "'self'"
+    """Allow local rendered audio and the configured bucket across setup/update runs."""
+    allowed = "'self' blob:"
     if config.get("mode") == "r2":
         public = config.get("public_url", "")
         if not public.startswith("https://"):
@@ -49,7 +49,7 @@ def apply_media_policy(config):
                 for part in directives
                 if part.startswith("media-src ")
                 for source in part.split()[1:]
-                if source != "'self'"
+                if source not in ("'self'", "blob:")
             }
             connections = next(
                 (

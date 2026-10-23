@@ -1,10 +1,72 @@
+import { createPlaybackClock } from "./playback-clock.js";
+
 const metadata = new Map();
 const clock = (seconds) =>
     `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 const clamp = (value, maximum) => Math.max(0, Math.min(maximum, value));
 
+// Share the small metadata lookup between the chart action and both players.
+// Pending requests are coalesced; an unsynced chart is checked again soon.
+export function getAudioMetadata(chart, { force = false } = {}) {
+    const key = `${chart.music_id}:${chart.diff_idx}`;
+    const saved = metadata.get(key);
+    if (
+        saved &&
+        (saved.pending || (!force && Date.now() - saved.at < saved.ttl))
+    )
+        return saved.task;
+    const entry = { pending: true, at: Date.now(), ttl: 300000 };
+    entry.task = (async () => {
+        const response = await fetch(
+            `/api/audio?music=${chart.music_id}&diff=${chart.diff_idx}`,
+            {
+                cache: force ? "reload" : "default",
+            },
+        );
+        let value = null;
+        if (response.status !== 404) {
+            if (!response.ok) throw new Error("Audio metadata unavailable");
+            value = await response.json();
+            const url = new URL(value.url, location.href);
+            if (
+                !(
+                    (url.origin === location.origin &&
+                        url.pathname === "/api/audio-file") ||
+                    /\.(opus|flac)$/.test(url.pathname)
+                )
+            )
+                throw new Error("Unsupported audio format");
+            if (
+                value.music_id !== chart.music_id ||
+                value.diff_idx !== chart.diff_idx ||
+                !(value.duration > 0 && value.duration <= 7200) ||
+                !Number.isFinite(value.start) ||
+                !Number.isFinite(value.chart_offset) ||
+                !["full", "preview"].includes(value.variant) ||
+                !Array.isArray(value.peaks) ||
+                value.peaks.length !== 128 ||
+                !value.peaks.every(
+                    (v) => Number.isInteger(v) && v >= 0 && v <= 255,
+                ) ||
+                !(url.protocol === "https:" || url.origin === location.origin)
+            )
+                throw new Error("Invalid audio metadata");
+        }
+        entry.pending = false;
+        entry.at = Date.now();
+        if (!value) entry.ttl = 10000;
+        return value;
+    })().catch((error) => {
+        if (metadata.get(key) === entry) metadata.delete(key);
+        throw error;
+    });
+    metadata.set(key, entry);
+    if (metadata.size > 64) metadata.delete(metadata.keys().next().value);
+    return entry.task;
+}
+
 // Waveforms are prepared alongside the audio; opening Details never downloads a track.
-export function mountAudioPlayer(host, chart, plots) {
+export function mountAudioPlayer(host, chart, plots, options = {}) {
     const request = new AbortController();
     const { signal } = request;
     const audio = new Audio();
@@ -14,9 +76,15 @@ export function mountAudioPlayer(host, chart, plots) {
         frame,
         disposed = false,
         position = 0,
-        seeking = false;
+        seeking = false,
+        buffering = false,
+        readyTask,
+        sourceLabel,
+        playRequest = 0,
+        preparing = false;
+    const playbackTime = createPlaybackClock();
 
-    host.className = "details-audio";
+    host.classList.add("details-audio");
     host.innerHTML = `<div class="details-audio-heading"><span>Song audio</span><span class="details-audio-actions"><span class="details-audio-status" role="status">Loading audio...</span><span class="details-audio-download-action" hidden><span aria-hidden="true"> · </span><span class="details-audio-download-wrap"><button type="button" class="text-button details-audio-download" aria-describedby="details-audio-download-tooltip">Download</button><span id="details-audio-download-tooltip" class="details-audio-download-popup" role="tooltip">No lossy transcoding has been applied, but the audio is already compressed in-game, so the audio is not lossless !</span></span></span></span></div>
         <div class="details-audio-controls" hidden>
             <button type="button" class="details-audio-toggle" aria-label="Play song" title="Play song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
@@ -100,19 +168,45 @@ export function mountAudioPlayer(host, chart, plots) {
             return line;
         },
     );
-    let progress;
-    function update() {
+    let progress,
+        lastUiUpdate = -Infinity;
+    function update(force = false) {
         if (!record || disposed) return;
+        const now = performance.now();
         if (audio.readyState && !seeking)
-            position = clamp(audio.currentTime, record.duration);
+            position = clamp(
+                playbackTime(
+                    audio.currentTime,
+                    now,
+                    !audio.paused && !audio.ended && !buffering,
+                    audio.playbackRate,
+                    force === true,
+                ),
+                record.duration,
+            );
+        const at = position + record.start - record.chart_offset;
+        // Render before DOM writes, so canvas size reads do not force layout.
+        options.onTime?.(at, {
+            timestamp: now,
+            force: force === true || audio.paused || seeking,
+        });
+        if (
+            force !== true &&
+            !audio.paused &&
+            !seeking &&
+            now - lastUiUpdate < 32
+        )
+            return;
+        lastUiUpdate = now;
         seek.value = position;
         seek.setAttribute(
             "aria-valuetext",
             `${clock(position)} of ${clock(record.duration)}`,
         );
-        time.textContent = `${clock(position)} / ${clock(record.duration)}`;
+        const label = `${clock(position)} / ${clock(record.duration)}`;
+        if (time.textContent !== label) time.textContent = label;
         progress?.setAttribute("width", (512 * position) / record.duration);
-        const at = position + record.start - record.chart_offset;
+        options.seekTimeline?.update(position, at);
         const duration = chart.chart?.duration;
         for (const line of lines) {
             line.style.display =
@@ -128,7 +222,7 @@ export function mountAudioPlayer(host, chart, plots) {
             frame = requestAnimationFrame(tick);
     }
     function button() {
-        const playing = !audio.paused;
+        const playing = preparing || !audio.paused;
         toggle.setAttribute("aria-label", playing ? "Pause song" : "Play song");
         toggle.title = playing ? "Pause song" : "Play song";
         toggle
@@ -144,7 +238,14 @@ export function mountAudioPlayer(host, chart, plots) {
             seeking = true;
             position = Number(seek.value);
             if (audio.readyState) audio.currentTime = position;
-            update();
+            playbackTime(
+                position,
+                performance.now(),
+                false,
+                audio.playbackRate,
+                true,
+            );
+            update(true);
             seeking = false;
         },
         { signal },
@@ -155,39 +256,65 @@ export function mountAudioPlayer(host, chart, plots) {
         retry.hidden = false;
         button();
     }
-    toggle.addEventListener(
-        "click",
-        async () => {
-            if (!record) return;
-            if (!audio.paused) {
-                audio.pause();
-                return;
+    async function togglePlayback() {
+        if (!record) return;
+        if (preparing) {
+            playRequest++;
+            preparing = false;
+            status.textContent = "Paused";
+            button();
+            return;
+        }
+        if (!audio.paused) {
+            audio.pause();
+            return;
+        }
+        const attempt = ++playRequest;
+        retry.hidden = true;
+        status.textContent = "Loading...";
+        try {
+            if (!audio.getAttribute("src") && options.prepareSource) {
+                preparing = true;
+                button();
+                await readyTask;
+                if (disposed || attempt !== playRequest) return;
+                const source = await options.prepareSource(record, (label) => {
+                    if (!disposed && attempt === playRequest)
+                        status.textContent = label;
+                });
+                if (disposed || attempt !== playRequest) return;
+                audio.src = source.url;
+                sourceLabel = source.label;
+            } else if (!audio.getAttribute("src")) audio.src = record.url;
+            preparing = false;
+            if (audio.ended) position = 0;
+            await audio.play();
+        } catch {
+            if (!disposed && attempt === playRequest) {
+                preparing = false;
+                failed();
             }
-            retry.hidden = true;
-            status.textContent = "Loading...";
-            try {
-                if (!audio.getAttribute("src")) audio.src = record.url;
-                if (audio.ended) position = 0;
-                await audio.play();
-            } catch {
-                if (!disposed) failed();
-            }
-        },
-        { signal },
-    );
+        } finally {
+            if (!disposed && attempt === playRequest) button();
+        }
+    }
+    toggle.addEventListener("click", togglePlayback, { signal });
     audio.addEventListener(
         "loadedmetadata",
         () => {
             audio.currentTime = clamp(position, audio.duration);
-            update();
+            update(true);
         },
         { signal },
     );
     audio.addEventListener(
         "playing",
         () => {
+            buffering = false;
+            update(true);
             status.textContent =
-                record.variant === "preview" ? "Preview" : "Full song";
+                sourceLabel ||
+                (record.variant === "preview" ? "Preview" : "Full song");
             button();
             cancelAnimationFrame(frame);
             tick();
@@ -197,6 +324,9 @@ export function mountAudioPlayer(host, chart, plots) {
     audio.addEventListener(
         "waiting",
         () => {
+            buffering = true;
+            cancelAnimationFrame(frame);
+            update(true);
             status.textContent = "Buffering...";
         },
         { signal },
@@ -206,13 +336,14 @@ export function mountAudioPlayer(host, chart, plots) {
             event,
             () => {
                 cancelAnimationFrame(frame);
-                update();
+                update(true);
                 button();
             },
             { signal },
         );
-    for (const event of ["timeupdate", "seeked"])
-        audio.addEventListener(event, update, { signal });
+    audio.addEventListener("timeupdate", () => update(), { signal });
+    for (const event of ["seeked", "ratechange"])
+        audio.addEventListener(event, () => update(true), { signal });
     audio.addEventListener("error", failed, { signal });
 
     async function load(force = false) {
@@ -222,61 +353,36 @@ export function mountAudioPlayer(host, chart, plots) {
         downloadPopup.hidden = true;
         download.removeAttribute("aria-describedby");
         retry.hidden = true;
-        const key = `${chart.music_id}:${chart.diff_idx}`;
         try {
-            let saved = metadata.get(key);
-            if (force || !saved || Date.now() - saved.at > 300000) {
-                const response = await fetch(
-                    `/api/audio?music=${chart.music_id}&diff=${chart.diff_idx}`,
-                    { signal, cache: force ? "reload" : "default" },
-                );
-                if (!response.ok) throw new Error("unavailable");
-                const value = await response.json();
-                const url = new URL(value.url, location.href);
-                if (
-                    !(
-                        url.origin === location.origin &&
-                        url.pathname === "/api/audio-file"
-                    ) &&
-                    !/\.(opus|flac)$/.test(url.pathname)
-                )
-                    throw new Error("Unsupported audio format");
-                if (
-                    value.music_id !== chart.music_id ||
-                    value.diff_idx !== chart.diff_idx ||
-                    !(value.duration > 0 && value.duration <= 7200) ||
-                    !Number.isFinite(value.start) ||
-                    !Number.isFinite(value.chart_offset) ||
-                    !Array.isArray(value.peaks) ||
-                    value.peaks.length !== 128 ||
-                    !value.peaks.every(
-                        (v) => Number.isInteger(v) && v >= 0 && v <= 255,
-                    ) ||
-                    !(
-                        url.protocol === "https:" ||
-                        url.origin === location.origin
-                    )
-                )
-                    throw new Error("invalid");
-                saved = { at: Date.now(), record: value };
-                metadata.set(key, saved);
-                if (metadata.size > 64)
-                    metadata.delete(metadata.keys().next().value);
-            }
+            const value = await (!force && options.initialAudio
+                ? options.initialAudio
+                : getAudioMetadata(chart, { force }));
             if (disposed) return;
-            record = saved.record;
+            record = value;
+            if (!record) throw new Error("Audio unavailable");
+            readyTask = Promise.resolve(options.onReady?.(record));
+            // Source preparation awaits this on Play. An unrelated player using
+            // onReady still must not create an unhandled rejected promise.
+            readyTask.catch(() => {});
+            if (disposed) return;
             seek.max = record.duration;
-            // Each path is local to this SVG; no document-wide clip IDs to collide.
-            const bars = Array.from({ length: 64 }, (_, i) => {
-                const height = Math.max(
-                    2,
-                    (Math.max(...record.peaks.slice(i * 2, i * 2 + 2)) / 255) *
-                        44,
-                );
-                return `M${i * 8 + 2} ${24 - height / 2}h4v${height}h-4z`;
-            }).join("");
-            svg.innerHTML = `<path class="details-audio-bars" d="${bars}"/><svg class="details-audio-progress" x="0" y="0" width="0" height="48" overflow="hidden"><path d="${bars}"/></svg>`;
-            progress = svg.querySelector(".details-audio-progress");
+            if (options.seekTimeline) {
+                progress = undefined;
+                options.seekTimeline.mount({ host, svg, seek, record });
+            } else {
+                // Each path is local to this SVG; no document-wide clip IDs to collide.
+                const bars = Array.from({ length: 64 }, (_, i) => {
+                    const height = Math.max(
+                        2,
+                        (Math.max(...record.peaks.slice(i * 2, i * 2 + 2)) /
+                            255) *
+                            44,
+                    );
+                    return `M${i * 8 + 2} ${24 - height / 2}h4v${height}h-4z`;
+                }).join("");
+                svg.innerHTML = `<path class="details-audio-bars" d="${bars}"/><svg class="details-audio-progress" x="0" y="0" width="0" height="48" overflow="hidden"><path d="${bars}"/></svg>`;
+                progress = svg.querySelector(".details-audio-progress");
+            }
             status.textContent =
                 record.variant === "preview" ? "Preview" : "Full song";
             controls.hidden = false;
@@ -290,12 +396,16 @@ export function mountAudioPlayer(host, chart, plots) {
         } catch {
             if (disposed) return;
             status.textContent = "Audio isn’t available for this chart yet.";
+            options.onUnavailable?.();
             retry.hidden = false;
         }
     }
     retry.addEventListener(
         "click",
         () => {
+            playRequest++;
+            preparing = false;
+            sourceLabel = undefined;
             if (record) {
                 audio.pause();
                 audio.removeAttribute("src");
@@ -306,8 +416,9 @@ export function mountAudioPlayer(host, chart, plots) {
         { signal },
     );
     void load();
-    return () => {
+    const dispose = () => {
         disposed = true;
+        playRequest++;
         request.abort();
         cancelAnimationFrame(frame);
         audio.pause();
@@ -315,4 +426,17 @@ export function mountAudioPlayer(host, chart, plots) {
         audio.load();
         lines.forEach((line) => line.remove());
     };
+    dispose.refreshSource = () => {
+        const resume = preparing || !audio.paused;
+        playRequest++;
+        preparing = false;
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+        sourceLabel = undefined;
+        button();
+        if (resume) void togglePlayback();
+        else status.textContent = "Paused";
+    };
+    return dispose;
 }

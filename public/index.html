@@ -77,12 +77,13 @@
                         </svg>
                     </button>
                     <section
-                        class="panel appearance-panel"
+                        class="panel settings-panel"
                         id="appearance-panel"
                         aria-labelledby="appearance-title"
                         hidden
                     >
-                        <div class="appearance-theme">
+                        <h2 id="appearance-title">Appearance</h2>
+                        <div class="settings-row">
                             <span id="appearance-theme-label">Theme</span>
                             <div
                                 class="segmented"
@@ -107,7 +108,7 @@
                             </div>
                         </div>
                         <label
-                            class="appearance-control"
+                            class="settings-control"
                             for="appearance-background-dim"
                         >
                             <span>Background dimming</span>
@@ -127,7 +128,7 @@
                             />
                         </label>
                         <label
-                            class="appearance-control"
+                            class="settings-control"
                             for="appearance-panel-dim"
                         >
                             <span>Panel opacity</span>
@@ -147,7 +148,7 @@
                             />
                         </label>
                         <label
-                            class="appearance-control"
+                            class="settings-control"
                             for="appearance-background-blur"
                         >
                             <span>Background blur</span>
@@ -167,7 +168,7 @@
                             />
                         </label>
                         <label
-                            class="appearance-control"
+                            class="settings-control"
                             for="appearance-background-blur-mobile"
                         >
                             <span>Mobile background blur</span>
@@ -186,13 +187,15 @@
                                 value="3"
                             />
                         </label>
-                        <button
-                            class="text-button"
-                            id="appearance-reset"
-                            type="button"
-                        >
-                            Reset
-                        </button>
+                        <div class="settings-footer">
+                            <button
+                                class="text-button"
+                                id="appearance-reset"
+                                type="button"
+                            >
+                                Reset
+                            </button>
+                        </div>
                     </section>
                 </div>
             </header>
@@ -1176,6 +1179,24 @@
                 <p id="library-count" class="library-count" role="status"></p>
                 <div id="library-results"></div>
             </div>
+        </dialog>
+        <dialog
+            id="chart-viewer"
+            class="panel appeal-helper chart-viewer"
+            aria-labelledby="chart-viewer-title"
+            closedby="closerequest"
+        >
+            <header class="appeal-helper-heading">
+                <h2 id="chart-viewer-title">View chart</h2>
+                <button
+                    type="button"
+                    id="chart-viewer-close"
+                    aria-label="Close chart viewer"
+                >
+                    ×
+                </button>
+            </header>
+            <div id="chart-viewer-body"></div>
         </dialog>
         <dialog
             id="chart-details"

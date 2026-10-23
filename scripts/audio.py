@@ -567,10 +567,15 @@ def sync_audio(config, tracker, catalog, endpoint_id):
         library.folders = None
         library.signatures = catalog.details.signatures
     keys = list(catalog.details.metadata)
-    priority = set(
-        read_json(tracker / "cache/total_volforce.json", {}).get("chart_volforce", {})
-    )
-    keys.sort(key=lambda key: key not in priority)
+    priority = {
+        key.split(":", 1)[0]
+        for key in read_json(tracker / "cache/total_volforce.json", {}).get(
+            "chart_volforce", {}
+        )
+    }
+    # Keep every difficulty of a priority song together. Shared audio must not
+    # become available only for the difficulty present in the player's records.
+    keys.sort(key=lambda key: key.split(":", 1)[0] not in priority)
     for key in keys:
         mid, diff = map(int, key.split(":"))
         source = library.source(mid, diff)
@@ -581,7 +586,9 @@ def sync_audio(config, tracker, catalog, endpoint_id):
             if record is None:
                 if prepared >= 2:
                     catalog.audio_pending = True
-                    break
+                    # Other charts may already have prepared/uploaded audio.
+                    # Publish those mappings without waiting for more conversion.
+                    continue
                 prepared += 1
                 record = library.get(mid, diff)
         except (OSError, ValueError, RuntimeError) as error:

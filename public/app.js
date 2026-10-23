@@ -1753,7 +1753,10 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
         chart.innerHTML = songMarkup;
         chart.dataset.musicId = selected.music_id;
     }
-    void chartViewer.updateButton(chart.querySelector("[data-view-chart]"), selected);
+    void chartViewer.updateButton(
+        chart.querySelector("[data-view-chart]"),
+        selected,
+    );
     paintRadar($("selected-chart"), difficulty.radar, {
         restart: restartRadar,
     });
@@ -1914,7 +1917,13 @@ document.addEventListener("click", (event) => {
             (d) => d.diff_idx === selected.diff_idx,
         );
         chartViewer.open(
-            { ...selected, title: song?.title, level: diff?.level },
+            {
+                ...selected,
+                title: song?.title,
+                artist: song?.artist,
+                level: diff?.level,
+                cover: diff?.cover,
+            },
             viewerButton,
         );
         return;

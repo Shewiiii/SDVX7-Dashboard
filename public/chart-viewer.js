@@ -1,5 +1,4 @@
 import { getAudioMetadata, mountAudioPlayer } from "./audio-player.js";
-import { createSettingsPanel } from "./settings-panel.js";
 import { createChartPlayback } from "./chart-playback.js";
 import { createChartAudio } from "./chart-audio.js";
 import { DIFFS } from "./metrics.js";
@@ -87,6 +86,7 @@ export function validTimeline(value, chart) {
 const timingCache = new WeakMap();
 const SPEED_KEY = "sdvx-chart-mod-speed";
 const FPS_KEY = "sdvx-chart-fps";
+const OFFSET_KEY = "sdvx-chart-offset";
 const EXTENDED_LASERS_KEY = "sdvx-chart-extended-lasers";
 
 export function createFrameLimiter(getLimit) {
@@ -514,12 +514,17 @@ export function createChartViewer() {
     const dialog = document.getElementById("chart-viewer");
     const body = document.getElementById("chart-viewer-body");
     const closeButton = document.getElementById("chart-viewer-close");
+    const content = document.createElement("div");
+    content.className = "chart-viewer-content";
+    content.append(...dialog.children);
+    dialog.append(content);
     const buttonChecks = new WeakMap();
     let dispose,
         request,
         observer,
         overflow,
         trigger,
+        settingsPanel,
         closing = false;
     async function close() {
         if (!dialog.open || closing) return;
@@ -553,6 +558,8 @@ export function createChartViewer() {
         observer?.disconnect();
         document.documentElement.style.overflow = overflow;
         body.replaceChildren();
+        settingsPanel?.remove();
+        settingsPanel = undefined;
         closing = false;
         if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     });
@@ -605,14 +612,14 @@ export function createChartViewer() {
             );
             overflow = document.documentElement.style.overflow;
             document.documentElement.style.overflow = "hidden";
-            body.innerHTML = `<p class="details-song"></p>
-                <div class="chart-viewer-tools" hidden>
-                    <div class="appearance-settings chart-viewer-settings">
-                        <button type="button" class="appearance-toggle chart-viewer-settings-toggle" aria-label="Chart settings" title="Chart settings" aria-expanded="false" aria-controls="chart-speed-settings">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 6h8m4 0h4M14 3v6M4 12h3m4 0h9M9 9v6M4 18h10m4 0h2M16 15v6"/></svg>
-                        </button>
-                        <section id="chart-speed-settings" class="panel settings-panel chart-viewer-settings-panel" aria-labelledby="chart-settings-title" hidden inert>
-                            <h2 id="chart-settings-title">Chart settings</h2>
+            body.innerHTML = `<div class="chart-viewer-song"><span class="cover-tile chart-viewer-jacket"><span class="cover-missing" aria-label="Cover unavailable">—</span></span><div class="chart-viewer-song-info"><div class="chart-viewer-song-title"></div><div class="chart-viewer-song-artist"></div><span class="difficulty-badge"></span></div></div>
+                <div class="chart-viewer-workspace"><div class="chart-viewer-main">
+                    <p class="details-message" role="status">Loading song...</p><div class="chart-viewer-stage" hidden><canvas aria-label="Animated 2D chart preview"></canvas></div><section class="chart-viewer-player" aria-label="Song player"></section>
+                </div>
+                <section id="chart-speed-settings" class="chart-viewer-settings" aria-labelledby="chart-settings-title" hidden>
+                    <h2 id="chart-settings-title">Chart settings</h2>
+                    <div class="chart-viewer-settings-grid">
+                        <div>
                             <div class="settings-control">
                                 <label for="chart-lane-speed" title="Current BPM × HiSpeed ÷ 100">Lane speed</label>
                                 <output for="chart-lane-speed" title="Actual speed follows BPM and can go outside 1–20."></output>
@@ -623,15 +630,41 @@ export function createChartViewer() {
                             </div>
                             <label class="settings-control" for="chart-fps"><span>FPS limit</span><output for="chart-fps"></output><input id="chart-fps" type="range" min="15" max="245" step="5" value="245"></label>
                             <label class="settings-control" for="chart-offset" title="Positive values delay chart visuals relative to the audio."><span>Offset</span><output for="chart-offset">0 ms</output><input id="chart-offset" type="range" min="-500" max="500" step="1" value="0"></label>
+                        </div>
+                        <div>
+                            <div class="settings-control"><span id="chart-playback-speed-label">Playback speed</span><div class="segmented chart-viewer-rates" role="group" aria-labelledby="chart-playback-speed-label">${[0.5, 0.75, 1, 1.25, 1.5].map((rate) => `<button type="button" data-playback-rate="${rate}" aria-pressed="${rate === 1}" class="${rate === 1 ? "selected" : ""}">${rate}×</button>`).join("")}</div></div>
                             <div class="settings-row"><span id="chart-extended-lasers-label">Extended lasers</span><div class="segmented" role="group" aria-labelledby="chart-extended-lasers-label"><button type="button" data-extended-lasers="on" aria-pressed="true">On</button><button type="button" data-extended-lasers="off" aria-pressed="false">Off</button></div></div>
                             <div class="settings-group"><div class="settings-row"><span id="chart-effects-label">Sound effects</span><div class="segmented" role="group" aria-labelledby="chart-effects-label" aria-describedby="chart-effects-hint"><button type="button" data-chart-effects="on" aria-pressed="true">On</button><button type="button" data-chart-effects="off" aria-pressed="false">Off</button></div></div><small id="chart-effects-hint" class="settings-hint">May differ from the game</small></div>
-                            <div class="settings-footer"><button class="text-button chart-viewer-settings-reset" type="button">Reset</button></div>
-                        </section>
+                        </div>
                     </div>
-                </div>
-                <p class="details-message" role="status">Loading song...</p><div class="chart-viewer-stage" hidden><canvas aria-label="Animated 2D chart preview"></canvas></div><section class="chart-viewer-player" aria-label="Song player"></section>`;
-            body.querySelector(".details-song").textContent =
-                `${chart.title || "Chart"} · ${DIFFS[chart.diff_idx]} ${chart.level ?? ""}`;
+                    <div class="settings-footer"><button class="text-button chart-viewer-settings-reset" type="button">Reset</button></div>
+                </section></div>`;
+            body.querySelector(".chart-viewer-song-title").textContent =
+                chart.title || "Chart";
+            const artist = body.querySelector(".chart-viewer-song-artist");
+            artist.textContent = chart.artist || "";
+            artist.hidden = !chart.artist;
+            const badge = body.querySelector(".difficulty-badge");
+            badge.classList.add(`d${chart.diff_idx}`);
+            badge.textContent =
+                `${DIFFS[chart.diff_idx]} ${chart.level ?? ""}`.trim();
+            if (
+                typeof chart.cover === "string" &&
+                /^[a-f0-9]{64}$/.test(chart.cover)
+            ) {
+                const jacket = body.querySelector(".chart-viewer-jacket");
+                const placeholder = jacket.firstElementChild;
+                const image = document.createElement("img");
+                image.alt = "";
+                image.decoding = "async";
+                image.addEventListener(
+                    "error",
+                    () => jacket.replaceChildren(placeholder),
+                    { signal, once: true },
+                );
+                image.src = `/api/cover?id=${chart.cover}`;
+                jacket.replaceChildren(image);
+            }
             const message = body.querySelector(".details-message"),
                 stage = body.querySelector(".chart-viewer-stage");
             const canvas = stage.querySelector("canvas"),
@@ -642,11 +675,17 @@ export function createChartViewer() {
                 ),
                 fpsSlider = body.querySelector("#chart-fps"),
                 offsetSlider = body.querySelector("#chart-offset"),
-                settings = body.querySelector("#chart-speed-settings"),
-                settingsButton = body.querySelector(
-                    ".chart-viewer-settings-toggle",
-                );
-            const tools = body.querySelector(".chart-viewer-tools");
+                settings = body.querySelector("#chart-speed-settings");
+            settingsPanel = settings;
+            const desktop = matchMedia("(min-width: 960px)");
+            const placeSettings = () => {
+                const parent = desktop.matches
+                    ? dialog
+                    : body.querySelector(".chart-viewer-workspace");
+                parent.append(settings);
+            };
+            placeSettings();
+            desktop.addEventListener("change", placeSettings, { signal });
             let timeline,
                 time = 0,
                 referenceBpm = 120,
@@ -660,8 +699,29 @@ export function createChartViewer() {
                 getChart: () => timeline,
                 signal,
             });
+            const setPlaybackRate = (rate) => {
+                dispose?.setPlaybackRate(rate);
+                for (const button of settings.querySelectorAll(
+                    "[data-playback-rate]",
+                )) {
+                    const selected =
+                        Number(button.dataset.playbackRate) === rate;
+                    button.classList.toggle("selected", selected);
+                    button.setAttribute("aria-pressed", String(selected));
+                }
+            };
+            for (const button of settings.querySelectorAll(
+                "[data-playback-rate]",
+            ))
+                button.addEventListener(
+                    "click",
+                    () => setPlaybackRate(Number(button.dataset.playbackRate)),
+                    { signal },
+                );
             const selectToggle = (attribute, enabled) => {
-                for (const button of body.querySelectorAll(`[${attribute}]`)) {
+                for (const button of dialog.querySelectorAll(
+                    `[${attribute}]`,
+                )) {
                     const selected =
                         (button.getAttribute(attribute) === "on") === enabled;
                     button.setAttribute("aria-pressed", String(selected));
@@ -700,7 +760,9 @@ export function createChartViewer() {
                     signal.addEventListener("abort", cleanup, { once: true });
                 }
             });
-            for (const button of body.querySelectorAll("[data-chart-effects]"))
+            for (const button of dialog.querySelectorAll(
+                "[data-chart-effects]",
+            ))
                 button.addEventListener(
                     "click",
                     () =>
@@ -711,6 +773,8 @@ export function createChartViewer() {
                 const saved = Number(localStorage.getItem(SPEED_KEY));
                 if (Number.isFinite(saved) && saved > 0) modSpeed = saved;
                 const savedFps = Number(localStorage.getItem(FPS_KEY));
+                const savedOffset = Number(localStorage.getItem(OFFSET_KEY));
+                if (Number.isFinite(savedOffset)) offsetMs = savedOffset;
                 extendedLasers =
                     localStorage.getItem(EXTENDED_LASERS_KEY) !== "false";
                 if (
@@ -749,7 +813,7 @@ export function createChartViewer() {
                 draw();
             };
             setExtendedLasers(extendedLasers);
-            for (const button of body.querySelectorAll(
+            for (const button of dialog.querySelectorAll(
                 "[data-extended-lasers]",
             ))
                 button.addEventListener(
@@ -765,7 +829,7 @@ export function createChartViewer() {
                 fpsLimit = value >= 245 ? 0 : value;
                 fpsSlider.value = fpsLimit || 245;
                 const label = fpsLimit ? `${fpsLimit} FPS` : "Unlimited";
-                body.querySelector('output[for="chart-fps"]').value = label;
+                settings.querySelector('output[for="chart-fps"]').value = label;
                 fpsSlider.setAttribute("aria-valuetext", label);
                 if (persist) {
                     try {
@@ -818,21 +882,29 @@ export function createChartViewer() {
                 updateLaneSpeed(true);
                 draw();
             };
-            const setOffset = (value) => {
+            const setOffset = (value, persist = false) => {
                 if (!Number.isFinite(value)) return;
                 offsetMs = Math.max(-500, Math.min(500, Math.round(value)));
+                if (persist) {
+                    try {
+                        localStorage.setItem(OFFSET_KEY, String(offsetMs));
+                    } catch {
+                        /* Optional storage. */
+                    }
+                }
                 offsetSlider.value = offsetMs;
                 const label = `${offsetMs > 0 ? "+" : ""}${offsetMs} ms`;
-                body.querySelector('output[for="chart-offset"]').value = label;
+                settings.querySelector('output[for="chart-offset"]').value =
+                    label;
                 offsetSlider.setAttribute("aria-valuetext", label);
                 playback.setOffset(offsetMs / 1000);
                 updateLaneSpeed(true);
                 draw();
             };
-            setOffset(0);
+            setOffset(offsetMs);
             offsetSlider.addEventListener(
                 "input",
-                () => setOffset(Number(offsetSlider.value)),
+                () => setOffset(Number(offsetSlider.value), true),
                 { signal },
             );
             laneSlider.addEventListener(
@@ -862,22 +934,20 @@ export function createChartViewer() {
                 },
                 { signal },
             );
-            createSettingsPanel({
-                toggle: settingsButton,
-                panel: settings,
-                signal,
-            });
-            body.querySelector(".chart-viewer-settings-reset").addEventListener(
-                "click",
-                () => {
-                    setOffset(0);
-                    setLaneSpeed(7);
-                    setFps(245, true);
-                    setEffects(true, true);
-                    setExtendedLasers(true, true);
-                },
-                { signal },
-            );
+            settings
+                .querySelector(".chart-viewer-settings-reset")
+                .addEventListener(
+                    "click",
+                    () => {
+                        setPlaybackRate(1);
+                        setOffset(0, true);
+                        setLaneSpeed(7);
+                        setFps(245, true);
+                        setEffects(true, true);
+                        setExtendedLasers(true, true);
+                    },
+                    { signal },
+                );
             observer = new ResizeObserver(draw);
             observer.observe(canvas);
             dialog.showModal();
@@ -925,7 +995,7 @@ export function createChartViewer() {
                             hiSpeed = modSpeed / referenceBpm;
                             message.hidden = true;
                             stage.hidden = false;
-                            tools.hidden = false;
+                            settings.hidden = false;
                             updateLaneSpeed(true);
                             draw();
                         } catch (error) {

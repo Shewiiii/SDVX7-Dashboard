@@ -438,5 +438,14 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         if (resume) void togglePlayback();
         else status.textContent = "Paused";
     };
+    dispose.setPlaybackRate = (rate) => {
+        if (disposed || !Number.isFinite(rate) || rate < 0.25 || rate > 4)
+            return;
+        // load() restores defaultPlaybackRate when switching dry/processed audio.
+        audio.defaultPlaybackRate = rate;
+        audio.playbackRate = rate;
+        audio.preservesPitch = true;
+        update(true);
+    };
     return dispose;
 }

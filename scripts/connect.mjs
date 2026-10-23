@@ -63,6 +63,4 @@ if (!process.argv.includes("--local-only")) {
     });
     if (exitCode !== 0) process.exit(exitCode || 1);
 }
-console.log(
-    "Personal sync configured. The upload secret was stored without printing it.",
-);
+console.log("Personal sync configured.");

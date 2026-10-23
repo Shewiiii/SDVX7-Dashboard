@@ -2142,8 +2142,9 @@ footer {
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
 }
+.appearance-backdrop,
 .appeal-helper::backdrop {
-    background: transparent;
+    background: rgb(0 0 0 / var(--panel-backdrop-dim));
 }
 .appeal-helper::backdrop,
 .settings-panel {
@@ -2259,7 +2260,6 @@ footer {
 .chart-viewer-settings {
     margin-top: 24px;
     padding-top: 24px;
-    border-top: 1px solid var(--row-separator);
 }
 .chart-viewer-settings-grid {
     display: grid;
@@ -2353,7 +2353,6 @@ footer {
         max-height: calc(100dvh - 36px);
         overflow-y: auto;
         box-sizing: border-box;
-        border: 1px solid var(--row-separator);
         border-radius: var(--panel-radius);
         background: color-mix(
             in srgb,

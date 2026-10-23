@@ -15,6 +15,7 @@
     --line: #353346;
 
     --panel-backdrop-blur: 6px; /* Blur behind settings panel and appeal card helper */
+    --panel-backdrop-dim: 0.3;
     --panel-backdrop-duration: 170ms;
 
     /* -----------Theme palettes----------- */

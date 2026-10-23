@@ -2225,6 +2225,7 @@ footer {
 .details-audio-download {
     font: inherit;
     padding: 0;
+    transition: color var(--popup-enter-duration) var(--popup-easing);
 }
 .details-audio-download-wrap {
     position: relative;
@@ -2241,16 +2242,29 @@ footer {
     white-space: normal;
     visibility: hidden;
     opacity: 0;
+    transform: translateY(var(--popup-offset));
+    transition:
+        opacity var(--popup-exit-duration) var(--popup-easing),
+        transform var(--popup-exit-duration) var(--popup-easing),
+        visibility 0s linear var(--popup-exit-duration);
     pointer-events: none;
 }
 .details-audio-download:focus-visible + .details-audio-download-popup {
     visibility: visible;
     opacity: 1;
+    transform: translateY(0);
+    transition-duration:
+        var(--popup-enter-duration), var(--popup-enter-duration), 0s;
+    transition-delay: 0s;
 }
 @media (hover: hover) {
     .details-audio-download-wrap:hover .details-audio-download-popup {
         visibility: visible;
         opacity: 1;
+        transform: translateY(0);
+        transition-duration:
+            var(--popup-enter-duration), var(--popup-enter-duration), 0s;
+        transition-delay: 0s;
     }
 }
 .details-audio-controls:not([hidden]) {

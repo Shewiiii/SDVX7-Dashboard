@@ -542,15 +542,9 @@ export function createChartViewer() {
         void close();
     });
     dialog.addEventListener("click", (e) => {
-        if (e.target !== dialog) return;
-        const r = dialog.getBoundingClientRect();
-        if (
-            e.clientX < r.left ||
-            e.clientX > r.right ||
-            e.clientY < r.top ||
-            e.clientY > r.bottom
-        )
-            void close();
+        // The dialog is a transparent shell around the two visible panels.
+        // Empty space inside that shell is backdrop too.
+        if (e.target === dialog) void close();
     });
     dialog.addEventListener("close", () => {
         dispose?.();

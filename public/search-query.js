@@ -83,7 +83,9 @@ export function categoryText(genre, custom) {
             custom
                 ? "Custom Map"
                 : SONG_CATEGORIES.filter(([bit]) => (genre || 0) & bit)
-                      .map(([, label]) => label)
+                      .map(([, label, aliases = []]) =>
+                          [label, ...aliases].join(" "),
+                      )
                       .join(" ") || "Other",
         );
     return categoryCache.get(key);

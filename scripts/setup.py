@@ -15,12 +15,13 @@ from urllib.parse import urlparse
 
 from scripts.companion import (
     ROOT,
+    dashboard_settings,
     display_name,
     load_config,
+    normalize_currency,
     proxy_python,
     resolve_proxy,
     save_config,
-    shared_settings,
     with_https,
 )
 
@@ -124,10 +125,7 @@ def check_proxy(proxy: Path) -> Path:
         },
         check=True,
     )
-    shared = shared_settings(proxy)
     print(f"Proxy: {proxy}")
-    print(f"Display name: {display_name(load_config(), proxy)}")
-    print(f"Spending currency: {shared['currency']}")
     print(f"Python: {python}")
     print("Existing proxy configuration and history will be reused.")
     return python
@@ -160,6 +158,30 @@ def vercel(npm: str, *args: str, capture: bool = False, **kwargs: Any) -> str:
         capture=capture,
         **kwargs,
     )
+
+
+def configure_preferences(config: dict[str, Any]) -> None:
+    current = dashboard_settings(config)
+    while True:
+        username = prompt("Display name for stats", current["name"])
+        if 1 <= len(username) <= 40:
+            break
+        print("Enter a display name of 1 to 40 characters.")
+    currency = current["currency"]
+    while True:
+        try:
+            currency = normalize_currency(
+                prompt(
+                    "Currency for spending estimates, in ISO format, for example EUR, USD, AUD, CNY, KRW.",
+                    currency,
+                )
+            )
+            break
+        except ValueError as error:
+            print(error)
+            currency = ""
+    config.update(name=username, currency=currency)
+    save_config(config)
 
 
 def configure_connection(config: dict[str, Any]) -> None:
@@ -213,9 +235,7 @@ def linked_project(npm: str, config: dict[str, Any], proxy: Path) -> dict[str, A
                 project_path.write_bytes(previous)
                 raise
     if not project_path.exists():
-        default = re.sub(
-            r"[^a-z0-9-]+", "-", display_name(config, proxy).lower()
-        ).strip("-")
+        default = re.sub(r"[^a-z0-9-]+", "-", display_name(config).lower()).strip("-")
         project = prompt("Vercel project name", f"{default or 'sdvx'}-dashboard")
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,79}", project):
             raise ValueError(
@@ -301,14 +321,20 @@ def main(argv: list[str] | None = None) -> int:
     # Reuse an already configured proxy; a new install prompts for the EA server.
     if not dotenv_values(proxy / ".env", interpolate=False).get("UPSTREAM"):
         subprocess.run(
-            [str(proxy_python(proxy)), "-c", "from proxy.setup import configure; configure()"],
+            [
+                str(proxy_python(proxy)),
+                "-c",
+                "from proxy.setup import configure; configure()",
+            ],
             cwd=proxy,
             check=True,
         )
     python = check_proxy(proxy)
+    config = load_config()
+    if not args.update or not config.get("name") or not config.get("currency"):
+        configure_preferences(config)
     if migration is not None:
         migration.finish()
-    config = load_config()
     from scripts.audio import configuration
     from scripts.audio_setup import apply_media_policy
 

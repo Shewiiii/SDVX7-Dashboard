@@ -9,9 +9,9 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from dotenv import dotenv_values, set_key
+from dotenv import dotenv_values, set_key, unset_key
 
-from scripts.companion import proxy_module
+from scripts.companion import load_config, normalize_currency, proxy_module, save_config
 from scripts.layout import PROXY_FOLDER, game_root
 
 LEGACY_FOLDER = "SDVX7-VolForce-Tracker-main"
@@ -196,7 +196,7 @@ def records(path: Path):
             while text:
                 record, offset = decoder.raw_decode(text)
                 if not isinstance(record, dict):
-                    raise ValueError(f"Expected a JSON object in {path}")
+                    raise TypeError(f"Expected a JSON object in {path}")
                 yield record
                 text = text[offset:].lstrip()
 
@@ -240,10 +240,70 @@ def copy_missing(source: Path, destination: Path) -> None:
             shutil.copy2(path, target)
 
 
+def migrate_preferences(
+    dashboard: Path, proxy: Path, legacy_values: dict | None = None
+) -> dict:
+    config_path = dashboard / ".local/sync-config.json"
+    config = load_config(config_path)
+    env_path = proxy / ".env"
+    original_env = env_path.read_bytes() if env_path.exists() else None
+    proxy_values = dotenv_values(env_path, interpolate=False)
+    changed = False
+    # Import the earlier proxy settings and
+    # then the original application's values only where preferences are missing.
+    for values in (proxy_values, legacy_values or {}):
+        for field, keys in (
+            ("name", ("DASHBOARD_USERNAME", "TRACKER_USERNAME")),
+            ("currency", ("DASHBOARD_CURRENCY", "TRACKER_CURRENCY")),
+        ):
+            if config.get(field, "").strip():
+                continue
+            value = next(
+                (values.get(key) for key in keys if values.get(key)), ""
+            ).strip()
+            if not value:
+                continue
+            if field == "currency":
+                try:
+                    value = normalize_currency(value)
+                except ValueError:
+                    continue
+            else:
+                value = value[:40]
+            config[field] = value
+            changed = True
+    if changed:
+        save_config(config, config_path)
+
+    preference_keys = (
+        "DASHBOARD_USERNAME",
+        "DASHBOARD_CURRENCY",
+        "TRACKER_USERNAME",
+        "TRACKER_CURRENCY",
+    )
+    if original_env is not None and any(key in proxy_values for key in preference_keys):
+        # Save dashboard preferences first; remove obsolete proxy keys afterward.
+        temporary = env_path.with_name(".env.preferences.tmp")
+        try:
+            temporary.write_bytes(original_env)
+            for key in preference_keys:
+                if key in proxy_values:
+                    unset_key(temporary, key)
+            if env_path.read_bytes() != original_env:
+                raise ValueError(
+                    "Proxy settings changed during preference migration. Run setup again."
+                )
+            temporary.replace(env_path)
+        finally:
+            temporary.unlink(missing_ok=True)
+    return config
+
+
 def migrate_legacy(dashboard: Path, proxy: Path) -> Migration | None:
     game = game_root(dashboard)
     legacy = game / LEGACY_FOLDER
     if not legacy.exists():
+        migrate_preferences(dashboard, proxy)
         return None
     if legacy.is_symlink() or legacy.resolve() != game / LEGACY_FOLDER:
         raise ValueError(
@@ -285,12 +345,11 @@ def migrate_legacy(dashboard: Path, proxy: Path) -> Migration | None:
         shutil.copy2(legacy / "cache/total_volforce.json", snapshot)
 
     old = dotenv_values(legacy / ".env", interpolate=False)
+    migrate_preferences(dashboard, proxy, old)
     env_path = proxy / ".env"
     current = dotenv_values(env_path, interpolate=False)
     settings = {}
     for target, source in (
-        ("DASHBOARD_USERNAME", "TRACKER_USERNAME"),
-        ("DASHBOARD_CURRENCY", "TRACKER_CURRENCY"),
         ("SERVER", "TRACKER_SERVER"),
         ("UPSTREAM", "TRACKER_UPSTREAM"),
         ("PROXY_PORT", "TRACKER_PROXY_PORT"),

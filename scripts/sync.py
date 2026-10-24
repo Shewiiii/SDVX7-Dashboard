@@ -22,10 +22,9 @@ from scripts.appeal_cards import prepare_appeal_cards
 from scripts.chart_details import ChartDetails
 from scripts.companion import (
     ROOT,
-    display_name,
+    dashboard_settings,
     load_config,
     resolve_proxy,
-    shared_settings,
 )
 from scripts.music import MusicCatalog
 from scripts.playtime import playtime_snapshot
@@ -480,15 +479,14 @@ def observation_record(
     }
 
 
-def snapshot(
-    proxy: Path, catalog: Catalog, name: str
-) -> tuple[dict[str, Any], str | None]:
+def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]:
+    preferences = dashboard_settings()
     playtime = playtime_snapshot(proxy)
     path = proxy / "cache/total_volforce.json"
     if not path.exists():
         state = {
-            "name": name,
-            "currency": shared_settings(proxy)["currency"],
+            "name": preferences["name"],
+            "currency": preferences["currency"],
             "updated_at": None,
             "charts": [],
             "appeal_card": getattr(catalog, "appeal_card", None),
@@ -524,8 +522,8 @@ def snapshot(
         )
     charts.sort(key=lambda c: (-c["vf"], c["music_id"], c["diff_idx"]))
     state = {
-        "name": name,
-        "currency": shared_settings(proxy)["currency"],
+        "name": preferences["name"],
+        "currency": preferences["currency"],
         "updated_at": stamp(raw["updated_at"]),
         "charts": charts,
         "appeal_card": getattr(catalog, "appeal_card", None),
@@ -736,9 +734,9 @@ def refresh_request(config: dict[str, Any]) -> int | None:
         raise ValueError("Invalid dashboard sync status")
     database_id = result.get("database_id")
     if database_id is not None:
-        if not isinstance(database_id, str) or not re.fullmatch(
-            r"[a-f0-9]{32}", database_id
-        ):
+        if not isinstance(database_id, str):
+            raise TypeError("Dashboard database identity must be text")
+        if not re.fullmatch(r"[a-f0-9]{32}", database_id):
             raise ValueError("Invalid dashboard database identity")
         config["database_id"] = database_id
     return requested if requested > completed else 0
@@ -749,6 +747,7 @@ def source_state(proxy: Path) -> tuple[tuple[int, int] | None, ...]:
         proxy / "player-data/score_log.jsonl",
         proxy / "player-data/volforce_history.jsonl",
         proxy / "cache/total_volforce.json",
+        ROOT / ".local/sync-config.json",
     )
     result = []
     for path in sources:
@@ -799,7 +798,7 @@ def sync_once(
         if catalog.appeal_card:
             image_ids.add(catalog.appeal_card)
         pending_ids = sorted(image_ids - known_ids)
-    current, profile = snapshot(proxy, catalog, display_name(config, proxy))
+    current, profile = snapshot(proxy, catalog)
     # Do not advertise a new jacket before its image upload is acknowledged.
     # The next pass publishes it, changing the snapshot and updating open clients.
     if hasattr(catalog, "prepare_covers"):
@@ -947,12 +946,10 @@ def sync_details(config, catalog, endpoint_id, priority=()):
 
 def export_preview() -> None:
     proxy = resolve_proxy()
-    config = settings()
     catalog = Catalog(proxy)
-    name = display_name(config, proxy)
     catalog.refresh()
     catalog.prepare_covers()
-    state, profile = snapshot(proxy, catalog, name)
+    state, profile = snapshot(proxy, catalog)
 
     def all_records(
         path: Path, convert: Callable[[dict[str, Any]], dict[str, Any]]
@@ -1056,7 +1053,7 @@ def sync_loop(
                     else 30
                 )
                 delay = 5
-        except (OSError, ValueError, RuntimeError, KeyError) as error:
+        except (OSError, ValueError, TypeError, RuntimeError, KeyError) as error:
             detail = f": {error}" if isinstance(error, RuntimeError) else ""
             print(f"Sync pending ({type(error).__name__}){detail}. Retrying.")
             if once:

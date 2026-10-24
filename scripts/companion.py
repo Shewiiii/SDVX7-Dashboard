@@ -22,23 +22,43 @@ def with_https(value: str) -> str:
     return "https://" + value if value and "://" not in value else value
 
 
-def load_config() -> dict[str, Any]:
-    if not CONFIG_PATH.exists():
+def load_config(path: Path | None = None) -> dict[str, Any]:
+    path = path or CONFIG_PATH
+    if not path.exists():
         return {}
-    config = json.loads(CONFIG_PATH.read_text(encoding="utf-8-sig"))
+    config = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(config, dict):
-        raise TypeError("Dashboard connection settings must be a JSON object.")
-    for key in ("url", "token", "bypass", "name"):
+        raise TypeError("Dashboard settings must be a JSON object.")
+    for key in ("url", "token", "bypass", "name", "currency"):
         if key in config and not isinstance(config[key], str):
             raise TypeError(f"Dashboard setting '{key}' must be text.")
     return config
 
 
-def save_config(config: dict[str, Any]) -> None:
-    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    temporary = CONFIG_PATH.with_suffix(".tmp")
+def save_config(config: dict[str, Any], path: Path | None = None) -> None:
+    path = path or CONFIG_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
     temporary.write_text(json.dumps(config, indent=2), encoding="utf-8")
-    temporary.replace(CONFIG_PATH)
+    temporary.replace(path)
+
+
+def normalize_currency(value: str) -> str:
+    value = value.strip().upper()
+    if not (value.isascii() and value.isalpha() and len(value) == 3):
+        raise ValueError("Enter a three-letter currency code.")
+    return value
+
+
+def dashboard_settings(config: dict[str, Any] | None = None) -> dict[str, str]:
+    if config is None:
+        config = load_config()
+    name = (config.get("name") or "Player").strip() or "Player"
+    try:
+        currency = normalize_currency(config.get("currency") or "USD")
+    except ValueError:
+        currency = "USD"
+    return {"name": name[:40], "currency": currency}
 
 
 def resolve_proxy() -> Path:
@@ -74,18 +94,12 @@ def shared_settings(proxy: Path) -> dict[str, Any]:
     def setting(key: str, default: str = "") -> str:
         return os.getenv(key) or values.get(key) or default
 
-    # Only these public preferences leave this adapter. BOT_TOKEN is never exported.
-    currency = setting("DASHBOARD_CURRENCY", "USD").strip().upper()
-    if not (currency.isascii() and currency.isalpha() and len(currency) == 3):
-        currency = "USD"
     return {
-        "name": setting("DASHBOARD_USERNAME"),
-        "currency": currency,
         "initial_playtime": setting("INITIAL_PLAYTIME", "0"),
         "baseline_seconds": int(setting("PLAYTIME_BASELINE_SECONDS", "0")),
         "baseline_plays": int(setting("PLAYTIME_BASELINE_PLAYS", "0")),
     }
 
 
-def display_name(config: dict[str, Any], proxy: Path) -> str:
-    return (shared_settings(proxy)["name"] or config.get("name") or "Player")[:40]
+def display_name(config: dict[str, Any] | None = None) -> str:
+    return dashboard_settings(config)["name"]

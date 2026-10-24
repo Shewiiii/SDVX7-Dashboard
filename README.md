@@ -8,7 +8,7 @@ You can see a functional dashboard example here: https://sdvx.shewi.app/.
 
 ## Extra features
 
-The dashboard has much more features and ways to view your data than both the default Discord bot and [KONAMI's official website](https://p.eagate.573.jp/game/sdvx/vii/), including but not limited to:
+The dashboard has much more features and ways to view your data than [KONAMI's official website](https://p.eagate.573.jp/game/sdvx/vii/), including but not limited to:
 
 - Interactive performance history
 - 7 data points timing histogram from the internal game's logic

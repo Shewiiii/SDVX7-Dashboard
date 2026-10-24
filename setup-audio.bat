@@ -1,9 +1,6 @@
 @echo off
-cd /d "%~dp0"
-if not exist "..\.venv\Scripts\python.exe" (
-    echo Run the proxy setup.bat first.
-    pause
-    exit /b 1
-)
-"..\.venv\Scripts\python.exe" -u -m scripts.audio_setup
+setlocal
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\launch.ps1" -Audio
+set "DASHBOARD_EXIT=%errorlevel%"
 pause
+exit /b %DASHBOARD_EXIT%

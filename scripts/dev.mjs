@@ -11,9 +11,10 @@ import { promisify } from "node:util";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = path.join(root, "public");
 const port = Number(process.env.PORT || 3000);
+const game = path.dirname(root);
+const proxy = path.join(game, "SDVX7-Proxy-main");
 const python = path.join(
-    root,
-    "..",
+    proxy,
     ".venv",
     process.platform === "win32" ? "Scripts/python.exe" : "bin/python",
 );
@@ -34,8 +35,6 @@ let searchTask = null,
     searchAt = 0;
 let exportedSignature = null;
 let exportedAt = 0;
-const proxy = path.dirname(root);
-const game = path.dirname(proxy);
 const previewSources = [
     path.join(proxy, "player-data/score_log.jsonl"),
     path.join(proxy, "player-data/volforce_history.jsonl"),

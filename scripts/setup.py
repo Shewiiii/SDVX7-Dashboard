@@ -134,7 +134,7 @@ def check_proxy(proxy: Path) -> Path:
 
 
 def vercel(npm: str, *args: str, capture: bool = False, **kwargs: Any) -> str:
-    # A ZIP inside the proxy must not inherit the proxy's Git repository.
+    # Keep Git discovery within the dashboard folder.
     kwargs.setdefault(
         "env", {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
     )
@@ -292,9 +292,23 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--update", action="store_true")
     args = parser.parse_args(argv)
-    config = load_config()
+    from scripts.migration import migrate_legacy
+
     proxy = resolve_proxy()
+    migration = migrate_legacy(ROOT, proxy)
+    from dotenv import dotenv_values
+
+    # Reuse an already configured proxy; a new install prompts for the EA server.
+    if not dotenv_values(proxy / ".env", interpolate=False).get("UPSTREAM"):
+        subprocess.run(
+            [str(proxy_python(proxy)), "-c", "from proxy.setup import configure; configure()"],
+            cwd=proxy,
+            check=True,
+        )
     python = check_proxy(proxy)
+    if migration is not None:
+        migration.finish()
+    config = load_config()
     from scripts.audio import configuration
     from scripts.audio_setup import apply_media_policy
 
@@ -315,7 +329,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         raise ValueError("Choose 1 or 2.")
     run([str(python), "-c", "from scripts.sync import run; run(once=True)"])
-    print("Ready. Use Start-proxy-with-dashboard.bat for future sessions.")
+    print("Ready. Use run-proxy-with-dashboard.bat for future sessions.")
     print("Optional song playback: See README.")
     return 0
 
@@ -328,13 +342,13 @@ if __name__ == "__main__":
             print(error.output, file=sys.stderr)
         print(f"Dashboard setup did not finish: {error}", file=sys.stderr)
         print(
-            "Run setup again to resume. Existing proxy files were not changed.",
+            "Local data is preserved. Run setup again to resume.",
             file=sys.stderr,
         )
         raise SystemExit(1) from None
     except subprocess.TimeoutExpired:
         print(
-            "Vercel did not respond within 45 seconds. Setup stopped. "
+            "A setup command timed out. Setup stopped. "
             "Check your connection and rerun setup.",
             file=sys.stderr,
         )

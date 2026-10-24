@@ -8,6 +8,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+from scripts.layout import proxy_root, validate_proxy
+
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / ".local/sync-config.json"
 
@@ -40,12 +42,8 @@ def save_config(config: dict[str, Any]) -> None:
 
 
 def resolve_proxy() -> Path:
-    proxy = ROOT.parent
-    if not all(
-        (proxy / name).is_file()
-        for name in ("config.py", "proxy/launcher.py", "proxy/playtime.py")
-    ):
-        raise ValueError("Put the dashboard folder inside your proxy folder.")
+    proxy = proxy_root(ROOT)
+    validate_proxy(proxy)
     return proxy
 
 

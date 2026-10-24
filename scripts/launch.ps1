@@ -1,17 +1,31 @@
-param([switch]$Setup, [switch]$Update)
+param([switch]$Setup, [switch]$Update, [switch]$Audio)
 $ErrorActionPreference = 'Stop'
 $taskDashboard = Split-Path -Parent $PSScriptRoot
-$taskProxy = Split-Path -Parent $taskDashboard
+$taskGame = Split-Path -Parent $taskDashboard
+$taskProxy = Join-Path $taskGame 'SDVX7-Proxy-main'
 $taskPython = Join-Path $taskProxy '.venv/Scripts/python.exe'
-if (-not (Test-Path -LiteralPath $taskPython)) {
-    throw "Run the proxy's setup.bat first."
-}
-$taskEntry = if ($Setup -or $Update) { 'scripts.setup' } else { 'scripts.launcher' }
+$taskPrefix = @()
 $taskArguments = @()
-if ($Update) { $taskArguments += '--update' }
+if ($Setup -or $Update) {
+    $taskEntry = 'scripts.bootstrap'
+    if (Get-Command py -ErrorAction SilentlyContinue) {
+        $taskPython = (Get-Command py).Source
+        $taskPrefix = @('-3')
+    } elseif (Get-Command python -ErrorAction SilentlyContinue) {
+        $taskPython = (Get-Command python).Source
+    } elseif (-not (Test-Path -LiteralPath $taskPython)) {
+        throw 'Install Python 3.10 or newer, then rerun setup-dashboard.bat.'
+    }
+    if ($Update) { $taskArguments += '--update' }
+} else {
+    if (-not (Test-Path -LiteralPath $taskPython)) {
+        throw 'Run setup-dashboard.bat first to install the sibling proxy.'
+    }
+    $taskEntry = if ($Audio) { 'scripts.audio_setup' } else { 'scripts.launcher' }
+}
 Push-Location $taskDashboard
 try {
-    & $taskPython -m $taskEntry @taskArguments
+    & $taskPython @taskPrefix -m $taskEntry @taskArguments
     $taskExit = $LASTEXITCODE
 } finally { Pop-Location }
 exit $taskExit

@@ -80,7 +80,7 @@ def configure_r2(config):
         import boto3  # noqa: F401
     except ImportError:
         print(
-            "Installing the optional R2 uploader into the proxy's Python environment..."
+            "Installing the optional R2 uploader into the proxy's venv..."
         )
         subprocess.run(
             [

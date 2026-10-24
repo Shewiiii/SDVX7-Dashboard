@@ -1,10 +1,10 @@
 # SDVX ∇ Dashboard
 
-This is a web extension of [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX7-VolForce-Tracker), based on Vercel, and originally made for personal use, but may be interesting to share.
+WebUI to quickly see your stats and detailed data on an intuitive UI, for SOUND VOLTEX ∇, running on either Asphyxia or the RyuNET network. Tested on KFC.
 
-It allows to quickly see your stats on an intuitive UI, whenever and wherever you want, with a seamless integration with the proxy.
+The repository is now based on [SDVX7-Proxy](https://github.com/Shewiiii/SDVX7-Proxy).
 
-You can see an exemple here: https://sdvx.shewi.app/.
+You can see a functional dashboard example here: https://sdvx.shewi.app/.
 
 ## Extra features
 
@@ -18,35 +18,34 @@ The dashboard has much more features and ways to view your data than both the de
 - Advanced Search feature, to get details about a chart, including its radar
 - ASCII string of a song, useful to search the song in-game
 
+## Requirements
+
+- Python 3.10+
+- NodeJS 22.5+
+- A [Vercel account](https://vercel.com/signup)
+
 ## Setup
 
-In addition to the requirements for the proxy, you also need a [Vercel account](https://vercel.com/signup).
-
-1. Place the dashboard folder inside your existing proxy folder:
-
-```text
-   SDVX7-Proxy-main/
-   |-- .venv/
-   |-- assets/
-   |-- ...
-   |-- SDVX7-Dashboard-main/ <--
-   |-- proxy/
-   |-- runtime/
-   |-- ...
-```
-
+1. Download the ZIP of this repository under Code, unzip it, and move `SDVX7-Dashboard-main/` folder into your game folder.
 2. Run `setup-dashboard.bat` and follow the instructions.  
    **If setup fails** one way or another, don't delete the created project on Vercel, and choose 1 on the next try. If you did it, delete both `.local/` and `.vercel/` and try again.
-3. Run `start-proxy-with-dashboard.bat`, _then_ start the game. From now on, use this bat to run the proxy !
+3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point .
 
 ## Updates
 
-Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `start-proxy-with-dashboard.bat`.
-
+Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `run-proxy-with-dashboard.bat`.
 I might change the caching or database structure later with no backward compatibility possible.  
 If the site is not responding anymore because of this. delete your current Vercel project, its database, as well as `.local/` and `.vercel/`, then run again `setup.bat`. You will not lose data by doing so, except cache.
 
 Connection settings and sync logs are in `.local/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
+
+## Migration from SDVX ∇ VolForce Tracker
+
+I have discontinued [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX7-VolForce-Tracker), in favor of a cleaner and more general purpose repository [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy).
+
+For the old combined installation, move the updated dashboard into the game folder, then run `update-dashboard.bat`. Make sure to keep `.local/` and `.vercel/` folders.
+
+It migrates histories and settings, keeps the larger playtime total when both installations have data, and removes `SDVX7-VolForce-Tracker-main` after saving a verified `.local/legacy-backup-*.zip`.
 
 ## Optional song and chart preview
 
@@ -77,6 +76,6 @@ Songs upload will occur during the first sync, which may take a long time.
 
 ## Credits
 
-- The local proxy reuses the e-amusement decoding utilities from [RyuNET-core](https://github.com/Ryu7w7/RyuNET-core).
+- E-Amusement decoding utils from [RyuNET-core](https://github.com/Ryu7w7/RyuNET-core).
 - Chart view and scroll speed logic from [Unnamed SDVC Clone](https://github.com/Drewol/unnamed-sdvx-clone).
 - Audio DSP documentation from [vox2ksh](https://github.com/whiteou7/vox2ksh/blob/main/specs/audio_engine.md)

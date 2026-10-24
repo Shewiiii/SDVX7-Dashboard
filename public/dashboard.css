@@ -969,7 +969,7 @@
 }
 .lower-grid {
     display: grid;
-    grid-template-columns: 1.12fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
     margin-top: 20px;
 }
@@ -1247,13 +1247,32 @@ tbody tr:hover {
 }
 footer {
     padding: 28px 0 32px;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
     color: var(--footer-color);
     font: 11px var(--sans);
     font-size: 11px;
     padding-top: 24px;
+}
+footer > .artwork-credit {
+    justify-self: start;
+}
+footer > :last-child {
+    justify-self: end;
+}
+.footer-github {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 32px;
+    border-radius: 6px;
+    color: var(--footer-color);
+    transition: color 0.16s;
+}
+.footer-github:hover {
+    color: var(--accent);
 }
 .timing-section {
     margin-top: 8px;
@@ -3143,7 +3162,6 @@ footer {
     }
     .lower-grid {
         gap: 14px;
-        grid-template-columns: 1fr 1fr;
     }
     .tab-caption {
         font-size: 8px;
@@ -3352,7 +3370,7 @@ footer {
     }
     footer {
         gap: 20px;
-        align-items: flex-start;
+        align-items: center;
         font-size: 10px;
     }
     footer span:last-child {

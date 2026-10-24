@@ -17,6 +17,7 @@
     --panel-backdrop-blur: 6px; /* Blur behind settings panel and appeal card helper */
     --panel-backdrop-dim: 0.3;
     --panel-backdrop-duration: 170ms;
+    --vf-helper-fade-size: 128px;
 
     /* -----------Theme palettes----------- */
     --exceed-background: url("/assets/background.png");

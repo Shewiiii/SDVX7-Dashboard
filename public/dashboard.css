@@ -2916,12 +2916,40 @@ footer {
 .vf-helper > .appeal-helper-heading {
     flex: none;
 }
+@property --vf-helper-top-opacity {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 1;
+}
+@property --vf-helper-bottom-opacity {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 1;
+}
 .vf-helper-body {
+    --vf-helper-mask: linear-gradient(
+        to bottom,
+        rgb(0 0 0 / var(--vf-helper-top-opacity)),
+        #000 min(var(--vf-helper-fade-size), 50%),
+        #000 calc(100% - min(var(--vf-helper-fade-size), 50%)),
+        rgb(0 0 0 / var(--vf-helper-bottom-opacity))
+    );
     min-height: 0;
     overflow: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
     padding: 0 var(--panel-padding-inline) 24px;
+    -webkit-mask-image: var(--vf-helper-mask);
+    mask-image: var(--vf-helper-mask);
+    transition:
+        --vf-helper-top-opacity 220ms ease-out,
+        --vf-helper-bottom-opacity 220ms ease-out;
+}
+.vf-helper-body.can-scroll-up {
+    --vf-helper-top-opacity: 0;
+}
+.vf-helper-body.can-scroll-down {
+    --vf-helper-bottom-opacity: 0;
 }
 .vf-helper-list {
     margin: 0;
@@ -3025,7 +3053,6 @@ footer {
 .vf-helper-tiers [aria-current="step"] {
     color: var(--accent);
     background: color-mix(in srgb, var(--accent) 12%, transparent);
-    box-shadow: inset 2px 0 var(--accent);
 }
 .vf-helper-tiers [aria-current="step"] .vf-helper-stars {
     color: inherit;

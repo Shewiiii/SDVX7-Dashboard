@@ -3668,3 +3668,24 @@ footer > :last-child {
         margin-top: 8px;
     }
 }
+
+[data-new-play-until] {
+    animation: new-play-highlight 1s ease-out;
+    animation-delay: var(--new-play-age, 0ms);
+}
+@keyframes new-play-highlight {
+    from {
+        background-color: color-mix(in srgb, var(--accent) 20%, transparent);
+        box-shadow: inset 3px 0 var(--accent);
+    }
+    to {
+        background-color: transparent;
+        box-shadow: inset 3px 0 transparent;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    [data-new-play-until] {
+        animation: none;
+        box-shadow: inset 3px 0 var(--accent);
+    }
+}

@@ -111,7 +111,7 @@ def check_proxy(proxy: Path) -> Path:
             str(python),
             "-c",
             (
-                "import dotenv, PIL, pykakasi; "
+                "import dotenv, PIL, pykakasi, watchdog; "
                 "from scripts.music import MusicCatalog; "
                 "from proxy.playtime import load_playtime_summary"
             ),

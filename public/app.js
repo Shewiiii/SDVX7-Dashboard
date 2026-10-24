@@ -1,4 +1,5 @@
 import { createArchiveLoader } from "./archive.js";
+import { createPlayHighlights, subscribeArchive } from "./live.js";
 import { initSearchTools } from "./search-tools.js";
 import { setSearchData, parseSearch } from "./search-query.js";
 import { createLibrary } from "./library.js";
@@ -41,6 +42,44 @@ import { createChartViewer } from "./chart-viewer.js";
 import { createChartDetails } from "./chart-details.js";
 
 const $ = (id) => document.getElementById(id);
+const playHighlights = createPlayHighlights();
+let highlightCleanup,
+    highlightPending = false;
+function newPlayAttributes(play) {
+    const age = playHighlights.age(play);
+    if (age === null) return "";
+    if (!highlightPending) {
+        highlightPending = true;
+        queueMicrotask(() => {
+            highlightPending = false;
+            clearExpiredHighlights();
+        });
+    }
+    return `data-new-play-until="${Date.now() + playHighlights.duration - age}"`;
+}
+function clearExpiredHighlights() {
+    clearTimeout(highlightCleanup);
+    for (const element of document.querySelectorAll("[data-new-play-until]")) {
+        if (Number(element.dataset.newPlayUntil) <= Date.now()) {
+            delete element.dataset.newPlayUntil;
+            element.style.removeProperty("--new-play-age");
+        } else {
+            const age =
+                playHighlights.duration -
+                (Number(element.dataset.newPlayUntil) - Date.now());
+            element.style.setProperty(
+                "--new-play-age",
+                `-${Math.max(0, age)}ms`,
+            );
+        }
+    }
+    const next = playHighlights.nextExpiry();
+    if (next !== null && next > Date.now())
+        highlightCleanup = setTimeout(
+            clearExpiredHighlights,
+            next - Date.now() + 10,
+        );
+}
 const STANDARD_START_YEN = 267;
 const START_PRICES = [
     ["Light Start", 3, 206],
@@ -365,7 +404,7 @@ function setText(id, value) {
     $(id).textContent = value;
 }
 function row(p, rank = null) {
-    return `<div class="play-row chart-row" data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p)}${chartInfo(p)}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
+    return `<div class="play-row chart-row" ${rank === null ? newPlayAttributes(p) : ""} data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p)}${chartInfo(p)}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
 }
 
 function prepareLoading() {
@@ -1439,7 +1478,7 @@ function recordPosition(record, { top, grouped, playCounts }) {
 }
 
 function recordRow(record, options) {
-    return `<tr class="chart-row" data-music="${record.music_id}" data-diff="${record.diff_idx}">
+    return `<tr class="chart-row" ${!options.top && !options.grouped ? newPlayAttributes(record) : ""} data-music="${record.music_id}" data-diff="${record.diff_idx}">
         <td class="row-index record-position">${recordPosition(record, options)}</td>
         <td class="record-song"><div class="table-song">${coverMarkup(record)}${chartInfo(record, { artist: true, detailsClass: "record-details" })}</div></td>
         <td class="record-difficulty">${badge(record)}</td>
@@ -1787,7 +1826,7 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
               .map((p, index) => {
                   const key = judgementKey(p);
                   const expanded = expandedJudgements.has(key);
-                  return `<tr class="song-search-entry" data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+                  return `<tr class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
               })
               .join("")
         : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';
@@ -2000,16 +2039,20 @@ $("song-search-next").addEventListener("click", () => {
 });
 
 const readArchive = createArchiveLoader();
+let pendingLiveUpdate = false;
 
-async function load({ fresh = false } = {}) {
-    if (loading) return;
+async function load({ fresh = false, check = false, live = false } = {}) {
+    if (loading) {
+        if (live) pendingLiveUpdate = true;
+        return;
+    }
     loading = true;
     document.body.dataset.loading = data ? "refresh" : "initial";
     $("main").setAttribute("aria-busy", "true");
     setText("load-status-label", data ? "Updating..." : "Loading records...");
     if (!data) prepareLoading();
     try {
-        const next = await readArchive({ fresh });
+        const next = await readArchive({ fresh, check });
         if (data && next === data) {
             $("notice").hidden = true;
             return;
@@ -2030,8 +2073,9 @@ async function load({ fresh = false } = {}) {
             $("notice").hidden = true;
             return;
         }
-        const animate = !data || fingerprint !== dataFingerprint;
+        const animate = !data || (!live && fingerprint !== dataFingerprint);
         dataFingerprint = fingerprint;
+        playHighlights.update(next.plays);
         data = next;
         setSearchData(data);
         appealHelper.update();
@@ -2049,6 +2093,7 @@ async function load({ fresh = false } = {}) {
         else if (view === "calculator") calculator.updateData({ animate });
         else if (["top", "history"].includes(view)) renderTable({ animate });
         document.body.dataset.ready = "true";
+        clearExpiredHighlights();
         restoreScroll(pendingScroll);
     } catch (error) {
         setText(
@@ -2078,6 +2123,10 @@ async function load({ fresh = false } = {}) {
         loading = false;
         delete document.body.dataset.loading;
         $("main").setAttribute("aria-busy", "false");
+        if (pendingLiveUpdate) {
+            pendingLiveUpdate = false;
+            queueMicrotask(() => load({ check: true, live: true }));
+        }
     }
 }
 
@@ -2211,7 +2260,7 @@ $("all-top").addEventListener("click", () =>
     switchView("top", true, { scroll: true }),
 );
 document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) load();
+    if (!document.hidden) load({ check: true });
 });
 let chartWidth = innerWidth;
 window.addEventListener("resize", () => {
@@ -2220,8 +2269,10 @@ window.addEventListener("resize", () => {
     renderChart({ animate: false });
     if (view === "calculator") calculator.render({ animate: false });
 });
+const liveUpdates = subscribeArchive(() => load({ check: true, live: true }));
+// Keep a fallback for an unavailable stream or an older deployment.
 setInterval(() => {
-    if (!document.hidden) load();
+    if (!document.hidden && !liveUpdates.connected) load({ check: true });
 }, 60000);
 let difficultyContainerWidth = 0;
 new ResizeObserver(([entry]) => {

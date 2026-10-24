@@ -1,11 +1,13 @@
-import { createHash } from "node:crypto";
+import { createPreviewCache, previewSourceSignature } from "../lib/preview-cache.mjs";
+import { createPreviewWorker } from "../lib/preview-worker.mjs";
+import { createPreviewLive } from "../lib/preview-live.mjs";
 import { sendAudioFile } from "./audio-http.mjs";
 import { packSearchIndex } from "../lib/search-index.mjs";
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { spawn, execFile } from "node:child_process";
+import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -28,13 +30,10 @@ const types = {
     ".ttf": "font/ttf",
     ".json": "application/json",
 };
-let exportTask = null;
 const audioTasks = new Map();
 let searchTask = null,
     searchCache = null,
     searchAt = 0;
-let exportedSignature = null;
-let exportedAt = 0;
 const previewSources = [
     path.join(proxy, "player-data/score_log.jsonl"),
     path.join(proxy, "player-data/volforce_history.jsonl"),
@@ -42,77 +41,34 @@ const previewSources = [
     path.join(proxy, "player-data/playtime.json"),
     path.join(proxy, ".env"),
     path.join(root, ".local/sync-config.json"),
-    path.join(root, ".local/preview-data.json"),
     path.join(game, "data/others/music_db.xml"),
     path.join(game, "data/others/appeal_card.xml"),
     path.join(game, "data/music"),
     path.join(game, "data_mods/ryunet_custom/others/music_db.merged.xml"),
     path.join(game, "data_mods/ryunet_custom/music"),
 ];
-async function sourceSignature() {
-    return JSON.stringify(
-        await Promise.all(
-            previewSources.map(async (file) => {
-                try {
-                    const info = await stat(file);
-                    return [info.mtimeMs, info.size];
-                } catch (error) {
-                    if (error.code === "ENOENT") return null;
-                    throw error;
-                }
-            }),
-        ),
-    );
+const previewWorker = createPreviewWorker(python, root);
+const previewCache = createPreviewCache({
+    signature: () => previewSourceSignature(previewSources, path.join(proxy, "player-data/playtime.json")),
+    async build() {
+        const started = performance.now();
+        console.log("[preview] Building archive...");
+        await previewWorker.export();
+        console.log(`[preview] Archive ready in ${Math.round(performance.now() - started)} ms`);
+    },
+    read: async () => JSON.parse(await readFile(path.join(root, ".local/preview-data.json"), "utf8")),
+});
+try {
+    await previewCache.refresh();
+} catch (error) {
+    previewWorker.close();
+    throw error;
 }
-async function refresh() {
-    const signature = await sourceSignature();
-    if (exportTask) return exportTask;
-    // Source edits invalidate immediately; periodically rescan nested artwork too.
-    if (signature === exportedSignature && Date.now() - exportedAt < 60000)
-        return;
-    const started = performance.now();
-    console.log("[preview] Building archive...");
-    exportTask = new Promise((resolve, reject) => {
-        const child = spawn(
-            python,
-            [
-                "-u",
-                "-c",
-                "from scripts.sync import export_preview; export_preview()",
-            ],
-            {
-                cwd: root,
-            },
-        );
-        child.stdout.on("data", (data) => process.stdout.write(data));
-        child.stderr.on("data", (data) => process.stderr.write(data));
-        child.on("error", reject);
-        child.on("close", (code) =>
-            code === 0 ? resolve() : reject(new Error("Export failed")),
-        );
-    })
-        .then(async () => {
-            console.log(
-                `[preview] Archive ready in ${Math.round(performance.now() - started)} ms`,
-            );
-            // The export itself rewrites preview-data.json.
-            exportedSignature = await sourceSignature();
-            exportedAt = Date.now();
-            // Do not swallow an input change that happened while exporting.
-            const before = JSON.parse(signature),
-                after = JSON.parse(exportedSignature);
-            const outputIndex = 6;
-            before[outputIndex] = after[outputIndex];
-            if (JSON.stringify(before) !== JSON.stringify(after))
-                exportedSignature = null;
-        })
-        .finally(() => {
-            exportTask = null;
-        });
-    return exportTask;
-}
-await refresh();
-createServer(async (req, res) => {
+const previewLive = createPreviewLive(previewSources, () => previewCache.refresh());
+// Periodic background rescans also recover changes missed by file notifications.
+const rescan = setInterval(() => previewLive.refresh(), 60000);
+rescan.unref();
+const server = createServer(async (req, res) => {
     const started = performance.now();
     const requestPath = new URL(req.url, "http://localhost").pathname;
     res.on("finish", () =>
@@ -134,6 +90,10 @@ createServer(async (req, res) => {
             return;
         }
         const url = new URL(req.url, "http://localhost");
+        if (url.pathname === "/api/events") {
+            previewLive.connect(res);
+            return;
+        }
         if (/^\/effects\/[a-f0-9]{64}\.wav$/.test(url.pathname)) {
             await sendAudioFile(
                 req,
@@ -279,64 +239,22 @@ createServer(async (req, res) => {
             return;
         }
         if (url.pathname === "/api/data") {
-            await refresh();
-            const data = JSON.parse(
-                await readFile(
-                    path.join(root, ".local/preview-data.json"),
-                    "utf8",
-                ),
-            );
+            // A request reads one completed revision. Rebuilding happens in the
+            // background and emits an event when the next revision is ready.
+            void previewLive.refresh();
             const section = url.searchParams.get("section") || "full";
-            const library = {
-                catalog: data.state.catalog || [],
-                appeal_cards: data.state.appeal_cards || [],
-            };
-            const versions = {
-                revision: data.synced_at || "empty",
-                catalog_revision: createHash("md5")
-                    .update(JSON.stringify(library))
-                    .digest("hex"),
-            };
-            const expected =
-                section === "catalog"
-                    ? versions.catalog_revision
-                    : versions.revision;
-            if (
-                url.searchParams.has("revision") &&
-                url.searchParams.get("revision") !== expected
-            ) {
-                res.writeHead(409, {
-                    "Content-Type": types[".json"],
-                    "Cache-Control": "no-store",
-                });
+            if (!["full", "revision", "archive", "catalog"].includes(section)) {
+                res.writeHead(400, { "Content-Type": types[".json"] });
+                res.end(JSON.stringify({ error: "Invalid archive request" }));
+                return;
+            }
+            const result = previewCache.get(section, url.searchParams.get("revision"));
+            if (!result) {
+                res.writeHead(409, { "Content-Type": types[".json"], "Cache-Control": "no-store" });
                 res.end(JSON.stringify({ code: "REVISION_CHANGED" }));
                 return;
             }
-            let result;
-            if (section === "revision") result = versions;
-            else if (section === "catalog")
-                result = {
-                    catalog_revision: versions.catalog_revision,
-                    state: library,
-                };
-            else {
-                const playtime = await runFile(
-                    python,
-                    ["-m", "scripts.playtime"],
-                    { cwd: root },
-                );
-                data.state.playtime = JSON.parse(playtime.stdout);
-                if (playtime.stderr) process.stderr.write(playtime.stderr);
-                if (section === "archive") {
-                    delete data.state.catalog;
-                    delete data.state.appeal_cards;
-                }
-                result = { ...data, ...versions };
-            }
-            res.writeHead(200, {
-                "Content-Type": types[".json"],
-                "Cache-Control": "no-store",
-            });
+            res.writeHead(200, { "Content-Type": types[".json"], "Cache-Control": "no-store" });
             res.end(JSON.stringify(result));
             return;
         }
@@ -370,3 +288,9 @@ createServer(async (req, res) => {
 }).listen(port, "127.0.0.1", () =>
     console.log(`Local dashboard: http://localhost:${port}`),
 );
+
+server.on("close", () => {
+    clearInterval(rescan);
+    previewLive.close();
+    previewWorker.close();
+});

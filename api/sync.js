@@ -1,4 +1,5 @@
 import { cleanAudio } from "../lib/audio.mjs";
+import { ARCHIVE_CHANNEL } from "../lib/events.mjs";
 import { database, initialize, databaseFailure } from "../lib/database.mjs";
 import { syncStatus, completeRefresh } from "../lib/refresh.mjs";
 import {
@@ -127,6 +128,8 @@ export default async function handler(req, res) {
             queries.push(
                 sql`UPDATE dashboard_state SET synced_at = now() WHERE id = 1`,
             );
+        if (state || plays.length || observations.length)
+            queries.push(sql`SELECT pg_notify(${ARCHIVE_CHANNEL}, '')`);
         await sql.transaction(queries);
         if (refreshId !== undefined) await completeRefresh(sql, refreshId);
         return res.status(200).json({

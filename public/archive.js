@@ -18,11 +18,11 @@ export function createArchiveLoader() {
         }
         return response.json();
     }
-    return async ({ fresh = false } = {}) => {
+    return async ({ fresh = false, check = false } = {}) => {
         for (let attempt = 0; attempt < 3; attempt++) {
             const version = await read(
-                `/api/data?section=revision${fresh && !attempt ? "&refresh=1" : attempt ? "&check=1" : ""}`,
-                fresh || attempt > 0,
+                `/api/data?section=revision${fresh && !attempt ? "&refresh=1" : check || attempt ? "&check=1" : ""}`,
+                fresh || check || attempt > 0,
             );
             // Older preview servers may still return a complete archive.
             if (Array.isArray(version.plays)) return version;

@@ -742,13 +742,19 @@ def refresh_request(config: dict[str, Any]) -> int | None:
     return requested if requested > completed else 0
 
 
-def source_state(proxy: Path) -> tuple[tuple[int, int] | None, ...]:
-    sources = (
+def source_paths(proxy: Path) -> tuple[Path, ...]:
+    return (
         proxy / "player-data/score_log.jsonl",
         proxy / "player-data/volforce_history.jsonl",
         proxy / "cache/total_volforce.json",
+        proxy / "player-data/playtime.json",
+        proxy / ".env",
         ROOT / ".local/sync-config.json",
     )
+
+
+def source_state(proxy: Path) -> tuple[tuple[int, int] | None, ...]:
+    sources = source_paths(proxy)
     result = []
     for path in sources:
         try:
@@ -766,6 +772,7 @@ def sync_once(
     *,
     force=False,
     background_audio=False,
+    source_changed=None,
 ) -> None:
     state_path = ROOT / ".local/sync-state.json"
     saved = read_checkpoint(state_path)
@@ -846,10 +853,22 @@ def sync_once(
             break
     if uploaded:
         print(f"Synced {uploaded} records at {datetime.now().strftime('%H:%M:%S')}.")
-    sync_details(config, catalog, endpoint_id, current.get("charts", []))
+    if source_changed and source_changed():
+        return
+    sync_details(
+        config,
+        catalog,
+        endpoint_id,
+        current.get("charts", []),
+        source_changed=source_changed,
+    )
+    if source_changed and source_changed():
+        return
     if hasattr(catalog, "prepare_covers"):
         catalog.covers_pending = len(pending_ids) > 240
         for start in range(0, min(len(pending_ids), 240), 30):
+            if source_changed and source_changed():
+                return
             batch = pending_ids[start : start + 30]
             covers = [
                 {
@@ -891,7 +910,7 @@ def sync_once(
         )
 
 
-def sync_details(config, catalog, endpoint_id, priority=()):
+def sync_details(config, catalog, endpoint_id, priority=(), *, source_changed=None):
     if not hasattr(catalog, "details"):
         return
     checkpoint = ROOT / ".local/chart-details-sync.json"
@@ -923,6 +942,9 @@ def sync_details(config, catalog, endpoint_id, priority=()):
     keys = dict.fromkeys([*priority_keys, *catalog.details.metadata])
     catalog.details_pending = False
     for key in keys:
+        if source_changed and source_changed():
+            catalog.details_pending = True
+            return
         entry = catalog.details.get(key)
         if entry is None:
             continue
@@ -944,9 +966,10 @@ def sync_details(config, catalog, endpoint_id, priority=()):
         print(f"Synced {total} compact chart summaries.")
 
 
-def export_preview() -> None:
+def export_preview(catalog: Catalog | None = None) -> None:
     proxy = resolve_proxy()
-    catalog = Catalog(proxy)
+    if catalog is None:
+        catalog = Catalog(proxy)
     catalog.refresh()
     catalog.prepare_covers()
     state, profile = snapshot(proxy, catalog)
@@ -1007,20 +1030,30 @@ def export_preview() -> None:
 def sync_loop(
     config: dict[str, Any], proxy: Path, catalog: Catalog, once: bool = False
 ) -> None:
+    from scripts.source_events import SourceEvents
+
+    with SourceEvents(source_paths(proxy)) as changed:
+        _sync_loop(config, proxy, catalog, changed, once=once)
+
+
+def _sync_loop(config, proxy, catalog, changed, *, once=False) -> None:
     delay = 5
     next_sync = next_check = 0
     previous_source = None
     while True:
         try:
+            changed.clear()
             now = time.monotonic()
+            current_source = source_state(proxy)
             requested = 0
             previous_database = config.get("database_id")
-            if now >= next_check:
+            if now >= next_check and (
+                previous_source is None or current_source == previous_source
+            ):
                 status = refresh_request(config)
                 requested = status or 0
                 next_check = time.monotonic() + (30 if status is None else 2)
             destination_changed = config.get("database_id") != previous_database
-            current_source = source_state(proxy)
             if (
                 once
                 or requested
@@ -1034,6 +1067,7 @@ def sync_loop(
                     catalog,
                     force=previous_source is None,
                     background_audio=not once,
+                    source_changed=changed.is_set,
                 )
                 if requested:
                     upload(
@@ -1064,7 +1098,7 @@ def sync_loop(
             continue
         if once:
             return
-        time.sleep(1)
+        changed.wait(max(0, min(next_sync, next_check) - time.monotonic()))
 
 
 def run(once: bool = False) -> None:

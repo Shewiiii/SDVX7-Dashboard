@@ -44,32 +44,29 @@ export function playtimeText(seconds) {
 }
 
 // Same thresholds and quarter ranks as the tracker's profile command.
+export const VF_CLASSES = [
+    { name: "Sienna", minimum: 0, step: 2.5 },
+    { name: "Cobalt", minimum: 10, step: 0.5 },
+    { name: "Dandelion", minimum: 12, step: 0.5 },
+    { name: "Cyan", minimum: 14, step: 0.25 },
+    { name: "Scarlet", minimum: 15, step: 0.25 },
+    { name: "Coral", minimum: 16, step: 0.25 },
+    { name: "Argento", minimum: 17, step: 0.25 },
+    { name: "Eldora", minimum: 18, step: 0.25 },
+    { name: "Crimson", minimum: 19, step: 0.25 },
+    { name: "Imperial", minimum: 20, step: 1 },
+];
+
 export function volforceClass(value) {
     if (typeof value !== "number" || !Number.isFinite(value) || value < 0)
         return null;
     value = Math.round(value * 1000) / 1000;
-    const thresholds = [0, 10, 12, 14, 15, 16, 17, 18, 19, 20];
-    const names = [
-        "Sienna",
-        "Cobalt",
-        "Dandelion",
-        "Cyan",
-        "Scarlet",
-        "Coral",
-        "Argento",
-        "Eldora",
-        "Crimson",
-        "Imperial",
-    ];
-    const steps = [2.5, 0.5, 0.5, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 1];
-    const index = thresholds.findLastIndex((threshold) => value >= threshold);
-    const rank = Math.min(
-        3,
-        Math.floor((value - thresholds[index]) / steps[index]),
-    );
+    const index = VF_CLASSES.findLastIndex(({ minimum }) => value >= minimum);
+    const { name, minimum, step } = VF_CLASSES[index];
+    const rank = Math.min(3, Math.floor((value - minimum) / step));
     return {
         number: index + 1,
-        name: `${names[index]} ${["I", "II", "III", "IV"][rank]}`,
+        name: `${name} ${["I", "II", "III", "IV"][rank]}`,
     };
 }
 

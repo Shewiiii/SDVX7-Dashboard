@@ -251,8 +251,25 @@
                 <section class="metrics" aria-label="Performance summary">
                     <article class="metric featured">
                         <div class="metric-label">Total VolForce</div>
-                        <div class="metric-value" id="total-vf">—</div>
-                        <div class="vf-class" id="vf-class" hidden>
+                        <button
+                            type="button"
+                            class="metric-value vf-helper-trigger"
+                            id="total-vf"
+                            aria-label="View VolForce classes"
+                            aria-haspopup="dialog"
+                            aria-controls="vf-helper"
+                        >
+                            —
+                        </button>
+                        <button
+                            type="button"
+                            class="vf-class vf-helper-trigger"
+                            id="vf-class"
+                            aria-label="View VolForce classes"
+                            aria-haspopup="dialog"
+                            aria-controls="vf-helper"
+                            hidden
+                        >
                             <img
                                 id="vf-class-icon"
                                 alt=""
@@ -260,7 +277,7 @@
                                 height="28"
                             />
                             <span id="vf-class-name"></span>
-                        </div>
+                        </button>
                         <div
                             class="metric-spark"
                             id="spark"
@@ -954,6 +971,25 @@
                 <span>Rasis my oshi ❤️</span>
             </footer>
         </div>
+        <dialog
+            id="vf-helper"
+            class="panel appeal-helper vf-helper"
+            aria-labelledby="vf-helper-title"
+        >
+            <header class="appeal-helper-heading">
+                <h2 id="vf-helper-title">VolForce Classes</h2>
+                <button
+                    id="vf-helper-close"
+                    type="button"
+                    aria-label="Close VolForce Classes"
+                >
+                    ×
+                </button>
+            </header>
+            <div class="vf-helper-body">
+                <ol id="vf-helper-list" class="vf-helper-list"></ol>
+            </div>
+        </dialog>
         <dialog
             id="search-help"
             class="panel appeal-helper search-help"

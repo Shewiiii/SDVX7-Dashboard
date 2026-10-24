@@ -35,6 +35,7 @@ import {
 import { svgElement, pathData } from "./svg.js";
 import { createCalculator } from "./calculator.js";
 import { createAppealCardHelper } from "./appeal-cards.js";
+import { createVolforceHelper } from "./volforce-helper.js";
 import { radarMarkup, paintRadar } from "./radar.js";
 import { createChartViewer } from "./chart-viewer.js";
 import { createChartDetails } from "./chart-details.js";
@@ -300,6 +301,7 @@ let data = null,
     loading = false;
 let dataFingerprint = "";
 const appealHelper = createAppealCardHelper(() => data?.state);
+createVolforceHelper(() => stats?.total);
 const revealedViews = new Set();
 const defaultRecordSorts = { top: "vf", history: "recent" };
 const recordStates = {
@@ -436,6 +438,10 @@ function renderSummary({ animate = true } = {}) {
         danBanner.alt = "";
     }
     setText("total-vf", vf(stats.total));
+    $("total-vf").setAttribute(
+        "aria-label",
+        `${vf(stats.total)} VolForce · View classes`,
+    );
     const appeal = data.state.appeal_card;
     const card = $("appeal-card");
     card.hidden = !(
@@ -448,6 +454,10 @@ function renderSummary({ animate = true } = {}) {
     $("vf-class").hidden = !vfClass;
     if (vfClass) {
         setText("vf-class-name", vfClass.name);
+        $("vf-class").setAttribute(
+            "aria-label",
+            `${vfClass.name} · View VolForce classes`,
+        );
         $("vf-class-icon").src = `/assets/vf-classes/${vfClass.number}.png`;
     }
     setText("best-vf", vf(stats.best));

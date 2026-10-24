@@ -29,7 +29,7 @@ The dashboard has much more features and ways to view your data than both the de
 1. Download the ZIP of this repository under Code, unzip it, and move `SDVX7-Dashboard-main/` folder into your game folder.
 2. Run `setup-dashboard.bat` and follow the instructions.  
    **If setup fails** one way or another, don't delete the created project on Vercel, and choose 1 on the next try. If you did it, delete both `.local/` and `.vercel/` and try again.
-3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point .
+3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point.
 
 ## Updates
 
@@ -43,9 +43,10 @@ Connection settings and sync logs are in `.local/`. Keep this folder private: it
 
 I have discontinued [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX7-VolForce-Tracker), in favor of a cleaner and more general purpose repository [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy).
 
-For the old combined installation, move the updated dashboard into the game folder, then run `update-dashboard.bat`. Make sure to keep `.local/` and `.vercel/` folders.
-
-It migrates histories and settings, keeps the larger playtime total when both installations have data, and removes `SDVX7-VolForce-Tracker-main` after saving a verified `.local/legacy-backup-*.zip`.
+To migrate:
+- Follow step 1 of the Setup.
+- Move `.local/` and `.vercel/` located in `/SDVX7-VolForce-Tracker-main/SDVX7-Tracker-Dashboard` into `SDVX7-Dashboard-main/`.
+- Run `update-dashboard.bat`. It will delete the legacy `/SDVX7-VolForce-Tracker-main`, but you can choose to create a backup.
 
 ## Optional song and chart preview
 

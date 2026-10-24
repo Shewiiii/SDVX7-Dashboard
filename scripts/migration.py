@@ -15,7 +15,11 @@ from scripts.companion import proxy_module
 from scripts.layout import PROXY_FOLDER, game_root
 
 LEGACY_FOLDER = "SDVX7-VolForce-Tracker-main"
-PLAYTIME_KEYS = ("INITIAL_PLAYTIME", "PLAYTIME_BASELINE_SECONDS", "PLAYTIME_BASELINE_PLAYS")
+PLAYTIME_KEYS = (
+    "INITIAL_PLAYTIME",
+    "PLAYTIME_BASELINE_SECONDS",
+    "PLAYTIME_BASELINE_PLAYS",
+)
 
 
 def ensure_stopped(*roots: Path) -> None:
@@ -56,7 +60,9 @@ if ($busy.Count) { exit 2 }
         timeout=30,
     )
     if result.returncode:
-        raise ValueError("Close the old bot, proxy and dashboard sessions, then rerun setup to migrate.")
+        raise ValueError(
+            "Close the old bot, proxy and dashboard sessions, then rerun setup to migrate."
+        )
 
 
 def legacy_files(legacy: Path) -> list[Path]:
@@ -65,7 +71,9 @@ def legacy_files(legacy: Path) -> list[Path]:
         for name in [*dirs, *names]:
             path = Path(directory) / name
             attributes = getattr(path.lstat(), "st_file_attributes", 0)
-            if path.is_symlink() or attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
+            if path.is_symlink() or attributes & getattr(
+                stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0
+            ):
                 raise ValueError(f"Cannot migrate linked files or folders: {path}")
         files.extend(Path(directory) / name for name in names)
     return sorted(files)
@@ -80,16 +88,20 @@ def digest(path: Path) -> str:
 
 
 def verify_source(legacy: Path, signatures: dict[str, str]) -> None:
-    current = {str(path.relative_to(legacy)): digest(path) for path in legacy_files(legacy)}
+    current = {
+        str(path.relative_to(legacy)): digest(path) for path in legacy_files(legacy)
+    }
     if current != signatures:
-        raise ValueError("The old installation changed during migration. Close it and run setup again; its folder was kept.")
+        raise ValueError(
+            "The old installation changed during migration. Close it and run setup again; its folder was kept."
+        )
 
 
 @dataclass
 class Migration:
     legacy: Path
     game: Path
-    backup: Path
+    backup: Path | None
     signatures: dict[str, str]
 
     def finish(self) -> None:
@@ -99,15 +111,22 @@ class Migration:
             or self.legacy.resolve() != self.game.resolve() / LEGACY_FOLDER
             or self.legacy.name != LEGACY_FOLDER
         ):
-            raise ValueError("Unexpected legacy folder location; cleanup was cancelled.")
+            raise ValueError(
+                "Unexpected legacy folder location; cleanup was cancelled."
+            )
         ensure_stopped(self.legacy, self.game / PROXY_FOLDER)
         verify_source(self.legacy, self.signatures)
-        try:
-            with zipfile.ZipFile(self.backup) as archive:
-                if archive.testzip() is not None:
-                    raise ValueError("Legacy backup verification failed; the old folder was kept.")
-        except zipfile.BadZipFile as error:
-            raise ValueError("Legacy backup verification failed; the old folder was kept.") from error
+        if self.backup is not None:
+            try:
+                with zipfile.ZipFile(self.backup) as archive:
+                    if archive.testzip() is not None:
+                        raise ValueError(
+                            "Legacy backup verification failed; the old folder was kept."
+                        )
+            except zipfile.BadZipFile as error:
+                raise ValueError(
+                    "Legacy backup verification failed; the old folder was kept."
+                ) from error
 
         def remove_readonly(function, path, error):
             resolved = Path(path).resolve()
@@ -117,13 +136,28 @@ class Migration:
             function(path)
 
         shutil.rmtree(self.legacy, onerror=remove_readonly)
-        print(f"Legacy installation removed. Backup: {self.backup}", flush=True)
+        message = "Legacy installation removed."
+        if self.backup is not None:
+            message += f" Backup: {self.backup}"
+        print(message, flush=True)
+
+
+def ask_backup() -> bool:
+    while True:
+        answer = input("Save a backup? (Y/n): ").strip().lower()
+        if answer in ("", "y", "yes"):
+            return True
+        if answer in ("n", "no"):
+            return False
+        print("Enter yes or no.")
 
 
 def backup_legacy(dashboard: Path, proxy: Path, legacy: Path) -> Migration:
     local = dashboard / ".local"
     local.mkdir(parents=True, exist_ok=True)
-    descriptor, filename = tempfile.mkstemp(prefix="legacy-backup-", suffix=".zip", dir=local)
+    descriptor, filename = tempfile.mkstemp(
+        prefix="legacy-backup-", suffix=".zip", dir=local
+    )
     os.close(descriptor)
     backup = Path(filename)
     signatures = {}
@@ -132,7 +166,12 @@ def backup_legacy(dashboard: Path, proxy: Path, legacy: Path) -> Migration:
         for path in legacy_files(legacy):
             relative = str(path.relative_to(legacy))
             hasher = hashlib.sha256()
-            with path.open("rb") as source, archive.open("legacy/" + Path(relative).as_posix(), "w", force_zip64=True) as target:
+            with (
+                path.open("rb") as source,
+                archive.open(
+                    "legacy/" + Path(relative).as_posix(), "w", force_zip64=True
+                ) as target,
+            ):
                 for block in iter(lambda: source.read(1024 * 1024), b""):
                     target.write(block)
                     hasher.update(block)
@@ -171,7 +210,9 @@ def merge_log(source: Path, destination: Path) -> None:
     if not destination.exists():
         shutil.copy2(source, destination)
         return
-    key = lambda item: json.dumps(item, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    key = lambda item: json.dumps(
+        item, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
     known = {key(item) for item in records(destination)}
     additions = []
     for item in old:
@@ -205,20 +246,39 @@ def migrate_legacy(dashboard: Path, proxy: Path) -> Migration | None:
     if not legacy.exists():
         return None
     if legacy.is_symlink() or legacy.resolve() != game / LEGACY_FOLDER:
-        raise ValueError("The legacy folder must be a regular directory in the game folder.")
-    if not (legacy / "config.py").is_file() or not (legacy / "tracker/launcher.py").is_file():
+        raise ValueError(
+            "The legacy folder must be a regular directory in the game folder."
+        )
+    if (
+        not (legacy / "config.py").is_file()
+        or not (legacy / "tracker/launcher.py").is_file()
+    ):
         raise ValueError("The legacy folder was not recognized and was kept unchanged.")
     ensure_stopped(legacy, proxy)
-    migration = backup_legacy(dashboard, proxy, legacy)
+    if ask_backup():
+        migration = backup_legacy(dashboard, proxy, legacy)
+    else:
+        signatures = {
+            str(path.relative_to(legacy)): digest(path) for path in legacy_files(legacy)
+        }
+        migration = Migration(legacy, game, None, signatures)
     # Retain deployment identity and sync checkpoints when installing a fresh ZIP.
-    for name in ("SDVX7-Tracker-Dashboard-main", "SDVX7-Dashboard-main"):
+    for name in (
+        "SDVX7-Tracker-Dashboard-main",
+        "SDVX7-Dashboard-main",
+        "SDVX7-Tracker-Dashboard",
+    ):
         old_dashboard = legacy / name
         for directory in (".local", ".vercel"):
             copy_missing(old_dashboard / directory, dashboard / directory)
-        if (old_dashboard / ".env.local").is_file() and not (dashboard / ".env.local").exists():
+        if (old_dashboard / ".env.local").is_file() and not (
+            dashboard / ".env.local"
+        ).exists():
             shutil.copy2(old_dashboard / ".env.local", dashboard / ".env.local")
     merge_log(legacy / "score_log.txt", proxy / "player-data/score_log.jsonl")
-    merge_log(legacy / "volforce_history.jsonl", proxy / "player-data/volforce_history.jsonl")
+    merge_log(
+        legacy / "volforce_history.jsonl", proxy / "player-data/volforce_history.jsonl"
+    )
     snapshot = proxy / "cache/total_volforce.json"
     if (legacy / "cache/total_volforce.json").is_file() and not snapshot.exists():
         snapshot.parent.mkdir(parents=True, exist_ok=True)
@@ -242,13 +302,20 @@ def migrate_legacy(dashboard: Path, proxy: Path) -> Migration | None:
             settings[target] = value
 
     helpers = proxy_module(proxy, "playtime")
-    old_time = {key: old.get(key) or old.get("TRACKER_" + key) or "0" for key in PLAYTIME_KEYS}
+    old_time = {
+        key: old.get(key) or old.get("TRACKER_" + key) or "0" for key in PLAYTIME_KEYS
+    }
     new_time = {key: current.get(key) or "0" for key in PLAYTIME_KEYS}
     old_path = legacy / "cache/playtime.json"
     new_path = proxy / "player-data/playtime.json"
 
     def summary(path, values):
-        return helpers.load_playtime_summary(path, values["INITIAL_PLAYTIME"], int(values["PLAYTIME_BASELINE_SECONDS"]), int(values["PLAYTIME_BASELINE_PLAYS"]))
+        return helpers.load_playtime_summary(
+            path,
+            values["INITIAL_PLAYTIME"],
+            int(values["PLAYTIME_BASELINE_SECONDS"]),
+            int(values["PLAYTIME_BASELINE_PLAYS"]),
+        )
 
     old_summary = summary(old_path, old_time)
     new_summary = summary(new_path, new_time)

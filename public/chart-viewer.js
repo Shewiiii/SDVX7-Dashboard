@@ -672,6 +672,7 @@ export function createChartViewer() {
                 </div>
                 <section id="chart-speed-settings" class="chart-viewer-settings" aria-labelledby="chart-settings-title" hidden>
                     <h2 id="chart-settings-title">Chart settings</h2>
+                    <div class="settings-control"><span id="chart-playback-speed-label">Playback speed</span><div class="segmented chart-viewer-rates" role="group" aria-labelledby="chart-playback-speed-label">${[0.25, 0.5, 0.75, 1, 1.5].map((rate) => `<button type="button" data-playback-rate="${rate}" aria-pressed="${rate === 1}" class="${rate === 1 ? "selected" : ""}">${rate}×</button>`).join("")}</div></div>
                     <div class="chart-viewer-settings-grid">
                         <div>
                             <div class="settings-control">
@@ -686,7 +687,6 @@ export function createChartViewer() {
                             <label class="settings-control" for="chart-offset" title="Positive values delay chart visuals relative to the audio."><span>Offset</span><output for="chart-offset">0 ms</output><input id="chart-offset" type="range" min="-500" max="500" step="1" value="0"></label>
                         </div>
                         <div>
-                            <div class="settings-control"><span id="chart-playback-speed-label">Playback speed</span><div class="segmented chart-viewer-rates" role="group" aria-labelledby="chart-playback-speed-label">${[0.5, 0.75, 1, 1.25, 1.5].map((rate) => `<button type="button" data-playback-rate="${rate}" aria-pressed="${rate === 1}" class="${rate === 1 ? "selected" : ""}">${rate}×</button>`).join("")}</div></div>
                             <div class="settings-row"><span id="chart-extended-lasers-label">Extended lasers</span><div class="segmented" role="group" aria-labelledby="chart-extended-lasers-label"><button type="button" data-extended-lasers="on" aria-pressed="true">On</button><button type="button" data-extended-lasers="off" aria-pressed="false">Off</button></div></div>
                             <div class="settings-group"><div class="settings-row"><span id="chart-effects-label">Sound effects</span><div class="segmented" role="group" aria-labelledby="chart-effects-label" aria-describedby="chart-effects-hint"><button type="button" data-chart-effects="on" aria-pressed="true">On</button><button type="button" data-chart-effects="off" aria-pressed="false">Off</button></div></div><small id="chart-effects-hint" class="settings-hint">May differ from the game</small></div>
                         </div>

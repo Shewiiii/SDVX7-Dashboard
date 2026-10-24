@@ -193,7 +193,7 @@ export function chartTiming(chart) {
 }
 
 // Six lane widths, as in USC: four BT lanes between the two laser lanes.
-// Keep the lane size fixed; extended lasers may leave the canvas on mobile.
+// Keep the lane size fixed while extended lasers leave the panel.
 export function chartLayout(width, height) {
     const track = Math.min(340, width - 56);
     const lane = track / 6,
@@ -257,26 +257,82 @@ export function drawChart(
     time,
     hiSpeed = 1,
     extendedLasers = true,
+    viewport = canvas,
 ) {
-    const width = canvas.clientWidth,
-        height = canvas.clientHeight;
+    const width = viewport.clientWidth,
+        height = viewport.clientHeight;
     if (!width || !height) return;
-    const scale = Math.min(devicePixelRatio || 1, 2);
-    if (
-        canvas.width !== Math.round(width * scale) ||
-        canvas.height !== Math.round(height * scale)
-    ) {
-        canvas.width = Math.round(width * scale);
-        canvas.height = Math.round(height * scale);
-    }
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    ctx.clearRect(0, 0, width, height);
     const timing = chartTiming(chart);
     const { track, lane, left, bottom, laneBottom, laserX } = chartLayout(
         width,
         height,
     );
+    let padding = 0,
+        visibleTop = 0,
+        visibleBottom = height;
+    if (viewport !== canvas) {
+        const boundsKey = extendedLasers ? "extendedBounds" : "normalBounds";
+        if (!timing[boundsKey]) {
+            let min = 0,
+                max = 1;
+            for (const laser of timing.lasers)
+                for (const [, x] of extendedLasers
+                    ? laser.extendedPoints
+                    : laser.points) {
+                    min = Math.min(min, x);
+                    max = Math.max(max, x);
+                }
+            timing[boundsKey] = [min, max];
+        }
+        const [min, max] = timing[boundsKey];
+        padding = Math.ceil(
+            Math.max(
+                0,
+                lane / 2 + 2 - laserX(min),
+                laserX(max) + lane / 2 + 2 - width,
+            ),
+        );
+        const dialog = canvas.parentElement;
+        const origin = dialog.getBoundingClientRect();
+        const area = viewport.getBoundingClientRect();
+        const panel = viewport
+            .closest(".chart-viewer-content")
+            .getBoundingClientRect();
+        const scaleX = origin.width / dialog.offsetWidth || 1;
+        const scaleY = origin.height / dialog.offsetHeight || 1;
+        visibleTop = Math.max(0, (panel.top - area.top) / scaleY);
+        visibleBottom = Math.min(height, (panel.bottom - area.top) / scaleY);
+        // Paint in the dialog's transparent shell, outside its scrolling panels.
+        const styles = {
+            left: `${(area.left - origin.left) / scaleX - padding}px`,
+            top: `${(area.top - origin.top) / scaleY}px`,
+            width: `${width + padding * 2}px`,
+            height: `${height}px`,
+        };
+        for (const [name, value] of Object.entries(styles))
+            if (canvas.style[name] !== value) canvas.style[name] = value;
+    }
+    const paintWidth = width + padding * 2;
+    const scale = Math.min(devicePixelRatio || 1, 2);
+    if (
+        canvas.width !== Math.round(paintWidth * scale) ||
+        canvas.height !== Math.round(height * scale)
+    ) {
+        canvas.width = Math.round(paintWidth * scale);
+        canvas.height = Math.round(height * scale);
+    }
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(scale, 0, 0, scale, padding * scale, 0);
+    ctx.clearRect(-padding, 0, paintWidth, height);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(
+        -padding,
+        visibleTop,
+        paintWidth,
+        Math.max(0, visibleBottom - visibleTop),
+    );
+    ctx.clip();
     const speed = ((bottom - 20) * hiSpeed) / 8;
     const now = timing.beatAt(time),
         lastBeat = now + bottom / speed;
@@ -300,10 +356,10 @@ export function drawChart(
         ctx.stroke();
     }
     // Only chart objects stop at the judgement line; the lanes continue below.
-    // Clip across the viewport so extended lasers can still leave the lanes.
+    // Include the laser overhang while preserving the vertical judgment cutoff.
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, 0, width, bottom);
+    ctx.rect(-padding, 0, paintWidth, bottom);
     ctx.clip();
     for (let beat = Math.ceil(now); beat <= lastBeat; beat++) {
         ctx.strokeStyle = "#949ead16";
@@ -508,6 +564,7 @@ export function drawChart(
         );
     }
     ctx.globalAlpha = 1;
+    ctx.restore();
 }
 
 export function createChartViewer() {
@@ -525,6 +582,7 @@ export function createChartViewer() {
         overflow,
         trigger,
         settingsPanel,
+        chartCanvas,
         closing = false;
     async function close() {
         if (!dialog.open || closing) return;
@@ -554,6 +612,8 @@ export function createChartViewer() {
         body.replaceChildren();
         settingsPanel?.remove();
         settingsPanel = undefined;
+        chartCanvas?.remove();
+        chartCanvas = undefined;
         closing = false;
         if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     });
@@ -670,6 +730,13 @@ export function createChartViewer() {
                 fpsSlider = body.querySelector("#chart-fps"),
                 offsetSlider = body.querySelector("#chart-offset"),
                 settings = body.querySelector("#chart-speed-settings");
+            canvas.classList.add("chart-viewer-canvas");
+            canvas.hidden = true;
+            canvas.setAttribute("aria-hidden", "true");
+            chartCanvas = canvas;
+            dialog.append(canvas);
+            stage.setAttribute("role", "img");
+            stage.setAttribute("aria-label", "Animated 2D chart preview");
             settingsPanel = settings;
             const desktop = matchMedia("(min-width: 960px)");
             const placeSettings = () => {
@@ -789,6 +856,7 @@ export function createChartViewer() {
                         time - offsetMs / 1000,
                         hiSpeed,
                         extendedLasers,
+                        stage,
                     );
             };
             const setExtendedLasers = (enabled, persist = false) => {
@@ -943,7 +1011,12 @@ export function createChartViewer() {
                     { signal },
                 );
             observer = new ResizeObserver(draw);
-            observer.observe(canvas);
+            observer.observe(stage);
+            dialog.addEventListener("scroll", draw, {
+                signal,
+                capture: true,
+                passive: true,
+            });
             dialog.showModal();
             getComputedStyle(dialog).opacity;
             getComputedStyle(dialog, "::backdrop").opacity;
@@ -972,6 +1045,7 @@ export function createChartViewer() {
                         }
                         timeline = undefined;
                         stage.hidden = true;
+                        canvas.hidden = true;
                         message.hidden = false;
                         message.textContent = "Loading chart...";
                         try {
@@ -989,6 +1063,7 @@ export function createChartViewer() {
                             hiSpeed = modSpeed / referenceBpm;
                             message.hidden = true;
                             stage.hidden = false;
+                            canvas.hidden = false;
                             settings.hidden = false;
                             updateLaneSpeed(true);
                             draw();

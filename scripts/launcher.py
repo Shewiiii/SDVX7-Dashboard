@@ -5,7 +5,7 @@ import subprocess
 import sys
 import time
 
-from scripts.companion import ROOT, load_config, resolve_tracker, tracker_python
+from scripts.companion import ROOT, load_config, proxy_python, resolve_proxy
 from scripts.console_logs import forward_log
 from scripts.process_lifetime import contain_process_tree, stop_orphaned_sync
 
@@ -53,8 +53,8 @@ def stop_owned(process: subprocess.Popen[bytes] | None) -> None:
 
 def main() -> int:
     config = load_config()
-    tracker = resolve_tracker()
-    python = tracker_python(tracker)
+    proxy = resolve_proxy()
+    python = proxy_python(proxy)
     connected = bool(config.get("url") and len(config.get("token", "")) >= 32)
     if connected and sync_running():
         # Also recover workers launched before the scripts/ reorganization.
@@ -62,7 +62,7 @@ def main() -> int:
     local = ROOT / ".local"
     local.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
-    sync_process = tracker_process = None
+    sync_process = proxy_process = None
     retry_at = 0
     started_sync = False
     hidden = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
@@ -84,9 +84,9 @@ def main() -> int:
             )
 
         try:
-            tracker_process = subprocess.Popen(
-                [str(python), "-u", "-m", "tracker.launcher"],
-                cwd=tracker,
+            proxy_process = subprocess.Popen(
+                [str(python), "-u", "-m", "proxy.launcher"],
+                cwd=proxy,
                 env=env,
             )
             if not connected:
@@ -95,7 +95,7 @@ def main() -> int:
                 )
             elif sync_running():
                 print("Dashboard sync is already running. Using the existing worker.")
-            while tracker_process.poll() is None:
+            while proxy_process.poll() is None:
                 if (
                     connected
                     and time.monotonic() >= retry_at
@@ -106,25 +106,25 @@ def main() -> int:
                             sync_process = start_sync()
                             started_sync = True
                             print(
-                                "Dashboard sync started. The tracker runs independently."
+                                "Dashboard sync started. The proxy runs independently."
                             )
                     except OSError:
                         print(
-                            "Dashboard sync could not start. Retrying in 30 seconds. The tracker continues."
+                            "Dashboard sync could not start. Retrying in 30 seconds. The proxy continues."
                         )
                     retry_at = time.monotonic() + 30
                 time.sleep(0.5)
-            return tracker_process.returncode or 0
+            return proxy_process.returncode or 0
         except KeyboardInterrupt:
-            print("Stopping tracker and dashboard sync...")
+            print("Stopping proxy and dashboard sync...")
             # The original launcher receives Ctrl+C through the shared console.
             try:
-                tracker_process.wait(timeout=8)
+                proxy_process.wait(timeout=8)
             except (subprocess.TimeoutExpired, KeyboardInterrupt):
-                stop_owned(tracker_process)
+                stop_owned(proxy_process)
             return 0
         finally:
-            stop_owned(tracker_process)
+            stop_owned(proxy_process)
             stop_owned(sync_process)
             if connected and started_sync and not sync_running():
                 try:

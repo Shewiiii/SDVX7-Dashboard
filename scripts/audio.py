@@ -16,7 +16,7 @@ from pathlib import Path
 from threading import Thread
 from urllib.parse import quote, urlparse
 
-from scripts.companion import ROOT, resolve_tracker
+from scripts.companion import ROOT, resolve_proxy
 
 SCHEMA = 5
 PEAKS = 128
@@ -360,7 +360,7 @@ class AudioLibrary:
 def preview(mid, diff):
     from scripts.sync import Catalog
 
-    library = AudioLibrary(Catalog(resolve_tracker()).details)
+    library = AudioLibrary(Catalog(resolve_proxy()).details)
     record = library.get(mid, diff)
     if record:
         record["url"] = (
@@ -470,7 +470,7 @@ def r2_client(config):
     )
 
 
-def start_audio_sync(config, tracker, catalog, endpoint_id):
+def start_audio_sync(config, proxy, catalog, endpoint_id):
     """Keep conversion and object-storage latency off the score-sync loop."""
     if getattr(catalog, "audio_thread", None) and catalog.audio_thread.is_alive():
         return
@@ -485,8 +485,8 @@ def start_audio_sync(config, tracker, catalog, endpoint_id):
             # Give this thread its own metadata/cache objects; the main sync
             # thread may refresh its catalog while a track is being converted.
             if not hasattr(catalog, "audio_catalog"):
-                catalog.audio_catalog = Catalog(tracker)
-            sync_audio(config, tracker, catalog.audio_catalog, endpoint_id)
+                catalog.audio_catalog = Catalog(proxy)
+            sync_audio(config, proxy, catalog.audio_catalog, endpoint_id)
             catalog.audio_pending = catalog.audio_catalog.audio_pending
         except Exception as error:  # noqa: BLE001 - isolate optional SDK failures from score sync
             catalog.audio_pending = False
@@ -500,7 +500,7 @@ def start_audio_sync(config, tracker, catalog, endpoint_id):
     catalog.audio_thread.start()
 
 
-def sync_audio(config, tracker, catalog, endpoint_id):
+def sync_audio(config, proxy, catalog, endpoint_id):
     """A small, resumable audio backfill; normal dashboard sync stays independent."""
     from scripts.sync import upload
 
@@ -598,7 +598,7 @@ def sync_audio(config, tracker, catalog, endpoint_id):
     keys = list(catalog.details.metadata)
     priority = {
         key.split(":", 1)[0]
-        for key in read_json(tracker / "cache/total_volforce.json", {}).get(
+        for key in read_json(proxy / "cache/total_volforce.json", {}).get(
             "chart_volforce", {}
         )
     }

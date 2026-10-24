@@ -1,10 +1,10 @@
 param([switch]$Setup, [switch]$Update)
 $ErrorActionPreference = 'Stop'
 $taskDashboard = Split-Path -Parent $PSScriptRoot
-$taskTracker = Split-Path -Parent $taskDashboard
-$taskPython = Join-Path $taskTracker '.venv/Scripts/python.exe'
+$taskProxy = Split-Path -Parent $taskDashboard
+$taskPython = Join-Path $taskProxy '.venv/Scripts/python.exe'
 if (-not (Test-Path -LiteralPath $taskPython)) {
-    throw "Run the VF tracker's setup.bat first."
+    throw "Run the proxy's setup.bat first."
 }
 $taskEntry = if ($Setup -or $Update) { 'scripts.setup' } else { 'scripts.launcher' }
 $taskArguments = @()

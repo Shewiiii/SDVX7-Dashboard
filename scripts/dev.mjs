@@ -34,14 +34,14 @@ let searchTask = null,
     searchAt = 0;
 let exportedSignature = null;
 let exportedAt = 0;
-const tracker = path.dirname(root);
-const game = path.dirname(tracker);
+const proxy = path.dirname(root);
+const game = path.dirname(proxy);
 const previewSources = [
-    path.join(tracker, "score_log.txt"),
-    path.join(tracker, "volforce_history.jsonl"),
-    path.join(tracker, "cache/total_volforce.json"),
-    path.join(tracker, "cache/playtime.json"),
-    path.join(tracker, ".env"),
+    path.join(proxy, "player-data/score_log.jsonl"),
+    path.join(proxy, "player-data/volforce_history.jsonl"),
+    path.join(proxy, "cache/total_volforce.json"),
+    path.join(proxy, "player-data/playtime.json"),
+    path.join(proxy, ".env"),
     path.join(root, ".local/sync-config.json"),
     path.join(root, ".local/preview-data.json"),
     path.join(game, "data/others/music_db.xml"),

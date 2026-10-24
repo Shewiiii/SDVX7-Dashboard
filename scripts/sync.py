@@ -24,10 +24,10 @@ from scripts.companion import (
     ROOT,
     display_name,
     load_config,
-    resolve_tracker,
+    resolve_proxy,
     shared_settings,
-    tracker_module,
 )
+from scripts.music import MusicCatalog
 from scripts.playtime import playtime_snapshot
 
 try:
@@ -91,11 +91,9 @@ def stamp(value: str | datetime) -> str:
 
 
 class Catalog:
-    def __init__(self, tracker: Path) -> None:
-        game = tracker.parent
-        self.music = tracker_module(tracker, "music").MusicCatalog(
-            game / "data/others/music_db.xml"
-        )
+    def __init__(self, proxy: Path) -> None:
+        game = proxy.parent
+        self.music = MusicCatalog(game / "data/others/music_db.xml")
         self.details = ChartDetails(
             self.music, ROOT / ".local/chart-details-cache.json"
         )
@@ -104,7 +102,7 @@ class Catalog:
         self.charts = {}
         self.songs = {}
         self.game = game
-        self.tracker = tracker
+        self.proxy = proxy
         self.cover_ids = {}
         self.cover_index = None
         self.cover_signature = None
@@ -183,7 +181,7 @@ class Catalog:
         """Read only the selected artwork, never publish the player record."""
         try:
             raw = json.loads(
-                (self.tracker / "cache/total_volforce.json").read_text(encoding="utf-8")
+                (self.proxy / "cache/total_volforce.json").read_text(encoding="utf-8")
             )
             appeal_id = (raw.get("player") or {}).get("appeal_id")
             if type(appeal_id) is not int or appeal_id < 0:
@@ -483,14 +481,14 @@ def observation_record(
 
 
 def snapshot(
-    tracker: Path, catalog: Catalog, name: str
+    proxy: Path, catalog: Catalog, name: str
 ) -> tuple[dict[str, Any], str | None]:
-    playtime = playtime_snapshot(tracker)
-    path = tracker / "cache/total_volforce.json"
+    playtime = playtime_snapshot(proxy)
+    path = proxy / "cache/total_volforce.json"
     if not path.exists():
         state = {
             "name": name,
-            "currency": shared_settings(tracker)["currency"],
+            "currency": shared_settings(proxy)["currency"],
             "updated_at": None,
             "charts": [],
             "appeal_card": getattr(catalog, "appeal_card", None),
@@ -527,7 +525,7 @@ def snapshot(
     charts.sort(key=lambda c: (-c["vf"], c["music_id"], c["diff_idx"]))
     state = {
         "name": name,
-        "currency": shared_settings(tracker)["currency"],
+        "currency": shared_settings(proxy)["currency"],
         "updated_at": stamp(raw["updated_at"]),
         "charts": charts,
         "appeal_card": getattr(catalog, "appeal_card", None),
@@ -746,11 +744,11 @@ def refresh_request(config: dict[str, Any]) -> int | None:
     return requested if requested > completed else 0
 
 
-def source_state(tracker: Path) -> tuple[tuple[int, int] | None, ...]:
+def source_state(proxy: Path) -> tuple[tuple[int, int] | None, ...]:
     sources = (
-        tracker / "score_log.txt",
-        tracker / "volforce_history.jsonl",
-        tracker / "cache/total_volforce.json",
+        proxy / "player-data/score_log.jsonl",
+        proxy / "player-data/volforce_history.jsonl",
+        proxy / "cache/total_volforce.json",
     )
     result = []
     for path in sources:
@@ -764,7 +762,7 @@ def source_state(tracker: Path) -> tuple[tuple[int, int] | None, ...]:
 
 def sync_once(
     config: dict[str, Any],
-    tracker: Path,
+    proxy: Path,
     catalog: Catalog,
     *,
     force=False,
@@ -801,7 +799,7 @@ def sync_once(
         if catalog.appeal_card:
             image_ids.add(catalog.appeal_card)
         pending_ids = sorted(image_ids - known_ids)
-    current, profile = snapshot(tracker, catalog, display_name(config, tracker))
+    current, profile = snapshot(proxy, catalog, display_name(config, proxy))
     # Do not advertise a new jacket before its image upload is acknowledged.
     # The next pass publishes it, changing the snapshot and updating open clients.
     if hasattr(catalog, "prepare_covers"):
@@ -815,12 +813,12 @@ def sync_once(
     uploaded = 0
     while True:
         plays, pc = read_batch(
-            tracker / "score_log.txt",
+            proxy / "player-data/score_log.jsonl",
             saved.get("plays", {}),
             lambda p: play_record(p, catalog),
         )
         observations, oc = read_batch(
-            tracker / "volforce_history.jsonl",
+            proxy / "player-data/volforce_history.jsonl",
             saved.get("observations", {}),
             lambda o: observation_record(o, profile),
         )
@@ -885,7 +883,7 @@ def sync_once(
         from scripts.audio import start_audio_sync, sync_audio
 
         audio_sync = start_audio_sync if background_audio else sync_audio
-        audio_sync(config, tracker, catalog, endpoint_id)
+        audio_sync(config, proxy, catalog, endpoint_id)
     except Exception as error:  # noqa: BLE001
         catalog.audio_pending = False
         print(
@@ -948,13 +946,13 @@ def sync_details(config, catalog, endpoint_id, priority=()):
 
 
 def export_preview() -> None:
-    tracker = resolve_tracker()
+    proxy = resolve_proxy()
     config = settings()
-    catalog = Catalog(tracker)
-    name = display_name(config, tracker)
+    catalog = Catalog(proxy)
+    name = display_name(config, proxy)
     catalog.refresh()
     catalog.prepare_covers()
-    state, profile = snapshot(tracker, catalog, name)
+    state, profile = snapshot(proxy, catalog, name)
 
     def all_records(
         path: Path, convert: Callable[[dict[str, Any]], dict[str, Any]]
@@ -966,9 +964,12 @@ def export_preview() -> None:
             if len(batch) < 10000:
                 return records
 
-    plays = all_records(tracker / "score_log.txt", lambda p: play_record(p, catalog))
+    plays = all_records(
+        proxy / "player-data/score_log.jsonl", lambda p: play_record(p, catalog)
+    )
     observations = all_records(
-        tracker / "volforce_history.jsonl", lambda o: observation_record(o, profile)
+        proxy / "player-data/volforce_history.jsonl",
+        lambda o: observation_record(o, profile),
     )
     # Mirror the server's identity keys so local and cloud previews agree even
     # when the original proxy log includes retries of the same capture.
@@ -1007,7 +1008,7 @@ def export_preview() -> None:
 
 
 def sync_loop(
-    config: dict[str, Any], tracker: Path, catalog: Catalog, once: bool = False
+    config: dict[str, Any], proxy: Path, catalog: Catalog, once: bool = False
 ) -> None:
     delay = 5
     next_sync = next_check = 0
@@ -1022,7 +1023,7 @@ def sync_loop(
                 requested = status or 0
                 next_check = time.monotonic() + (30 if status is None else 2)
             destination_changed = config.get("database_id") != previous_database
-            current_source = source_state(tracker)
+            current_source = source_state(proxy)
             if (
                 once
                 or requested
@@ -1032,7 +1033,7 @@ def sync_loop(
             ):
                 sync_once(
                     config,
-                    tracker,
+                    proxy,
                     catalog,
                     force=previous_source is None,
                     background_audio=not once,
@@ -1071,8 +1072,8 @@ def sync_loop(
 
 def run(once: bool = False) -> None:
     config = settings()
-    tracker = resolve_tracker()
-    catalog = Catalog(tracker)
+    proxy = resolve_proxy()
+    catalog = Catalog(proxy)
     if (
         not config.get("url", "").startswith("https://")
         or len(config.get("token", "")) < 32
@@ -1102,7 +1103,7 @@ def run(once: bool = False) -> None:
                 return
             raise SystemExit("Dashboard sync is already running.") from None
         print("Dashboard sync running.")
-        sync_loop(config, tracker, catalog, once=once)
+        sync_loop(config, proxy, catalog, once=once)
 
 
 if __name__ == "__main__":

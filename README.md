@@ -1,4 +1,4 @@
-# SDVX ∇ Tracker Dashboard
+# SDVX ∇ Dashboard
 
 This is a web extension of [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX7-VolForce-Tracker), based on Vercel, and originally made for personal use, but may be interesting to share.
 
@@ -20,16 +20,16 @@ The dashboard has much more features and ways to view your data than both the de
 
 ## Setup
 
-In addition to the requirements for the tracker, you also need a [Vercel account](https://vercel.com/signup).
+In addition to the requirements for the proxy, you also need a [Vercel account](https://vercel.com/signup).
 
-1. Place the dashboard folder inside your existing tracker folder:
+1. Place the dashboard folder inside your existing proxy folder:
 
 ```text
-   SDVX7-VolForce-Tracker-main/
+   SDVX7-Proxy-main/
    |-- .venv/
    |-- assets/
    |-- ...
-   |-- SDVX7-Tracker-Dashboard-main/ <--
+   |-- SDVX7-Dashboard-main/ <--
    |-- proxy/
    |-- runtime/
    |-- ...
@@ -37,11 +37,11 @@ In addition to the requirements for the tracker, you also need a [Vercel account
 
 2. Run `setup-dashboard.bat` and follow the instructions.  
    **If setup fails** one way or another, don't delete the created project on Vercel, and choose 1 on the next try. If you did it, delete both `.local/` and `.vercel/` and try again.
-3. Run `start-tracker-with-dashboard.bat`, _then_ start the game. From now on, use this bat to run the tracker !
+3. Run `start-proxy-with-dashboard.bat`, _then_ start the game. From now on, use this bat to run the proxy !
 
 ## Updates
 
-Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `start-tracker-with-dashboard.bat`.
+Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `start-proxy-with-dashboard.bat`.
 
 I might change the caching or database structure later with no backward compatibility possible.  
 If the site is not responding anymore because of this. delete your current Vercel project, its database, as well as `.local/` and `.vercel/`, then run again `setup.bat`. You will not lose data by doing so, except cache.

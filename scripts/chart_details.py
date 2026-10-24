@@ -354,10 +354,10 @@ class ChartDetails:
 
 
 def preview(mid, diff):
-    from scripts.companion import resolve_tracker
+    from scripts.companion import resolve_proxy
     from scripts.sync import Catalog
 
-    catalog = Catalog(resolve_tracker())
+    catalog = Catalog(resolve_proxy())
     catalog.music.refresh()
     details = ChartDetails(
         catalog.music, Path(__file__).parent.parent / ".local/chart-details-cache.json"
@@ -368,10 +368,10 @@ def preview(mid, diff):
 
 def search_preview():
     """Project cached chart summaries into search metadata; omit graph arrays."""
-    from scripts.companion import resolve_tracker
+    from scripts.companion import resolve_proxy
     from scripts.sync import Catalog
 
-    catalog = Catalog(resolve_tracker())
+    catalog = Catalog(resolve_proxy())
     catalog.details.refresh()
     records = []
     for key in catalog.details.metadata:

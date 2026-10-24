@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 from scripts.chart_details import parse_chart
-from scripts.companion import ROOT, resolve_tracker
+from scripts.companion import ROOT, resolve_proxy
 
 SCHEMA = 5  # Preserve extended laser ranges.
 
@@ -53,7 +53,7 @@ def prepare(details, mid, diff):
 def preview(mid, diff):
     from scripts.sync import Catalog
 
-    catalog = Catalog(resolve_tracker())
+    catalog = Catalog(resolve_proxy())
     catalog.details.refresh()
     result = prepare(catalog.details, mid, diff)
     print(gzip.decompress(result[1].read_bytes()).decode() if result else "null")

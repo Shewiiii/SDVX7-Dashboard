@@ -21,7 +21,7 @@ export default async function handler(req, res) {
             return res
                 .status(404)
                 .json({ error: "Details have not synced yet" });
-        // Older summaries are usable while the tracker backfills laser actions,
+        // Older summaries are usable while the proxy backfills laser actions,
         // but must not cache their missing series after an updated sync arrives.
         if (
             !rows[0].record.chart ||

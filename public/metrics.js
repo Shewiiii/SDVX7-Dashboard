@@ -43,7 +43,7 @@ export function playtimeText(seconds) {
     return `${hours.toLocaleString()}h ${String(minutes).padStart(2, "0")}m`;
 }
 
-// Same thresholds and quarter ranks as the tracker's profile command.
+// Same thresholds and quarter ranks as the proxy's profile command.
 export const VF_CLASSES = [
     { name: "Sienna", minimum: 0, step: 2.5 },
     { name: "Cobalt", minimum: 10, step: 0.5 },

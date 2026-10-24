@@ -80,7 +80,7 @@ def configure_r2(config):
         import boto3  # noqa: F401
     except ImportError:
         print(
-            "Installing the optional R2 uploader into the tracker's Python environment..."
+            "Installing the optional R2 uploader into the proxy's Python environment..."
         )
         subprocess.run(
             [
@@ -231,7 +231,7 @@ def main():
             raise ValueError("Choose full or preview.")
         config.update(variant=variant)
         from scripts.audio import AudioLibrary, plan_audio
-        from scripts.companion import resolve_tracker
+        from scripts.companion import resolve_proxy
         from scripts.sync import Catalog
 
         codec = prompt(
@@ -257,20 +257,20 @@ def main():
             config["storage_limit_gb"] = 9
             print("Measuring unique tracks for the 9 GB Opus budget...")
             config["bitrate"] = plan_audio(
-                AudioLibrary(Catalog(resolve_tracker()).details, config)
+                AudioLibrary(Catalog(resolve_proxy()).details, config)
             )["bitrate"]
 
     if mode == "2":
         configure_r2(config)
     apply_media_policy(config)
     write_json(CONFIG, config)
-    print("Saved locally. Restart preview / the tracker companion to apply.")
+    print("Saved locally. Restart preview / the proxy companion to apply.")
     if mode == "2":
         print(
             "The companion converts and uploads a few tracks per pass, then syncs player metadata."
         )
         print(
-            "Deploy the updated dashboard once with update-dashboard.bat. Upload progress appears in the tracker console and .local/sync.log."
+            "Deploy the updated dashboard once with update-dashboard.bat. Upload progress appears in the proxy console and .local/sync.log."
         )
 
 

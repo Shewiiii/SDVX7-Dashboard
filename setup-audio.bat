@@ -1,7 +1,7 @@
 @echo off
 cd /d "%~dp0"
 if not exist "..\.venv\Scripts\python.exe" (
-    echo Run the tracker setup.bat first.
+    echo Run the proxy setup.bat first.
     pause
     exit /b 1
 )

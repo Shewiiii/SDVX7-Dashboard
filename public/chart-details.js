@@ -412,7 +412,7 @@ export function createChartDetails() {
                 if (!response.ok)
                     throw new Error(
                         response.status === 404
-                            ? "Details haven’t synced yet. Sync the updated tracker, then try again."
+                            ? "Details haven’t synced yet. Sync the updated proxy, then try again."
                             : "Could not load details. Try again shortly.",
                     );
                 const record = await response.json();

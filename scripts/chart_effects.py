@@ -68,7 +68,7 @@ def prepare_bank(base_root):
 @lru_cache(maxsize=4)
 def _bank_result(path, size, modified):
     # A missing decoder or damaged bank should not retry once per difficulty.
-    # A source change or tracker restart will try again.
+    # A source change or proxy restart will try again.
     try:
         return _prepare_bank(path, size, modified)
     except (OSError, ValueError, RuntimeError) as error:

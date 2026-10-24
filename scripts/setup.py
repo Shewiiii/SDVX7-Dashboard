@@ -17,10 +17,10 @@ from scripts.companion import (
     ROOT,
     display_name,
     load_config,
-    resolve_tracker,
+    proxy_python,
+    resolve_proxy,
     save_config,
     shared_settings,
-    tracker_python,
     with_https,
 )
 
@@ -98,36 +98,43 @@ def node_tools() -> tuple[str, str]:
     return node, npm
 
 
-def check_tracker(tracker: Path) -> Path:
-    python = tracker_python(tracker)
-    if not (tracker.parent / "data/others/music_db.xml").is_file():
+def check_proxy(proxy: Path) -> Path:
+    python = proxy_python(proxy)
+    if not (proxy.parent / "data/others/music_db.xml").is_file():
         raise ValueError(
-            "Game music database missing. Put the tracker folder inside your SDVX game folder."
+            "Game music database missing. Put the proxy folder inside your SDVX game folder."
         )
+    run([str(python), "-m", "pip", "install", "-r", str(ROOT / "requirements.txt")])
     subprocess.run(
         [
             str(python),
             "-c",
             (
                 "import dotenv, PIL, pykakasi; "
-                "from tracker.music import MusicCatalog; "
-                "from tracker.playtime import load_playtime_summary"
+                "from scripts.music import MusicCatalog; "
+                "from proxy.playtime import load_playtime_summary"
             ),
         ],
-        cwd=tracker,
+        cwd=ROOT,
+        env={
+            **os.environ,
+            "PYTHONPATH": os.pathsep.join(
+                filter(None, (str(proxy), os.getenv("PYTHONPATH")))
+            ),
+        },
         check=True,
     )
-    shared = shared_settings(tracker)
-    print(f"Tracker: {tracker}")
-    print(f"Display name: {display_name(load_config(), tracker)}")
+    shared = shared_settings(proxy)
+    print(f"Proxy: {proxy}")
+    print(f"Display name: {display_name(load_config(), proxy)}")
     print(f"Spending currency: {shared['currency']}")
     print(f"Python: {python}")
-    print("Existing tracker configuration and history will be reused.")
+    print("Existing proxy configuration and history will be reused.")
     return python
 
 
 def vercel(npm: str, *args: str, capture: bool = False, **kwargs: Any) -> str:
-    # A ZIP inside the tracker must not inherit the tracker's Git repository.
+    # A ZIP inside the proxy must not inherit the proxy's Git repository.
     kwargs.setdefault(
         "env", {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
     )
@@ -175,7 +182,7 @@ def configure_connection(config: dict[str, Any]) -> None:
     print("Existing website connected.")
 
 
-def linked_project(npm: str, config: dict[str, Any], tracker: Path) -> dict[str, Any]:
+def linked_project(npm: str, config: dict[str, Any], proxy: Path) -> dict[str, Any]:
     project_path = ROOT / ".vercel/project.json"
     if project_path.exists():
         try:
@@ -207,7 +214,7 @@ def linked_project(npm: str, config: dict[str, Any], tracker: Path) -> dict[str,
                 raise
     if not project_path.exists():
         default = re.sub(
-            r"[^a-z0-9-]+", "-", display_name(config, tracker).lower()
+            r"[^a-z0-9-]+", "-", display_name(config, proxy).lower()
         ).strip("-")
         project = prompt("Vercel project name", f"{default or 'sdvx'}-dashboard")
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,79}", project):
@@ -219,13 +226,13 @@ def linked_project(npm: str, config: dict[str, Any], tracker: Path) -> dict[str,
 
 
 def deploy(
-    config: dict[str, Any], tracker: Path, node: str, npm: str, update: bool = False
+    config: dict[str, Any], proxy: Path, node: str, npm: str, update: bool = False
 ) -> dict[str, Any]:
     try:
         vercel(npm, "whoami", capture=True, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         vercel(npm, "login")
-    project = linked_project(npm, config, tracker)
+    project = linked_project(npm, config, proxy)
     stages_path = ROOT / ".local/setup-state.json"
     try:
         stages = (
@@ -286,8 +293,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--update", action="store_true")
     args = parser.parse_args(argv)
     config = load_config()
-    tracker = resolve_tracker()
-    python = check_tracker(tracker)
+    proxy = resolve_proxy()
+    python = check_proxy(proxy)
     from scripts.audio import configuration
     from scripts.audio_setup import apply_media_policy
 
@@ -302,13 +309,13 @@ def main(argv: list[str] | None = None) -> int:
         print("1. Create or resume a Vercel dashboard\n2. Connect an existing website")
         choice = prompt("Setup mode", "1")
     if choice == "1":
-        deploy(config, tracker, node, npm, args.update)
+        deploy(config, proxy, node, npm, args.update)
     elif choice == "2":
         configure_connection(config)
     else:
         raise ValueError("Choose 1 or 2.")
     run([str(python), "-c", "from scripts.sync import run; run(once=True)"])
-    print("Ready. Use Start-tracker-with-dashboard.bat for future sessions.")
+    print("Ready. Use Start-proxy-with-dashboard.bat for future sessions.")
     print("Optional song playback: See README.")
     return 0
 
@@ -321,7 +328,7 @@ if __name__ == "__main__":
             print(error.output, file=sys.stderr)
         print(f"Dashboard setup did not finish: {error}", file=sys.stderr)
         print(
-            "Run setup again to resume. Existing tracker files were not changed.",
+            "Run setup again to resume. Existing proxy files were not changed.",
             file=sys.stderr,
         )
         raise SystemExit(1) from None

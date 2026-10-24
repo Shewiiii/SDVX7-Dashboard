@@ -39,55 +39,55 @@ def save_config(config: dict[str, Any]) -> None:
     temporary.replace(CONFIG_PATH)
 
 
-def resolve_tracker() -> Path:
-    tracker = ROOT.parent
+def resolve_proxy() -> Path:
+    proxy = ROOT.parent
     if not all(
-        (tracker / name).is_file()
-        for name in ("config.py", "tracker/launcher.py", "tracker/music.py")
+        (proxy / name).is_file()
+        for name in ("config.py", "proxy/launcher.py", "proxy/playtime.py")
     ):
-        raise ValueError("Put the dashboard folder inside your VF tracker folder.")
-    return tracker
+        raise ValueError("Put the dashboard folder inside your proxy folder.")
+    return proxy
 
 
-def tracker_python(tracker: Path) -> Path:
+def proxy_python(proxy: Path) -> Path:
     executable = (
-        tracker / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+        proxy / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     )
     if not executable.is_file():
         raise ValueError(
-            "Tracker Python environment missing. Run the tracker's setup.bat first."
+            "Proxy Python environment missing. Run the proxy's setup.bat first."
         )
     return executable
 
 
-def tracker_module(tracker: Path, name: str) -> ModuleType:
-    # Reuse installed helpers. Never import the bot or start another proxy.
-    location = str(tracker)
+def proxy_module(proxy: Path, name: str) -> ModuleType:
+    # Import shared helpers without starting another proxy.
+    location = str(proxy)
     if location not in sys.path:
         sys.path.insert(0, location)
-    return importlib.import_module(f"tracker.{name}")
+    return importlib.import_module(f"proxy.{name}")
 
 
-def shared_settings(tracker: Path) -> dict[str, Any]:
+def shared_settings(proxy: Path) -> dict[str, Any]:
     from dotenv import dotenv_values
 
-    values = dotenv_values(tracker / ".env", interpolate=False)
+    values = dotenv_values(proxy / ".env", interpolate=False)
 
     def setting(key: str, default: str = "") -> str:
         return os.getenv(key) or values.get(key) or default
 
     # Only these public preferences leave this adapter. BOT_TOKEN is never exported.
-    currency = setting("TRACKER_CURRENCY", "USD").strip().upper()
+    currency = setting("DASHBOARD_CURRENCY", "USD").strip().upper()
     if not (currency.isascii() and currency.isalpha() and len(currency) == 3):
         currency = "USD"
     return {
-        "name": setting("TRACKER_USERNAME"),
+        "name": setting("DASHBOARD_USERNAME"),
         "currency": currency,
-        "initial_playtime": setting("TRACKER_INITIAL_PLAYTIME", "0"),
-        "baseline_seconds": int(setting("TRACKER_PLAYTIME_BASELINE_SECONDS", "0")),
-        "baseline_plays": int(setting("TRACKER_PLAYTIME_BASELINE_PLAYS", "0")),
+        "initial_playtime": setting("INITIAL_PLAYTIME", "0"),
+        "baseline_seconds": int(setting("PLAYTIME_BASELINE_SECONDS", "0")),
+        "baseline_plays": int(setting("PLAYTIME_BASELINE_PLAYS", "0")),
     }
 
 
-def display_name(config: dict[str, Any], tracker: Path) -> str:
-    return (shared_settings(tracker)["name"] or config.get("name") or "Player")[:40]
+def display_name(config: dict[str, Any], proxy: Path) -> str:
+    return (shared_settings(proxy)["name"] or config.get("name") or "Player")[:40]

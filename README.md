@@ -45,7 +45,7 @@ I have discontinued [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX
 
 To migrate:
 - Follow step 1 of the Setup.
-- Move `.local/` and `.vercel/` located in `/SDVX7-VolForce-Tracker-main/SDVX7-Tracker-Dashboard` into `SDVX7-Dashboard-main/`.
+- Move `.local/` and `.vercel/` located in `/SDVX7-VolForce-Tracker-main/SDVX7-Tracker-Dashboard-main` into `SDVX7-Dashboard-main/`.
 - Run `update-dashboard.bat`. It will delete the legacy `/SDVX7-VolForce-Tracker-main`, but you can choose to create a backup.
 
 ## Optional song and chart preview

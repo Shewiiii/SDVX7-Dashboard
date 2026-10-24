@@ -1384,7 +1384,10 @@ function switchView(
             sort: $("sort").value,
         };
     }
-    if (next !== view) closeMatches();
+    if (next !== view) {
+        closeMatches();
+        if (view === "calculator") calculator.clearFilter();
+    }
     view = next;
     document.querySelectorAll(".tab").forEach((button) => {
         const active = button.dataset.view === view;

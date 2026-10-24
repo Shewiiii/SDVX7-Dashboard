@@ -718,9 +718,13 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         event.preventDefault();
         dot.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    $("filter-remove").addEventListener("click", () => {
+    function clearFilter() {
         chartFilter = null;
+        $("filter").hidden = true;
         hideChartPreview();
+    }
+    $("filter-remove").addEventListener("click", () => {
+        clearFilter();
         render({ animate: false });
     });
     $("legend").innerHTML =
@@ -733,6 +737,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
 
     return {
         render,
+        clearFilter,
         updateData({ animate = true } = {}) {
             const charts = getCharts();
             const signature = JSON.stringify(charts);
@@ -772,7 +777,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             syncControls();
         },
         reset() {
-            chartFilter = null;
+            clearFilter();
             state = { ...defaults };
             syncControls();
         },

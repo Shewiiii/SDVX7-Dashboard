@@ -200,10 +200,11 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             return;
         lastUiUpdate = now;
         seek.value = position;
-        seek.setAttribute(
-            "aria-valuetext",
-            `${clock(position)} of ${clock(record.duration)}`,
-        );
+        if (!options.seekTimeline)
+            seek.setAttribute(
+                "aria-valuetext",
+                `${clock(position)} of ${clock(record.duration)}`,
+            );
         const label = `${clock(position)} / ${clock(record.duration)}`;
         if (time.textContent !== label) time.textContent = label;
         progress?.setAttribute("width", (512 * position) / record.duration);
@@ -342,7 +343,15 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             },
             { signal },
         );
-    audio.addEventListener("timeupdate", () => update(), { signal });
+    audio.addEventListener(
+        "timeupdate",
+        () => {
+            // Playing already follows requestAnimationFrame. Media events can arrive
+            // between repaints and would draw an extra, immediately replaced frame.
+            if (audio.paused || seeking || buffering) update();
+        },
+        { signal },
+    );
     for (const event of ["seeked", "ratechange"])
         audio.addEventListener(event, () => update(true), { signal });
     audio.addEventListener("error", failed, { signal });

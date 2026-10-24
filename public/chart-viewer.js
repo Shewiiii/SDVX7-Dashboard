@@ -89,6 +89,27 @@ const FPS_KEY = "sdvx-chart-fps";
 const OFFSET_KEY = "sdvx-chart-offset";
 const EXTENDED_LASERS_KEY = "sdvx-chart-extended-lasers";
 
+// Skip whole groups of off-screen objects while preserving their paint order.
+function timeBlocks(items, start, end) {
+    const blocks = [];
+    for (let i = 0; i < items.length; i += 32) {
+        const group = items.slice(i, i + 32);
+        blocks.push({
+            items: group,
+            start: Math.min(...group.map(start)),
+            end: Math.max(...group.map(end)),
+        });
+    }
+    return blocks;
+}
+
+function* visibleBlocks(blocks, start, end) {
+    for (const block of blocks) {
+        if (block.end < start || block.start > end) continue;
+        yield* block.items;
+    }
+}
+
 export function createFrameLimiter(getLimit) {
     let last = -Infinity;
     return (now, force = false) => {
@@ -188,6 +209,22 @@ export function chartTiming(chart) {
     });
     timing.chipSeconds = chart.buttons.filter(([a, b]) => a === b);
     timing.holdSeconds = chart.buttons.filter(([a, b]) => a !== b);
+    for (const layer of timing.buttonLayers)
+        layer.holdBlocks = timeBlocks(
+            layer.holds,
+            (n) => n[0],
+            (n) => n[1],
+        );
+    timing.holdSecondBlocks = timeBlocks(
+        timing.holdSeconds,
+        (n) => n[0],
+        (n) => n[1],
+    );
+    timing.laserBlocks = timeBlocks(
+        timing.lasers,
+        (l) => l.points[0]?.[0] ?? Infinity,
+        (l) => l.points.at(-1)?.[0] ?? -Infinity,
+    );
     timingCache.set(chart, timing);
     return timing;
 }
@@ -239,7 +276,11 @@ export function chartHitEffects(chart, at) {
             fade: (at - start) / HIT_FADE_SECONDS,
         });
     }
-    for (const [start, end, button] of timing.holdSeconds) {
+    for (const [start, end, button] of visibleBlocks(
+        timing.holdSecondBlocks,
+        at - HIT_FADE_SECONDS,
+        at,
+    )) {
         if (start > at || end + HIT_FADE_SECONDS < at) continue;
         effects.push({
             button,
@@ -251,14 +292,8 @@ export function chartHitEffects(chart, at) {
     return effects;
 }
 
-export function drawChart(
-    canvas,
-    chart,
-    time,
-    hiSpeed = 1,
-    extendedLasers = true,
-    viewport = canvas,
-) {
+// Geometry changes on layout/scroll events, not as the song advances.
+function chartSurface(canvas, chart, extendedLasers, viewport) {
     const width = viewport.clientWidth,
         height = viewport.clientHeight;
     if (!width || !height) return;
@@ -322,6 +357,83 @@ export function drawChart(
         canvas.height = Math.round(height * scale);
     }
     const ctx = canvas.getContext("2d");
+    return {
+        ctx,
+        timing,
+        width,
+        height,
+        track,
+        lane,
+        left,
+        bottom,
+        laneBottom,
+        laserX,
+        padding,
+        paintWidth,
+        scale,
+        visibleTop,
+        visibleBottom,
+    };
+}
+
+export function createChartRenderer(canvas, viewport = canvas) {
+    let surface, previousChart, previousExtended;
+    return {
+        invalidate() {
+            surface = undefined;
+        },
+        draw(chart, time, hiSpeed = 1, extendedLasers = true) {
+            if (
+                !surface ||
+                chart !== previousChart ||
+                extendedLasers !== previousExtended
+            ) {
+                surface = chartSurface(canvas, chart, extendedLasers, viewport);
+                previousChart = chart;
+                previousExtended = extendedLasers;
+            }
+            if (surface)
+                drawChart(
+                    canvas,
+                    chart,
+                    time,
+                    hiSpeed,
+                    extendedLasers,
+                    viewport,
+                    surface,
+                );
+        },
+    };
+}
+
+export function drawChart(
+    canvas,
+    chart,
+    time,
+    hiSpeed = 1,
+    extendedLasers = true,
+    viewport = canvas,
+    surface,
+) {
+    surface ??= chartSurface(canvas, chart, extendedLasers, viewport);
+    if (!surface) return;
+    const {
+        ctx,
+        timing,
+        width,
+        height,
+        track,
+        lane,
+        left,
+        bottom,
+        laneBottom,
+        laserX,
+        padding,
+        paintWidth,
+        scale,
+        visibleTop,
+        visibleBottom,
+    } = surface;
     ctx.setTransform(scale, 0, 0, scale, padding * scale, 0);
     ctx.clearRect(-padding, 0, paintWidth, height);
     ctx.save();
@@ -406,7 +518,7 @@ export function drawChart(
         ctx.fillRect(x, y(start) - noteHeight / 2, w, 1);
     };
     for (const layer of timing.buttonLayers) {
-        for (const note of layer.holds) {
+        for (const note of visibleBlocks(layer.holdBlocks, now, lastBeat)) {
             if (note[1] >= now && note[0] <= lastBeat) paintButton(note);
         }
         for (
@@ -436,7 +548,11 @@ export function drawChart(
         ctx.globalAlpha = 0.85;
         ctx.stroke();
     };
-    for (const laser of timing.lasers) {
+    for (const laser of visibleBlocks(
+        timing.laserBlocks,
+        now,
+        lastBeat + terminalLength / speed,
+    )) {
         const points = extendedLasers ? laser.extendedPoints : laser.points;
         if (
             !points.length ||
@@ -450,6 +566,9 @@ export function drawChart(
         // with a readable traversal direction, without letters or arrow icons.
         paintTerminal(points[0], 1, color);
         paintTerminal(points.at(-1), -1, color);
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.25;
         for (
             let i = Math.max(1, firstAtOrAfter(points, now));
             i < points.length;
@@ -474,7 +593,6 @@ export function drawChart(
                         (timing.beatAt(time + 0.05) - now) * speed,
                     ),
                 );
-                ctx.fillStyle = color;
                 ctx.globalAlpha = 0.6;
                 ctx.fillRect(
                     Math.min(x1, x2) - half,
@@ -501,7 +619,6 @@ export function drawChart(
                 x2 = x1 + (x2 - x1) * (y1 / (y1 - y2));
                 y2 = 0;
             }
-            ctx.fillStyle = color;
             ctx.globalAlpha = 0.38;
             ctx.beginPath();
             ctx.moveTo(x1 - half, y1);
@@ -511,8 +628,6 @@ export function drawChart(
             ctx.closePath();
             ctx.fill();
             ctx.globalAlpha = 0.85;
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 1.25;
             ctx.beginPath();
             ctx.moveTo(x1 - half, y1);
             ctx.lineTo(x2 - half, y2);
@@ -848,15 +963,14 @@ export function createChartViewer() {
                 /* Storage can be unavailable in private browsing. */
             }
             const shouldDraw = createFrameLimiter(() => fpsLimit);
+            const renderer = createChartRenderer(canvas, stage);
             const draw = () => {
                 if (timeline)
-                    drawChart(
-                        canvas,
+                    renderer.draw(
                         timeline,
                         time - offsetMs / 1000,
                         hiSpeed,
                         extendedLasers,
-                        stage,
                     );
             };
             const setExtendedLasers = (enabled, persist = false) => {
@@ -1010,13 +1124,36 @@ export function createChartViewer() {
                     },
                     { signal },
                 );
-            observer = new ResizeObserver(draw);
-            observer.observe(stage);
-            dialog.addEventListener("scroll", draw, {
+            const redrawLayout = () => {
+                renderer.invalidate();
+                draw();
+            };
+            observer = new ResizeObserver(redrawLayout);
+            for (const element of [stage, body, content, dialog])
+                observer.observe(element);
+            window.addEventListener("resize", redrawLayout, {
+                signal,
+                passive: true,
+            });
+            window.visualViewport?.addEventListener("resize", redrawLayout, {
+                signal,
+                passive: true,
+            });
+            dialog.addEventListener("scroll", redrawLayout, {
                 signal,
                 capture: true,
                 passive: true,
             });
+            document.fonts?.ready.then(() => {
+                if (!signal.aborted) redrawLayout();
+            });
+            dialog.addEventListener(
+                "transitionend",
+                (event) => {
+                    if (event.target === dialog) redrawLayout();
+                },
+                { signal },
+            );
             dialog.showModal();
             getComputedStyle(dialog).opacity;
             getComputedStyle(dialog, "::backdrop").opacity;

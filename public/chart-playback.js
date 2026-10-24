@@ -1,7 +1,8 @@
 const clamp = (n, max = 1) => Math.max(0, Math.min(max, n));
 const clock = (n) =>
     `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
-const rate = (n) => Number(n.toFixed(1)).toLocaleString();
+const rateFormat = new Intl.NumberFormat();
+const rate = (n) => rateFormat.format(Number(n.toFixed(1)));
 
 function currentPoint(points, at) {
     let low = 0,
@@ -70,7 +71,8 @@ export function createChartPlayback({ signal }) {
         mounted = false,
         dragging = null,
         position = 0,
-        offset = 0;
+        offset = 0,
+        readout;
     const events = { signal };
     const audioToChart = (at) =>
         at + record.start - record.chart_offset - offset;
@@ -113,6 +115,7 @@ export function createChartPlayback({ signal }) {
         inspect(fraction);
     }
     function render() {
+        readout = undefined;
         if (!svg) return;
         if (!chart) {
             svg.replaceChildren();
@@ -148,12 +151,23 @@ export function createChartPlayback({ signal }) {
         playhead.setAttribute("x1", x);
         playhead.setAttribute("x2", x);
         const info = playbackContext(chart, audioToChart(at));
-        const label = `Measure ${info.measure} / ${info.totalMeasures} · ${rate(info.bpm)} BPM`;
-        if (context.textContent !== label) context.textContent = label;
         const index = Math.min(
             density.buttons.length - 1,
             Math.floor(clamp(at / record.duration) * density.buttons.length),
         );
+        const second = Math.floor(at);
+        if (
+            readout &&
+            readout.second === second &&
+            readout.index === index &&
+            readout.measure === info.measure &&
+            readout.totalMeasures === info.totalMeasures &&
+            readout.bpm === info.bpm
+        )
+            return;
+        readout = { second, index, ...info };
+        const label = `Measure ${info.measure} / ${info.totalMeasures} · ${rate(info.bpm)} BPM`;
+        if (context.textContent !== label) context.textContent = label;
         seek.setAttribute(
             "aria-valuetext",
             `${clock(at)} of ${clock(record.duration)}, measure ${info.measure} of ${info.totalMeasures}, ${rate(info.bpm)} BPM, ${rate(density.buttons[index])} BT/FX starts and ${rate(density.lasers[index])} laser actions per second`,

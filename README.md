@@ -79,3 +79,4 @@ Songs upload will occur during the first sync, which may take a long time.
 
 - The local proxy reuses the e-amusement decoding utilities from [RyuNET-core](https://github.com/Ryu7w7/RyuNET-core).
 - Chart view and scroll speed logic from [Unnamed SDVC Clone](https://github.com/Drewol/unnamed-sdvx-clone).
+- Audio DSP documentation from [vox2ksh](https://github.com/whiteou7/vox2ksh/blob/main/specs/audio_engine.md)

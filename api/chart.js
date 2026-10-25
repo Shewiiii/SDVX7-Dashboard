@@ -21,11 +21,12 @@ export default async function handler(req, res) {
             return res
                 .status(404)
                 .json({ error: "Details have not synced yet" });
-        // Older summaries are usable while the proxy backfills laser actions,
-        // but must not cache their missing series after an updated sync arrives.
+        // Older summaries stay usable while updated statistics are syncing.
         if (
             !rows[0].record.chart ||
-            rows[0].record.chart.laser_density_version === 2
+            (rows[0].record.chart.laser_density_version === 2 &&
+                Number.isInteger(rows[0].record.chart.max_chain) &&
+                typeof rows[0].record.chart.max_chain_estimated === "boolean")
         )
             res.setHeader(
                 "Cache-Control",

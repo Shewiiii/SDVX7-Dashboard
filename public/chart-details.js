@@ -355,16 +355,23 @@ export function createChartDetails() {
                     : "—",
             ],
             ["Laser sections", count(chart?.counts.laser_sections)],
-            ["Tempo changes", count(chart?.bpm_change_count)],
+            [
+                "Max chain",
+                `${chart?.max_chain_estimated ? "≈ " : ""}${count(chart?.max_chain)}`,
+                chart?.max_chain_estimated
+                    ? "Estimated from chart timing."
+                    : "Maximum chain for a full combo.",
+            ],
         ];
         const list = document.createElement("dl");
         list.className = "details-values";
-        for (const [label, value] of rows) {
+        for (const [label, value, description] of rows) {
             const cell = document.createElement("div"),
                 dt = document.createElement("dt"),
                 dd = document.createElement("dd");
             dt.textContent = label;
             dd.textContent = value;
+            if (description) dd.title = description;
             cell.append(dt, dd);
             list.append(cell);
         }
@@ -410,10 +417,13 @@ export function createChartDetails() {
                 !saved ||
                 Date.now() - saved.at > 3600000 ||
                 (saved.record.chart &&
-                    saved.record.chart.laser_density_version !== 2)
+                    (saved.record.chart.laser_density_version !== 2 ||
+                        !Number.isInteger(saved.record.chart.max_chain) ||
+                        typeof saved.record.chart.max_chain_estimated !==
+                            "boolean"))
             ) {
                 const response = await fetch(
-                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=3`,
+                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=4`,
                     { signal: request.signal },
                 );
                 if (!response.ok)

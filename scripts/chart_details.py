@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from scripts.music import MusicCatalog
 
 BINS = 64
-SCHEMA = 4
+SCHEMA = 5
 logger = logging.getLogger(__name__)
 
 
@@ -35,7 +35,9 @@ def number(node: ET.Element, tag: str, divisor: float = 1) -> float | None:
         return None
 
 
-def parse_chart(path: Path, *, full: bool = False) -> dict[str, Any]:
+def parse_chart(
+    path: Path, *, full: bool = False, max_exscore: float | None = None
+) -> dict[str, Any]:
     sections, section = {}, None
     for raw in path.read_text(encoding="cp932", errors="replace").splitlines():
         line = raw.split("//", 1)[0].strip()
@@ -213,6 +215,25 @@ def parse_chart(path: Path, *, full: bool = False) -> dict[str, Any]:
     # Compact summaries stay bounded; full timelines above retain exact timing.
     if len(changes) > 128:
         changes = [changes[round(i * (len(changes) - 1) / 127)] for i in range(128)]
+    chain = None
+    estimated = True
+    chips = counts["bt_taps"] + counts["fx_taps"]
+    if (
+        max_exscore is not None
+        and math.isfinite(max_exscore)
+        and max_exscore > 0
+        and max_exscore % 1 == 0
+    ):
+        sustained_score = int(max_exscore) - 5 * chips
+        if sustained_score >= 0 and sustained_score % 2 == 0:
+            # Chips contribute five EX points, every hold/laser tick contributes two.
+            chain = chips + sustained_score // 2
+            estimated = False
+    if chain is None:
+        from scripts.chart_chain import maximum_chain
+
+        chain = maximum_chain(sections, resolution, beat)
+
     return {
         "duration": round(duration, 3),
         "counts": counts,
@@ -222,6 +243,8 @@ def parse_chart(path: Path, *, full: bool = False) -> dict[str, Any]:
         "lanes": lanes,
         "bpm_changes": changes,
         "bpm_change_count": max(0, len(tempos) - 1),
+        "max_chain": chain,
+        "max_chain_estimated": estimated,
     }
 
 
@@ -340,7 +363,9 @@ class ChartDetails:
             chart = None
             if path:
                 try:
-                    chart = parse_chart(path)
+                    chart = parse_chart(
+                        path, max_exscore=self.metadata[key].get("max_exscore")
+                    )
                 except (OSError, ValueError, IndexError, KeyError, OverflowError):
                     pass
             cached = {"hash": digest, "record": {**self.metadata[key], "chart": chart}}

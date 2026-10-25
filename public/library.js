@@ -49,17 +49,19 @@ export function libraryEntries(data, catalog, mode, query = "") {
             }
         } else {
             const groups =
-                mode === "year"
-                    ? [
-                          song.release_year
-                              ? String(song.release_year)
-                              : "Unknown year",
-                      ]
-                    : song.is_custom
-                      ? ["Custom Map"]
-                      : SONG_CATEGORIES.filter(
-                            ([bit]) => (song.genre || 0) & bit,
-                        ).map(([, label]) => label);
+                mode === "all"
+                    ? ["All"]
+                    : mode === "year"
+                      ? [
+                            song.release_year
+                                ? String(song.release_year)
+                                : "Unknown year",
+                        ]
+                      : song.is_custom
+                        ? ["Custom Map"]
+                        : SONG_CATEGORIES.filter(
+                              ([bit]) => (song.genre || 0) & bit,
+                          ).map(([, label]) => label);
             for (const group of new Set(groups.length ? groups : ["Other"]))
                 entries.push({ group, song });
         }
@@ -171,25 +173,31 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         for (const entry of entries) grouped.get(entry.group).push(entry);
         const shown = entries;
         results.replaceChildren();
-        let visibleFolders = 0;
+        let visibleGroups = 0;
         for (const [name, items] of grouped) {
             if (query.value.trim() && !items.length) continue;
             const key = `${mode.value}:${name}`;
             const state = folderState.get(key) || { open: false, page: 0 };
             folderState.set(key, state);
-            const folder = document.createElement("details");
-            folder.className = "library-folder";
-            const heading = document.createElement("summary");
-            const title = document.createElement("span"),
-                count = document.createElement("small");
-            title.textContent = name;
-            count.textContent = `${items.length.toLocaleString()} ${chartFolderMode(mode.value) ? "charts" : "songs"}`;
-            heading.append(title, count);
             const content = document.createElement("div");
             content.className = "library-folder-content";
-            folder.append(heading, content);
-            results.append(folder);
-            visibleFolders++;
+            let folder,
+                heading = content;
+            if (mode.value === "all") {
+                results.append(content);
+            } else {
+                folder = document.createElement("details");
+                folder.className = "library-folder";
+                heading = document.createElement("summary");
+                const title = document.createElement("span"),
+                    count = document.createElement("small");
+                title.textContent = name;
+                count.textContent = `${items.length.toLocaleString()} ${chartFolderMode(mode.value) ? "charts" : "songs"}`;
+                heading.append(title, count);
+                folder.append(heading, content);
+                results.append(folder);
+            }
+            visibleGroups++;
             let populated = false;
             function populate() {
                 populated = true;
@@ -221,7 +229,6 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                     empty.textContent = "No matching charts.";
                     content.append(empty);
                 }
-                if (pages <= 1) return;
                 const pager = document.createElement("div");
                 pager.className = "pagination library-pagination";
                 const info = document.createElement("span"),
@@ -244,15 +251,23 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                 input.setAttribute("aria-label", `Page number in ${name}`);
                 info.append("Page ", number, input, ` / ${pages}`);
                 const buttons = document.createElement("div"),
+                    first = document.createElement("button"),
                     previous = document.createElement("button"),
-                    next = document.createElement("button");
-                previous.type = next.type = "button";
+                    next = document.createElement("button"),
+                    last = document.createElement("button");
+                first.type = previous.type = next.type = last.type = "button";
+                first.textContent = "⇇";
                 previous.textContent = "←";
                 next.textContent = "→";
+                last.textContent = "⇉";
+                first.setAttribute("aria-label", `First page in ${name}`);
                 previous.setAttribute("aria-label", `Previous page in ${name}`);
                 next.setAttribute("aria-label", `Next page in ${name}`);
-                previous.disabled = state.page === 0;
-                next.disabled = state.page === pages - 1;
+                last.setAttribute("aria-label", `Last page in ${name}`);
+                first.title = "First page";
+                last.title = "Last page";
+                first.disabled = previous.disabled = state.page === 0;
+                last.disabled = next.disabled = state.page === pages - 1;
                 const go = (value) => {
                     state.page = Math.max(
                         0,
@@ -273,8 +288,10 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                             : "smooth",
                     });
                 };
+                first.addEventListener("click", () => go(0));
                 previous.addEventListener("click", () => go(state.page - 1));
                 next.addEventListener("click", () => go(state.page + 1));
+                last.addEventListener("click", () => go(pages - 1));
                 number.addEventListener("click", () => {
                     number.hidden = true;
                     input.hidden = false;
@@ -306,18 +323,22 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                         number.focus({ preventScroll: true });
                     }
                 });
-                buttons.append(previous, next);
+                buttons.append(first, previous, next, last);
                 pager.append(info, buttons);
                 content.append(pager);
             }
-            folder.addEventListener("toggle", () => {
-                state.open = folder.open;
-                if (folder.open && !populated) populate();
-            });
-            folder.open = state.open || !!query.value.trim();
-            if (folder.open) populate();
+            if (folder) {
+                folder.addEventListener("toggle", () => {
+                    state.open = folder.open;
+                    if (folder.open && !populated) populate();
+                });
+                folder.open = state.open || !!query.value.trim();
+                if (folder.open) populate();
+            } else {
+                populate();
+            }
         }
-        if (!visibleFolders)
+        if (!visibleGroups)
             results.textContent =
                 parseSearch(query.value).errors[0] || "No matching songs.";
         document.getElementById("library-count").textContent = chartFolderMode(

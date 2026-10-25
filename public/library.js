@@ -11,9 +11,22 @@ import {
 import { SONG_GENRES } from "./song-metadata.js";
 import { UNLOCK_METHODS, unlockFolder } from "./unlock-methods.js";
 
-// Song folders retain search's selection; chart folders open the exact difficulty.
+// Song folders retain search's selection. Chart folders open the exact difficulty.
 export const chartFolderMode = (mode) =>
     ["level", "clear", "grade", "top"].includes(mode);
+
+export function autoOpenLibraryFolders(query, entries) {
+    const parsed = parseSearch(query);
+    const nameSearch =
+        parsed.tokens.length > 0 ||
+        parsed.filters.some(
+            ({ field, operator }) =>
+                ["title", "artist"].includes(field) && operator === "=",
+        );
+    const songs = new Set(entries.map((entry) => entry.song.music_id)).size;
+    return !parsed.errors.length && nameSearch && songs > 0 && songs <= 10;
+}
+
 export function libraryEntries(
     data,
     catalog,
@@ -162,6 +175,8 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         unlockError,
         unlockLoadedAt = 0;
     const folderState = new Map();
+    const searchFolderState = new Map();
+    let folderQuery = "";
 
     function loadUnlockMethods() {
         if (unlockTask) return;
@@ -226,6 +241,11 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         );
     }
     function render(rebuild = false) {
+        const currentQuery = query.value.trim();
+        if (currentQuery !== folderQuery) {
+            folderQuery = currentQuery;
+            searchFolderState.clear();
+        }
         const data = getData();
         if (!data) {
             results.textContent = "Sync your archive to browse the library.";
@@ -267,6 +287,7 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         const grouped = new Map(folderNames().map((name) => [name, []]));
         for (const entry of entries) grouped.get(entry.group).push(entry);
         const shown = entries;
+        const autoOpen = autoOpenLibraryFolders(currentQuery, entries);
         results.replaceChildren();
         let visibleGroups = 0;
         for (const [name, items] of grouped) {
@@ -423,11 +444,19 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                 content.append(pager);
             }
             if (folder) {
+                const initialOpen =
+                    searchFolderState.get(key) ?? (autoOpen || state.open);
+                let observedOpen = initialOpen;
+                folder.open = initialOpen;
                 folder.addEventListener("toggle", () => {
-                    state.open = folder.open;
+                    if (!folder.isConnected || folder.open === observedOpen)
+                        return;
+                    observedOpen = folder.open;
+                    if (autoOpen)
+                        searchFolderState.set(key, folder.open);
+                    else state.open = folder.open;
                     if (folder.open && !populated) populate();
                 });
-                folder.open = state.open || !!query.value.trim();
                 if (folder.open) populate();
             } else {
                 populate();

@@ -2239,7 +2239,10 @@ footer > :last-child {
 }
 .chart-viewer-content {
     min-width: 0;
+    height: min(1100px, calc(100dvh - 36px));
     max-height: calc(100dvh - 36px);
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     scrollbar-gutter: stable;
     border-radius: var(--panel-radius);
@@ -2251,6 +2254,15 @@ footer > :last-child {
 }
 #chart-viewer-body {
     padding: 0 var(--panel-padding-inline) 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+.chart-viewer-content > .appeal-helper-heading,
+.chart-viewer-song,
+.chart-viewer-player {
+    flex: none;
 }
 .chart-viewer-song {
     display: flex;
@@ -2287,11 +2299,20 @@ footer > :last-child {
 }
 .chart-viewer-workspace {
     margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 .chart-viewer-main {
     min-width: 0;
+    min-height: min-content;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 .chart-viewer-settings {
+    flex: none;
     position: relative;
     z-index: 2;
     margin-top: 24px;
@@ -2342,7 +2363,8 @@ footer > :last-child {
     font-variant-numeric: tabular-nums;
 }
 .chart-viewer-stage {
-    height: clamp(360px, 72dvh, 1100px);
+    flex: 1;
+    min-height: 240px;
 }
 .chart-viewer-canvas {
     position: absolute;
@@ -2736,9 +2758,32 @@ footer > :last-child {
 .details-note {
     fill: var(--accent);
 }
+#appeal-helper:has(#appeal-helper-browser:not([hidden])) {
+    max-height: calc(var(--card-browser-viewport-height, 100dvh) - 36px);
+    top: var(--card-browser-viewport-center, 50dvh);
+    bottom: auto;
+    margin-block: 0;
+    translate: 0 -50%;
+    overflow: hidden;
+}
+#appeal-helper:has(#appeal-helper-browser:not([hidden]))
+    > .appeal-helper-heading {
+    padding-block: clamp(
+        4px,
+        calc(var(--card-browser-viewport-height, 100dvh) * 0.02),
+        20px
+    );
+}
 #appeal-helper-browser,
 .appeal-helper-detail {
     padding: 0 var(--panel-padding-inline) 24px;
+}
+#appeal-helper-browser {
+    padding-bottom: clamp(
+        4px,
+        calc(var(--card-browser-viewport-height, 100dvh) * 0.02),
+        24px
+    );
 }
 .appeal-helper-tools.table-tools {
     padding: 0;
@@ -2795,7 +2840,12 @@ footer > :last-child {
     background: var(--accent-wash);
 }
 .appeal-helper-count {
-    margin: 16px 0;
+    margin: clamp(
+            2px,
+            calc(var(--card-browser-viewport-height, 100dvh) * 0.015),
+            16px
+        )
+        0;
     color: var(--muted);
     font-size: 12px;
 }
@@ -2821,11 +2871,13 @@ footer > :last-child {
 }
 .appeal-helper-card .appeal-helper-image {
     display: block;
-    width: 80px;
-    height: 103px;
+    width: min(80px, calc(var(--card-browser-image-height, 103px) * 80 / 103));
+    height: min(103px, var(--card-browser-image-height, 103px));
     margin: 0 auto 10px;
 }
 .appeal-helper-card > span:last-child {
+    line-height: 1.35;
+    height: 2.7em;
     line-clamp: 2;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -3200,8 +3252,11 @@ footer > :last-child {
         font-size: 9px;
     }
     .appeal-helper-card .appeal-helper-image {
-        width: 48px;
-        height: 62px;
+        width: min(
+            48px,
+            calc(var(--card-browser-image-height, 62px) * 48 / 62)
+        );
+        height: min(62px, var(--card-browser-image-height, 62px));
         margin-bottom: 6px;
     }
     .calculator-formula {

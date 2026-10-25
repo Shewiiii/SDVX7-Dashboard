@@ -92,14 +92,58 @@ export function createAppealCardHelper(getState) {
 
     function fitPageSize() {
         if (!grid.clientWidth) return false;
-        const columns =
-            getComputedStyle(grid).gridTemplateColumns.split(/\s+/).length;
-        const nextSize = Math.max(
-            columns,
-            Math.round(TARGET_PAGE_SIZE / columns) * columns,
+        const viewportHeight = window.visualViewport?.height || innerHeight;
+        dialog.style.setProperty(
+            "--card-browser-viewport-height",
+            `${viewportHeight}px`,
         );
+        const center =
+            (window.visualViewport?.offsetTop || 0) + viewportHeight / 2;
+        dialog.style.setProperty(
+            "--card-browser-viewport-center",
+            `${center}px`,
+        );
+        dialog.style.removeProperty("--card-browser-image-height");
+        const gridStyle = getComputedStyle(grid);
+        const columns = gridStyle.gridTemplateColumns.split(/\s+/).length;
+        const gap = parseFloat(gridStyle.rowGap) || 0;
+        let card = grid.querySelector(".appeal-helper-card"),
+            probe;
+        if (!card) {
+            probe = card = document.createElement("button");
+            card.className = "appeal-helper-card";
+            card.setAttribute("aria-hidden", "true");
+            card.style.visibility = "hidden";
+            const image = document.createElement("span");
+            image.className = "appeal-helper-image";
+            card.append(image, document.createElement("span"));
+            grid.append(card);
+        }
+        // Exclude the grid itself: headers, wrapped tools, count and padding
+        // all consume part of the available viewport, including the keyboard.
+        const chrome = dialog.scrollHeight - grid.offsetHeight;
+        const available = Math.max(0, viewportHeight - 36 - chrome - 2);
+        let cardHeight = card.offsetHeight;
+        if (available < cardHeight) {
+            const imageHeight = card.querySelector(
+                ".appeal-helper-image",
+            ).offsetHeight;
+            const height = Math.max(0, imageHeight - (cardHeight - available));
+            dialog.style.setProperty(
+                "--card-browser-image-height",
+                `${height}px`,
+            );
+            cardHeight = card.offsetHeight;
+        }
+        probe?.remove();
+        const rows = Math.max(
+            1,
+            Math.floor((available + gap) / (cardHeight + gap)),
+        );
+        const fullRows = Math.min(rows, Math.floor(TARGET_PAGE_SIZE / columns));
+        const nextSize = columns * Math.max(1, fullRows);
         if (nextSize === pageSize) return false;
-        // Keep the current range visible when the grid changes width.
+        // Preserve the first visible card when viewport dimensions change.
         page = Math.floor(((page - 1) * pageSize) / nextSize) + 1;
         pageSize = nextSize;
         return true;
@@ -109,15 +153,15 @@ export function createAppealCardHelper(getState) {
         dialog.setAttribute("closedby", "closerequest");
         browser.hidden = false;
         detail.hidden = true;
-        fitPageSize();
         const matches = matchingCards();
+        count.textContent = `${matches.length.toLocaleString()} ${matches.length === 1 ? "card" : "cards"}`;
+        fitPageSize();
         if (anchorId !== null) {
             const index = matches.findIndex((card) => card.id === anchorId);
             if (index >= 0) page = Math.floor(index / pageSize) + 1;
         }
         totalPages = Math.max(1, Math.ceil(matches.length / pageSize));
         page = Math.max(1, Math.min(page, totalPages));
-        count.textContent = `${matches.length.toLocaleString()} ${matches.length === 1 ? "card" : "cards"}`;
         previous.disabled = page === 1;
         next.disabled = page === totalPages;
         pageNumber.textContent = page;
@@ -420,8 +464,19 @@ export function createAppealCardHelper(getState) {
                 : "smooth",
         });
     }
-    new ResizeObserver(() => {
+    function resizeBrowser() {
         if (dialog.open && !browser.hidden && fitPageSize()) renderBrowser();
-    }).observe(grid);
+    }
+    const observer = new ResizeObserver(resizeBrowser);
+    for (const element of [
+        grid,
+        browser.querySelector(".appeal-helper-tools"),
+        dialog.querySelector(".appeal-helper-heading"),
+    ])
+        observer.observe(element);
+    window.addEventListener("resize", resizeBrowser);
+    window.visualViewport?.addEventListener("resize", resizeBrowser);
+    window.visualViewport?.addEventListener("scroll", resizeBrowser);
+    document.fonts?.ready.then(resizeBrowser);
     return { update, restoreHistory };
 }

@@ -36,6 +36,7 @@ async function chartAvailable(chart) {
 
 const timingCache = new WeakMap();
 const SPEED_KEY = "sdvx-chart-mod-speed";
+const SCALE_KEY = "sdvx-chart-scale";
 const FPS_KEY = "sdvx-chart-fps";
 const OFFSET_KEY = "sdvx-chart-offset";
 const EXTENDED_LASERS_KEY = "sdvx-chart-extended-lasers";
@@ -247,7 +248,7 @@ export function chartHitEffects(chart, at) {
 }
 
 // Geometry changes on layout/scroll events, not as the song advances.
-function chartSurface(canvas, chart, extendedLasers, viewport) {
+function chartSurface(canvas, chart, extendedLasers, viewport, visualScale = 1) {
     const width = viewport.clientWidth,
         height = viewport.clientHeight;
     if (!width || !height) return;
@@ -274,12 +275,10 @@ function chartSurface(canvas, chart, extendedLasers, viewport) {
             timing[boundsKey] = [min, max];
         }
         const [min, max] = timing[boundsKey];
+        const scaledX = x => width / 2 + (laserX(x) - width / 2) * visualScale;
+        const half = (lane / 2 + 2) * visualScale;
         padding = Math.ceil(
-            Math.max(
-                0,
-                lane / 2 + 2 - laserX(min),
-                laserX(max) + lane / 2 + 2 - width,
-            ),
+            Math.max(0, half - scaledX(min), scaledX(max) + half - width),
         );
         const dialog = canvas.parentElement;
         const origin = dialog.getBoundingClientRect();
@@ -331,20 +330,22 @@ function chartSurface(canvas, chart, extendedLasers, viewport) {
 }
 
 export function createChartRenderer(canvas, viewport = canvas) {
-    let surface, previousChart, previousExtended;
+    let surface, previousChart, previousExtended, previousScale;
     return {
         invalidate() {
             surface = undefined;
         },
-        draw(chart, time, hiSpeed = 1, extendedLasers = true) {
+        draw(chart, time, hiSpeed = 1, extendedLasers = true, visualScale = 1) {
             if (
                 !surface ||
                 chart !== previousChart ||
-                extendedLasers !== previousExtended
+                extendedLasers !== previousExtended ||
+                visualScale !== previousScale
             ) {
-                surface = chartSurface(canvas, chart, extendedLasers, viewport);
+                surface = chartSurface(canvas, chart, extendedLasers, viewport, visualScale);
                 previousChart = chart;
                 previousExtended = extendedLasers;
+                previousScale = visualScale;
             }
             if (surface)
                 drawChart(
@@ -355,6 +356,7 @@ export function createChartRenderer(canvas, viewport = canvas) {
                     extendedLasers,
                     viewport,
                     surface,
+                    visualScale,
                 );
         },
     };
@@ -368,8 +370,9 @@ export function drawChart(
     extendedLasers = true,
     viewport = canvas,
     surface,
+    visualScale = 1,
 ) {
-    surface ??= chartSurface(canvas, chart, extendedLasers, viewport);
+    surface ??= chartSurface(canvas, chart, extendedLasers, viewport, visualScale);
     if (!surface) return;
     const {
         ctx,
@@ -391,41 +394,46 @@ export function drawChart(
     ctx.setTransform(scale, 0, 0, scale, padding * scale, 0);
     ctx.clearRect(-padding, 0, paintWidth, height);
     ctx.save();
+    // Scale the world around the judgement line, never the viewport. Its
+    // inverse bounds reveal more chart ahead as notes and lanes get smaller.
+    ctx.translate(width / 2, bottom);
+    ctx.scale(visualScale, visualScale);
+    ctx.translate(-width / 2, -bottom);
+    const viewLeft = width / 2 + (-padding - width / 2) / visualScale;
+    const viewWidth = paintWidth / visualScale;
+    const top = bottom + (visibleTop - bottom) / visualScale;
+    const viewBottom = bottom + (visibleBottom - bottom) / visualScale;
+    const laneEnd = bottom + (laneBottom - bottom) / visualScale;
     ctx.beginPath();
-    ctx.rect(
-        -padding,
-        visibleTop,
-        paintWidth,
-        Math.max(0, visibleBottom - visibleTop),
-    );
+    ctx.rect(viewLeft, top, viewWidth, Math.max(0, viewBottom - top));
     ctx.clip();
     const speed = ((bottom - 20) * hiSpeed) / 8;
     const now = timing.beatAt(time),
-        lastBeat = now + bottom / speed;
+        lastBeat = now + (bottom - top) / speed;
     const y = (at) => bottom - (at - now) * speed;
     const colors = ["#24d9ff", "#ff49ba"];
     const cursors = [laserX(0), laserX(1)];
 
     ctx.fillStyle = "#080b1248";
-    ctx.fillRect(left + lane, 0, lane * 4, laneBottom);
+    ctx.fillRect(left + lane, top, lane * 4, laneEnd - top);
     for (const side of [0, 1]) {
         ctx.fillStyle = side ? "#ff49ba0d" : "#24d9ff0d";
-        ctx.fillRect(left + side * lane * 5, 0, lane, laneBottom);
+        ctx.fillRect(left + side * lane * 5, top, lane, laneEnd - top);
     }
     ctx.lineWidth = 1;
     for (let i = 0; i <= 6; i++) {
         ctx.strokeStyle =
             i <= 1 ? "#24d9ff60" : i >= 5 ? "#ff49ba60" : "#939ca536";
         ctx.beginPath();
-        ctx.moveTo(left + i * lane, 0);
-        ctx.lineTo(left + i * lane, laneBottom);
+        ctx.moveTo(left + i * lane, top);
+        ctx.lineTo(left + i * lane, laneEnd);
         ctx.stroke();
     }
     // Only chart objects stop at the judgement line, the lanes continue below.
     // Include the laser overhang while preserving the vertical judgment cutoff.
     ctx.save();
     ctx.beginPath();
-    ctx.rect(-padding, 0, paintWidth, bottom);
+    ctx.rect(viewLeft, top, viewWidth, Math.max(0, bottom - top));
     ctx.clip();
     for (let beat = Math.ceil(now); beat <= lastBeat; beat++) {
         ctx.strokeStyle = "#949ead16";
@@ -455,13 +463,13 @@ export function drawChart(
         const x = left + lane * (1 + column) + 1.5;
         const w = lane * (fx ? 2 : 1) - 3;
         if (end > start) {
-            const top = Math.max(0, y(end)),
+            const holdTop = Math.max(top, y(end)),
                 base = Math.min(bottom, y(start));
             ctx.fillStyle = fx ? "#ed950e80" : "#c7deff66";
-            ctx.fillRect(x, top, w, base - top);
+            ctx.fillRect(x, holdTop, w, base - holdTop);
             ctx.fillStyle = fx ? "#ffb329a0" : "#e2edff99";
-            ctx.fillRect(x, top, 1.5, base - top);
-            ctx.fillRect(x + w - 1.5, top, 1.5, base - top);
+            ctx.fillRect(x, holdTop, 1.5, base - holdTop);
+            ctx.fillRect(x + w - 1.5, holdTop, 1.5, base - holdTop);
         }
         if (start < now) return;
         const noteHeight =
@@ -490,14 +498,14 @@ export function drawChart(
     const paintTerminal = (point, direction, color) => {
         const center = laserX(point[1]),
             py = y(point[0]);
-        if (py < -terminalLength || py > bottom + terminalLength) return;
-        const top = direction > 0 ? py : py - terminalLength;
+        if (py < top - terminalLength || py > bottom + terminalLength) return;
+        const terminalTop = direction > 0 ? py : py - terminalLength;
         ctx.fillStyle = color;
         ctx.strokeStyle = color;
         ctx.lineWidth = 1.25;
         ctx.globalAlpha = 0.38;
         ctx.beginPath();
-        ctx.rect(center - lane / 2, top, lane, terminalLength);
+        ctx.rect(center - lane / 2, terminalTop, lane, terminalLength);
         ctx.fill();
         ctx.globalAlpha = 0.85;
         ctx.stroke();
@@ -570,8 +578,8 @@ export function drawChart(
                 cursors[laser.side] = x1;
             }
             if (b[0] > lastBeat) {
-                x2 = x1 + (x2 - x1) * (y1 / (y1 - y2));
-                y2 = 0;
+                x2 = x1 + (x2 - x1) * ((y1 - top) / (y1 - y2));
+                y2 = top;
             }
             ctx.globalAlpha = 0.38;
             ctx.beginPath();
@@ -731,6 +739,7 @@ export function createChartViewer() {
                     <div class="settings-control"><span id="chart-playback-speed-label">Playback speed</span><div class="segmented chart-viewer-rates" role="group" aria-labelledby="chart-playback-speed-label">${[0.25, 0.5, 0.75, 1, 1.5].map((rate) => `<button type="button" data-playback-rate="${rate}" aria-pressed="${rate === 1}" class="${rate === 1 ? "selected" : ""}">${rate}×</button>`).join("")}</div></div>
                     <div class="chart-viewer-settings-grid">
                         <div>
+                            <label class="settings-control" for="chart-scale" title="Zoom the chart while keeping its proportions. Smaller scales show more upcoming notes."><span>Scale</span><output for="chart-scale">100%</output><input id="chart-scale" type="range" min="25" max="150" step="5" value="100"></label>
                             <div class="settings-control">
                                 <label for="chart-lane-speed" title="Current BPM × HiSpeed ÷ 100">Lane speed</label>
                                 <output for="chart-lane-speed" title="Actual speed follows BPM and can go outside 1–20."></output>
@@ -778,6 +787,7 @@ export function createChartViewer() {
             const message = body.querySelector(".details-message"),
                 stage = body.querySelector(".chart-viewer-stage");
             const canvas = stage.querySelector("canvas"),
+                scaleSlider = body.querySelector("#chart-scale"),
                 laneSlider = body.querySelector("#chart-lane-speed"),
                 laneNumber = body.querySelector(".chart-viewer-lane-number"),
                 laneOutput = body.querySelector(
@@ -808,6 +818,7 @@ export function createChartViewer() {
                 referenceBpm = 120,
                 hiSpeed = 1,
                 modSpeed = 700,
+                visualScale = 1,
                 fpsLimit = 0,
                 offsetMs = 0,
                 extendedLasers = true,
@@ -893,6 +904,9 @@ export function createChartViewer() {
             try {
                 const saved = Number(localStorage.getItem(SPEED_KEY));
                 if (Number.isFinite(saved) && saved > 0) modSpeed = saved;
+                const savedScale = Number(localStorage.getItem(SCALE_KEY));
+                if (Number.isFinite(savedScale) && savedScale >= 0.25 && savedScale <= 1.5)
+                    visualScale = savedScale;
                 const savedFps = Number(localStorage.getItem(FPS_KEY));
                 const savedOffset = Number(localStorage.getItem(OFFSET_KEY));
                 if (Number.isFinite(savedOffset)) offsetMs = savedOffset;
@@ -916,8 +930,27 @@ export function createChartViewer() {
                         time - offsetMs / 1000,
                         hiSpeed,
                         extendedLasers,
+                        visualScale,
                     );
             };
+            const setScale = (value, persist = false) => {
+                if (!Number.isFinite(value)) return;
+                visualScale = Math.max(0.25, Math.min(1.5, value));
+                const percent = Math.round(visualScale * 100);
+                scaleSlider.value = percent;
+                scaleSlider.setAttribute("aria-valuetext", `${percent}%`);
+                settings.querySelector('output[for="chart-scale"]').value = `${percent}%`;
+                if (persist) {
+                    try {
+                        localStorage.setItem(SCALE_KEY, String(visualScale));
+                    } catch {
+                        /* Optional storage. */
+                    }
+                }
+                draw();
+            };
+            setScale(visualScale);
+            scaleSlider.addEventListener("input", () => setScale(Number(scaleSlider.value) / 100, true), { signal });
             const setExtendedLasers = (enabled, persist = false) => {
                 extendedLasers = enabled;
                 selectToggle("data-extended-lasers", enabled);
@@ -1061,6 +1094,7 @@ export function createChartViewer() {
                     "click",
                     () => {
                         setPlaybackRate(1);
+                        setScale(1, true);
                         setOffset(0, true);
                         setLaneSpeed(7);
                         setFps(245, true);

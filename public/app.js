@@ -1299,7 +1299,22 @@ function restoreScroll(position) {
     rememberScroll();
 }
 
-function scrollToCard() {
+function scrollToCard({ keyboardAware = false } = {}) {
+    const card = $(view === "search" ? "song-search-view" : "records-view");
+    const viewport = window.visualViewport;
+    if (keyboardAware && card && viewport) {
+        const bounds = card.getBoundingClientRect();
+        window.scrollTo({
+            left: 0,
+            top: Math.max(
+                0,
+                bounds.top + scrollY - viewport.offsetTop - 16,
+            ),
+            behavior: "smooth",
+        });
+        rememberScroll();
+        return;
+    }
     restoreScroll({
         card: view === "search" ? "song-search-view" : "records-view",
     });
@@ -1600,9 +1615,9 @@ function scheduleSearchReveal() {
             !matchMedia("(max-width: 700px)").matches
         )
             return;
-        scrollToCard();
+        scrollToCard({ keyboardAware: true });
         updateSearchOptionsHeight();
-    }, 80);
+    }, 180);
 }
 
 function closeMatches() {

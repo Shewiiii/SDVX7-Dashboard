@@ -358,9 +358,6 @@ export function createChartDetails() {
             [
                 "Max chain",
                 `${chart?.max_chain_estimated ? "≈ " : ""}${count(chart?.max_chain)}`,
-                chart?.max_chain_estimated
-                    ? "Estimated from chart timing."
-                    : "Maximum chain for a full combo.",
             ],
         ];
         const list = document.createElement("dl");

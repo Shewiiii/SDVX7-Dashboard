@@ -1,3 +1,4 @@
+import { dismissSearchKeyboard } from "./search-tools.js";
 import { parseSearch } from "./search-query.js";
 import {
     CLEARS,
@@ -207,6 +208,7 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                     button.className = "song-option library-song";
                     button.innerHTML = renderSong(entry.song);
                     button.addEventListener("click", async () => {
+                        dismissSearchKeyboard();
                         await close();
                         selectSong(entry.song.music_id, entry.song.diff_idx);
                     });

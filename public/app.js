@@ -1,6 +1,6 @@
 import { createArchiveLoader } from "./archive.js";
 import { createPlayHighlights, subscribeArchive } from "./live.js";
-import { initSearchTools } from "./search-tools.js";
+import { initSearchTools, dismissSearchKeyboard } from "./search-tools.js";
 import { setSearchData, parseSearch } from "./search-query.js";
 import { createLibrary } from "./library.js";
 import {
@@ -1633,6 +1633,9 @@ function difficultyRange(song) {
 function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
     const song = songs.get(musicId);
     if (!song) return;
+    dismissSearchKeyboard();
+    clearTimeout(matchesTimer);
+    matchesTimer = 0;
     rememberScroll();
     selected = { music_id: musicId, diff_idx: diff };
     songSearchPage = 0;

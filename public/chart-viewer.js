@@ -6,6 +6,7 @@ import { DIFFS } from "./metrics.js";
 // Single-note thickness in CSS pixels. Adjust BT and FX independently here.
 export const SINGLE_NOTE_HEIGHT = { bt: 10, fx: 10 };
 const HIT_FADE_SECONDS = 0.24;
+const HIT_ATTACK_SECONDS = 0.025;
 const canViewChart = (audio) =>
     audio?.variant === "full" &&
     typeof audio.chart_url === "string" &&
@@ -273,7 +274,9 @@ export function chartHitEffects(chart, at) {
             button,
             held: false,
             age: at - start,
-            fade: (at - start) / HIT_FADE_SECONDS,
+            // Finish the entrance before fading; keep the total lifetime fixed.
+            fade: Math.max(0, at - start - HIT_ATTACK_SECONDS) /
+                (HIT_FADE_SECONDS - HIT_ATTACK_SECONDS),
         });
     }
     for (const [start, end, button] of visibleBlocks(
@@ -667,7 +670,7 @@ export function drawChart(
         const fx = effect.button === 1 || effect.button === 6;
         const column = fx ? (effect.button === 1 ? 1 : 3) : effect.button - 1.5;
         const x = left + lane * (1 + column);
-        const attack = Math.min(1, effect.age / 0.025);
+        const attack = Math.min(1, effect.age / HIT_ATTACK_SECONDS);
         const opacity = attack * Math.max(0, 1 - effect.fade);
         // Match the laser cursors: one flat diamond. Only the short entrance
         // scales it, and holds keep a fixed size until their release fades out.

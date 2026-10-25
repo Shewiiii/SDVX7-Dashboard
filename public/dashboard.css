@@ -3606,9 +3606,18 @@ footer > :last-child {
     .difficulty-tabs button span {
         font-size: calc(9px * var(--difficulty-scale, 1));
     }
+    .selected-chart-details {
+        width: 100%;
+    }
     .selected-summary {
         gap: 10px;
+        justify-content: center;
+        text-align: center;
         font-size: 9px;
+    }
+    .selected-song-actions {
+        justify-content: center;
+        text-align: center;
     }
     .song-option {
         gap: 9px;
@@ -3661,7 +3670,7 @@ footer > :last-child {
         grid-column: 1 / -1;
     }
     .selected-song-info > .selected-song-actions {
-        justify-self: start;
+        justify-self: stretch;
         margin-top: 8px;
     }
     .selected-song > .song-radar {

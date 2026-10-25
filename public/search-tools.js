@@ -1,5 +1,10 @@
 import { installSearchIndex, parseSearch } from "./search-query.js";
 
+export function dismissSearchKeyboard() {
+    const input = document.activeElement;
+    if (input?.matches(".search-wrap input")) input.blur();
+}
+
 export function initSearchTools(onReady) {
     const key = "song-search-index-v1";
     let task,

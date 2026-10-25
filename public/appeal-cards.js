@@ -1,3 +1,4 @@
+import { dismissSearchKeyboard } from "./search-tools.js";
 import { normalizeSearch } from "./metrics.js";
 
 const TARGET_PAGE_SIZE = 48;
@@ -348,6 +349,7 @@ export function createAppealCardHelper(getState) {
             (item) => item.id === Number(button.dataset.appealId),
         );
         if (!card) return;
+        dismissSearchKeyboard();
         scrollPosition = dialog.scrollTop;
         detailHistoryUrl = location.href;
         history.pushState({ ...history.state, appealCardHelper: card.id }, "");

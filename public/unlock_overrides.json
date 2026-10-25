@@ -1,8 +1,7 @@
 {
   "templates": [
-    "Available by default. No unlock is required.",
     "Unlocked by default.",
-    "Purchase this chart for x BLC + cost of lower locked difficulties (x BLC).",
+    "Purchase this chart for x BLC + cost of lower locked difficulties (x BLC total).",
     "Purchase with BLC.",
     "Purchase this chart with BLC in song select.",
     "Clear this chart in BLASTER GATE.",
@@ -16,13 +15,2601 @@
     "April Fools' chart. Returns for a limited time around April 1.",
     "Unknown, may be unlocked by default"
   ],
-  "2374:*": {
-    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 5 songs in the Vocaloid folder. (October 25th 2026)"
+  "111:0": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "111:1": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "111:2": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "158:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "280:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "322:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "465:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "466:0": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "466:1": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "466:2": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "480:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "480:3": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "554:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "554:3": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "579:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "579:3": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "624:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "624:3": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "660:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "660:3": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "703:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "924:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28BOOTH%EF%BD%9EIII%20GRAVITY%20WARS%29"
+    ]
+  },
+  "928:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "928:2": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "928:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "940:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "940:2": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "940:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "946:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "946:2": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "946:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1056:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1057:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1132:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1259:*": {
+    "description": "AUTOMATION PARADISE mode entry, rather than a standalone song. This mode is no longer available in arcade.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E5%89%8A%E9%99%A4%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "1337:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1337:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1338:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1339:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1339:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1340:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1340:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1341:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1342:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1342:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1343:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1343:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1344:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1344:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1438:*": {
+    "description": "April Fools' AUTOMATION PARADISE chart. Its latest limited release ended April 8, 2026. It may return in a future April Fools' event.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E5%89%8A%E9%99%A4%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "1471:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1477:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1478:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1478:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1634:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1635:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1636:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1637:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1642:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1642:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1644:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1644:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1646:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1646:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1647:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1647:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1648:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1648:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1649:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1650:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1651:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1651:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1652:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1652:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1653:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1654:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1655:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1657:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1658:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1659:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1659:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1672:0": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1672:1": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1672:2": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1734:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1734:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1735:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1735:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1739:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1740:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1741:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1753:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1754:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1755:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1756:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1757:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1758:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1810:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1812:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1812:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1815:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1815:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1816:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1816:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1817:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1817:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1818:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1818:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1819:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1819:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1820:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1820:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1821:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1822:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1822:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1856:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1857:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1858:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1859:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1860:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1861:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1862:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1863:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1864:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1865:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1866:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1867:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1868:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1868:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1869:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1869:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1870:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1870:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1871:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1872:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1875:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1876:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1877:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1878:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1879:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1880:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1881:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1882:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1903:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1904:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1912:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1912:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1913:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1913:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1914:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1915:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1916:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1917:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1918:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1959:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1960:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1961:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "1962:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2027:*": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2028:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2029:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2030:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2031:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2032:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2033:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2058:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2066:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2067:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2068:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2069:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2070:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2071:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2072:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2074:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2075:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2076:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2119:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2119:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2165:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2166:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2167:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2170:0": {
+    "description": "Previously unlocked with 5 stamps in the Seiryu Kai Stamp Bonus. The event ended February 12, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2170:1": {
+    "description": "Previously unlocked with 10 stamps in the Seiryu Kai Stamp Bonus. The event ended February 12, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2170:2": {
+    "description": "Previously unlocked with 15 stamps in the Seiryu Kai Stamp Bonus. The event ended February 12, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2170:4": {
+    "description": "Previously unlocked with 30 stamps in the Seiryu Kai Stamp Bonus. The event ended February 12, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2172:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2173:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2174:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2175:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2176:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2182:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2192:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2193:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2194:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2195:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2196:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2197:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2205:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2206:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2207:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2208:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2209:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2210:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2210:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2211:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2211:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2212:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2212:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2213:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2214:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2215:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2216:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2217:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2218:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2219:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2220:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2221:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2222:*": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2223:*": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2224:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2228:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2228:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2229:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2229:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2230:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2230:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2231:*": {
+    "description": "Previously required 2 Polaris Chord stamps on the Part 1 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2232:*": {
+    "description": "Previously required 5 Polaris Chord stamps on the Part 1 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2233:*": {
+    "description": "Previously required 10 Polaris Chord stamps on the Part 1 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2234:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2240:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2241:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2242:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2243:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2244:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2245:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2251:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2252:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2260:*": {
+    "description": "Previously required 2 Polaris Chord stamps on the Part 2 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2261:*": {
+    "description": "Previously required 5 Polaris Chord stamps on the Part 2 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2262:*": {
+    "description": "Previously required 10 Polaris Chord stamps on the Part 2 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2264:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2264:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2268:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2268:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2269:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2269:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2270:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2270:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2271:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2271:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2275:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2275:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2277:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2277:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2281:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2281:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2283:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2283:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2284:*": {
+    "description": "Previously required 2 Polaris Chord stamps on the Part 3 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2285:*": {
+    "description": "Previously required 5 Polaris Chord stamps on the Part 3 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2286:*": {
+    "description": "Previously required 10 Polaris Chord stamps on the Part 3 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2291:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%97%A7%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88%28IV%20HEAVENLY%20HAVEN%EF%BD%9EEXCEED%20GEAR%29"
+    ]
+  },
+  "2293:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2293:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2294:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2294:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2295:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2295:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2296:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2296:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2298:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2298:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2302:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2302:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2303:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2303:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2304:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2304:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2307:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2307:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2308:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2308:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2309:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2309:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2310:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2310:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2311:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2311:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2313:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2313:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2328:*": {
+    "description": "Previously required all eight BPL Season 5 team/theme songs first, then 15 stamps on this song's sheet. That event has ended (October 13, 2026).",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2329:*": {
+    "description": "Previously required all eight BPL Season 5 team/theme songs first, then 15 stamps on this song's sheet. That event has ended (October 13, 2026).",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2330:*": {
+    "description": "Previously required the other 11 BPL Season 5 stamp songs first, then 30 stamps on this song's sheet. That event has ended (October 13, 2026).",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2331:*": {
+    "description": "Previously required all eight BPL Season 5 team/theme songs first, then 15 stamps on this song's sheet. That event has ended (October 13, 2026).",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2332:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2332:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2333:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2334:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2335:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2336:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2337:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2339:*": {
+    "description": "Previously required 2 Polaris Chord stamps on the Part 4 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2340:*": {
+    "description": "Previously required 5 Polaris Chord stamps on the Part 4 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2341:*": {
+    "description": "Previously required 10 Polaris Chord stamps on the Part 4 sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2343:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2344:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2345:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2346:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2346:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2347:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2347:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2348:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2349:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2349:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2350:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2351:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2352:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2353:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2354:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2355:*": {
+    "description": "Previously required 3,800 CV from playing pop'n in pop'n & BEMANI Cheers x Cheers, then a SDVX play. The event ended February 23, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/pop%27n%EF%BC%86BEMANI%20Cheers%C3%97Cheers%21%21"
+    ]
+  },
+  "2356:*": {
+    "description": "Previously required 2,000 CV from playing pop'n in pop'n & BEMANI Cheers x Cheers, then a SDVX play. The event ended February 23, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/pop%27n%EF%BC%86BEMANI%20Cheers%C3%97Cheers%21%21"
+    ]
+  },
+  "2357:*": {
+    "description": "Previously required 1,000 CV from playing pop'n in pop'n & BEMANI Cheers x Cheers, then a SDVX play. The event ended February 23, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/pop%27n%EF%BC%86BEMANI%20Cheers%C3%97Cheers%21%21"
+    ]
+  },
+  "2358:*": {
+    "description": "Previously required 4,000 TTP in BPL Season 5 Triple Tribe, then a SDVX play. The event ended March 22, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2359:*": {
+    "description": "Previously required 8,000 TTP in BPL Season 5 Triple Tribe, then a SDVX play. The event ended March 22, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2360:*": {
+    "description": "Previously required 1,000 TTP in BPL Season 5 Triple Tribe, then a SDVX play. The event ended March 22, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2361:*": {
+    "description": "Previously required 14,000 TTP in BPL Season 5 Triple Tribe, then a SDVX play. The event ended March 22, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2362:*": {
+    "description": "Previously required 26,000 TTP in BPL Season 5 Triple Tribe, then a SDVX play. The event ended March 22, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2370:*": {
+    "description": "Previously required 3 Polaris Chord stamps on the Final sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2371:*": {
+    "description": "Previously required 7 Polaris Chord stamps on the Final sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
+  },
+  "2372:*": {
+    "description": "Previously required 15 Polaris Chord stamps on the Final sheet in Cross Resonance, then a SDVX play. The event ended March 29, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/%E3%81%BC%E3%82%8B%C3%97%E3%82%8A%E3%81%93%20Cross%20Resonance"
+    ]
   },
   "2373:*": {
-    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 10 songs in the Vocaloid folder. (October 25th 2026)"
+    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 10 songs in the Vocaloid folder. Claim the reward in Achievements > Event Missions.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2374:*": {
+    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 5 songs in the Vocaloid folder. Claim the reward in Achievements > Event Missions.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
   },
   "2375:*": {
-    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 15 songs in the Vocaloid folder. (October 25th 2026)"
+    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 15 songs in the Vocaloid folder. Claim the reward in Achievements > Event Missions.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2376:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2377:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2378:*": {
+    "description": "Previously required 1,000 TTP in BPL Season 5 Triple Tribe Append, then a SDVX play. The event ended April 26, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2380:*": {
+    "description": "Previously required 5,000 TTP in BPL Season 5 Triple Tribe Append, then a SDVX play. The event ended April 26, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2382:*": {
+    "description": "Previously required 13,000 TTP in BPL Season 5 Triple Tribe Append, then a SDVX play. The event ended April 26, 2026. Currently unavailable to unlock.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%20PRO%20LEAGUE%20-SEASON%205-%20Triple%20Tribe"
+    ]
+  },
+  "2384:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2385:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2386:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2387:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2387:4": {
+    "description": "Purchase this chart with BLC in song select.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2388:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2389:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2390:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2391:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2392:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2398:*": {
+    "description": "Previously required 50,000 KFP in BEMANI Summer Festival 2026, then a SDVX play. The event ended August 17, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%E7%B4%8D%E6%B6%BC%E7%A5%AD2026"
+    ]
+  },
+  "2399:*": {
+    "description": "Previously required 50,000 TFP in BEMANI Summer Festival 2026, then a SDVX play. The event ended August 17, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%E7%B4%8D%E6%B6%BC%E7%A5%AD2026"
+    ]
+  },
+  "2400:*": {
+    "description": "Previously required 50,000 MFP in BEMANI Summer Festival 2026, then a SDVX play. The event ended August 17, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%E7%B4%8D%E6%B6%BC%E7%A5%AD2026"
+    ]
+  },
+  "2401:*": {
+    "description": "Previously required 30,000 MFP in BEMANI Summer Festival 2026, then a SDVX play. The event ended August 17, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%E7%B4%8D%E6%B6%BC%E7%A5%AD2026"
+    ]
+  },
+  "2402:*": {
+    "description": "Previously required 30,000 KFP in BEMANI Summer Festival 2026, then a SDVX play. The event ended August 17, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%E7%B4%8D%E6%B6%BC%E7%A5%AD2026"
+    ]
+  },
+  "2403:*": {
+    "description": "Previously required 10,000 TFP in BEMANI Summer Festival 2026, then a SDVX play. The event ended August 17, 2026.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?%E9%80%A3%E5%8B%95%E4%BC%81%E7%94%BB/BEMANI%E7%B4%8D%E6%B6%BC%E7%A5%AD2026"
+    ]
+  },
+  "2404:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2405:*": {
+    "description": "Unlocked by default.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E6%96%B0%E6%9B%B2%E3%83%AA%E3%82%B9%E3%83%88"
+    ]
+  },
+  "2406:*": {
+    "description": "Unlock the other six THE VOLTENIZER 2026 stamp songs first, then collect 30 stamps on this song's sheet.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2407:*": {
+    "description": "Unlock Sakura Eyelen, VIIIΧ, and Stellar Pilgrim first, then collect 15 stamps on this song's sheet in THE VOLTENIZER 2026 Special Stamp.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2408:*": {
+    "description": "Unlock Sakura Eyelen, VIIIΧ, and Stellar Pilgrim first, then collect 15 stamps on this song's sheet in THE VOLTENIZER 2026 Special Stamp.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2409:*": {
+    "description": "Unlock Sakura Eyelen, VIIIΧ, and Stellar Pilgrim first, then collect 15 stamps on this song's sheet in THE VOLTENIZER 2026 Special Stamp.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2413:*": {
+    "description": "Unlock ボ at this difficulty first, then clear this chart or play it 20 times in EXTRACK CHALLENGE. Unlocks this and lower difficulties.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2414:0": {
+    "description": "Clear all 14 previous KAC-winning songs on NOVICE charts or higher in NABLA, then purchase this chart with BLC. Clears from earlier versions do not count.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2414:1": {
+    "description": "Clear all 14 previous KAC-winning songs on ADVANCED charts or higher in NABLA, then purchase this chart with BLC. Clears from earlier versions do not count.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2414:2": {
+    "description": "Clear all 14 previous KAC-winning songs on EXHAUST charts or higher in NABLA, then purchase this chart with BLC. Clears from earlier versions do not count.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2414:4": {
+    "description": "Clear all 14 previous KAC-winning songs on their required INF/GRV/HVN/MXM charts in NABLA, then purchase this chart with BLC. Everlasting Message ULT and clears from earlier versions do not count.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2415:*": {
+    "description": "Unlock こどもごころのアドベンチャー at this difficulty first, then clear this chart or play it 20 times in EXTRACK CHALLENGE. Unlocks this and lower difficulties.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2416:*": {
+    "description": "Unlock Quetzalcóretl at this difficulty first, then clear this chart or play it 20 times in EXTRACK CHALLENGE. Unlocks this and lower difficulties.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2417:*": {
+    "description": "Unlock VICTIM at this difficulty first, then clear this chart or play it 20 times in EXTRACK CHALLENGE. Unlocks this and lower difficulties.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2418:*": {
+    "description": "Clear this chart or play it 20 times in EXTRACK CHALLENGE. Unlocks this and lower difficulties.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
+  },
+  "2419:*": {
+    "description": "Unlock Trinity ∇urst at this difficulty first, then clear this chart or play it 20 times in EXTRACK CHALLENGE. Unlocks this and lower difficulties.",
+    "as_of": "2026-10-25",
+    "source": [
+      "https://bemaniwiki.com/index.php?SOUND%20VOLTEX%20%E2%88%87/%E8%A7%A3%E7%A6%81%E8%A6%81%E7%B4%A0"
+    ]
   }
 }

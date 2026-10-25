@@ -41,6 +41,7 @@ export function mountUnlockMethod(host, chart) {
     const heading = document.createElement("h3");
     heading.textContent = "Unlock method";
     const chartId = document.createElement("span");
+    chartId.className = "details-unlock-meta";
     chartId.textContent = `${chart.music_id}:${chart.diff_idx}`;
     heading.append(chartId);
     const text = document.createElement("p");
@@ -52,15 +53,33 @@ export function mountUnlockMethod(host, chart) {
         text.textContent = "Loading unlock information...";
         getUnlockMethod(chart)
             .then((record) => {
-                if (active)
-                    text.textContent =
-                        record?.description ||
-                        "Unknown";
+                if (!active) return;
+                text.textContent = record?.description || "Unknown";
+                if (record?.as_of) {
+                    const date = document.createElement("time");
+                    date.dateTime = record.as_of;
+                    date.textContent = record.as_of;
+                    chartId.append(", ", date);
+                }
+                for (const [index, url] of (record?.source || []).entries()) {
+                    let sourceUrl;
+                    try {
+                        sourceUrl = new URL(url);
+                    } catch {
+                        continue;
+                    }
+                    if (!["http:", "https:"].includes(sourceUrl.protocol))
+                        continue;
+                    const link = document.createElement("a");
+                    link.href = sourceUrl.href;
+                    link.textContent = index ? `Source ${index + 1}` : "Source";
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    chartId.append(", ", link);
+                }
             })
             .catch(() => {
-                if (active)
-                    text.textContent =
-                        "Information Unavailable";
+                if (active) text.textContent = "Information Unavailable";
             });
     }
     return () => {

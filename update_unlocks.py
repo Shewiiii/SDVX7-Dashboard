@@ -4,7 +4,6 @@ from datetime import date
 from pathlib import Path
 
 from unlock_search.export_jsonl import CUSTOM_MDB, export_catalog
-from unlock_search.probe_wiki import probe
 from unlock_search.research_unlocks import (
     PLUGIN,
     ROOT,
@@ -25,12 +24,8 @@ def main() -> None:
         date.today(),
         manifest,
     )
-    print("Looking up unresolved songs...", flush=True)
-    wiki = probe(audit, len(audit["songs"]), refresh=True)
-
     export_catalog(
         audit=audit,
-        wiki=wiki,
         custom_mdb=CUSTOM_MDB,
         output_path=dashboard / "public/unlocks.jsonl",
     )
@@ -38,6 +33,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    print(
+        "This script will attempt to scrap data from known sources and Asphyxia, but will be incomplete. "
+        "Missing entries can be completed in unlock_overrides.json."
+    )
     print(
         "Requires Python 3.11+, and asphyxia-core-win-x64 folder in "
         "your game's root folder"

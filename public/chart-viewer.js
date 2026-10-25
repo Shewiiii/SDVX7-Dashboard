@@ -37,6 +37,7 @@ async function chartAvailable(chart) {
 const timingCache = new WeakMap();
 const SPEED_KEY = "sdvx-chart-mod-speed";
 const SCALE_KEY = "sdvx-chart-scale";
+const BASE_VISUAL_SCALE = 0.8;
 const FPS_KEY = "sdvx-chart-fps";
 const OFFSET_KEY = "sdvx-chart-offset";
 const EXTENDED_LASERS_KEY = "sdvx-chart-extended-lasers";
@@ -930,7 +931,7 @@ export function createChartViewer() {
                         time - offsetMs / 1000,
                         hiSpeed,
                         extendedLasers,
-                        visualScale,
+                        visualScale * BASE_VISUAL_SCALE,
                     );
             };
             const setScale = (value, persist = false) => {

@@ -8,13 +8,17 @@ import math
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from scripts.music import MusicCatalog
 
 BINS = 64
 SCHEMA = 4
 logger = logging.getLogger(__name__)
 
 
-def read_xml(path):
+def read_xml(path: Path) -> ET.Element:
     raw = path.read_bytes()
     match = re.search(rb'encoding=[\'"]([^\'"]+)', raw[:200], re.IGNORECASE)
     encoding = match[1].decode() if match else "utf-8-sig"
@@ -23,7 +27,7 @@ def read_xml(path):
     return ET.fromstring(re.sub(r"<\?xml[^>]*\?>", "", raw.decode(encoding), count=1))
 
 
-def number(node, tag, divisor=1):
+def number(node: ET.Element, tag: str, divisor: float = 1) -> float | None:
     try:
         value = float(node.findtext(tag, "")) / divisor
         return value if math.isfinite(value) and value >= 0 else None
@@ -31,7 +35,7 @@ def number(node, tag, divisor=1):
         return None
 
 
-def parse_chart(path, *, full=False):
+def parse_chart(path: Path, *, full: bool = False) -> dict[str, Any]:
     sections, section = {}, None
     for raw in path.read_text(encoding="cp932", errors="replace").splitlines():
         line = raw.split("//", 1)[0].strip()
@@ -73,7 +77,7 @@ def parse_chart(path, *, full=False):
         beat_units[measure] = unit
         cursor += beats
 
-    def beat(position):
+    def beat(position: str) -> float:
         measure, pulse, tick = map(int, position.split(","))
         return (
             bar_beats[measure] + (pulse - 1) * beat_units[measure] + tick / resolution
@@ -93,7 +97,7 @@ def parse_chart(path, *, full=False):
             elapsed[-1] + (tempos[i][0] - tempos[i - 1][0]) * 60 / tempos[i - 1][1]
         )
 
-    def seconds(value):
+    def seconds(value: float) -> float:
         i = max(0, bisect.bisect_right(tempo_beats, value) - 1)
         return elapsed[i] + (value - tempo_beats[i]) * 60 / tempos[i][1]
 
@@ -116,7 +120,7 @@ def parse_chart(path, *, full=False):
         "laser_sections": 0,
     }
 
-    def bin_at(time):
+    def bin_at(time: float) -> int:
         return max(0, min(BINS - 1, int(time / duration * BINS)))
 
     for lane in range(8):
@@ -222,7 +226,7 @@ def parse_chart(path, *, full=False):
 
 
 class ChartDetails:
-    def __init__(self, music, cache_path):
+    def __init__(self, music: MusicCatalog, cache_path: str | Path) -> None:
         self.music, self.cache_path = music, Path(cache_path)
         self.metadata, self.files, self.signatures = {}, {}, None
         try:
@@ -230,7 +234,7 @@ class ChartDetails:
         except (OSError, ValueError):
             self.cache = {}
 
-    def refresh(self):
+    def refresh(self) -> None:
         signatures = [
             (str(p), p.stat().st_mtime_ns, p.stat().st_size)
             for p in self.music.paths
@@ -311,7 +315,7 @@ class ChartDetails:
                             metadata[key]["is_custom"] = True
         self.metadata, self.files, self.signatures = metadata, files, signatures
 
-    def get(self, key):
+    def get(self, key: str) -> dict[str, Any] | None:
         self.refresh()
         if key not in self.metadata:
             return None
@@ -343,7 +347,7 @@ class ChartDetails:
             self.cache[key] = cached
         return cached
 
-    def save(self):
+    def save(self) -> None:
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         temporary = self.cache_path.with_suffix(".tmp")
         temporary.write_text(
@@ -353,7 +357,7 @@ class ChartDetails:
         temporary.replace(self.cache_path)
 
 
-def preview(mid, diff):
+def preview(mid: int, diff: int) -> None:
     from scripts.companion import resolve_proxy
     from scripts.sync import Catalog
 
@@ -366,7 +370,7 @@ def preview(mid, diff):
     print(json.dumps(record["record"] if record else None, ensure_ascii=True))
 
 
-def search_preview():
+def search_preview() -> None:
     """Project cached chart summaries into search metadata; omit graph arrays."""
     from scripts.companion import resolve_proxy
     from scripts.sync import Catalog

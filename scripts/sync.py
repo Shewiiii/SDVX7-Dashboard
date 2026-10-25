@@ -13,9 +13,10 @@ import unicodedata
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Event
 from typing import Any
 
 from scripts.appeal_cards import prepare_appeal_cards
@@ -647,7 +648,7 @@ class DatabaseQuotaError(RuntimeError):
     pass
 
 
-def http_failure(error, operation):
+def http_failure(error: urllib.error.HTTPError, operation: str) -> RuntimeError:
     # Inspect only a known diagnostic code, never echo raw server responses.
     try:
         failure = json.loads(error.read(8192))
@@ -690,7 +691,9 @@ def upload(
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing audio"
                 )
-            if payload.get("details") and result.get("details_schema", 0) < 4:
+            if payload.get("details") and result.get("details_schema", 0) < (
+                5 if any("timeline" in d for d in payload["details"]) else 4
+            ):
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing chart details"
                 )
@@ -770,9 +773,9 @@ def sync_once(
     proxy: Path,
     catalog: Catalog,
     *,
-    force=False,
-    background_audio=False,
-    source_changed=None,
+    force: bool = False,
+    background_audio: bool = False,
+    source_changed: Callable[[], bool] | None = None,
 ) -> None:
     state_path = ROOT / ".local/sync-state.json"
     saved = read_checkpoint(state_path)
@@ -910,22 +913,32 @@ def sync_once(
         )
 
 
-def sync_details(config, catalog, endpoint_id, priority=(), *, source_changed=None):
+def sync_details(
+    config: dict[str, Any],
+    catalog: Catalog,
+    endpoint_id: str,
+    priority: Sequence[dict[str, Any]] = (),
+    *,
+    source_changed: Callable[[], bool] | None = None,
+) -> None:
     if not hasattr(catalog, "details"):
         return
     checkpoint = ROOT / ".local/chart-details-sync.json"
     saved = read_checkpoint(checkpoint)
     if saved.get("endpoint") != endpoint_id:
         saved = {"endpoint": endpoint_id, "hashes": {}}
+    if saved.get("timeline_schema") != 1:
+        saved["hashes"] = {}
+        saved["timeline_schema"] = 1
     hashes = saved.setdefault("hashes", {})
     catalog.details.refresh()
     batch, batch_keys, total = [], [], 0
 
-    def flush():
+    def flush() -> None:
         nonlocal total
         if not batch:
             return
-        # 24 summaries x a 24 KB server-side ceiling stays below 600 KB.
+        # Summaries and compressed visual timelines are batched below 600 KB.
         upload(
             config["url"],
             config["token"],
@@ -952,7 +965,27 @@ def sync_details(config, catalog, endpoint_id, priority=(), *, source_changed=No
             continue
         if not total and not batch:
             print("Syncing chart details...", flush=True)
-        batch.append(entry["record"])
+        from scripts.chart_view import visual_timeline
+
+        mid, diff = map(int, key.split(":"))
+        timeline = visual_timeline(catalog.details, mid, diff)
+        record = {
+            **entry["record"],
+            "timeline": base64.b64encode(timeline).decode() if timeline else None,
+        }
+        if (
+            batch
+            and sum(
+                len(json.dumps(row, ensure_ascii=False).encode())
+                for row in [*batch, record]
+            )
+            > 600_000
+        ):
+            flush()
+            if total >= 192:
+                catalog.details_pending = True
+                break
+        batch.append(record)
         batch_keys.append((key, entry["hash"]))
         if len(batch) == 24:
             flush()
@@ -1036,7 +1069,14 @@ def sync_loop(
         _sync_loop(config, proxy, catalog, changed, once=once)
 
 
-def _sync_loop(config, proxy, catalog, changed, *, once=False) -> None:
+def _sync_loop(
+    config: dict[str, Any],
+    proxy: Path,
+    catalog: Catalog,
+    changed: Event,
+    *,
+    once: bool = False,
+) -> None:
     delay = 5
     next_sync = next_check = 0
     previous_source = None

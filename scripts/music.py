@@ -3,6 +3,7 @@ import math
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import TypeAlias
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,18 @@ JACKET_INDICES = ((1,), (2, 1), (3, 2, 1), (4, 3, 1), (5, 4, 3, 1), (5, 4, 3, 1)
 RADAR_TAGS = ("notes", "peak", "tsumami", "tricky", "hand-trip", "one-hand")
 
 
-def _read_database(path: Path) -> tuple[dict, dict, dict, dict, dict, dict, dict]:
+MusicDatabase: TypeAlias = tuple[
+    dict[int, str],
+    dict[int, str],
+    dict[int, dict[int, float]],
+    dict[int, str],
+    dict[int, str],
+    dict[int, str],
+    dict[int, dict[int, list[int] | None]],
+]
+
+
+def _read_database(path: Path) -> MusicDatabase:
     raw = path.read_bytes()
     declaration = re.search(rb'encoding=[\'"]([^\'"]+)', raw[:200], re.IGNORECASE)
     encoding = declaration[1].decode("ascii").lower() if declaration else "utf-8-sig"
@@ -83,7 +95,7 @@ def _read_database(path: Path) -> tuple[dict, dict, dict, dict, dict, dict, dict
 
 
 class MusicCatalog:
-    def __init__(self, base_database: str | Path):
+    def __init__(self, base_database: str | Path) -> None:
         self.base_root = Path(base_database).parent.parent
         self.custom_root = self.base_root.parent / "data_mods" / "ryunet_custom"
         self.paths = [

@@ -17,9 +17,9 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
 - Appeal card helper, to easily find the card you want to display in-game
 - Advanced search feature, to get details about a chart, including its radar
 - ASCII string of a song, useful to search the song in-game
-- Chart viewer with sound effects, for every chart in the game*
+- Chart viewer with sound effects\*, for every chart in the game
 
-*See Optional audio setup below
+\*See Optional audio setup below
 
 ## Requirements
 
@@ -47,13 +47,14 @@ Connection settings and sync logs are in `.local/`. Keep this folder private: it
 I have discontinued [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX7-VolForce-Tracker), in favor of a cleaner and more general purpose repository [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy).
 
 To migrate:
+
 - Follow step 1 of the Setup.
 - Move `.local/` and `.vercel/` located in `/SDVX7-VolForce-Tracker-main/SDVX7-Tracker-Dashboard-main` into `SDVX7-Dashboard-main/`.
 - Run `update-dashboard.bat`. It will delete the legacy `/SDVX7-VolForce-Tracker-main`, but you can choose to create a backup.
 
 ## Optional audio setup
 
-But default, the dashboard can only play songs preview on Vercel due to the lack of storage, and cannot play anything locally. To solve this, additional setup is required.
+By default, the dashboard cannot play any song. To solve this, additional setup is required.
 
 ### Local preview:
 
@@ -63,20 +64,22 @@ But default, the dashboard can only play songs preview on Vercel due to the lack
 ### Full song on Vercel:
 
 > [!CAUTION]
-> This setup is overkill for most people: a custom domain and an R2 API token are needed, which requires an R2 subscription. **You cannot hard cap storage, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** The Opus option should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
+> This setup is overkill for most people: a custom domain and an R2 API token are needed, which requires an R2 subscription. **You cannot hard cap storage, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** Full Opus songs or FLAC previews should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
 >
 > Instead, [use my dashboard](https://sdvx.shewi.app/).
 
 Songs upload will occur during the first sync, which may take a long time.
 
-- Create a [Cloudflare account](https://dash.cloudflare.com/login).
-- Under [R2 Object Storage](https://dash.cloudflare.com/?to=/:account/r2/overview), create a bucket. Leave the options to default.
-- Under Domains > Overview, Regiser a custom domain.
-- Click on "Continue to activation" and follow the instructions.
-- After a few hours, go back to your bucket' settings, and add a custom domain (e.g. `audio.[yourdomain]`). Alternatively, use the public development URL for now.
-- Run `setup-audio.bat`, select [2], and follow the instructions until "Cloudflare account ID".
-- Go back to R2 Object Storage, copy your account ID and paste it in the setup.
-- Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
+1. Create a [Cloudflare account](https://dash.cloudflare.com/login).
+2. Under [R2 Object Storage](https://dash.cloudflare.com/?to=/:account/r2/overview), create a bucket. Leave the options to default.
+3. Under Domains > Overview, Regiser a custom domain.
+4. Click on "Continue to activation" and follow the instructions.
+5. After a few hours, go back to your bucket' settings, and add a custom domain (e.g. `audio.[yourdomain]`). Alternatively, use the public development URL for now.
+6. Run `setup-audio.bat`, select [2], and follow the instructions until "Cloudflare account ID".
+7. Go back to R2 Object Storage, copy your account ID and paste it in the setup.
+8. Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
+
+If you want to change the audio format or length, delete your old bucket, create a new one and follow the setup again from step 2.
 
 ## Credits
 

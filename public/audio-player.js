@@ -253,10 +253,11 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         { signal },
     );
 
-    function failed() {
+    function failed(error) {
         status.textContent = "Could not play this audio.";
         retry.hidden = false;
         button();
+        if (error?.name !== "NotAllowedError") options.onPlaybackError?.();
     }
     async function togglePlayback() {
         if (disposed || pageHidden || !record) return;
@@ -291,10 +292,10 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             preparing = false;
             if (audio.ended) position = 0;
             await audio.play();
-        } catch {
+        } catch (error) {
             if (!disposed && attempt === playRequest) {
                 preparing = false;
-                failed();
+                failed(error);
             }
         } finally {
             if (!disposed && attempt === playRequest) button();

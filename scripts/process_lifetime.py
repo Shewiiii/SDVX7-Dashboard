@@ -7,7 +7,7 @@ from pathlib import Path
 _job_handle = None
 
 
-def stop_orphaned_sync(python, script) -> None:
+def stop_orphaned_sync(python: str | Path, script: str | Path) -> None:
     """Remove workers left by older launchers without touching live sessions."""
     if os.name != "nt":
         return

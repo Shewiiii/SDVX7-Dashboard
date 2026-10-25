@@ -31,7 +31,8 @@ export default async function handler(req, res) {
                 "Cache-Control",
                 "public, max-age=300, s-maxage=300, stale-if-error=86400",
             );
-        return res.status(200).json(rows[0].record);
+        const { timeline, ...summary } = rows[0].record;
+        return res.status(200).json(summary);
     } catch {
         return res
             .status(503)

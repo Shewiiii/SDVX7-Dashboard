@@ -1,3 +1,6 @@
+import { validTimeline } from "./chart-timeline.js";
+export { validTimeline } from "./chart-timeline.js";
+import { mountSilentChartPlayer } from "./chart-transport.js";
 import { getAudioMetadata, mountAudioPlayer } from "./audio-player.js";
 import { createChartPlayback } from "./chart-playback.js";
 import { createChartAudio } from "./chart-audio.js";
@@ -7,81 +10,28 @@ import { DIFFS } from "./metrics.js";
 export const SINGLE_NOTE_HEIGHT = { bt: 10, fx: 10 };
 const HIT_FADE_SECONDS = 0.24;
 const HIT_ATTACK_SECONDS = 0.025;
-const canViewChart = (audio) =>
-    audio?.variant === "full" &&
-    typeof audio.chart_url === "string" &&
-    audio.chart_url.length > 0;
-
-export function validTimeline(value, chart) {
-    const time = (n) => Number.isFinite(n) && n >= 0 && n <= 7200;
-    const rows = (array, limit, check) =>
-        Array.isArray(array) && array.length <= limit && array.every(check);
-    let points = 0;
-    return (
-        value?.schema === 1 &&
-        value.music_id === chart.music_id &&
-        value.diff_idx === chart.diff_idx &&
-        time(value.duration) &&
-        value.duration > 0 &&
-        rows(
-            value.buttons,
-            200000,
-            (n) =>
-                Array.isArray(n) &&
-                n.length === 3 &&
-                time(n[0]) &&
-                time(n[1]) &&
-                n[1] >= n[0] &&
-                Number.isInteger(n[2]) &&
-                n[2] >= 1 &&
-                n[2] <= 6,
-        ) &&
-        rows(
-            value.lasers,
-            50000,
-            (l) =>
-                (l.side === 0 || l.side === 1) &&
-                (l.ranges === undefined ||
-                    (rows(
-                        l.ranges,
-                        200000,
-                        (range) => range === 1 || range === 2,
-                    ) &&
-                        l.ranges.length === l.points?.length)) &&
-                rows(
-                    l.points,
-                    200000,
-                    (p) =>
-                        Array.isArray(p) &&
-                        p.length === 2 &&
-                        time(p[0]) &&
-                        Number.isFinite(p[1]) &&
-                        Math.abs(p[1]) <= 4,
-                ) &&
-                (points += l.points.length) <= 200000,
-        ) &&
-        rows(
-            value.measures,
-            10001,
-            (m) =>
-                Array.isArray(m) &&
-                m.length === 2 &&
-                time(m[0]) &&
-                Number.isInteger(m[1]),
-        ) &&
-        rows(
-            value.tempos,
-            200000,
-            (p) =>
-                Array.isArray(p) &&
-                p.length === 2 &&
-                time(p[0]) &&
-                Number.isFinite(p[1]) &&
-                p[1] > 0,
-        ) &&
-        value.tempos.length > 0 &&
-        value.tempos.every(([at], i) => !i || at >= value.tempos[i - 1][0])
-    );
+const timelineRequests = new Map();
+async function chartAvailable(chart) {
+    const key = `${chart.music_id}:${chart.diff_idx}`;
+    const cached = timelineRequests.get(key);
+    if (cached && Date.now() - cached.at < cached.ttl) return cached.task;
+    const entry = { at: Date.now(), ttl: 10000 };
+    entry.task = fetch(
+        `/api/chart-view?music=${chart.music_id}&diff=${chart.diff_idx}&check=1`,
+        { cache: "no-store" },
+    )
+        .then(async (response) => {
+            if (!response.ok) return false;
+            const result = await response.json();
+            const available = result.available === true;
+            if (available) entry.ttl = 300000;
+            return available;
+        })
+        .catch(() => false);
+    timelineRequests.set(key, entry);
+    if (timelineRequests.size > 64)
+        timelineRequests.delete(timelineRequests.keys().next().value);
+    return entry.task;
 }
 
 const timingCache = new WeakMap();
@@ -275,7 +225,8 @@ export function chartHitEffects(chart, at) {
             held: false,
             age: at - start,
             // Finish the entrance before fading; keep the total lifetime fixed.
-            fade: Math.max(0, at - start - HIT_ATTACK_SECONDS) /
+            fade:
+                Math.max(0, at - start - HIT_ATTACK_SECONDS) /
                 (HIT_FADE_SECONDS - HIT_ATTACK_SECONDS),
         });
     }
@@ -470,7 +421,7 @@ export function drawChart(
         ctx.lineTo(left + i * lane, laneBottom);
         ctx.stroke();
     }
-    // Only chart objects stop at the judgement line; the lanes continue below.
+    // Only chart objects stop at the judgement line, the lanes continue below.
     // Include the laser overhang while preserving the vertical judgment cutoff.
     ctx.save();
     ctx.beginPath();
@@ -744,9 +695,9 @@ export function createChartViewer() {
             buttonChecks.set(button, check);
             if (previous?.key !== key) button.hidden = true;
             try {
-                const audio = await getAudioMetadata(chart);
+                const available = await chartAvailable(chart);
                 if (buttonChecks.get(button) === check && button.isConnected)
-                    button.hidden = !canViewChart(audio);
+                    button.hidden = !available;
             } catch {
                 if (buttonChecks.get(button) === check) button.hidden = true;
             }
@@ -754,27 +705,14 @@ export function createChartViewer() {
         async open(chart, button) {
             if (dialog.open) return;
             const key = `${chart.music_id}:${chart.diff_idx}`;
-            const audio = await getAudioMetadata(chart).catch(() => null);
             if (
                 dialog.open ||
                 (buttonChecks.has(button) &&
                     buttonChecks.get(button).key !== key)
             )
                 return;
-            const unavailable = () => {
-                if (
-                    button?.isConnected &&
-                    (!buttonChecks.has(button) ||
-                        buttonChecks.get(button).key === key)
-                )
-                    button.hidden = true;
-                void close();
-            };
-            if (!canViewChart(audio)) {
-                unavailable();
-                return;
-            }
             trigger = button;
+            dispose = undefined;
             request = new AbortController();
             const { signal } = request;
             document.dispatchEvent(
@@ -872,13 +810,16 @@ export function createChartViewer() {
                 modSpeed = 700,
                 fpsLimit = 0,
                 offsetMs = 0,
-                extendedLasers = true;
-            const playback = createChartPlayback({ signal });
+                extendedLasers = true,
+                hasFullAudio = false,
+                transportRate = 1;
+            let playback = createChartPlayback({ signal });
             const effects = createChartAudio({
                 getChart: () => timeline,
                 signal,
             });
             const setPlaybackRate = (rate) => {
+                transportRate = rate;
                 dispose?.setPlaybackRate(rate);
                 for (const button of settings.querySelectorAll(
                     "[data-playback-rate]",
@@ -908,7 +849,8 @@ export function createChartViewer() {
                 }
             };
             const setEffects = (enabled, persist = false) => {
-                effects.enabled = enabled;
+                effectsEnabled = enabled;
+                effects.enabled = hasFullAudio && enabled;
                 selectToggle("data-chart-effects", enabled);
                 if (persist) {
                     try {
@@ -1163,65 +1105,95 @@ export function createChartViewer() {
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
             closeButton.focus({ preventScroll: true });
-            dispose = mountAudioPlayer(
-                body.querySelector(".chart-viewer-player"),
-                chart,
-                null,
-                {
-                    initialAudio: audio,
-                    prepareSource: (audio, report) =>
-                        effects.prepare(audio, report),
-                    seekTimeline: playback,
-                    onTime(at, frame) {
-                        time = at;
-                        if (shouldDraw(frame.timestamp, frame.force)) draw();
-                        if (timeline) updateLaneSpeed();
-                    },
-                    onUnavailable: unavailable,
-                    async onReady(audio) {
-                        if (!canViewChart(audio)) {
-                            unavailable();
-                            return;
-                        }
-                        timeline = undefined;
-                        stage.hidden = true;
-                        canvas.hidden = true;
-                        message.hidden = false;
-                        message.textContent = "Loading chart...";
+            const onTime = (at, frame) => {
+                time = at;
+                if (shouldDraw(frame.timestamp, frame.force)) draw();
+                if (timeline) updateLaneSpeed();
+            };
+            const player = body.querySelector(".chart-viewer-player");
+            const updateAudioControls = () => {
+                settings
+                    .querySelector("[data-chart-effects]")
+                    .closest(".settings-group").hidden = !hasFullAudio;
+                offsetSlider.closest("label").hidden = !hasFullAudio;
+                effects.enabled = hasFullAudio && effectsEnabled;
+            };
+            const silent = () => {
+                if (signal.aborted || !timeline) return;
+                dispose?.();
+                hasFullAudio = false;
+                updateAudioControls();
+                playback = createChartPlayback({ signal });
+                playback.setChart(timeline);
+                playback.setOffset(offsetMs / 1000);
+                dispose = mountSilentChartPlayer(
+                    player,
+                    timeline,
+                    playback,
+                    onTime,
+                );
+                dispose.setPlaybackRate(transportRate);
+            };
+            const loadViewer = async () => {
+                message.textContent = "Loading chart...";
+                try {
+                    const audio = await getAudioMetadata(chart).catch(
+                        () => null,
+                    );
+                    if (signal.aborted) return;
+                    const fallback = `/api/chart-view?music=${chart.music_id}&diff=${chart.diff_idx}`;
+                    hasFullAudio = audio?.variant === "full";
+                    const urls = [
+                        ...new Set(
+                            [hasFullAudio && audio.chart_url, fallback].filter(
+                                Boolean,
+                            ),
+                        ),
+                    ];
+                    for (const url of urls) {
                         try {
-                            const res = await fetch(audio.chart_url, {
-                                signal,
-                            });
-                            if (!res.ok) throw Error("unavailable");
+                            const res = await fetch(url, { signal });
+                            if (!res.ok) continue;
                             const value = await res.json();
-                            if (!validTimeline(value, chart))
-                                throw Error("invalid");
-                            if (signal.aborted) return;
-                            timeline = value;
-                            playback.setChart(timeline);
-                            referenceBpm = chartTiming(timeline).referenceBpm;
-                            hiSpeed = modSpeed / referenceBpm;
-                            message.hidden = true;
-                            stage.hidden = false;
-                            canvas.hidden = false;
-                            settings.hidden = false;
-                            updateLaneSpeed(true);
-                            draw();
-                        } catch (error) {
-                            if (!signal.aborted) {
-                                console.error(
-                                    "[chart-viewer] Could not load chart",
-                                    chart.music_id,
-                                    chart.diff_idx,
-                                    error,
-                                );
-                                message.textContent =
-                                    "Could not load the chart. Close and reopen to retry.";
+                            if (validTimeline(value, chart)) {
+                                timeline = value;
+                                break;
                             }
+                        } catch (error) {
+                            if (signal.aborted) return;
                         }
-                    },
-                },
-            );
+                    }
+                    if (!timeline) throw Error("Chart unavailable");
+                    if (signal.aborted) return;
+                    playback.setChart(timeline);
+                    referenceBpm = chartTiming(timeline).referenceBpm;
+                    hiSpeed = modSpeed / referenceBpm;
+                    message.hidden = true;
+                    stage.hidden = false;
+                    canvas.hidden = false;
+                    settings.hidden = false;
+                    updateAudioControls();
+                    updateLaneSpeed(true);
+                    if (hasFullAudio) {
+                        dispose = mountAudioPlayer(player, chart, null, {
+                            initialAudio: audio,
+                            prepareSource: (record, report) =>
+                                effects.prepare(record, report),
+                            seekTimeline: playback,
+                            onTime,
+                            onUnavailable: silent,
+                            onPlaybackError: silent,
+                        });
+                        dispose.setPlaybackRate(transportRate);
+                    } else silent();
+                    draw();
+                } catch {
+                    if (!signal.aborted)
+                        message.textContent =
+                            "Chart isn’t available yet. Close and reopen after the next sync.";
+                }
+            };
+            void loadViewer();
             dialog.addEventListener(
                 "keydown",
                 (event) => {

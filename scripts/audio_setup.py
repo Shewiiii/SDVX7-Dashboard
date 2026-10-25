@@ -3,18 +3,19 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
 
 from scripts.audio import CONFIG, configuration, r2_client, tools, write_json
 from scripts.companion import ROOT, load_config, with_https
 
 
-def prompt(label, default=""):
+def prompt(label: str, default: str = "") -> str:
     value = input(f"{label}{' [' + str(default) + ']' if default else ''}: ").strip()
     return value or str(default)
 
 
-def origin(value):
+def origin(value: str) -> str:
     parsed = urlparse(with_https(value))
     if (
         parsed.scheme not in ("http", "https")
@@ -27,7 +28,7 @@ def origin(value):
     return f"{parsed.scheme}://{parsed.netloc}"
 
 
-def apply_media_policy(config):
+def apply_media_policy(config: dict[str, Any]) -> None:
     """Allow local rendered audio and the configured bucket across setup/update runs."""
     allowed = "'self' blob:"
     if config.get("mode") == "r2":
@@ -75,13 +76,11 @@ def apply_media_policy(config):
     temporary.replace(path)
 
 
-def configure_r2(config):
+def configure_r2(config: dict[str, Any]) -> None:
     try:
         import boto3  # noqa: F401
     except ImportError:
-        print(
-            "Installing the optional R2 uploader into the proxy's venv..."
-        )
+        print("Installing the optional R2 uploader into the proxy's venv...")
         subprocess.run(
             [
                 sys.executable,
@@ -199,7 +198,7 @@ def configure_r2(config):
     client.list_objects_v2(Bucket=config["bucket"], Prefix="audio/", MaxKeys=1)
 
 
-def main():
+def main() -> None:
     config = configuration()
     print("Audio is optional. Local preview needs no cloud account.")
     print(

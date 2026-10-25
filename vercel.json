@@ -21,7 +21,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; media-src 'self' blob: https://sdvxaudio.shewi.app; connect-src 'self' https://api.frankfurter.dev https://sdvxaudio.shewi.app"
+          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; media-src 'self' blob:; connect-src 'self' https://api.frankfurter.dev"
         }
       ]
     }

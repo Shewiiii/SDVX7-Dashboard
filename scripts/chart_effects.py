@@ -6,16 +6,23 @@ import math
 import struct
 import tempfile
 import wave
+from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 from scripts.companion import ROOT
 
 logger = logging.getLogger(__name__)
 
 
-def schedule(sections, seconds, beat, resolution):
-    def table(name):
+def schedule(
+    sections: dict[str, list[list[str]]],
+    seconds: Callable[[float], float],
+    beat: Callable[[str], float],
+    resolution: int,
+) -> dict[str, Any]:
+    def table(name: str) -> list[list[float]]:
         rows = []
         for row in sections.get(name, []):
             values = [float(v) for v in " ".join(row).split(",") if v.strip()]
@@ -24,7 +31,7 @@ def schedule(sections, seconds, beat, resolution):
             rows.append(values)
         return rows
 
-    def events(name):
+    def events(name: str) -> list[list[float]]:
         return [
             [
                 round(seconds(beat(r[0])), 6),
@@ -56,7 +63,7 @@ def schedule(sections, seconds, beat, resolution):
     }
 
 
-def prepare_bank(base_root):
+def prepare_bank(base_root: Path) -> dict[str, Any] | None:
     path = Path(base_root) / "sound/ver5/general_sampler.s3p"
     try:
         stat = path.stat()
@@ -66,7 +73,7 @@ def prepare_bank(base_root):
 
 
 @lru_cache(maxsize=4)
-def _bank_result(path, size, modified):
+def _bank_result(path: str, size: int, modified: int) -> dict[str, Any] | None:
     # A missing decoder or damaged bank should not retry once per difficulty.
     # A source change or proxy restart will try again.
     try:
@@ -78,7 +85,7 @@ def _bank_result(path, size, modified):
         return None
 
 
-def _prepare_bank(path, size, modified):
+def _prepare_bank(path: str, size: int, modified: int) -> dict[str, Any]:
     from scripts.audio import command, configuration, tools, write_json
 
     raw = Path(path).read_bytes()

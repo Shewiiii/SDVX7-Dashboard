@@ -11,12 +11,18 @@ import sys
 import tempfile
 import time
 from array import array
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from threading import Thread
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, urlparse
 
 from scripts.companion import ROOT, resolve_proxy
+
+if TYPE_CHECKING:
+    from scripts.chart_details import ChartDetails
+    from scripts.sync import Catalog
 
 SCHEMA = 5
 PEAKS = 128
@@ -24,14 +30,14 @@ BUDGET_BYTES = 9_000_000_000
 CONFIG = ROOT / ".local/audio-config.json"
 
 
-def read_json(path, default):
+def read_json(path: Path, default: Any) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return default
 
 
-def write_json(path, value):
+def write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
         mode="w", encoding="utf-8", dir=path.parent, delete=False, suffix=".tmp"
@@ -44,7 +50,7 @@ def write_json(path, value):
         temporary.unlink(missing_ok=True)
 
 
-def configuration():
+def configuration() -> dict[str, Any]:
     config = read_json(CONFIG, {"mode": "local", "variant": "full"})
     if config.get("mode") not in ("off", "local", "r2") or config.get(
         "variant", "full"
@@ -57,7 +63,7 @@ def configuration():
     return config
 
 
-def tools(config):
+def tools(config: dict[str, Any]) -> tuple[str, str]:
     ffmpeg = config.get("ffmpeg") or shutil.which("ffmpeg")
     ffprobe = config.get("ffprobe") or (
         str(
@@ -80,7 +86,7 @@ def tools(config):
     return ffmpeg, ffprobe
 
 
-def command(args):
+def command(args: Sequence[str | Path]) -> bytes:
     try:
         return subprocess.run(
             args,
@@ -101,7 +107,7 @@ def command(args):
         raise RuntimeError("Audio conversion timed out.") from None
 
 
-def extract_2dx(raw):
+def extract_2dx(raw: bytes) -> bytes:
     """Read standard 2DX9 entries, retaining the first complete RIFF/WAVE stream."""
     if len(raw) < 76:
         raise ValueError("Truncated 2DX audio")
@@ -125,7 +131,9 @@ def extract_2dx(raw):
 
 
 class AudioLibrary:
-    def __init__(self, details, config=None):
+    def __init__(
+        self, details: ChartDetails, config: dict[str, Any] | None = None
+    ) -> None:
         self.details = details
         self.config = config if config is not None else configuration()
         self.directory = ROOT / ".local/audio"
@@ -140,7 +148,7 @@ class AudioLibrary:
         if config is None and self.config.get("format", "opus") == "opus":
             self.config["bitrate"] = plan_audio(self)["bitrate"]
 
-    def source(self, mid, diff):
+    def source(self, mid: int, diff: int) -> Path | None:
         chart = self.details.files.get(f"{mid}:{diff}")
         prefix = (
             re.sub(r"_[1-6][a-z]$", "", chart.stem, flags=re.IGNORECASE)
@@ -180,7 +188,7 @@ class AudioLibrary:
         self.sources[key] = None
         return None
 
-    def get(self, mid, diff, prepare=True):
+    def get(self, mid: int, diff: int, prepare: bool = True) -> dict[str, Any] | None:
         if self.config.get("mode") == "off":
             return None
         source = self.source(mid, diff)
@@ -223,7 +231,7 @@ class AudioLibrary:
             raise ValueError("Audio chart offset must be between -600 and 600 seconds")
         return {**saved, "music_id": mid, "diff_idx": diff, "chart_offset": offset}
 
-    def convert(self, source):
+    def convert(self, source: Path) -> dict[str, Any]:
         ffmpeg, ffprobe = tools(self.config)
         self.directory.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(
@@ -357,7 +365,7 @@ class AudioLibrary:
             }
 
 
-def preview(mid, diff):
+def preview(mid: int, diff: int) -> None:
     from scripts.sync import Catalog
 
     library = AudioLibrary(Catalog(resolve_proxy()).details)
@@ -366,11 +374,11 @@ def preview(mid, diff):
         record["url"] = (
             "/api/audio-file?id=" + record["id"] + "&format=" + record["format"]
         )
-        record["chart_url"] = f"/api/chart-view?music={mid}&diff={diff}"
+        record["chart_url"] = f"/api/chart-view?music={mid}&diff={diff}&effects=1"
     print(json.dumps(record))
 
 
-def plan_audio(library):
+def plan_audio(library: AudioLibrary) -> dict[str, Any]:
     """Budget unique tracks, caching probes by source size and modification time."""
     sources = {
         library.source(*map(int, key.split(":"))) for key in library.details.metadata
@@ -381,7 +389,7 @@ def plan_audio(library):
     previous = {row["path"]: row for row in saved.get("sources", [])}
     probe = tools(library.config)[1]
 
-    def measure(source):
+    def measure(source: Path) -> dict[str, Any]:
         info = source.stat()
         old = previous.get(str(source))
         if old and old["size"] == info.st_size and old["mtime"] == info.st_mtime_ns:
@@ -427,7 +435,7 @@ def plan_audio(library):
         else row["duration"]
         for row in rows
     )
-    # Opus supports up to 510 kbps; reserve 3% for container overhead/variation.
+    # Opus supports up to 510 kbps, reserve 3% for container overhead/variation.
     bitrate = min(510, int(BUDGET_BYTES * 0.97 * 8 / max(1, seconds) / 1000))
     if bitrate < 6:
         raise ValueError("The audio library is too large for the 9 GB budget")
@@ -447,7 +455,7 @@ def plan_audio(library):
     return plan
 
 
-def r2_client(config):
+def r2_client(config: dict[str, Any]) -> Any:
     try:
         import boto3
         from botocore.config import Config
@@ -470,7 +478,9 @@ def r2_client(config):
     )
 
 
-def start_audio_sync(config, proxy, catalog, endpoint_id):
+def start_audio_sync(
+    config: dict[str, Any], proxy: Path, catalog: Catalog, endpoint_id: str
+) -> None:
     """Keep conversion and object-storage latency off the score-sync loop."""
     if getattr(catalog, "audio_thread", None) and catalog.audio_thread.is_alive():
         return
@@ -478,7 +488,7 @@ def start_audio_sync(config, proxy, catalog, endpoint_id):
         catalog.audio_pending = False
         return
 
-    def work():
+    def work() -> None:
         try:
             from scripts.sync import Catalog
 
@@ -500,8 +510,10 @@ def start_audio_sync(config, proxy, catalog, endpoint_id):
     catalog.audio_thread.start()
 
 
-def sync_audio(config, proxy, catalog, endpoint_id):
-    """A small, resumable audio backfill; normal dashboard sync stays independent."""
+def sync_audio(
+    config: dict[str, Any], proxy: Path, catalog: Catalog, endpoint_id: str
+) -> None:
+    """A small, resumable audio backfill, normal dashboard sync stays independent."""
     from scripts.sync import upload
 
     audio = configuration()

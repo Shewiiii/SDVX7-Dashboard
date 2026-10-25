@@ -6,8 +6,11 @@ import stat
 import subprocess
 import tempfile
 import zipfile
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from types import TracebackType
+from typing import Any
 
 from dotenv import dotenv_values, set_key, unset_key
 
@@ -128,7 +131,11 @@ class Migration:
                     "Legacy backup verification failed; the old folder was kept."
                 ) from error
 
-        def remove_readonly(function, path, error):
+        def remove_readonly(
+            function: Callable[[str], object],
+            path: str,
+            error: tuple[type[BaseException], BaseException, TracebackType | None],
+        ) -> None:
             resolved = Path(path).resolve()
             if not resolved.is_relative_to(self.legacy.resolve()):
                 raise ValueError("Refusing cleanup outside the legacy folder.")
@@ -188,7 +195,7 @@ def backup_legacy(dashboard: Path, proxy: Path, legacy: Path) -> Migration:
     return migration
 
 
-def records(path: Path):
+def records(path: Path) -> Iterator[dict[str, Any]]:
     decoder = json.JSONDecoder()
     with path.open(encoding="utf-8-sig") as stream:
         for line in stream:
@@ -241,8 +248,10 @@ def copy_missing(source: Path, destination: Path) -> None:
 
 
 def migrate_preferences(
-    dashboard: Path, proxy: Path, legacy_values: dict | None = None
-) -> dict:
+    dashboard: Path,
+    proxy: Path,
+    legacy_values: dict[str, str | None] | None = None,
+) -> dict[str, Any]:
     config_path = dashboard / ".local/sync-config.json"
     config = load_config(config_path)
     env_path = proxy / ".env"
@@ -368,7 +377,7 @@ def migrate_legacy(dashboard: Path, proxy: Path) -> Migration | None:
     old_path = legacy / "cache/playtime.json"
     new_path = proxy / "player-data/playtime.json"
 
-    def summary(path, values):
+    def summary(path: Path, values: dict[str, str]) -> dict[str, Any]:
         return helpers.load_playtime_summary(
             path,
             values["INITIAL_PLAYTIME"],

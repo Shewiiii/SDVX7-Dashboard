@@ -212,6 +212,8 @@ const server = createServer(async (req, res) => {
                         music +
                         "," +
                         diff +
+                        (url.pathname === "/api/chart-view" && url.searchParams.get("check") === "1" ? ",check=True" : "") +
+                        (url.pathname === "/api/chart-view" && url.searchParams.get("effects") === "1" ? ",effects=True" : "") +
                         ")",
                 ],
                 { cwd: root, maxBuffer: 8 * 1024 * 1024 },

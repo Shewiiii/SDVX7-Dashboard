@@ -136,7 +136,7 @@ export default async function handler(req, res) {
             ok: true,
             accepted: rows.length,
             play_schema: 4,
-            details_schema: 4,
+            details_schema: 5,
             audio_schema: 2,
             catalog_schema: 3,
         });

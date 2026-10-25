@@ -3733,9 +3733,15 @@ footer > :last-child {
     }
 }
 
-[data-new-play-until] {
+[data-new-play-until],
+.score-highlight,
+.score-highlight + .judgement-row:not([hidden]) {
     animation: new-play-highlight 1s ease-out;
     animation-delay: var(--new-play-age, 0ms);
+}
+.score-highlight,
+.score-highlight + .judgement-row:not([hidden]) {
+    animation-delay: 0ms;
 }
 @keyframes new-play-highlight {
     from {
@@ -3743,12 +3749,13 @@ footer > :last-child {
         box-shadow: inset 3px 0 var(--accent);
     }
     to {
-        background-color: transparent;
         box-shadow: inset 3px 0 transparent;
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    [data-new-play-until] {
+    [data-new-play-until],
+    .score-highlight,
+    .score-highlight + .judgement-row:not([hidden]) {
         animation: none;
         box-shadow: inset 3px 0 var(--accent);
     }

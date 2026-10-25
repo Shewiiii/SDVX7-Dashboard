@@ -278,6 +278,21 @@ export const motion = {
             );
         });
     },
+    highlight(root) {
+        const highlight = () => {
+            root.classList.add("score-highlight");
+            const animation = root
+                .getAnimations()
+                .find(
+                    (animation) =>
+                        animation.animationName === "new-play-highlight",
+                );
+            if (animation) animation.currentTime = 0;
+            setTimeout(() => root.classList.remove("score-highlight"), 1000);
+        };
+        if (reducedMotion.matches) highlight();
+        else queue(root, highlight, 0.5);
+    },
     metrics(root) {
         queue(root, () => {
             root.querySelectorAll(".metric").forEach((metric, index) => {

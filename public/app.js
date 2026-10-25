@@ -20,6 +20,7 @@ import {
     recordList,
     chartKey,
     paginate,
+    PAGE_SIZE,
     chartPlays,
     grade,
     volforceClass,
@@ -403,8 +404,19 @@ function chartInfo(p, { artist = false, detailsClass = "" } = {}) {
 function setText(id, value) {
     $(id).textContent = value;
 }
+
+function playAttributes(play) {
+    return `data-play="${escape(
+        JSON.stringify({
+            received_at: play.received_at,
+            score: play.score,
+            clear_type: play.clear_type,
+        }),
+    )}"`;
+}
+
 function row(p, rank = null) {
-    return `<div class="play-row chart-row" ${rank === null ? newPlayAttributes(p) : ""} data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p)}${chartInfo(p)}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
+    return `<div class="play-row chart-row" ${rank === null ? newPlayAttributes(p) : ""} ${playAttributes(p)} data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p)}${chartInfo(p)}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
 }
 
 function prepareLoading() {
@@ -1268,8 +1280,13 @@ function restoreScroll(position) {
     pendingScroll = position;
     if (!data) return;
     pendingScroll = null;
-    const top = position.card
-        ? $(position.card).getBoundingClientRect().top + scrollY - 16
+    const bounds = position.card
+        ? $(position.card).getBoundingClientRect()
+        : null;
+    const top = bounds
+        ? bounds.top +
+          scrollY -
+          (position.center ? (innerHeight - bounds.height) / 2 : 16)
         : position.y;
     const smooth =
         position.card &&
@@ -1478,7 +1495,7 @@ function recordPosition(record, { top, grouped, playCounts }) {
 }
 
 function recordRow(record, options) {
-    return `<tr class="chart-row" ${!options.top && !options.grouped ? newPlayAttributes(record) : ""} data-music="${record.music_id}" data-diff="${record.diff_idx}">
+    return `<tr class="chart-row" ${!options.top && !options.grouped ? newPlayAttributes(record) : ""} ${playAttributes(record)} data-music="${record.music_id}" data-diff="${record.diff_idx}">
         <td class="row-index record-position">${recordPosition(record, options)}</td>
         <td class="record-song"><div class="table-song">${coverMarkup(record)}${chartInfo(record, { artist: true, detailsClass: "record-details" })}</div></td>
         <td class="record-difficulty">${badge(record)}</td>
@@ -1630,7 +1647,11 @@ function difficultyRange(song) {
     return `<span class="song-option-range">${badge(first)}${first.diff_idx === last.diff_idx ? "" : `<span aria-hidden="true">~</span>${badge(last)}`}</span>`;
 }
 
-function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
+function selectChart(
+    musicId,
+    diff,
+    { animate = true, scroll = true, play = null } = {},
+) {
     const song = songs.get(musicId);
     if (!song) return;
     dismissSearchKeyboard();
@@ -1638,15 +1659,40 @@ function selectChart(musicId, diff, { animate = true, scroll = true } = {}) {
     matchesTimer = 0;
     rememberScroll();
     selected = { music_id: musicId, diff_idx: diff };
-    songSearchPage = 0;
+    const plays = play && data ? chartPlays(data, musicId, diff) : [];
+    let playIndex = play
+        ? plays.findIndex(
+              (p) =>
+                  p.score === play.score &&
+                  p.clear_type === play.clear_type &&
+                  (!play.received_at || p.received_at === play.received_at),
+          )
+        : -1;
+
+    // Saved chart scores and clear marks can come from different plays.
+    if (play && !play.received_at && playIndex < 0)
+        playIndex = plays.findIndex((p) => p.score === play.score);
+    songSearchPage = playIndex < 0 ? 0 : Math.floor(playIndex / PAGE_SIZE);
     $("song-query").value = `${song.title} ${DIFFS[diff]}`;
     closeMatches();
-    if (view !== "search") switchView("search", true, { animate, scroll });
+    if (view !== "search") switchView("search", true, { animate });
     else {
         renderSongSearch({ animate, restartRadar: true });
         updateUrl();
-        if (scroll) scrollToCard();
     }
+    const scoreRow =
+        playIndex < 0 || $("song-search-results").hidden
+            ? null
+            : $(`song-score-${playIndex % PAGE_SIZE}`);
+    if (scoreRow) {
+        setJudgementsExpanded(scoreRow, true);
+        motion.highlight(scoreRow);
+    }
+    if (scroll)
+        restoreScroll({
+            card: scoreRow?.id ?? "song-search-view",
+            center: !!scoreRow,
+        });
 }
 
 const expandedJudgements = new Set();
@@ -1829,7 +1875,7 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
               .map((p, index) => {
                   const key = judgementKey(p);
                   const expanded = expandedJudgements.has(key);
-                  return `<tr class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+                  return `<tr id="song-score-${index}" class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
               })
               .join("")
         : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';
@@ -1852,12 +1898,11 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
     }
 }
 
-$("song-search-records").addEventListener("click", (event) => {
-    const row = event.target.closest(".song-search-entry");
-    if (!row) return;
+function setJudgementsExpanded(row, expanded) {
     const button = row.querySelector(".judgement-toggle");
     const details = $(button.getAttribute("aria-controls"));
-    details.hidden = !details.hidden;
+    if (details.hidden === !expanded) return;
+    details.hidden = !expanded;
     if (details.hidden) expandedJudgements.delete(row.dataset.judgementKey);
     else {
         expandedJudgements.add(row.dataset.judgementKey);
@@ -1871,6 +1916,15 @@ $("song-search-records").addEventListener("click", (event) => {
         "aria-label",
         `${details.hidden ? "Show" : "Hide"} judgements for score ${row.querySelector(".score-with-grade span").textContent}`,
     );
+}
+
+$("song-search-records").addEventListener("click", (event) => {
+    const row = event.target.closest(".song-search-entry");
+    if (!row) return;
+    const expanded =
+        row.querySelector(".judgement-toggle").getAttribute("aria-expanded") ===
+        "true";
+    setJudgementsExpanded(row, !expanded);
 });
 
 document.querySelectorAll("[data-clear-input]").forEach((button) => {
@@ -2005,8 +2059,12 @@ document.addEventListener("click", (event) => {
         return;
     }
     const button = event.target.closest(".open-chart, .chart-row");
-    if (button)
-        selectChart(Number(button.dataset.music), Number(button.dataset.diff));
+    if (button) {
+        const play = button.closest(".chart-row")?.dataset.play;
+        selectChart(Number(button.dataset.music), Number(button.dataset.diff), {
+            play: play ? JSON.parse(play) : null,
+        });
+    }
     const diff = event.target.closest("[data-chart-diff]");
     if (
         diff &&

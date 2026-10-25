@@ -9,7 +9,7 @@ import { DIFFS } from "./metrics.js";
 // Single-note thickness in CSS pixels. Adjust BT and FX independently here.
 export const SINGLE_NOTE_HEIGHT = { bt: 10, fx: 10 };
 const HIT_FADE_SECONDS = 0.24;
-const HIT_ATTACK_SECONDS = 0.025;
+const HIT_ATTACK_SECONDS = 0.01;
 const timelineRequests = new Map();
 async function chartAvailable(chart) {
     const key = `${chart.music_id}:${chart.diff_idx}`;

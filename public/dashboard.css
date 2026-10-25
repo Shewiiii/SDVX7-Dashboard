@@ -2253,11 +2253,10 @@ footer > :last-child {
     );
 }
 #chart-viewer-body {
-    padding: 0 var(--panel-padding-inline) 24px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
+    padding: 0 16px 16px;
+}
+.chart-viewer-content > .appeal-helper-heading {
+    padding-inline: 16px;
 }
 .chart-viewer-content > .appeal-helper-heading,
 .chart-viewer-song,
@@ -2298,25 +2297,19 @@ footer > :last-child {
     border-radius: 5px;
 }
 .chart-viewer-workspace {
-    margin-top: 16px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
+    margin-top: 12px;
 }
 .chart-viewer-main {
     min-width: 0;
-    min-height: min-content;
     display: flex;
     flex-direction: column;
-    flex: 1;
 }
 .chart-viewer-settings {
     flex: none;
     position: relative;
     z-index: 2;
-    margin-top: 24px;
-    padding-top: 24px;
+    margin-top: 16px;
+    padding-top: 16px;
 }
 .chart-viewer-settings-grid {
     display: grid;
@@ -2363,7 +2356,8 @@ footer > :last-child {
     font-variant-numeric: tabular-nums;
 }
 .chart-viewer-stage {
-    flex: 1;
+    flex: none;
+    height: clamp(360px, 72dvh, 1100px);
     min-height: 240px;
 }
 .chart-viewer-canvas {
@@ -2372,25 +2366,8 @@ footer > :last-child {
     pointer-events: none;
     z-index: 1;
 }
-.chart-viewer-player {
-    margin-top: 16px;
-}
-@media (max-width: 960px) {
-    #chart-viewer-body {
-        padding-inline: 16px;
-        padding-bottom: 16px;
-    }
-    .chart-viewer-workspace {
-        margin-top: 12px;
-    }
-    .chart-viewer-stage {
-        flex: none;
-        height: clamp(360px, 72dvh, 1100px);
-    }
-    .chart-viewer-settings {
-        margin-top: 16px;
-        padding-top: 16px;
-    }
+.chart-viewer-main > .chart-viewer-player {
+    margin: 16px 0 0;
 }
 @media (min-width: 960px) {
     .chart-viewer {
@@ -2405,6 +2382,31 @@ footer > :last-child {
         grid-template-columns: minmax(0, 1fr) 300px;
         align-items: start;
         gap: 24px;
+    }
+    .chart-viewer-content > .appeal-helper-heading {
+        padding-inline: var(--panel-padding-inline);
+    }
+    #chart-viewer-body {
+        padding: 0 var(--panel-padding-inline) 24px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+    .chart-viewer-workspace {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+    .chart-viewer-main {
+        flex: 1;
+        min-height: 0;
+    }
+    .chart-viewer-stage {
+        flex: 1;
+        height: auto;
     }
     .chart-viewer-settings {
         align-self: center;

@@ -1,4 +1,4 @@
-import { SONG_CATEGORIES as CATEGORIES } from "./song-metadata.js";
+import { SONG_GENRES } from "./song-metadata.js";
 import { DIFFS } from "./metrics.js";
 import { mountAudioPlayer } from "./audio-player.js";
 import { mountUnlockMethod } from "./unlock-method.js";
@@ -308,7 +308,7 @@ export function createChartDetails() {
         artist.className = "details-artist";
         artist.textContent = record.artist;
         const chart = record.chart;
-        const categories = CATEGORIES.filter(
+        const genres = SONG_GENRES.filter(
             ([flag]) => (record.genre || 0) & flag,
         ).map(([, title]) => title);
         const date = record.distribution_date
@@ -339,7 +339,7 @@ export function createChartDetails() {
                 "Categories",
                 record.is_custom
                     ? "Custom Map"
-                    : categories.join(" · ") || "Other",
+                    : genres.join(" · ") || "Other",
             ],
             ["Maximum EX score", count(record.max_exscore)],
             [

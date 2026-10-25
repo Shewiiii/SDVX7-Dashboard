@@ -1,5 +1,5 @@
 // Optional aliases are searchable; the second column remains the display label.
-export const SONG_CATEGORIES = [
+export const SONG_GENRES = [
     [1, "EXIT TUNES"],
     [2, "FLOOR"],
     [4, "Touhou"],

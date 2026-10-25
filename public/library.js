@@ -8,12 +8,19 @@ import {
     chartKey,
     searchSongs,
 } from "./metrics.js";
-import { SONG_CATEGORIES } from "./song-metadata.js";
+import { SONG_GENRES } from "./song-metadata.js";
+import { UNLOCK_METHODS, unlockFolder } from "./unlock-methods.js";
 
 // Song folders retain search's selection; chart folders open the exact difficulty.
 export const chartFolderMode = (mode) =>
     ["level", "clear", "grade", "top"].includes(mode);
-export function libraryEntries(data, catalog, mode, query = "") {
+export function libraryEntries(
+    data,
+    catalog,
+    mode,
+    query = "",
+    unlockMethods = new Map(),
+) {
     const best = new Map();
     for (const chart of [...data.plays, ...(data.state.charts || [])]) {
         const key = chartKey(chart),
@@ -26,7 +33,31 @@ export function libraryEntries(data, catalog, mode, query = "") {
     const top = new Set(topCharts(data.state).map(chartKey));
     const entries = [];
     for (const song of searchSongs(catalog, query, data.plays, Infinity)) {
-        if (chartFolderMode(mode)) {
+        if (mode === "unlock") {
+            const grouped = new Map();
+            for (const difficulty of song.difficulties) {
+                const key = chartKey({ music_id: song.music_id, ...difficulty });
+                const group =
+                    song.is_custom || difficulty.is_custom
+                        ? "Custom Map"
+                        : unlockFolder(
+                              unlockMethods.get(key) ||
+                                  unlockMethods.get(`${song.music_id}:*`),
+                          );
+                if (!grouped.has(group)) grouped.set(group, []);
+                grouped.get(group).push(difficulty);
+            }
+            for (const [group, difficulties] of grouped) {
+                difficulties.sort((a, b) => a.diff_idx - b.diff_idx);
+                const preferred =
+                    difficulties.find((d) => d.diff_idx === song.diff_idx) ||
+                    difficulties[0];
+                entries.push({
+                    group,
+                    song: { ...song, ...preferred, difficulties },
+                });
+            }
+        } else if (chartFolderMode(mode)) {
             for (const d of song.difficulties) {
                 const key = chartKey({ music_id: song.music_id, ...d });
                 const record = best.get(key);
@@ -59,7 +90,7 @@ export function libraryEntries(data, catalog, mode, query = "") {
                         ]
                       : song.is_custom
                         ? ["Custom Map"]
-                        : SONG_CATEGORIES.filter(
+                        : SONG_GENRES.filter(
                               ([bit]) => (song.genre || 0) & bit,
                           ).map(([, label]) => label);
             for (const group of new Set(groups.length ? groups : ["Other"]))
@@ -126,17 +157,56 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
     let entries = [],
         overflow = "",
         closing = false;
+    let unlockMethods,
+        unlockTask,
+        unlockError,
+        unlockLoadedAt = 0;
     const folderState = new Map();
+
+    function loadUnlockMethods() {
+        if (unlockTask) return;
+        unlockTask = fetch("/api/unlocks?index=methods")
+            .then(async (response) => {
+                if (!response.ok) throw new Error("Unlock methods unavailable");
+                const { methods } = await response.json();
+                if (
+                    !methods ||
+                    typeof methods !== "object" ||
+                    Array.isArray(methods) ||
+                    !Object.entries(methods).every(
+                        ([key, method]) =>
+                            /^[1-9]\d{0,7}:(?:[0-5]|\*)$/.test(key) &&
+                            typeof method === "string",
+                    )
+                )
+                    throw new Error("Invalid unlock methods");
+                unlockMethods = new Map(Object.entries(methods));
+                unlockLoadedAt = Date.now();
+                unlockError = null;
+            })
+            .catch(() => {
+                unlockError = "Unlock methods are unavailable. Try again.";
+            })
+            .finally(() => {
+                unlockTask = null;
+                if (dialog.open && !closing && mode.value === "unlock")
+                    render(true);
+            });
+    }
+
     function folderNames() {
         const names = new Set(entries.map((entry) => entry.group));
         if (mode.value === "level")
             for (let i = 1; i <= 20; i++) names.add(`Level ${i}`);
         if (mode.value === "clear") for (const mark of CLEARS) names.add(mark);
-        if (mode.value === "category")
+        if (mode.value === "genre")
             for (const label of [
-                ...SONG_CATEGORIES.map(([, label]) => label),
+                ...SONG_GENRES.map(([, label]) => label),
                 "Custom Map",
             ])
+                names.add(label);
+        if (mode.value === "unlock")
+            for (const label of [...Object.values(UNLOCK_METHODS), "Custom Map"])
                 names.add(label);
         if (mode.value === "top")
             for (const label of ["In Top 50", "Outside Top 50"])
@@ -161,12 +231,37 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
             results.textContent = "Sync your archive to browse the library.";
             return;
         }
+        if (
+            mode.value === "unlock" &&
+            (!unlockMethods || Date.now() - unlockLoadedAt >= 60000)
+        ) {
+            results.replaceChildren();
+            document.getElementById("library-count").textContent = "";
+            if (unlockError) {
+                const message = document.createElement("p");
+                message.textContent = unlockError;
+                const retry = document.createElement("button");
+                retry.type = "button";
+                retry.className = "text-button";
+                retry.textContent = "Retry";
+                retry.addEventListener("click", () => {
+                    unlockError = null;
+                    render(true);
+                });
+                results.append(message, retry);
+            } else {
+                results.textContent = "Loading unlock methods...";
+                loadUnlockMethods();
+            }
+            return;
+        }
         if (rebuild) {
             entries = libraryEntries(
                 data,
                 getCatalog(),
                 mode.value,
                 query.value,
+                unlockMethods,
             );
         }
         const grouped = new Map(folderNames().map((name) => [name, []]));

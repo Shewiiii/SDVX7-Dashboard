@@ -17,6 +17,32 @@ from .paths import LOCAL_DATA, PUBLIC_CATALOG, UNLOCK_OVERRIDES
 CUSTOM_MDB = ROOT / "data_mods/ryunet_custom/others/music_db.merged.xml"
 BLC_SOURCE = "https://bemaniwiki.com/index.php?" + quote("SOUND VOLTEX ∇/解禁要素")
 DIFFICULTIES = ("NOV", "ADV", "EXH", "INF", "MXM", "ULT")
+METHODS = frozenset(
+    {
+        "default_unlocked",
+        "blc",
+        "blaster_gate",
+        "variant_gate",
+        "arena_station",
+        "stamp",
+        "extrack_challenge",
+        "conditional_input",
+        "event_mission",
+        "crossover_event",
+        "limited_time",
+        "removed",
+        "unknown",
+        "conflict",
+    }
+)
+
+
+def april_fools_chart(arcade: dict[str, Any]) -> bool:
+    return any(
+        "期間限定配信曲" in rule.get("headings", [])
+        and "エイプリルフール" in rule.get("section_context_ja", "")
+        for rule in arcade["evidence"]
+    )
 
 
 def lower_blc_cost(charts: list[dict[str, Any]], diff: int) -> int | None:
@@ -44,7 +70,7 @@ def unlock_description(arcade: dict[str, Any]) -> str:
     event = sections[-1] if sections else "the event"
     event = event.replace("スペシャルスタンプ", "Special Stamp")
 
-    if method == "default_available":
+    if method == "default_unlocked":
         return "Unlocked by default."
     if method == "blc":
         cost = arcade.get("individual_blc_cost")
@@ -96,12 +122,7 @@ def unlock_description(arcade: dict[str, Any]) -> str:
             return f"Unlock {prerequisite} first, then clear this chart in EXTRACK CHALLENGE."
         return "Clear this chart in the EXTRACK CHALLENGE folder on a EX-TRACK."
     if method == "removed":
-        april_fools = any(
-            "期間限定配信曲" in rule.get("headings", [])
-            and "エイプリルフール" in rule.get("section_context_ja", "")
-            for rule in evidence
-        )
-        if april_fools:
+        if april_fools_chart(arcade):
             return "April Fools' chart. Returns for a limited time around April 1."
         return "This chart has been removed from arcade cabinets."
     if method == "conditional_input":
@@ -139,6 +160,11 @@ def records(
                 sources = [BLC_SOURCE]
             yield {
                 "chart_id": f"{mid}:{diff}",
+                "method": "limited_time"
+                if arcade["method"] == "removed" and april_fools_chart(arcade)
+                else arcade["method"]
+                if arcade["method"] in METHODS
+                else "unknown",
                 "description": unlock_description(arcade),
                 "as_of": audit["as_of"],
                 "source": sources,
@@ -153,16 +179,18 @@ def compact_records(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for mid, charts in sorted(songs.items()):
         charts = sorted(charts, key=lambda row: int(row["chart_id"].split(":")[1]))
         groups = Counter(
-            (row["description"], row["as_of"], tuple(row["source"])) for row in charts
+            (row["method"], row["description"], row["as_of"], tuple(row["source"]))
+            for row in charts
         )
         common, count = groups.most_common(1)[0]
         if count < 2:
             result.extend(charts)
             continue
-        description, as_of, sources = common
+        method, description, as_of, sources = common
         result.append(
             {
                 "chart_id": f"{mid}:*",
+                "method": method,
                 "description": description,
                 "as_of": as_of,
                 "source": list(sources),
@@ -171,7 +199,8 @@ def compact_records(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         result.extend(
             row
             for row in charts
-            if (row["description"], row["as_of"], tuple(row["source"])) != common
+            if (row["method"], row["description"], row["as_of"], tuple(row["source"]))
+            != common
         )
     return result
 
@@ -217,12 +246,14 @@ def load_overrides(path: Path) -> dict[str, dict[str, Any]]:
             raise ValueError(f"Invalid chart ID in {path.name}: {chart_id}")
         if (
             not isinstance(override, dict)
-            or "description" not in override
-            or set(override) - {"description", "source", "as_of"}
+            or not {"method", "description"} <= set(override)
+            or set(override) - {"method", "description", "source", "as_of"}
         ):
             raise ValueError(
-                f"Override {chart_id} needs description and optional source/as_of"
+                f"Override {chart_id} needs method, description and optional source/as_of"
             )
+        if not isinstance(override["method"], str) or override["method"] not in METHODS:
+            raise ValueError(f"Override {chart_id} has an unsupported method")
         description = override["description"]
         if not isinstance(description, str) or not description.strip():
             raise ValueError(f"Override {chart_id} needs a nonempty description")
@@ -249,6 +280,7 @@ def apply_overrides(
         mid = row["chart_id"].split(":")[0]
         override = overrides.get(row["chart_id"]) or overrides.get(f"{mid}:*")
         if override:
+            row["method"] = override["method"]
             row["description"] = override["description"]
             row["as_of"] = override.get("as_of", row["as_of"])
             row["source"] = list(dict.fromkeys(override.get("source", [])))

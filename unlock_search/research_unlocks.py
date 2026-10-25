@@ -180,7 +180,7 @@ def local_rules(plugin: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
 
 def baseline(price: int, limited: int) -> str:
     if limited == 3:
-        return "default_available"
+        return "default_unlocked"
     if limited == 2 and (price == -2 or price >= 0):
         return "blc"
     return "unknown"

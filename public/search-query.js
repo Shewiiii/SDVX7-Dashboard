@@ -1,4 +1,4 @@
-import { SONG_CATEGORIES } from "./song-metadata.js";
+import { SONG_GENRES } from "./song-metadata.js";
 
 export function normalizeSearch(value) {
     return String(value)
@@ -74,21 +74,21 @@ const textFields = new Set([
 let index = new Map(),
     best = new Map(),
     top = new Set();
-const categoryCache = new Map();
-export function categoryText(genre, custom) {
+const genreCache = new Map();
+export function genreText(genre, custom) {
     const key = `${genre}:${custom}`;
-    if (!categoryCache.has(key))
-        categoryCache.set(
+    if (!genreCache.has(key))
+        genreCache.set(
             key,
             custom
                 ? "Custom Map"
-                : SONG_CATEGORIES.filter(([bit]) => (genre || 0) & bit)
+                : SONG_GENRES.filter(([bit]) => (genre || 0) & bit)
                       .map(([, label, aliases = []]) =>
                           [label, ...aliases].join(" "),
                       )
                       .join(" ") || "Other",
         );
-    return categoryCache.get(key);
+    return genreCache.get(key);
 }
 export function installSearchIndex(packed) {
     if (
@@ -120,7 +120,7 @@ export function installSearchIndex(packed) {
         record._text = [
             record.effector,
             record.illustrator,
-            categoryText(record.genre, record.custom),
+            genreText(record.genre, record.custom),
         ].map(normalizeSearch);
         next.set(`${record.music_id}:${record.diff_idx}`, record);
     }
@@ -227,7 +227,7 @@ export function extraSearchText(song, difficulty) {
     const record = index.get(`${song.music_id}:${difficulty.diff_idx}`);
     return record
         ? record._text
-        : [normalizeSearch(categoryText(song.genre, song.is_custom))];
+        : [normalizeSearch(genreText(song.genre, song.is_custom))];
 }
 export function matchesSearchFilters(song, d, search) {
     if (search.errors.length) return false;
@@ -253,7 +253,7 @@ export function matchesSearchFilters(song, d, search) {
             actual = normalizeSearch(song[field]);
         else if (field === "category")
             actual = normalizeSearch(
-                categoryText(
+                genreText(
                     record?.genre ?? song.genre,
                     record?.custom ?? song.is_custom,
                 ),

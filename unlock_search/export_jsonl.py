@@ -18,6 +18,23 @@ EXTRA_LABELS = {2: "INF", 3: "GRV", 4: "HVN", 5: "VVD", 6: "XCD", 7: "NBL"}
 DIFFICULTIES = ("NOV", "ADV", "EXH", "INF", "MXM", "ULT")
 
 
+def lower_blc_cost(charts: list[dict[str, Any]], diff: int) -> int | None:
+    total = 0
+    for chart in charts:
+        if chart["index"] >= diff:
+            continue
+        arcade = chart["arcade"]
+        if arcade["method"] in {"unknown", "conflict"}:
+            return None
+        if arcade["method"] != "blc":
+            continue
+        cost = arcade.get("individual_blc_cost")
+        if arcade.get("cost_conflict") or cost is None:
+            return None
+        total += cost
+    return total
+
+
 def unlock_description(arcade: dict[str, Any]) -> str:
     method = arcade["method"]
     evidence = arcade["evidence"]
@@ -33,7 +50,14 @@ def unlock_description(arcade: dict[str, Any]) -> str:
         if arcade.get("cost_conflict"):
             return "Purchase with BLC."
         if cost is not None:
-            return f"Purchase this chart for {cost:,} BLC + cost of lower locked difficulties. "
+            lower_cost = arcade.get("lower_blc_cost")
+            total_text = (
+                f" ({cost + lower_cost:,} BLC total)" if lower_cost is not None else ""
+            )
+            return (
+                f"Purchase this chart for {cost:,} BLC "
+                f"+ cost of lower locked difficulties{total_text}."
+            )
         return "Purchase this chart with BLC in song select."
     if method == "blaster_gate":
         return "Clear this chart in BLASTER GATE."
@@ -142,6 +166,11 @@ def records(
                 raise ValueError(f"Unsupported difficulty index: {diff}")
             seen.add(key)
             arcade = chart["arcade"]
+            if arcade["method"] == "blc":
+                arcade = {
+                    **arcade,
+                    "lower_blc_cost": lower_blc_cost(song["charts"], diff),
+                }
             local = chart["local"]
             cost_conflict = arcade.get("cost_conflict", False)
             method = arcade["method"]
@@ -180,6 +209,7 @@ def records(
                     "full_instructions_verified": arcade["full_instructions_verified"],
                     "blc": {
                         "individual_cost": arcade.get("individual_blc_cost"),
+                        "lower_difficulties_cost": arcade.get("lower_blc_cost"),
                         "candidates": arcade.get("cost_candidates", {}),
                         "conflict": cost_conflict,
                         "includes_lower_difficulties": False,

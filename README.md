@@ -1,22 +1,25 @@
 # SDVX ∇ Dashboard
 
-WebUI to quickly see your stats and detailed data on an intuitive UI, for SOUND VOLTEX ∇, running on either Asphyxia or the RyuNET network. Tested on KFC.
+WebUI to quickly see your stats and detailed data from SOUND VOLTEX ∇, running on either Asphyxia or the RyuNET network. Tested on KFC.
 
 The repository is now based on [SDVX7-Proxy](https://github.com/Shewiiii/SDVX7-Proxy).
 
-You can see a functional dashboard example here: https://sdvx.shewi.app/.
+You can see a dashboard example with audio features here: https://sdvx.shewi.app/.
 
 ## Extra features
 
 The dashboard has much more features and ways to view your data than [KONAMI's official website](https://p.eagate.573.jp/game/sdvx/vii/), including but not limited to:
 
 - Interactive performance history
-- 7 data points timing histogram from the internal game's logic
+- 7 values timing histogram from the game's internal logic
 - Play history and Top 50, sorted by date, VF, score or play count
 - VF calculator, useful to check if a given score/diff/clear enters Top 50
 - Appeal card helper, to easily find the card you want to display in-game
-- Advanced Search feature, to get details about a chart, including its radar
+- Advanced search feature, to get details about a chart, including its radar
 - ASCII string of a song, useful to search the song in-game
+- Chart viewer with sound effects, for every chart in the game*
+
+*See Optional audio setup below
 
 ## Requirements
 
@@ -48,9 +51,9 @@ To migrate:
 - Move `.local/` and `.vercel/` located in `/SDVX7-VolForce-Tracker-main/SDVX7-Tracker-Dashboard-main` into `SDVX7-Dashboard-main/`.
 - Run `update-dashboard.bat`. It will delete the legacy `/SDVX7-VolForce-Tracker-main`, but you can choose to create a backup.
 
-## Optional song and chart preview
+## Optional audio setup
 
-The dashboard supports audio playback in search details and chart preview with sound effects. But default, it only plays the preview on Vercel, and cannot play anything locally. To solve this, additional setup is required.
+But default, the dashboard can only play songs preview on Vercel due to the lack of storage, and cannot play anything locally. To solve this, additional setup is required.
 
 ### Local preview:
 

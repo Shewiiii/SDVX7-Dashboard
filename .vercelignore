@@ -8,3 +8,5 @@ __pycache__/
 .agents/
 skills-lock.json
 scripts/
+unlock_search/
+update_unlocks.py

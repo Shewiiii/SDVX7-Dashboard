@@ -7,3 +7,4 @@ __pycache__/
 tests/
 .vercel
 .env*
+pyproject.toml

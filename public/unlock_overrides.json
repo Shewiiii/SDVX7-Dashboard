@@ -1,0 +1,28 @@
+{
+  "templates": [
+    "Available by default. No unlock is required.",
+    "Unlocked by default.",
+    "Purchase this chart for x BLC + cost of lower locked difficulties.",
+    "Purchase with BLC.",
+    "Purchase this chart with BLC in song select.",
+    "Clear this chart in BLASTER GATE.",
+    "Collect the required seals, then clear this chart in VARIANT GATE {gate name}.",
+    "Earn VARIANT POWER using {attributes} charts, then clear this chart in VARIANT GATE {gate name}.",
+    "Purchase this chart with AP in ARENA STATION during an eligible season.",
+    "Collect x stamps on this song's sheet in THE VOLTENIZER xxxx Special Stamp.",
+    "Previously unlocked through BEMANI PRO LEAGUE -SEASON x- Special Stamp (x stamps). That event has ended.",
+    "Unlock {song name} first, then clear this chart in EXTRACK CHALLENGE.",
+    "Clear this chart in the EXTRACK CHALLENGE folder on a EX-TRACK.",
+    "April Fools' chart. Returns for a limited time around April 1.",
+    "Unknown, may be unlocked by default"
+  ],
+  "2374:*": {
+    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 5 songs in the Vocaloid folder. (October 25th 2026)"
+  },
+  "2373:*": {
+    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 10 songs in the Vocaloid folder. (October 25th 2026)"
+  },
+  "2375:*": {
+    "description": "Part of 初音ミクコラボミッション (Hatsune Miku Collab Mission) event. Clear 15 songs in the Vocaloid folder. (October 25th 2026)"
+  }
+}

@@ -1,6 +1,7 @@
 import { SONG_CATEGORIES as CATEGORIES } from "./song-metadata.js";
 import { DIFFS } from "./metrics.js";
 import { mountAudioPlayer } from "./audio-player.js";
+import { mountUnlockMethod } from "./unlock-method.js";
 
 const VERSIONS = [
     "—",
@@ -289,6 +290,7 @@ export function createChartDetails() {
         /* Storage can be disabled or cleared. */
     }
     let disposeAudio,
+        disposeUnlock,
         controller,
         trigger,
         previousOverflow = "",
@@ -297,6 +299,7 @@ export function createChartDetails() {
 
     function showDetails(record) {
         disposeAudio?.();
+        disposeUnlock?.();
         body.replaceChildren();
         const subtitle = document.createElement("p");
         subtitle.className = "details-song";
@@ -366,6 +369,9 @@ export function createChartDetails() {
             list.append(cell);
         }
         body.append(subtitle, artist, list);
+        const unlock = document.createElement("section");
+        body.append(unlock);
+        disposeUnlock = mountUnlockMethod(unlock, record);
         const player = document.createElement("section");
         player.setAttribute("aria-label", "Song player");
         body.append(player);
@@ -388,6 +394,7 @@ export function createChartDetails() {
 
     async function load() {
         disposeAudio?.();
+        disposeUnlock?.();
         disposeAudio = null;
         controller?.abort();
         controller = new AbortController();
@@ -461,6 +468,7 @@ export function createChartDetails() {
         if (!dialog.open || closing) return;
         closing = true;
         disposeAudio?.();
+        disposeUnlock?.();
         disposeAudio = null;
         controller?.abort();
         dialog.classList.remove("is-visible");
@@ -494,6 +502,7 @@ export function createChartDetails() {
     });
     dialog.addEventListener("close", () => {
         disposeAudio?.();
+        disposeUnlock?.();
         disposeAudio = null;
         controller?.abort();
         closing = false;

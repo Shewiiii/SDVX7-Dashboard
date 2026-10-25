@@ -3,6 +3,7 @@ import { createPreviewWorker } from "../lib/preview-worker.mjs";
 import { createPreviewLive } from "../lib/preview-live.mjs";
 import { sendAudioFile } from "./audio-http.mjs";
 import { packSearchIndex } from "../lib/search-index.mjs";
+import { unlockResponse } from "../lib/unlocks.mjs";
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -90,6 +91,15 @@ const server = createServer(async (req, res) => {
             return;
         }
         const url = new URL(req.url, "http://localhost");
+        if (url.pathname === "/api/unlocks") {
+            const result = await unlockResponse(req.url);
+            res.writeHead(result.status, {
+                "Content-Type": "application/json; charset=utf-8",
+                "Cache-Control": "no-store",
+            });
+            res.end(JSON.stringify(result.body));
+            return;
+        }
         if (url.pathname === "/api/events") {
             previewLive.connect(res);
             return;

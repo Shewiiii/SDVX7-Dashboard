@@ -2490,6 +2490,28 @@ footer > :last-child {
         var(--popup-enter-duration), var(--popup-enter-duration), 0s;
     transition-delay: 0s;
 }
+.details-unlock {
+    margin-bottom: 22px;
+    font-size: 12px;
+}
+.details-unlock h3 {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 400;
+}
+.details-unlock h3 span {
+    color: var(--muted);
+    font-size: 10px;
+}
+.details-unlock p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
 .details-audio {
     margin-bottom: 22px;
     font-size: 12px;

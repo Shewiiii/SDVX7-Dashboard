@@ -187,10 +187,11 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             );
         const at = position + record.start - record.chart_offset;
         // Render before DOM writes, so canvas size reads do not force layout.
-        options.onTime?.(at, {
-            timestamp: now,
-            force: force === true || audio.paused || seeking,
-        });
+        if (record.variant === "full")
+            options.onTime?.(at, {
+                timestamp: now,
+                force: force === true || audio.paused || seeking,
+            });
         if (
             force !== true &&
             !audio.paused &&
@@ -200,7 +201,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             return;
         lastUiUpdate = now;
         seek.value = position;
-        if (!options.seekTimeline)
+        if (!options.seekTimeline || record.variant !== "full")
             seek.setAttribute(
                 "aria-valuetext",
                 `${clock(position)} of ${clock(record.duration)}`,
@@ -208,11 +209,18 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         const label = `${clock(position)} / ${clock(record.duration)}`;
         if (time.textContent !== label) time.textContent = label;
         progress?.setAttribute("width", (512 * position) / record.duration);
-        options.seekTimeline?.update(position, at);
+        if (record.variant === "full")
+            options.seekTimeline?.update(position, at);
         const duration = chart.chart?.duration;
         for (const line of lines) {
             line.style.display =
-                duration > 0 && at >= 0 && at <= duration ? "" : "none";
+                record.variant === "full" &&
+                duration > 0 &&
+                at >= 0 &&
+                at <= duration
+                    ? ""
+                    : "none";
+            if (record.variant !== "full") continue;
             const x = 52 + clamp(at / duration, 1) * 456;
             line.setAttribute("x1", x);
             line.setAttribute("x2", x);
@@ -317,7 +325,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             update(true);
             status.textContent =
                 sourceLabel ||
-                (record.variant === "preview" ? "Preview" : "Full song");
+                (record.variant === "preview" ? "In-game preview" : "Full song");
             button();
             cancelAnimationFrame(frame);
             tick();
@@ -371,13 +379,14 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             if (disposed) return;
             record = value;
             if (!record) throw new Error("Audio unavailable");
+            position = clamp(position, record.duration);
             readyTask = Promise.resolve(options.onReady?.(record));
             // Source preparation awaits this on Play. An unrelated player using
             // onReady still must not create an unhandled rejected promise.
             readyTask.catch(() => {});
             if (disposed) return;
             seek.max = record.duration;
-            if (options.seekTimeline) {
+            if (options.seekTimeline && record.variant === "full") {
                 progress = undefined;
                 options.seekTimeline.mount({ host, svg, seek, record });
             } else {
@@ -395,7 +404,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
                 progress = svg.querySelector(".details-audio-progress");
             }
             status.textContent =
-                record.variant === "preview" ? "Preview" : "Full song";
+                record.variant === "preview" ? "In-game preview" : "Full song";
             controls.hidden = false;
             download.textContent = downloadLabel();
             if (fileFormat() === "flac") {

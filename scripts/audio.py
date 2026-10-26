@@ -155,7 +155,8 @@ class AudioLibrary:
             if chart
             else ""
         )
-        key = (mid, prefix, str(chart.parent) if chart else "")
+        variant = self.config.get("variant", "full")
+        key = (mid, prefix, str(chart.parent) if chart else "", variant)
         if key in self.sources:
             return self.sources[key]
         if self.folders is None:
@@ -175,13 +176,44 @@ class AudioLibrary:
                 self.folder_files[folder] = [
                     p
                     for p in folder.iterdir()
-                    if p.suffix.lower() in (".s3v", ".2dx", ".flac")
-                    and not p.stem.lower().endswith("_pre")
+                    if p.suffix.lower() in (".s3v", ".2dx", ".flac") and p.is_file()
                 ]
             candidates = sorted(
-                self.folder_files[folder],
+                (
+                    p
+                    for p in self.folder_files[folder]
+                    if not p.stem.lower().endswith("_pre")
+                ),
                 key=lambda p: (p.stem != prefix, len(p.stem), p.name),
             )
+            if variant == "preview":
+                track_stem = candidates[0].stem if candidates else prefix
+                base_stem = re.sub(r"_[1-6][a-z]$", "", track_stem, flags=re.IGNORECASE)
+                preview_priority = {
+                    (base_stem + "_pre").casefold(): 1,
+                    (track_stem + "_pre").casefold(): 0,
+                }
+                previews = sorted(
+                    (
+                        p
+                        for p in self.folder_files[folder]
+                        if p.stem.lower().endswith("_pre")
+                        and (not candidates or p.stem.casefold() in preview_priority)
+                    ),
+                    key=lambda p: (
+                        preview_priority.get(p.stem.casefold(), 2),
+                        len(p.stem),
+                        p.name,
+                    ),
+                )
+                if previews:
+                    self.sources[key] = previews[0]
+                    return previews[0]
+                if candidates:
+                    # A replacement track must not use the original song's preview.
+                    self.sources[key] = None
+                    return None
+                continue
             if candidates:
                 self.sources[key] = candidates[0]
                 return candidates[0]
@@ -222,11 +254,13 @@ class AudioLibrary:
             saved = self.convert(source)
             write_json(entry_path, saved)
         self.cache[key] = saved
-        offset = float(
-            self.config.get("offsets", {}).get(
-                f"{mid}:{diff}", self.config.get("chart_offset", 0)
+        offset = 0.0
+        if saved["variant"] == "full":
+            offset = float(
+                self.config.get("offsets", {}).get(
+                    f"{mid}:{diff}", self.config.get("chart_offset", 0)
+                )
             )
-        )
         if not math.isfinite(offset) or abs(offset) > 600:
             raise ValueError("Audio chart offset must be between -600 and 600 seconds")
         return {**saved, "music_id": mid, "diff_idx": diff, "chart_offset": offset}
@@ -259,11 +293,6 @@ class AudioLibrary:
             if not math.isfinite(duration) or not 0 < duration <= 7200:
                 raise ValueError("Invalid audio duration")
             variant = self.config.get("variant", "full")
-            start = (
-                max(0, min(duration - 20, duration * 0.4))
-                if variant == "preview"
-                else 0
-            )
             codec = self.config.get("format", "opus")
             output = temporary / ("track." + codec)
             args = [
@@ -273,11 +302,7 @@ class AudioLibrary:
                 "-nostdin",
                 "-i",
                 str(input_file),
-                "-ss",
-                str(start),
             ]
-            if variant == "preview":
-                args += ["-t", "20"]
             encoder = (
                 ["-c:a", "flac", "-compression_level", "5"]
                 if codec == "flac"
@@ -359,7 +384,7 @@ class AudioLibrary:
                 if codec == "opus"
                 else None,
                 "duration": round(duration, 3),
-                "start": round(start, 3),
+                "start": 0.0,
                 "variant": variant,
                 "peaks": peaks,
             }
@@ -374,7 +399,8 @@ def preview(mid: int, diff: int) -> None:
         record["url"] = (
             "/api/audio-file?id=" + record["id"] + "&format=" + record["format"]
         )
-        record["chart_url"] = f"/api/chart-view?music={mid}&diff={diff}&effects=1"
+        if record["variant"] == "full":
+            record["chart_url"] = f"/api/chart-view?music={mid}&diff={diff}&effects=1"
     print(json.dumps(record))
 
 
@@ -429,12 +455,7 @@ def plan_audio(library: AudioLibrary) -> dict[str, Any]:
 
     with ThreadPoolExecutor(max_workers=8) as workers:
         rows = list(workers.map(measure, sorted(sources)))
-    seconds = sum(
-        min(20, row["duration"])
-        if library.config.get("variant") == "preview"
-        else row["duration"]
-        for row in rows
-    )
+    seconds = sum(row["duration"] for row in rows)
     # Opus supports up to 510 kbps, reserve 3% for container overhead/variation.
     bitrate = min(510, int(BUDGET_BYTES * 0.97 * 8 / max(1, seconds) / 1000))
     if bitrate < 6:

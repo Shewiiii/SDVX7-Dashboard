@@ -224,7 +224,8 @@ def main() -> None:
             ffmpeg, ffprobe = tools(config)
         config.update(ffmpeg=str(ffmpeg), ffprobe=str(ffprobe))
         variant = prompt(
-            "Audio: full or preview (20 seconds)", config.get("variant", "full")
+            "Audio: full or preview",
+            config.get("variant", "full"),
         ).lower()
         if variant not in ("full", "preview"):
             raise ValueError("Choose full or preview.")

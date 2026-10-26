@@ -66,6 +66,7 @@ def search_forms(text: str, *, reading: bool = False) -> list[str]:
 
 
 PLAY_SCHEMA = 5
+DETAILS_SCHEMA = 6
 CLEARS = {1: 50, 2: 100, 3: 102, 4: 106, 5: 110, 6: 104}
 GRADES = (
     (9900000, 105),
@@ -691,12 +692,20 @@ def upload(
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing audio"
                 )
-            if payload.get("details") and result.get("details_schema", 0) < (
-                5 if any("timeline" in d for d in payload["details"]) else 4
-            ):
-                raise RuntimeError(
-                    "Deploy the updated dashboard API before syncing chart details"
-                )
+            if payload.get("details"):
+                required_schema = 4
+                if any("timeline" in d for d in payload["details"]):
+                    required_schema = 5
+                if any(
+                    "max_chain" in (d.get("chart") or {})
+                    or "max_chain_estimated" in (d.get("chart") or {})
+                    for d in payload["details"]
+                ):
+                    required_schema = DETAILS_SCHEMA
+                if result.get("details_schema", 0) < required_schema:
+                    raise RuntimeError(
+                        "Deploy the updated dashboard API before syncing chart details"
+                    )
             if (
                 payload.get("state", {}).get("catalog")
                 and result.get("catalog_schema") != 3
@@ -930,6 +939,10 @@ def sync_details(
     if saved.get("timeline_schema") != 1:
         saved["hashes"] = {}
         saved["timeline_schema"] = 1
+    # Replay summaries that older upload validators stored without Max chain.
+    if saved.get("details_schema") != DETAILS_SCHEMA:
+        saved["hashes"] = {}
+        saved["details_schema"] = DETAILS_SCHEMA
     hashes = saved.setdefault("hashes", {})
     catalog.details.refresh()
     batch, batch_keys, total = [], [], 0

@@ -1182,7 +1182,7 @@ table {
     min-width: 700px;
 }
 thead {
-    background: #ffffff02;
+    background: #00000017;
 }
 th {
     font: 11px var(--sans);
@@ -1219,8 +1219,10 @@ td:nth-child(2) {
 .score-cell {
     color: #c8c3d9;
 }
-tbody tr:hover {
-    background: var(--row-hover);
+@media (hover: hover) {
+    tbody tr:hover {
+        background: var(--row-hover);
+    }
 }
 .pagination {
     padding: 16px var(--panel-padding-inline);
@@ -1463,11 +1465,15 @@ footer > :last-child {
     cursor: pointer;
     transition: background 0.16s;
 }
-.chart-row:hover,
-.chart-row:focus-within,
-.song-search-entry:hover,
-.song-search-entry:focus-within {
+.chart-row:has(:focus-visible),
+.song-search-entry:has(:focus-visible) {
     background: var(--row-hover);
+}
+@media (hover: hover) {
+    .chart-row:hover,
+    .song-search-entry:hover {
+        background: var(--row-hover);
+    }
 }
 .play-row + .play-row,
 .song-option + .song-option,
@@ -1974,6 +1980,13 @@ footer > :last-child {
 .song-search-panel table {
     min-width: 700px;
     table-layout: fixed;
+}
+#song-search-results {
+    background: var(--score-section-bg);
+    border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+}
+#song-search-results thead {
+    background: var(--score-header-bg);
 }
 .song-rank-column {
     /* The next column's 15px cell padding lands on the song-info left edge. */

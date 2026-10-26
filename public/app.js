@@ -1663,6 +1663,7 @@ function selectChart(
     matchesTimer = 0;
     rememberScroll();
     selected = { music_id: musicId, diff_idx: diff };
+    if (play) expandedJudgements.clear();
     const plays = play && data ? chartPlays(data, musicId, diff) : [];
     let playIndex = play
         ? plays.findIndex(
@@ -1928,7 +1929,11 @@ $("song-search-records").addEventListener("click", (event) => {
     const expanded =
         row.querySelector(".judgement-toggle").getAttribute("aria-expanded") ===
         "true";
-    setJudgementsExpanded(row, !expanded);
+    expandedJudgements.clear();
+    for (const entry of $("song-search-records").querySelectorAll(
+        ".song-search-entry",
+    ))
+        setJudgementsExpanded(entry, entry === row && !expanded);
 });
 
 document.querySelectorAll("[data-clear-input]").forEach((button) => {

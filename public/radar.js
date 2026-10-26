@@ -3,17 +3,24 @@ const AXES = ["Notes", "Peak", "Tsumami", "Tricky", "Hand-Trip", "One-Hand"];
 
 const transitions = new WeakMap();
 const painters = new WeakMap();
+let radarSequence = 0;
 
-export function radarMarkup(values) {
-    if (
-        !Array.isArray(values) ||
-        values.length !== AXES.length ||
-        !values.every((value) => Number.isFinite(value) && value >= 0)
-    )
+export function validRadar(values) {
+    return (
+        Array.isArray(values) &&
+        values.length === AXES.length &&
+        AXES.every(
+            (_, axis) => Number.isFinite(values[axis]) && values[axis] >= 0,
+        )
+    );
+}
+
+export function radarMarkup(values, { interactive = false } = {}) {
+    if (!validRadar(values))
         return '<div class="song-radar song-radar-empty"><span>Effect radar unavailable</span></div>';
 
     // The reference hexagon is 100, so values above 100 extend beyond it.
-    // Keep the reference geometry fixed; expand the viewBox for overflow.
+    // Keep the reference geometry fixed and expand the viewBox for overflow.
     const gridRadius = 68;
     const unit = gridRadius / 100;
     const point = (axis, radius) => {
@@ -52,13 +59,21 @@ export function radarMarkup(values) {
     const right = Math.max(300, ...vertices.map(([x]) => Math.ceil(x + 10)));
     const bottom = Math.max(238, ...vertices.map(([, y]) => Math.ceil(y + 10)));
 
-    return `<figure class="song-radar"><svg viewBox="${left} ${top} ${right - left} ${bottom - top}" role="img" aria-label="Effect radar, reference hexagon at 100; higher values extend beyond it. ${description}">
-        <defs><clipPath id="song-radar-clip"><polygon points="${polygon(values.map((value) => value * unit))}"/></clipPath></defs>
+    const clipId = `song-radar-clip-${++radarSequence}`;
+    const tag = interactive ? "button" : "figure";
+    const attributes = interactive
+        ? 'class="song-radar radar-trigger" type="button" data-similar-charts aria-label="Show similar charts" aria-haspopup="dialog" aria-controls="similar-charts"'
+        : 'class="song-radar"';
+
+    return `<${tag} ${attributes}><svg viewBox="${left} ${top} ${right - left} ${bottom - top}" role="img" aria-label="Effect radar, reference hexagon at 100; higher values extend beyond it. ${description}">
+        <defs><clipPath id="${clipId}"><polygon points="${polygon(values.map((value) => value * unit))}"/></clipPath></defs>
+        <g class="song-radar-graphic">
         <g class="song-radar-grid"><polygon points="${outline}"/></g>
-        <image class="song-radar-fill" x="${left}" y="${top}" width="${right - left}" height="${bottom - top}" clip-path="url(#song-radar-clip)"/>
+        <image class="song-radar-fill" x="${left}" y="${top}" width="${right - left}" height="${bottom - top}" clip-path="url(#${clipId})"/>
         <polygon class="song-radar-area" points="${polygon(values.map((value) => value * unit))}"/>
         <g class="song-radar-axes">${spokes}${ticks}</g>
-        ${labels}`;
+        </g>
+        ${labels}</svg>${interactive ? '<span>Similar charts</span>' : ""}</${tag}>`;
 }
 
 function drawRadar(svg, values, resolution) {
@@ -152,7 +167,11 @@ function drawRadar(svg, values, resolution) {
     );
 }
 
-export function paintRadar(container, values, { restart = false } = {}) {
+export function paintRadar(
+    container,
+    values,
+    { restart = false, animate = true } = {},
+) {
     const previous = transitions.get(container);
     if (previous) {
         cancelAnimationFrame(previous.frame);
@@ -178,7 +197,7 @@ export function paintRadar(container, values, { restart = false } = {}) {
         .trim();
     const duration = parseFloat(timing) * (timing.endsWith("ms") ? 1 : 1000);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const canAnimate = duration > 0 && !reducedMotion.matches;
+    const canAnimate = animate && duration > 0 && !reducedMotion.matches;
     const state = {
         values: [...from],
         box: [...fromBox],

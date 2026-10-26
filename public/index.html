@@ -724,7 +724,8 @@
                         <div>
                             <h2 id="calculator-title">VF Calculator</h2>
                             <p class="panel-subtitle">
-                                Chart VolForce as a function of score or difficulty
+                                Chart VolForce as a function of score or
+                                difficulty
                             </p>
                         </div>
                     </div>
@@ -1317,6 +1318,33 @@
                 </button>
             </header>
             <div id="chart-details-body" aria-live="polite"></div>
+        </dialog>
+        <dialog
+            id="similar-charts"
+            class="panel appeal-helper similar-charts"
+            aria-labelledby="similar-charts-title"
+            aria-describedby="similar-charts-source similar-charts-description"
+            closedby="closerequest"
+        >
+            <header class="appeal-helper-heading">
+                <div>
+                    <h2 id="similar-charts-title">Similar charts</h2>
+                    <p id="similar-charts-description" class="panel-subtitle">
+                        Sorted by root mean square of the radar parts
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    id="similar-charts-close"
+                    aria-label="Close similar charts"
+                >
+                    ×
+                </button>
+            </header>
+            <div class="similar-charts-intro">
+                <div id="similar-charts-source" class="chart-viewer-song"></div>
+            </div>
+            <ol id="similar-charts-list" class="similar-charts-list"></ol>
         </dialog>
         <dialog
             class="panel appeal-helper"

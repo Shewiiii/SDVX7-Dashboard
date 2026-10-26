@@ -2143,10 +2143,25 @@ footer > :last-child {
     border-radius: 8px;
     background: none;
 }
-.appeal-card-trigger .appeal-card {
+.radar-trigger {
+    position: relative;
+    padding: 0;
+    border: 0;
+    border-radius: var(--control-radius);
+    background: none;
+    color: inherit;
+    pointer-events: none;
+}
+.radar-trigger .song-radar-grid > polygon,
+.radar-trigger .song-radar-area {
+    pointer-events: fill;
+}
+.appeal-card-trigger .appeal-card,
+.radar-trigger .song-radar-graphic {
     transition: filter 180ms;
 }
-.appeal-card-trigger > span {
+.appeal-card-trigger > span,
+.radar-trigger > span {
     position: absolute;
     inset: 0;
     display: grid;
@@ -2160,12 +2175,19 @@ footer > :last-child {
     transition: opacity 180ms;
     pointer-events: none;
 }
+.radar-trigger > span {
+    font-size: 12px;
+}
 .appeal-card-trigger:hover .appeal-card,
-.appeal-card-trigger:focus-visible .appeal-card {
+.appeal-card-trigger:focus-visible .appeal-card,
+.radar-trigger:hover .song-radar-graphic,
+.radar-trigger:focus-visible .song-radar-graphic {
     filter: brightness(0.35);
 }
 .appeal-card-trigger:hover > span,
-.appeal-card-trigger:focus-visible > span {
+.appeal-card-trigger:focus-visible > span,
+.radar-trigger:hover > span,
+.radar-trigger:focus-visible > span {
     opacity: 1;
 }
 .appeal-helper {
@@ -2209,6 +2231,119 @@ footer > :last-child {
 }
 .appeal-helper-heading button:hover {
     color: var(--accent);
+}
+.similar-charts-intro {
+    padding: 0 var(--panel-padding-inline) 20px;
+}
+#similar-charts-description {
+    margin: 4px 0 0;
+}
+.similar-charts-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--entry-section-bg);
+}
+.similar-charts-list > li + li {
+    border-top: 1px solid var(--row-separator);
+}
+.similar-chart {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    align-items: center;
+    gap: 24px;
+    padding: 22px var(--panel-padding-inline);
+    color: var(--ink);
+    transition: background 160ms;
+}
+.similar-chart:focus-visible {
+    outline-offset: -4px;
+}
+.similar-chart:focus-visible .similar-chart-title {
+    color: var(--accent);
+}
+@media (hover: hover) {
+    .similar-chart:hover {
+        background: var(--row-hover);
+    }
+    .similar-chart:hover .similar-chart-title {
+        color: var(--accent);
+    }
+}
+.similar-chart-main {
+    display: grid;
+    grid-template-columns: 136px minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+}
+.similar-chart-main .cover-tile {
+    width: 136px;
+    height: 136px;
+}
+.similar-chart-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.similar-chart-title {
+    font-size: 22px;
+    line-height: 1.4;
+    transition: color 160ms;
+}
+.similar-chart-artist {
+    color: var(--muted);
+    font-size: 14px;
+}
+.similar-chart-info .difficulty-badge {
+    font-size: 13px;
+}
+.similar-chart > .song-radar {
+    width: 260px;
+}
+.similar-chart .song-radar svg {
+    width: 100%;
+}
+.similar-charts-empty {
+    padding: 28px var(--panel-padding-inline);
+    color: var(--muted);
+    font-size: 13px;
+}
+@media (max-width: 700px) {
+    .similar-chart {
+        grid-template-columns: minmax(0, 1fr) 220px;
+        gap: 16px;
+        padding: 20px 18px;
+    }
+    .similar-chart-main {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+    .similar-chart-main .cover-tile {
+        width: 96px;
+        height: 96px;
+    }
+    .similar-chart-title {
+        font-size: 18px;
+    }
+    .similar-chart > .song-radar {
+        width: 220px;
+    }
+}
+@media (max-width: 480px) {
+    .similar-chart {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+    .similar-chart-main {
+        grid-template-columns: 96px minmax(0, 1fr);
+    }
+    .similar-chart > .song-radar {
+        width: min(260px, 100%);
+    }
 }
 .chart-details {
     width: min(580px, calc(100vw - 36px));

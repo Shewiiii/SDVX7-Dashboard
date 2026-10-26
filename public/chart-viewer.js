@@ -1085,6 +1085,7 @@ export function createChartViewer() {
                     if (event.key === "Enter") {
                         event.preventDefault();
                         commitSpeed();
+                        dialog.focus({ preventScroll: true });
                     }
                 },
                 { signal },
@@ -1244,7 +1245,7 @@ export function createChartViewer() {
                     const target = event.target;
                     if (
                         target.closest(
-                            ".chart-viewer-settings, textarea, select, [contenteditable]:not([contenteditable='false']), input:not(.details-audio-seek)",
+                            "textarea, select, [contenteditable]:not([contenteditable='false']), input:not([type='range'])",
                         )
                     )
                         return;
@@ -1267,12 +1268,13 @@ export function createChartViewer() {
                             body.querySelector(".details-audio-toggle").click();
                     } else {
                         const seek = body.querySelector(".details-audio-seek");
+                        const step = event.shiftKey ? 1 : 5;
                         seek.value = Math.max(
                             0,
                             Math.min(
                                 Number(seek.max),
                                 Number(seek.value) +
-                                    (event.key === "ArrowLeft" ? -5 : 5),
+                                    (event.key === "ArrowLeft" ? -step : step),
                             ),
                         );
                         seek.dispatchEvent(

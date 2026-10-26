@@ -2,6 +2,7 @@ import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
 import { DIFFS } from "./metrics.js";
 import { mountAudioPlayer } from "./audio-player.js";
 import { mountUnlockMethod } from "./unlock-method.js";
+import { isBossChart, loadBossCharts } from "./boss-charts.js";
 
 const LANES = [
     "VOL-L",
@@ -298,6 +299,7 @@ export function createChartDetails() {
         artist.className = "details-artist";
         artist.textContent = record.artist;
         const chart = record.chart;
+        const boss = isBossChart(record);
         const genres = SONG_GENRES.filter(
             ([flag]) => (record.genre || 0) & flag,
         ).map(([, title]) => title);
@@ -347,6 +349,11 @@ export function createChartDetails() {
                 "Max chain",
                 `${chart?.max_chain_estimated ? "≈ " : ""}${count(chart?.max_chain)}`,
             ],
+            [
+                "Boss chart",
+                boss === undefined ? "Loading..." : boss ? "Yes" : "No",
+                "A character appears in the background while playing this chart.",
+            ],
         ];
         const list = document.createElement("dl");
         list.className = "details-values";
@@ -357,6 +364,16 @@ export function createChartDetails() {
             dt.textContent = label;
             dd.textContent = value;
             if (description) dd.title = description;
+            if (label === "Boss chart" && boss === undefined) {
+                loadBossCharts()
+                    .then(() => {
+                        if (dd.isConnected)
+                            dd.textContent = isBossChart(record) ? "Yes" : "No";
+                    })
+                    .catch(() => {
+                        if (dd.isConnected) dd.textContent = "Unknown";
+                    });
+            }
             cell.append(dt, dd);
             list.append(cell);
         }

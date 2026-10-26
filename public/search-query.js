@@ -1,4 +1,5 @@
 import { SONG_GENRES } from "./song-metadata.js";
+import { isBossChart } from "./boss-charts.js";
 
 export function normalizeSearch(value) {
     return String(value)
@@ -78,25 +79,7 @@ const genreNames = new Set(
 );
 let index = new Map(),
     best = new Map(),
-    top = new Set(),
-    bossCharts;
-
-export function installBossSongs(data) {
-    if (
-        !data?.charts ||
-        typeof data.charts !== "object" ||
-        Array.isArray(data.charts) ||
-        !Object.entries(data.charts).every(
-            ([key, row]) =>
-                /^[1-9]\d{0,7}:(?:[0-5]|\*)$/.test(key) &&
-                row &&
-                typeof row === "object" &&
-                !Array.isArray(row),
-        )
-    )
-        throw Error("Invalid boss song data");
-    bossCharts = new Set(Object.keys(data.charts));
-}
+    top = new Set();
 
 const genreCache = new Map();
 export function genreText(genre, custom) {
@@ -329,12 +312,10 @@ export function matchesSearchFilters(song, d, search) {
         else if (field === "clear") actual = played?.clear || 0;
         else if (field === "top50") actual = Number(top.has(key));
         else if (field === "boss") {
-            if (!bossCharts) return false;
-            actual = Number(
-                bossCharts.has(key) || bossCharts.has(`${song.music_id}:*`),
-            );
-        }
-        else if (field === "grade") {
+            const boss = isBossChart({ music_id: song.music_id, ...d });
+            if (boss === undefined) return false;
+            actual = Number(boss);
+        } else if (field === "grade") {
             const score = played?.score || 0;
             actual = score
                 ? [

@@ -1,8 +1,5 @@
-import {
-    installBossSongs,
-    installSearchIndex,
-    parseSearch,
-} from "./search-query.js";
+import { installSearchIndex, parseSearch } from "./search-query.js";
+import { loadBossCharts } from "./boss-charts.js";
 
 export function dismissSearchKeyboard() {
     const input = document.activeElement;
@@ -31,22 +28,20 @@ export function initSearchTools(onReady) {
         searchMessage = text;
         updateStatus();
     }
-    async function ensureBossSongs() {
+    async function ensureBossCharts() {
         if (bossTask) return bossTask;
         if (bossLoaded || Date.now() < bossRetryAfter) return;
-        bossMessage = "Loading boss song data...";
+        bossMessage = "Loading boss chart data...";
         updateStatus();
-        bossTask = fetch("/game-data/boss_songs.json")
-            .then(async (response) => {
-                if (!response.ok) throw Error("Boss songs unavailable");
-                installBossSongs(await response.json());
+        bossTask = loadBossCharts()
+            .then(() => {
                 bossLoaded = true;
                 bossMessage = "";
                 onReady();
             })
             .catch(() => {
                 bossRetryAfter = Date.now() + 60000;
-                bossMessage = "Boss song data unavailable.";
+                bossMessage = "Boss chart data unavailable.";
             })
             .finally(() => {
                 bossTask = null;
@@ -124,7 +119,7 @@ export function initSearchTools(onReady) {
                 ),
             )
         )
-            tasks.push(ensureBossSongs());
+            tasks.push(ensureBossCharts());
         return Promise.all(tasks);
     }
     document.addEventListener("focusin", (event) => {

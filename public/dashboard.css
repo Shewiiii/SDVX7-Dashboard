@@ -1507,7 +1507,7 @@ footer > :last-child {
     flex-wrap: wrap;
     align-items: flex-start;
     gap: 12px;
-    margin: 0 var(--panel-padding-inline) 24px;
+    margin: 0 var(--panel-padding-inline) var(--song-section-gap);
 }
 .search-help-trigger.calculator-link {
     margin-left: auto;
@@ -1761,13 +1761,13 @@ footer > :last-child {
 .song-search-panel {
     --song-cover-size: 154px;
     --song-info-gap: 25px;
+    --song-section-gap: 15px;
 }
 .selected-song {
     display: flex;
     align-items: center;
     gap: var(--song-info-gap);
-    margin: 0 var(--panel-padding-inline) 25px;
-    padding-top: 20px;
+    margin: 0 var(--panel-padding-inline) var(--song-section-gap);
     border-top: 0;
 }
 .selected-song > .cover-tile.large {
@@ -3670,7 +3670,7 @@ footer > :last-child {
         max-width: calc(100% - 2 * var(--panel-padding-inline));
     }
     .selected-song {
-        margin: 0 18px 21px;
+        margin: 0 18px var(--song-section-gap);
         gap: 14px;
         align-items: center;
         flex-wrap: wrap;

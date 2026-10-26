@@ -1029,8 +1029,10 @@
                 </p>
                 <p>
                     You can combine the following keywords with a space to
-                    narrow the results. Optional means you can simply type the
-                    text directly:
+                    narrow the results.
+                    <br />
+                    Optional means you can simply type the text directly, and
+                    use ! before to reverse the filter. Otherwise, use !=.
                 </p>
                 <div class="table-scroll">
                     <table>
@@ -1047,7 +1049,8 @@
                                     <code>artist</code> (Optional)
                                 </td>
                                 <td>
-                                    <code>Houshou Marine</code>
+                                    <code>!"Houshou Marine"</code> (Exclude
+                                    songs from Houshou Marine)
                                 </td>
                             </tr>
                             <tr>
@@ -1066,7 +1069,7 @@
                                 </td>
                                 <td>
                                     <code>touhou</code>,
-                                    <code>custom</code>
+                                    <code>!custom</code>
                                 </td>
                             </tr>
                             <tr>
@@ -1113,7 +1116,7 @@
                             <tr>
                                 <td><code>year</code>, <code>version</code></td>
                                 <td>
-                                    <code>year=2026</code>,
+                                    <code>year!=2026</code>,
                                     <code>version=7</code>, Version 1 is BOOTH,
                                     2 is Infinite Infection etc.
                                 </td>

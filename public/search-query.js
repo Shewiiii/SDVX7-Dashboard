@@ -69,6 +69,11 @@ const textFields = new Set([
     "artist",
     "title",
 ]);
+const genreNames = new Set(
+    SONG_GENRES.flatMap(([, label, aliases = []]) =>
+        [label, ...aliases].map(normalizeSearch),
+    ),
+);
 let index = new Map(),
     best = new Map(),
     top = new Set();
@@ -150,20 +155,48 @@ export function parseSearch(query) {
     const words = query.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
     const filters = [],
         free = [],
+        excludedTokens = [],
         errors = [];
     let difficulty = -1;
     for (const word of words) {
-        const filter = /^top50$/i.test(word) ? `${word}=true` : word;
+        const boolean = word.match(/^(!?)(custom|top50)$/i);
+        const filter = boolean
+            ? `${boolean[2]}=${boolean[1] ? "false" : "true"}`
+            : word;
         const match = filter.match(
             /^([a-z_][a-z_0-9-]*)(<=|>=|!=|=|<|>)(.*)$/i,
         );
         if (!match) {
-            free.push(word.replace(/^"|"$/g, ""));
+            if (word.startsWith("!") && word.length > 1) {
+                const value = normalizeSearch(
+                    word.slice(1).replace(/^"|"$/g, ""),
+                );
+                if (!value) errors.push(`Invalid filter: ${word}`);
+                else if (genreNames.has(value))
+                    filters.push({
+                        field: "genre",
+                        operator: "!=",
+                        expected: value,
+                    });
+                else excludedTokens.push(value);
+            } else free.push(word.replace(/^"|"$/g, ""));
             continue;
         }
-        const [, rawField, operator, raw] = match,
+        const [, rawField, rawOperator, raw] = match,
             field = aliases[rawField.toLowerCase().replace(/-/g, "")];
-        const value = raw.replace(/^"|"$/g, "");
+        const optionalField =
+            textFields.has(field) || field === "custom" || field === "top50";
+        let operator = rawOperator,
+            value = raw;
+        if (value.startsWith("!")) {
+            if (!optionalField || !["=", "!="].includes(operator)) {
+                errors.push(`Invalid value: ${word}`);
+                continue;
+            }
+            operator = operator === "=" ? "!=" : "=";
+            value = value.slice(1);
+        }
+        value = value.replace(/^"|"$/g, "");
         if (!field || !value) {
             errors.push(`Invalid filter: ${word}`);
             continue;
@@ -222,7 +255,14 @@ export function parseSearch(query) {
         free.pop();
     }
     const tokens = free.map(normalizeSearch).filter(Boolean);
-    return { difficulty, tokens, term: tokens.join(""), filters, errors };
+    return {
+        difficulty,
+        tokens,
+        term: tokens.join(""),
+        excludedTokens,
+        filters,
+        errors,
+    };
 }
 export function extraSearchText(song, difficulty) {
     const record = index.get(`${song.music_id}:${difficulty.diff_idx}`);
@@ -242,6 +282,21 @@ export function songVersion(song) {
 
 export function matchesSearchFilters(song, d, search) {
     if (search.errors.length) return false;
+    if (search.excludedTokens?.length) {
+        const text = [
+            song.title,
+            song.artist,
+            song.title_ascii || "",
+            ...(song.forms || []).flat(),
+            ...extraSearchText(song, d),
+        ].map(normalizeSearch);
+        if (
+            search.excludedTokens.some((token) =>
+                text.some((value) => value.includes(token)),
+            )
+        )
+            return false;
+    }
     const key = `${song.music_id}:${d.diff_idx}`,
         record = index.get(key),
         played = best.get(key);

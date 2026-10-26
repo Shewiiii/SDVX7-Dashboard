@@ -153,7 +153,10 @@ export function parseSearch(query) {
         errors = [];
     let difficulty = -1;
     for (const word of words) {
-        const match = word.match(/^([a-z_][a-z_0-9-]*)(<=|>=|!=|=|<|>)(.*)$/i);
+        const filter = /^top50$/i.test(word) ? `${word}=true` : word;
+        const match = filter.match(
+            /^([a-z_][a-z_0-9-]*)(<=|>=|!=|=|<|>)(.*)$/i,
+        );
         if (!match) {
             free.push(word.replace(/^"|"$/g, ""));
             continue;

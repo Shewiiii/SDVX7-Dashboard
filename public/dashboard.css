@@ -1759,7 +1759,7 @@ footer > :last-child {
     font-size: 12px;
 }
 .song-search-panel {
-    --song-cover-size: 154px;
+    --song-cover-size: 175px;
     --song-info-gap: 25px;
     --song-section-gap: 15px;
 }

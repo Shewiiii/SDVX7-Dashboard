@@ -1205,12 +1205,36 @@
                         <span aria-hidden="true">⌕</span
                         ><input
                             id="library-query"
-                            type="search"
+                            type="text"
+                            role="searchbox"
                             inputmode="search"
+                            enterkeyhint="search"
                             placeholder="Type anything..."
                             aria-label="Search library"
                             autocomplete="off"
                         />
+                        <button
+                            type="button"
+                            class="search-clear"
+                            data-clear-input="library-query"
+                            aria-label="Clear library search"
+                            hidden
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 16 16"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="m4 4 8 8m0-8-8 8"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                />
+                            </svg>
+                        </button>
                     </div>
                     <div class="select-wrap">
                         <select id="library-group" aria-label="Group songs by">

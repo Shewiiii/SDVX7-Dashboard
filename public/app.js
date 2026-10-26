@@ -1932,9 +1932,12 @@ $("song-search-records").addEventListener("click", (event) => {
 });
 
 document.querySelectorAll("[data-clear-input]").forEach((button) => {
+    const input = $(button.dataset.clearInput);
+    input.addEventListener("input", () => {
+        button.hidden = !input.value;
+    });
     button.addEventListener("pointerdown", (event) => event.preventDefault());
     button.addEventListener("click", () => {
-        const input = $(button.dataset.clearInput);
         input.value = "";
         input.focus({ preventScroll: true });
         input.dispatchEvent(new Event("input", { bubbles: true }));

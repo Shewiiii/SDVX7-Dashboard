@@ -49,7 +49,8 @@ export function libraryEntries(
         });
     }
     const entries = [];
-    for (const song of searchSongs(catalog, query, data.plays, Infinity)) {
+    const searchQuery = mode === "boss" ? `${query} boss=true` : query;
+    for (const song of searchSongs(catalog, searchQuery, data.plays, Infinity)) {
         if (mode === "unlock") {
             const grouped = new Map();
             for (const difficulty of song.difficulties) {
@@ -93,7 +94,7 @@ export function libraryEntries(
             }
         } else {
             const groups =
-                mode === "all"
+                mode === "all" || mode === "boss"
                     ? ["All"]
                     : mode === "version"
                       ? [SONG_VERSIONS[songVersion(song)] || "Unknown version"]
@@ -304,7 +305,7 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
             content.className = "library-folder-content";
             let folder,
                 heading = content;
-            if (mode.value === "all") {
+            if (["all", "boss"].includes(mode.value)) {
                 results.append(content);
             } else {
                 folder = document.createElement("details");

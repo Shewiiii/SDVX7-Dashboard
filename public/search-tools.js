@@ -1,4 +1,8 @@
-import { installSearchIndex, parseSearch } from "./search-query.js";
+import {
+    installBossSongs,
+    installSearchIndex,
+    parseSearch,
+} from "./search-query.js";
 
 export function dismissSearchKeyboard() {
     const input = document.activeElement;
@@ -11,13 +15,46 @@ export function initSearchTools(onReady) {
         installed = false,
         checkedAt = 0,
         retryAfter = 0,
-        cached;
+        cached,
+        searchMessage = "",
+        bossMessage = "",
+        bossTask,
+        bossLoaded = false,
+        bossRetryAfter = 0;
     const status = document.getElementById("search-metadata-status");
-    function message(text) {
+    function updateStatus() {
+        const text = [searchMessage, bossMessage].filter(Boolean).join(" ");
         status.textContent = text;
         status.hidden = !text;
     }
-    async function ensure() {
+    function message(text) {
+        searchMessage = text;
+        updateStatus();
+    }
+    async function ensureBossSongs() {
+        if (bossTask) return bossTask;
+        if (bossLoaded || Date.now() < bossRetryAfter) return;
+        bossMessage = "Loading boss song data...";
+        updateStatus();
+        bossTask = fetch("/game-data/boss_songs.json")
+            .then(async (response) => {
+                if (!response.ok) throw Error("Boss songs unavailable");
+                installBossSongs(await response.json());
+                bossLoaded = true;
+                bossMessage = "";
+                onReady();
+            })
+            .catch(() => {
+                bossRetryAfter = Date.now() + 60000;
+                bossMessage = "Boss song data unavailable.";
+            })
+            .finally(() => {
+                bossTask = null;
+                updateStatus();
+            });
+        return bossTask;
+    }
+    async function ensureSearchMetadata() {
         if (task) return task;
         if (Date.now() < retryAfter) return;
         if (installed && Date.now() - checkedAt < 300000) return;
@@ -77,6 +114,19 @@ export function initSearchTools(onReady) {
         return task;
     }
     const selector = "#song-query, #search, #library-query";
+    function ensure() {
+        const tasks = [ensureSearchMetadata()];
+        if (
+            document.getElementById("library-group").value === "boss" ||
+            [...document.querySelectorAll(selector)].some((input) =>
+                parseSearch(input.value).filters.some(
+                    ({ field }) => field === "boss",
+                ),
+            )
+        )
+            tasks.push(ensureBossSongs());
+        return Promise.all(tasks);
+    }
     document.addEventListener("focusin", (event) => {
         if (event.target.matches(selector)) void ensure();
     });
@@ -87,16 +137,20 @@ export function initSearchTools(onReady) {
         event.target.setAttribute("aria-invalid", String(!!error));
         event.target.title = error || "";
     });
-    const ensureVersionMetadata = () => {
-        if (document.getElementById("library-group").value === "version")
+    const ensureLibraryMetadata = () => {
+        if (
+            ["version", "boss"].includes(
+                document.getElementById("library-group").value,
+            )
+        )
             void ensure();
     };
     document
         .getElementById("library-group")
-        .addEventListener("change", ensureVersionMetadata);
+        .addEventListener("change", ensureLibraryMetadata);
     document
         .getElementById("open-library")
-        .addEventListener("click", ensureVersionMetadata);
+        .addEventListener("click", ensureLibraryMetadata);
 
     const dialog = document.getElementById("search-help"),
         closeButton = document.getElementById("search-help-close");

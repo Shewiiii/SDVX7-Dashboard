@@ -40,6 +40,7 @@ const aliases = {
     grade: "grade",
     clear: "clear",
     top50: "top50",
+    boss: "boss",
     level: "level",
     notes: "notes",
     peak: "peak",
@@ -69,6 +70,7 @@ const textFields = new Set([
     "artist",
     "title",
 ]);
+const booleanFields = new Set(["custom", "top50", "boss"]);
 const genreNames = new Set(
     SONG_GENRES.flatMap(([, label, aliases = []]) =>
         [label, ...aliases].map(normalizeSearch),
@@ -76,7 +78,26 @@ const genreNames = new Set(
 );
 let index = new Map(),
     best = new Map(),
-    top = new Set();
+    top = new Set(),
+    bossCharts;
+
+export function installBossSongs(data) {
+    if (
+        !data?.charts ||
+        typeof data.charts !== "object" ||
+        Array.isArray(data.charts) ||
+        !Object.entries(data.charts).every(
+            ([key, row]) =>
+                /^[1-9]\d{0,7}:(?:[0-5]|\*)$/.test(key) &&
+                row &&
+                typeof row === "object" &&
+                !Array.isArray(row),
+        )
+    )
+        throw Error("Invalid boss song data");
+    bossCharts = new Set(Object.keys(data.charts));
+}
+
 const genreCache = new Map();
 export function genreText(genre, custom) {
     const key = `${genre}:${custom}`;
@@ -185,7 +206,7 @@ export function parseSearch(query) {
         const [, rawField, rawOperator, raw] = match,
             field = aliases[rawField.toLowerCase().replace(/-/g, "")];
         const optionalField =
-            textFields.has(field) || field === "custom" || field === "top50";
+            textFields.has(field) || ["custom", "top50"].includes(field);
         let operator = rawOperator,
             value = raw;
         if (value.startsWith("!")) {
@@ -221,7 +242,7 @@ export function parseSearch(query) {
                     : grades.indexOf(value.toUpperCase());
         else if (field === "clear")
             expected = clears.indexOf(normalizeSearch(value));
-        else if (field === "custom" || field === "top50")
+        else if (booleanFields.has(field))
             expected = /^(true|yes|1)$/i.test(value)
                 ? 1
                 : /^(false|no|0)$/i.test(value)
@@ -307,6 +328,12 @@ export function matchesSearchFilters(song, d, search) {
         else if (field === "score") actual = played?.score || 0;
         else if (field === "clear") actual = played?.clear || 0;
         else if (field === "top50") actual = Number(top.has(key));
+        else if (field === "boss") {
+            if (!bossCharts) return false;
+            actual = Number(
+                bossCharts.has(key) || bossCharts.has(`${song.music_id}:*`),
+            );
+        }
         else if (field === "grade") {
             const score = played?.score || 0;
             actual = score

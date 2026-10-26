@@ -28,7 +28,7 @@
   ],
   "functions": {
     "api/unlocks.js": {
-      "includeFiles": "public/unlocks.jsonl"
+      "includeFiles": "public/game-data/unlocks.jsonl"
     },
     "api/events.js": {
       "maxDuration": 60,

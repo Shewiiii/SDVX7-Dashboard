@@ -35,8 +35,6 @@ const aliases = {
     bpmmax: "bpm_max",
     diff: "diff_idx",
     difficulty: "diff_idx",
-    category: "category",
-    categories: "category",
     duration: "length",
     score: "score",
     grade: "grade",
@@ -67,7 +65,7 @@ const clears = [
 const textFields = new Set([
     "effector",
     "illustrator",
-    "category",
+    "genre",
     "artist",
     "title",
 ]);
@@ -229,6 +227,16 @@ export function extraSearchText(song, difficulty) {
         ? record._text
         : [normalizeSearch(genreText(song.genre, song.is_custom))];
 }
+
+export function songVersion(song) {
+    for (const difficulty of song.difficulties) {
+        const key = `${song.music_id}:${difficulty.diff_idx}`;
+        const version = index.get(key)?.version;
+        if (Number.isInteger(version)) return version;
+    }
+    return song.version;
+}
+
 export function matchesSearchFilters(song, d, search) {
     if (search.errors.length) return false;
     const key = `${song.music_id}:${d.diff_idx}`,
@@ -251,7 +259,7 @@ export function matchesSearchFilters(song, d, search) {
                 : -1;
         } else if (field === "artist" || field === "title")
             actual = normalizeSearch(song[field]);
-        else if (field === "category")
+        else if (field === "genre")
             actual = normalizeSearch(
                 genreText(
                     record?.genre ?? song.genre,

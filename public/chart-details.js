@@ -1,18 +1,8 @@
-import { SONG_GENRES } from "./song-metadata.js";
+import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
 import { DIFFS } from "./metrics.js";
 import { mountAudioPlayer } from "./audio-player.js";
 import { mountUnlockMethod } from "./unlock-method.js";
 
-const VERSIONS = [
-    "—",
-    "BOOTH",
-    "INFINITE INFECTION",
-    "GRAVITY WARS",
-    "HEAVENLY HAVEN",
-    "VIVID WAVE",
-    "EXCEED GEAR",
-    "∇",
-];
 const LANES = [
     "VOL-L",
     "FX-L",
@@ -324,7 +314,7 @@ export function createChartDetails() {
             ["Chart length", time(chart?.duration)],
             ["Effector", record.effector || "—"],
             ["Illustrator", record.illustrator || "—"],
-            ["Introduced in", VERSIONS[record.version] || "—"],
+            ["Introduced in", SONG_VERSIONS[record.version] || "—"],
             [
                 "Distribution date",
                 date && !Number.isNaN(date.getTime())
@@ -336,10 +326,8 @@ export function createChartDetails() {
                     : "—",
             ],
             [
-                "Categories",
-                record.is_custom
-                    ? "Custom Map"
-                    : genres.join(" · ") || "Other",
+                "Genre",
+                record.is_custom ? "Custom Map" : genres.join(" · ") || "Other",
             ],
             ["Maximum EX score", count(record.max_exscore)],
             [

@@ -87,6 +87,17 @@ export function initSearchTools(onReady) {
         event.target.setAttribute("aria-invalid", String(!!error));
         event.target.title = error || "";
     });
+    const ensureVersionMetadata = () => {
+        if (document.getElementById("library-group").value === "version")
+            void ensure();
+    };
+    document
+        .getElementById("library-group")
+        .addEventListener("change", ensureVersionMetadata);
+    document
+        .getElementById("open-library")
+        .addEventListener("click", ensureVersionMetadata);
+
     const dialog = document.getElementById("search-help"),
         closeButton = document.getElementById("search-help-close");
     let trigger,

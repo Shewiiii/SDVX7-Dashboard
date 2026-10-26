@@ -1,19 +1,24 @@
 import { dismissSearchKeyboard } from "./search-tools.js";
-import { parseSearch } from "./search-query.js";
+import { parseSearch, songVersion } from "./search-query.js";
 import {
     CLEARS,
     SCORE_GRADES,
     grade,
-    topCharts,
     chartKey,
     searchSongs,
 } from "./metrics.js";
-import { SONG_GENRES } from "./song-metadata.js";
+import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
 import { UNLOCK_METHODS, unlockFolder } from "./unlock-methods.js";
 
 // Song folders retain search's selection. Chart folders open the exact difficulty.
 export const chartFolderMode = (mode) =>
-    ["level", "clear", "grade", "top"].includes(mode);
+    ["level", "clear", "grade"].includes(mode);
+
+const versionNames = Object.values(SONG_VERSIONS);
+const versionOrder = (name) => {
+    const position = versionNames.indexOf(name);
+    return position < 0 ? versionNames.length : position;
+};
 
 export function autoOpenLibraryFolders(query, entries) {
     const parsed = parseSearch(query);
@@ -43,7 +48,6 @@ export function libraryEntries(
             clear_type: Math.max(previous.clear_type, chart.clear_type || 0),
         });
     }
-    const top = new Set(topCharts(data.state).map(chartKey));
     const entries = [];
     for (const song of searchSongs(catalog, query, data.plays, Infinity)) {
         if (mode === "unlock") {
@@ -79,13 +83,9 @@ export function libraryEntries(
                         ? `Level ${Math.floor(d.level)}`
                         : mode === "clear"
                           ? CLEARS[record?.clear_type || 0]
-                          : mode === "top"
-                            ? top.has(key)
-                                ? "In Top 50"
-                                : "Outside Top 50"
-                            : record?.score
-                              ? grade(record.score)
-                              : "Unplayed";
+                          : record?.score
+                            ? grade(record.score)
+                            : "Unplayed";
                 entries.push({
                     group,
                     song: { ...song, ...d, difficulties: [d] },
@@ -95,28 +95,32 @@ export function libraryEntries(
             const groups =
                 mode === "all"
                     ? ["All"]
-                    : mode === "year"
-                      ? [
-                            song.release_year
-                                ? String(song.release_year)
-                                : "Unknown year",
-                        ]
-                      : song.is_custom
-                        ? ["Custom Map"]
-                        : SONG_GENRES.filter(
-                              ([bit]) => (song.genre || 0) & bit,
-                          ).map(([, label]) => label);
+                    : mode === "version"
+                      ? [SONG_VERSIONS[songVersion(song)] || "Unknown version"]
+                      : mode === "year"
+                        ? [
+                              song.release_year
+                                  ? String(song.release_year)
+                                  : "Unknown year",
+                          ]
+                        : song.is_custom
+                          ? ["Custom Map"]
+                          : SONG_GENRES.filter(
+                                ([bit]) => (song.genre || 0) & bit,
+                            ).map(([, label]) => label);
             for (const group of new Set(groups.length ? groups : ["Other"]))
                 entries.push({ group, song });
         }
     }
     return entries.sort(
         (a, b) =>
-            (mode === "year"
-                ? b.group.localeCompare(a.group, undefined, { numeric: true })
-                : a.group.localeCompare(b.group, undefined, {
-                      numeric: true,
-                  })) ||
+            (mode === "version"
+                ? versionOrder(a.group) - versionOrder(b.group)
+                : mode === "year"
+                  ? b.group.localeCompare(a.group, undefined, { numeric: true })
+                  : a.group.localeCompare(b.group, undefined, {
+                        numeric: true,
+                    })) ||
             a.song.title.localeCompare(b.song.title) ||
             a.song.music_id - b.song.music_id ||
             a.song.diff_idx - b.song.diff_idx,
@@ -223,21 +227,22 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         if (mode.value === "unlock")
             for (const label of [...Object.values(UNLOCK_METHODS), "Custom Map"])
                 names.add(label);
-        if (mode.value === "top")
-            for (const label of ["In Top 50", "Outside Top 50"])
-                names.add(label);
+        if (mode.value === "version")
+            for (const label of versionNames) names.add(label);
         const gradeOrder = [
             ...SCORE_GRADES.map(([, label]) => label),
             "Unplayed",
         ];
         return [...names].sort((a, b) =>
-            mode.value === "year"
-                ? b.localeCompare(a, undefined, { numeric: true })
-                : mode.value === "grade"
-                  ? gradeOrder.indexOf(a) - gradeOrder.indexOf(b)
-                  : mode.value === "clear"
-                    ? CLEARS.indexOf(a) - CLEARS.indexOf(b)
-                    : a.localeCompare(b, undefined, { numeric: true }),
+            mode.value === "version"
+                ? versionOrder(a) - versionOrder(b)
+                : mode.value === "year"
+                  ? b.localeCompare(a, undefined, { numeric: true })
+                  : mode.value === "grade"
+                    ? gradeOrder.indexOf(a) - gradeOrder.indexOf(b)
+                    : mode.value === "clear"
+                      ? CLEARS.indexOf(a) - CLEARS.indexOf(b)
+                      : a.localeCompare(b, undefined, { numeric: true }),
         );
     }
     function render(rebuild = false) {

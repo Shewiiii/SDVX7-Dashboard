@@ -1478,7 +1478,8 @@ footer > :last-child {
 .play-row + .play-row,
 .song-option + .song-option,
 .records-panel tbody tr + tr,
-.song-search-panel tbody tr + tr {
+.song-search-panel tbody tr + tr,
+.search-help-body tbody tr + tr {
     border-top: 1px solid var(--row-separator);
 }
 .chart-row .open-chart:hover {
@@ -1551,6 +1552,9 @@ footer > :last-child {
 .search-help-body code {
     color: var(--accent);
     overflow-wrap: anywhere;
+}
+.search-help-body .table-scroll {
+    background: var(--entry-section-bg);
 }
 .search-help-body th,
 .search-help-body td {
@@ -1986,10 +1990,11 @@ footer > :last-child {
     table-layout: fixed;
 }
 #song-search-results {
-    background: var(--score-section-bg);
+    background: var(--entry-section-bg);
     border-radius: 0 0 var(--panel-radius) var(--panel-radius);
 }
-#song-search-results thead {
+#song-search-results thead,
+.search-help-body thead {
     background: var(--score-header-bg);
 }
 .song-rank-column {

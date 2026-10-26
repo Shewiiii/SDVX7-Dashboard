@@ -114,7 +114,7 @@
     --entry-gap: 11px;
     --entry-padding-block: 13px;
     --entry-details-gap: 8px;
-    --score-section-bg: #10101563;
+    --entry-section-bg: #10101563;
     --score-header-bg: #10101544; /*#ffffff06*/
     --row-separator: #ffffff09;
     --row-hover: color-mix(

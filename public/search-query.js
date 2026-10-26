@@ -43,6 +43,7 @@ const aliases = {
     clear: "clear",
     top50: "top50",
     boss: "boss",
+    id: "id",
     level: "level",
     notes: "notes",
     peak: "peak",
@@ -208,6 +209,26 @@ export function parseSearch(query) {
             errors.push(`Invalid filter: ${word}`);
             continue;
         }
+        if (field === "id") {
+            if (!["=", "!="].includes(operator)) {
+                errors.push("Use = or != with id");
+                continue;
+            }
+            const id = value.match(/^([1-9]\d{0,7})(?::([0-5]|\*))?$/);
+            if (!id || Number(id[1]) > 10000000) {
+                errors.push(`Invalid value: ${word}`);
+                continue;
+            }
+            filters.push({
+                field,
+                operator,
+                expected: {
+                    music_id: Number(id[1]),
+                    diff_idx: !id[2] || id[2] === "*" ? null : Number(id[2]),
+                },
+            });
+            continue;
+        }
         let expected;
         if (textFields.has(field)) {
             if (!["=", "!="].includes(operator)) {
@@ -308,6 +329,13 @@ export function matchesSearchFilters(song, d, search) {
         record = index.get(key),
         played = best.get(key);
     for (const { field, operator, expected } of search.filters) {
+        if (field === "id") {
+            const matches =
+                song.music_id === expected.music_id &&
+                (expected.diff_idx === null || d.diff_idx === expected.diff_idx);
+            if (operator === "!=" ? matches : !matches) return false;
+            continue;
+        }
         let actual;
         if (field === "level") actual = d.level;
         else if (field === "diff_idx") actual = d.diff_idx;

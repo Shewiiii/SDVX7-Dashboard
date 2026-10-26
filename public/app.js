@@ -1306,10 +1306,7 @@ function scrollToCard({ keyboardAware = false } = {}) {
         const bounds = card.getBoundingClientRect();
         window.scrollTo({
             left: 0,
-            top: Math.max(
-                0,
-                bounds.top + scrollY - viewport.offsetTop - 16,
-            ),
+            top: Math.max(0, bounds.top + scrollY - viewport.offsetTop - 16),
             behavior: "smooth",
         });
         rememberScroll();
@@ -1534,8 +1531,7 @@ function renderTable({ animate = true } = {}) {
     if (!data) return;
     animate = revealOnce(view, animate);
     if (!animate) {
-        for (const id of ["records", "page-info", "result-count"])
-            motion.stop($(id));
+        for (const id of ["records", "page-info"]) motion.stop($(id));
     }
     const { records, totalPlays, playCounts } = recordList(data, catalog, {
         top,
@@ -1550,12 +1546,6 @@ function renderTable({ animate = true } = {}) {
               .map((record) => recordRow(record, { top, grouped, playCounts }))
               .join("")
         : `<tr><td colspan="6">${escape(parseSearch($("search").value).errors[0] || "No matching charts.")}</td></tr>`;
-    setText(
-        "result-count",
-        grouped
-            ? `${number(totalPlays)} ${totalPlays === 1 ? "play" : "plays"} across ${number(records.length)} ${records.length === 1 ? "chart" : "charts"}`
-            : `${number(records.length)} ${top ? "charts" : "plays"}`,
-    );
     setText("records-page-number", page + 1);
     setText("records-total-pages", pages);
     $("records-page-number").disabled = false;
@@ -1573,7 +1563,6 @@ function renderTable({ animate = true } = {}) {
     if (animate) {
         motion.data($("records"), ".chart-row, tr:not(.chart-row)");
         motion.data($("page-info"));
-        motion.data($("result-count"));
     }
 }
 

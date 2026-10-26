@@ -1770,7 +1770,9 @@ footer > :last-child {
     --song-section-gap: 15px;
 }
 .selected-song {
-    display: flex;
+    display: grid;
+    grid-template-columns:
+        var(--song-cover-size) minmax(0, 1fr) minmax(280px, 33.333%);
     align-items: center;
     gap: var(--song-info-gap);
     margin: 0 var(--panel-padding-inline) var(--song-section-gap);
@@ -1845,6 +1847,7 @@ footer > :last-child {
     width: 280px;
     max-width: 100%;
     margin: 0;
+    justify-self: center;
 }
 .song-radar svg {
     display: block;
@@ -1904,6 +1907,7 @@ footer > :last-child {
 }
 @media (max-width: 1000px) {
     .selected-song {
+        display: flex;
         flex-wrap: wrap;
     }
     .selected-song-info {

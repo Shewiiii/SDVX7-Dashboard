@@ -29,6 +29,7 @@ const fields = [
     "fx_holds",
     "laser_sections",
     "tempo_changes",
+    "gimmicks",
 ];
 const aliases = {
     bpm: "bpm_max",
@@ -71,7 +72,7 @@ const textFields = new Set([
     "artist",
     "title",
 ]);
-const booleanFields = new Set(["custom", "top50", "boss"]);
+const booleanFields = new Set(["custom", "top50", "boss", "gimmicks"]);
 const genreNames = new Set(
     SONG_GENRES.flatMap(([, label, aliases = []]) =>
         [label, ...aliases].map(normalizeSearch),
@@ -99,25 +100,27 @@ export function genreText(genre, custom) {
 }
 export function installSearchIndex(packed) {
     if (
-        packed?.schema !== 1 ||
+        ![1, 2].includes(packed?.schema) ||
         !Array.isArray(packed.rows) ||
         packed.rows.length > 48000 ||
         !Array.isArray(packed.strings)
     )
         throw Error("Invalid search index");
+    const columns = packed.schema === 1 ? fields.slice(0, -1) : fields;
     const next = new Map();
     for (const row of packed.rows) {
         if (
             !Array.isArray(row) ||
-            row.length !== fields.length ||
+            row.length !== columns.length ||
             !Number.isInteger(row[0]) ||
             !Number.isInteger(row[1]) ||
             row[1] < 0 ||
-            row[1] > 5
+            row[1] > 5 ||
+            (packed.schema === 2 && ![null, 0, 1].includes(row.at(-1)))
         )
             throw Error("Invalid search record");
         const record = Object.fromEntries(
-            fields.map((field, i) => [field, row[i]]),
+            columns.map((field, i) => [field, row[i]]),
         );
         for (const field of ["effector", "illustrator"]) {
             const value = packed.strings[record[field]];

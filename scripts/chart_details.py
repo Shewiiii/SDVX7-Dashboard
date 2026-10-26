@@ -427,6 +427,8 @@ def search_preview() -> None:
                 "length": chart.get("duration"),
                 "counts": chart.get("counts"),
                 "tempo_changes": chart.get("bpm_change_count"),
+                "visual_gimmicks": chart.get("visual_gimmicks"),
+                "visual_gimmicks_version": chart.get("visual_gimmicks_version"),
             }
         )
     print(json.dumps(records, ensure_ascii=True, separators=(",", ":")))

@@ -7,7 +7,7 @@ export function dismissSearchKeyboard() {
 }
 
 export function initSearchTools(onReady) {
-    const key = "song-search-index-v1";
+    const key = "song-search-index-v2";
     let task,
         installed = false,
         checkedAt = 0,
@@ -74,7 +74,7 @@ export function initSearchTools(onReady) {
         );
         task = (async () => {
             try {
-                const response = await fetch("/api/search");
+                const response = await fetch("/api/search?schema=2");
                 if (!response.ok) throw Error("Search unavailable");
                 const data = await response.json();
                 installSearchIndex(data);

@@ -10,11 +10,13 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from scripts.chart_gimmicks import VISUAL_GIMMICKS_VERSION, has_visual_gimmicks
+
 if TYPE_CHECKING:
     from scripts.music import MusicCatalog
 
 BINS = 64
-SCHEMA = 5
+SCHEMA = 7
 logger = logging.getLogger(__name__)
 
 
@@ -110,6 +112,7 @@ def parse_chart(
     density = [0] * BINS
     laser_density = [0] * BINS
     buttons, lasers = [], []
+    play_start, play_end = duration, 0.0
     if full:
         from scripts.chart_effects import schedule
 
@@ -132,8 +135,10 @@ def parse_chart(
             if len(row) < 3 or not positions.match(row[0]):
                 continue
             time = seconds(beat(row[0]))
+            play_start = min(play_start, time)
             index = bin_at(time)
             if lane in (0, 7):
+                play_end = max(play_end, time)
                 flag = int(row[2])
                 position = float(row[1]) / laser_scale
                 if not math.isfinite(position):
@@ -189,6 +194,7 @@ def parse_chart(
                 counts[f"{kind}_{'holds' if hold_ticks else 'taps'}"] += 1
                 density[index] += 1
                 end = seconds(beat(row[0]) + hold_ticks / resolution)
+                play_end = max(play_end, end if hold_ticks else time + 1e-6)
                 if full:
                     buttons.append([round(time, 6), round(end, 6), lane])
                 for j in range(index, bin_at(end) + 1):
@@ -245,6 +251,15 @@ def parse_chart(
         "bpm_change_count": max(0, len(tempos) - 1),
         "max_chain": chain,
         "max_chain_estimated": estimated,
+        "visual_gimmicks": has_visual_gimmicks(
+            sections,
+            beat=beat,
+            seconds=seconds,
+            resolution=resolution,
+            start=play_start,
+            end=play_end,
+        ),
+        "visual_gimmicks_version": VISUAL_GIMMICKS_VERSION,
     }
 
 

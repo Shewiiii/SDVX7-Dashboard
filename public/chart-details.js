@@ -265,7 +265,7 @@ export function createChartDetails() {
     const body = document.getElementById("chart-details-body");
     const closeButton = document.getElementById("chart-details-close");
     const cache = new Map();
-    const cacheKey = "chart-details-cache-v4";
+    const cacheKey = "chart-details-cache-v6";
     try {
         for (const [key, entry] of JSON.parse(
             localStorage.getItem(cacheKey) || "[]",
@@ -354,6 +354,16 @@ export function createChartDetails() {
                 boss === undefined ? "Loading..." : boss ? "Yes" : "No",
                 "A character appears in the background while playing this chart.",
             ],
+            [
+                "Visual gimmicks",
+                chart?.visual_gimmicks_version === 2 &&
+                typeof chart.visual_gimmicks === "boolean"
+                    ? chart.visual_gimmicks
+                        ? "Yes"
+                        : "No"
+                    : "—",
+                "Scripted movement, rotation, disappearance, or splitting of the lane surface or stage during play.",
+            ],
         ];
         const list = document.createElement("dl");
         list.className = "details-values";
@@ -422,10 +432,12 @@ export function createChartDetails() {
                     (saved.record.chart.laser_density_version !== 2 ||
                         !Number.isInteger(saved.record.chart.max_chain) ||
                         typeof saved.record.chart.max_chain_estimated !==
-                            "boolean"))
+                            "boolean" ||
+                        typeof saved.record.chart.visual_gimmicks !== "boolean" ||
+                        saved.record.chart.visual_gimmicks_version !== 2))
             ) {
                 const response = await fetch(
-                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=4`,
+                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=6`,
                     { signal: request.signal },
                 );
                 if (!response.ok)

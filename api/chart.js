@@ -26,7 +26,9 @@ export default async function handler(req, res) {
             !rows[0].record.chart ||
             (rows[0].record.chart.laser_density_version === 2 &&
                 Number.isInteger(rows[0].record.chart.max_chain) &&
-                typeof rows[0].record.chart.max_chain_estimated === "boolean")
+                typeof rows[0].record.chart.max_chain_estimated === "boolean" &&
+                typeof rows[0].record.chart.visual_gimmicks === "boolean" &&
+                rows[0].record.chart.visual_gimmicks_version === 2)
         )
             res.setHeader(
                 "Cache-Control",

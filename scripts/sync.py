@@ -66,7 +66,7 @@ def search_forms(text: str, *, reading: bool = False) -> list[str]:
 
 
 PLAY_SCHEMA = 5
-DETAILS_SCHEMA = 6
+DETAILS_SCHEMA = 8
 CLEARS = {1: 50, 2: 100, 3: 102, 4: 106, 5: 110, 6: 104}
 GRADES = (
     (9900000, 105),
@@ -701,6 +701,16 @@ def upload(
                     or "max_chain_estimated" in (d.get("chart") or {})
                     for d in payload["details"]
                 ):
+                    required_schema = 6
+                if any(
+                    "visual_gimmicks" in (d.get("chart") or {})
+                    for d in payload["details"]
+                ):
+                    required_schema = 7
+                if any(
+                    "visual_gimmicks_version" in (d.get("chart") or {})
+                    for d in payload["details"]
+                ):
                     required_schema = DETAILS_SCHEMA
                 if result.get("details_schema", 0) < required_schema:
                     raise RuntimeError(
@@ -939,7 +949,7 @@ def sync_details(
     if saved.get("timeline_schema") != 1:
         saved["hashes"] = {}
         saved["timeline_schema"] = 1
-    # Replay summaries that older upload validators stored without Max chain.
+    # Replay summaries when new chart statistics need to be backfilled.
     if saved.get("details_schema") != DETAILS_SCHEMA:
         saved["hashes"] = {}
         saved["details_schema"] = DETAILS_SCHEMA

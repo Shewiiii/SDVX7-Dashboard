@@ -1043,10 +1043,12 @@ td.row-index + td {
     color: var(--faint);
 }
 .difficulty-badge {
-    font: var(--entry-detail-size) var(--sans);
+    display: inline-block;
+    font: var(--diff-badge-size) var(--sans);
     border: 0;
-    border-radius: 3px;
-    padding: 1px 4px;
+    border-radius: 5px;
+    padding: 3px 7px;
+    background: var(--control-bg);
     color: var(--difficulty-color, #bbb5cd);
     white-space: nowrap;
 }
@@ -1753,9 +1755,6 @@ footer > :last-child {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.song-option .difficulty-badge {
-    font-size: 10px;
-}
 .song-option-range {
     display: flex;
     flex: none;
@@ -2335,9 +2334,6 @@ footer > :last-child {
     color: var(--muted);
     font-size: 14px;
 }
-.similar-chart-info .difficulty-badge {
-    font-size: 13px;
-}
 .similar-chart-info .selected-summary {
     margin-top: 2px;
 }
@@ -2504,12 +2500,7 @@ footer > :last-child {
     overflow-wrap: anywhere;
 }
 .chart-viewer-song .difficulty-badge {
-    display: inline-block;
     margin-top: 6px;
-    padding: 3px 7px;
-    font-size: 10px;
-    background: var(--control-bg);
-    border-radius: 5px;
 }
 .chart-viewer-workspace {
     margin-top: 12px;

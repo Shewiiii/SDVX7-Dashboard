@@ -109,6 +109,7 @@
     --entry-position-size: 12px; /* Very left column, Top 1 2 3 etc*/
     --entry-position-width: 38px;
     --entry-detail-size: 13px;
+    --diff-badge-size: 10px;
     --entry-clear-size: 11px;
     --entry-score-size: 12px;
     --entry-vf-size: 13px;

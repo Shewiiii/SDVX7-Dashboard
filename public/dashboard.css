@@ -1776,8 +1776,10 @@ footer > :last-child {
 }
 .selected-song {
     display: grid;
-    grid-template-columns:
-        var(--song-cover-size) minmax(0, 1fr) minmax(280px, 33.333%);
+    grid-template-columns: var(--song-cover-size) minmax(0, 1fr) minmax(
+            280px,
+            33.333%
+        );
     align-items: center;
     gap: var(--song-info-gap);
     margin: 0 var(--panel-padding-inline) var(--song-section-gap);
@@ -2391,7 +2393,10 @@ footer > :last-child {
         grid-column: 1 / -1;
     }
     .similar-chart-title {
-        font-size: 18px;
+        font-size: 15px;
+    }
+    .similar-chart-artist {
+        font-size: 11px;
     }
     .similar-chart-radar {
         width: 220px;

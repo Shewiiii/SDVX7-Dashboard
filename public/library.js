@@ -61,7 +61,7 @@ export function libraryEntries(
                 const key = chartKey({ music_id: song.music_id, ...difficulty });
                 const group =
                     song.is_custom || difficulty.is_custom
-                        ? "Custom Map"
+                        ? "Custom chart"
                         : unlockFolder(
                               unlockMethods.get(key) ||
                                   unlockMethods.get(`${song.music_id}:*`),
@@ -109,7 +109,7 @@ export function libraryEntries(
                                   : "Unknown year",
                           ]
                         : song.is_custom
-                          ? ["Custom Map"]
+                          ? ["Custom chart"]
                           : SONG_GENRES.filter(
                                 ([bit]) => (song.genre || 0) & bit,
                             ).map(([, label]) => label);
@@ -213,11 +213,11 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         if (mode.value === "genre")
             for (const label of [
                 ...SONG_GENRES.map(([, label]) => label),
-                "Custom Map",
+                "Custom chart",
             ])
                 names.add(label);
         if (mode.value === "unlock")
-            for (const label of [...Object.values(UNLOCK_METHODS), "Custom Map"])
+            for (const label of [...Object.values(UNLOCK_METHODS), "Custom chart"])
                 names.add(label);
         if (mode.value === "version")
             for (const label of versionNames) names.add(label);

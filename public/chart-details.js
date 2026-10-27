@@ -325,7 +325,7 @@ export function createChartDetails(isPreview, renderSong) {
             ],
             [
                 "Genre",
-                record.is_custom ? "Custom Map" : genres.join(" · ") || "Other",
+                record.is_custom ? "Custom chart" : genres.join(" · ") || "Other",
             ],
             ["Maximum EX score", count(record.max_exscore)],
             [

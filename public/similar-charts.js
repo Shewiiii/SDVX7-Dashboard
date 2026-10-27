@@ -89,7 +89,7 @@ export function createSimilarCharts(
 
     for (const [value, label] of [
         ...Object.entries(UNLOCK_METHODS),
-        ["custom", "Custom Map"],
+        ["custom", "Custom chart"],
     ].sort((first, second) => first[1].localeCompare(second[1]))) {
         const option = document.createElement("option");
         option.value = value;
@@ -161,7 +161,7 @@ export function createSimilarCharts(
         }
         const group =
             filter.value === "custom"
-                ? "Custom Map"
+                ? "Custom chart"
                 : UNLOCK_METHODS[filter.value];
         const matches = findSimilarCharts(
             getCatalog(),

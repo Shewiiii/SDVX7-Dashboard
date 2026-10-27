@@ -1969,9 +1969,16 @@ document.querySelectorAll("[data-clear-input]").forEach((button) => {
         button.hidden = !input.value;
     });
     button.addEventListener("pointerdown", (event) => event.preventDefault());
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
         input.value = "";
-        input.focus({ preventScroll: true });
+        if (
+            event.pointerType === "touch" ||
+            matchMedia("(pointer: coarse)").matches
+        ) {
+            input.blur();
+        } else {
+            input.focus({ preventScroll: true });
+        }
         input.dispatchEvent(new Event("input", { bubbles: true }));
     });
 });

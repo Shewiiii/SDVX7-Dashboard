@@ -21,7 +21,7 @@ export function unlockFolder(method) {
 }
 
 export function chartUnlockFolder(chart, methods) {
-    if (chart.is_custom) return "Custom Map";
+    if (chart.is_custom) return "Custom chart";
     return unlockFolder(
         methods?.get(`${chart.music_id}:${chart.diff_idx}`) ||
             methods?.get(`${chart.music_id}:*`),

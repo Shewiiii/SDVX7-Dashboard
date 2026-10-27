@@ -90,7 +90,7 @@ export function genreText(genre, custom) {
         genreCache.set(
             key,
             custom
-                ? "Custom Map"
+                ? "Custom chart"
                 : SONG_GENRES.filter(([bit]) => (genre || 0) & bit)
                       .map(([, label, aliases = []]) =>
                           [label, ...aliases].join(" "),

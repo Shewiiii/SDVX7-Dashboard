@@ -9,6 +9,11 @@ import {
 } from "./metrics.js";
 import { svgElement, pathData } from "./svg.js";
 import { motion } from "./motion.js";
+import {
+    DIFFICULTY_LIMITS,
+    difficultyStep,
+    nextDifficulty,
+} from "./difficulty.js";
 
 const defaults = {
     mode: "score",
@@ -17,7 +22,7 @@ const defaults = {
     targetScore: 9700000,
     targetLevel: 17,
 };
-const limits = { level: [1, 20.9, 0.1], score: [0, 10000000, 1] };
+const limits = { level: DIFFICULTY_LIMITS, score: [0, 10000000, 1] };
 const formatScore = (score) => score.toLocaleString();
 const formatScoreInput = (score) =>
     String(score).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f");
@@ -63,25 +68,10 @@ function parseScore(value) {
     return /^-?\d+$/.test(digits) ? Number(digits) : NaN;
 }
 
-function difficultyStep(level, direction = 1) {
-    if (level < 17 || (level === 17 && direction < 0)) return 1;
-    return level < 18 || (level === 18 && direction < 0) ? 0.5 : 0.1;
-}
-
 function snapDifficulty(level) {
     const step = Math.round(difficultyStep(level) * 10);
     const nearest = Math.round(Math.round(level * 10) / step) * step;
     return Math.max(limits.level[0], Math.min(limits.level[1], nearest / 10));
-}
-
-function nextDifficulty(level, direction) {
-    const step = Math.round(difficultyStep(level, direction) * 10);
-    const tenths = Math.round(level * 10);
-    const next =
-        direction > 0
-            ? (Math.floor(tenths / step) + 1) * step
-            : (Math.ceil(tenths / step) - 1) * step;
-    return Math.max(limits.level[0], Math.min(limits.level[1], next / 10));
 }
 
 export function createCalculator(getSummary, renderChartRow, getChartPlays) {

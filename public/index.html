@@ -756,7 +756,7 @@
                             id="calculator-level-field"
                         >
                             <label for="calculator-level">Difficulty</label>
-                            <div class="calculator-number-control">
+                            <div class="number-control">
                                 <input
                                     id="calculator-level"
                                     type="number"
@@ -768,7 +768,7 @@
                                     required
                                     aria-describedby="calculator-validation"
                                 />
-                                <div class="calculator-number-steps">
+                                <div class="number-steps">
                                     <button
                                         type="button"
                                         data-step-input="level"
@@ -794,7 +794,7 @@
                             hidden
                         >
                             <label for="calculator-score">Score</label>
-                            <div class="calculator-number-control">
+                            <div class="number-control">
                                 <input
                                     id="calculator-score"
                                     type="text"
@@ -808,7 +808,7 @@
                                     required
                                     aria-describedby="calculator-validation"
                                 />
-                                <div class="calculator-number-steps">
+                                <div class="number-steps">
                                     <button
                                         type="button"
                                         data-step-input="score"
@@ -1343,6 +1343,46 @@
             </header>
             <div class="similar-charts-intro">
                 <div id="similar-charts-source" class="chart-viewer-song"></div>
+                <div class="similar-charts-filter similar-charts-level">
+                    <label for="similar-charts-level">Level above</label>
+                    <div class="number-control">
+                        <input
+                            id="similar-charts-level"
+                            type="number"
+                            min="1"
+                            max="20.9"
+                            step="0.1"
+                            value="1"
+                            inputmode="decimal"
+                            required
+                        />
+                        <div class="number-steps">
+                            <button
+                                type="button"
+                                data-similar-level-step="1"
+                                aria-label="Increase minimum level"
+                            >
+                                ▴
+                            </button>
+                            <button
+                                type="button"
+                                data-similar-level-step="-1"
+                                aria-label="Decrease minimum level"
+                            >
+                                ▾
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="similar-charts-filter">
+                    <span>Show</span>
+                    <label class="select-wrap">
+                        <span class="sr-only">Filter by unlock method</span>
+                        <select id="similar-charts-filter">
+                            <option value="all">All</option>
+                        </select>
+                    </label>
+                </div>
             </div>
             <ol id="similar-charts-list" class="similar-charts-list"></ol>
         </dialog>

@@ -385,7 +385,7 @@ const songLibrary = createLibrary(
 const similarCharts = createSimilarCharts(
     () => catalog,
     (chart) =>
-        `<div class="similar-chart-main">${coverMarkup(chart)}<div class="similar-chart-info"><span class="similar-chart-title">${escape(chart.title)}</span><span class="similar-chart-artist">${escape(chart.artist)}</span><span>${badge(chart)}</span>${chartSummaryMarkup(chart)}</div></div>`,
+        `<div class="similar-chart-main">${coverMarkup(chart)}<div class="similar-chart-info"><a class="similar-chart-title" href="#search?song=${chart.music_id}&diff=${chart.diff_idx}">${escape(chart.title)}</a><span class="similar-chart-artist">${escape(chart.artist)}</span><span>${badge(chart)}</span>${chartSummaryMarkup(chart)}</div><div class="similar-chart-audio"></div></div>`,
     (musicId, diff) => {
         selectChart(musicId, diff);
         $("selected-chart")

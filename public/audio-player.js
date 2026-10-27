@@ -1,6 +1,7 @@
 import { createPlaybackClock } from "./playback-clock.js";
 
 const metadata = new Map();
+let playerSequence = 0;
 const clock = (seconds) =>
     `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 const clamp = (value, maximum) => Math.max(0, Math.min(maximum, value));
@@ -84,9 +85,11 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         playRequest = 0,
         preparing = false;
     const playbackTime = createPlaybackClock();
+    const downloadTooltipId = `audio-download-tooltip-${++playerSequence}`;
 
     host.classList.add("details-audio");
-    host.innerHTML = `<div class="details-audio-heading"><span>Song audio</span><span class="details-audio-actions"><span class="details-audio-status" role="status">Loading audio...</span><span class="details-audio-download-action" hidden><span aria-hidden="true"> · </span><span class="details-audio-download-wrap"><button type="button" class="text-button details-audio-download" aria-describedby="details-audio-download-tooltip">Download</button><span id="details-audio-download-tooltip" class="details-audio-download-popup" role="tooltip">No lossy transcoding has been applied, but the audio is already compressed in-game, so the audio is not lossless !</span></span></span></span></div>
+    host.classList.toggle("details-audio-compact", !!options.compact);
+    host.innerHTML = `<div class="details-audio-heading"><span>Song audio</span><span class="details-audio-actions"><span class="details-audio-status" role="status">Loading audio...</span><span class="details-audio-download-action" hidden><span aria-hidden="true"> · </span><span class="details-audio-download-wrap"><button type="button" class="text-button details-audio-download" aria-describedby="${downloadTooltipId}">Download</button><span id="${downloadTooltipId}" class="details-audio-download-popup" role="tooltip">No lossy transcoding has been applied, but the audio is already compressed in-game, so the audio is not lossless !</span></span></span></span></div>
         <div class="details-audio-controls" hidden>
             <button type="button" class="details-audio-toggle" aria-label="Play song" title="Play song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
             <div class="details-audio-track"><div class="details-audio-wave"><svg viewBox="0 0 512 48" preserveAspectRatio="none" aria-hidden="true"></svg><input class="details-audio-seek" type="range" min="0" step="0.01" value="0" aria-label="Seek in song"></div><span class="details-audio-time">0:00</span></div>
@@ -97,6 +100,8 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     const wave = host.querySelector(".details-audio-wave");
     const svg = wave.querySelector("svg");
     const seek = host.querySelector(".details-audio-seek");
+    if (options.compact)
+        seek.setAttribute("aria-label", `Seek in ${chart.title || "song"}`);
     const time = host.querySelector(".details-audio-time");
     const retry = host.querySelector(".details-audio-retry");
     const downloadAction = host.querySelector(".details-audio-download-action");
@@ -233,8 +238,10 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     }
     function button() {
         const playing = preparing || !audio.paused;
-        toggle.setAttribute("aria-label", playing ? "Pause song" : "Play song");
-        toggle.title = playing ? "Pause song" : "Play song";
+        const song = options.compact ? chart.title || "song" : "song";
+        const label = `${playing ? "Pause" : "Play"} ${song}`;
+        toggle.setAttribute("aria-label", label);
+        toggle.title = label;
         toggle
             .querySelector("path")
             .setAttribute(
@@ -281,6 +288,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             return;
         }
         const attempt = ++playRequest;
+        options.onPlay?.();
         retry.hidden = true;
         status.textContent = "Loading...";
         try {
@@ -445,6 +453,15 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         audio.removeAttribute("src");
         audio.load();
         lines.forEach((line) => line.remove());
+    };
+    dispose.pause = () => {
+        if (disposed) return;
+        playRequest++;
+        preparing = false;
+        audio.pause();
+        cancelAnimationFrame(frame);
+        status.textContent = "Paused";
+        button();
     };
     dispose.refreshSource = () => {
         if (disposed || pageHidden) return;

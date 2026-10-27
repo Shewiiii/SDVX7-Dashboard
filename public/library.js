@@ -8,7 +8,11 @@ import {
     searchSongs,
 } from "./metrics.js";
 import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
-import { UNLOCK_METHODS, unlockFolder } from "./unlock-methods.js";
+import {
+    UNLOCK_METHODS,
+    unlockFolder,
+    loadUnlockMethods as fetchUnlockMethods,
+} from "./unlock-methods.js";
 
 // Song folders retain search's selection. Chart folders open the exact difficulty.
 export const chartFolderMode = (mode) =>
@@ -185,22 +189,9 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
 
     function loadUnlockMethods() {
         if (unlockTask) return;
-        unlockTask = fetch("/api/unlocks?index=methods")
-            .then(async (response) => {
-                if (!response.ok) throw new Error("Unlock methods unavailable");
-                const { methods } = await response.json();
-                if (
-                    !methods ||
-                    typeof methods !== "object" ||
-                    Array.isArray(methods) ||
-                    !Object.entries(methods).every(
-                        ([key, method]) =>
-                            /^[1-9]\d{0,7}:(?:[0-5]|\*)$/.test(key) &&
-                            typeof method === "string",
-                    )
-                )
-                    throw new Error("Invalid unlock methods");
-                unlockMethods = new Map(Object.entries(methods));
+        unlockTask = fetchUnlockMethods()
+            .then((methods) => {
+                unlockMethods = methods;
                 unlockLoadedAt = Date.now();
                 unlockError = null;
             })
@@ -386,8 +377,6 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                 previous.setAttribute("aria-label", `Previous page in ${name}`);
                 next.setAttribute("aria-label", `Next page in ${name}`);
                 last.setAttribute("aria-label", `Last page in ${name}`);
-                first.title = "First page";
-                last.title = "Last page";
                 first.disabled = previous.disabled = state.page === 0;
                 last.disabled = next.disabled = state.page === pages - 1;
                 const go = (value) => {

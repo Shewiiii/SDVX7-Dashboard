@@ -3,6 +3,7 @@
 import gzip
 import hashlib
 import json
+import os
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -27,9 +28,10 @@ def prepare(details: "ChartDetails", mid: int, diff: int) -> tuple[str, Path] | 
     from scripts.chart_effects import prepare_bank
 
     bank = prepare_bank(details.music.base_root)
-    signature = json.dumps(
-        [SCHEMA, str(path), stat.st_size, stat.st_mtime_ns, mid, diff, bank]
-    )
+    inputs = [SCHEMA, str(path), stat.st_size, stat.st_mtime_ns, mid, diff, bank]
+    if "SDVX_PREVIEW_REVISION" in os.environ:
+        inputs.append(os.environ["SDVX_PREVIEW_REVISION"])
+    signature = json.dumps(inputs)
     digest = hashlib.sha256(signature.encode()).hexdigest()
     target = ROOT / ".local/chart-view" / (digest + ".json.gz")
     if not target.exists():
@@ -62,6 +64,8 @@ def visual_timeline(details: "ChartDetails", mid: int, diff: int) -> bytes | Non
     try:
         stat = path.stat()
         signature = [1, str(path), stat.st_size, stat.st_mtime_ns, mid, diff]
+        if "SDVX_PREVIEW_REVISION" in os.environ:
+            signature.append(os.environ["SDVX_PREVIEW_REVISION"])
         digest = hashlib.sha256(json.dumps(signature).encode()).hexdigest()
         target = ROOT / ".local/chart-view-visual" / (digest + ".json.gz")
         if not target.exists():

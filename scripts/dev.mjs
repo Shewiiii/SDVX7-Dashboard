@@ -5,11 +5,9 @@ import { sendAudioFile } from "./audio-http.mjs";
 import { packSearchIndex } from "../lib/search-index.mjs";
 import { unlockResponse } from "../lib/unlocks.mjs";
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = path.join(root, "public");
@@ -21,7 +19,6 @@ const python = path.join(
     ".venv",
     process.platform === "win32" ? "Scripts/python.exe" : "bin/python",
 );
-const runFile = promisify(execFile);
 const types = {
     ".html": "text/html; charset=utf-8",
     ".js": "text/javascript",
@@ -34,7 +31,8 @@ const types = {
 const audioTasks = new Map();
 let searchTask = null,
     searchCache = null,
-    searchAt = 0;
+    searchAt = 0,
+    searchRevision = null;
 const previewSources = [
     path.join(proxy, "player-data/score_log.jsonl"),
     path.join(proxy, "player-data/volforce_history.jsonl"),
@@ -48,9 +46,39 @@ const previewSources = [
     path.join(game, "data_mods/ryunet_custom/others/music_db.merged.xml"),
     path.join(game, "data_mods/ryunet_custom/music"),
 ];
-const previewWorker = createPreviewWorker(python, root);
+const requestSignature = async () => {
+    const scripts = (await readdir(path.join(root, "scripts")))
+        .filter((name) => name.endsWith(".py"))
+        .sort()
+        .map((name) => path.join(root, "scripts", name));
+    return previewSourceSignature([
+        ...scripts,
+        path.join(root, ".local/audio-config.json"),
+        path.join(root, ".local/sync-config.json"),
+        path.join(proxy, ".env"),
+    ]);
+};
+const requestOptions = {
+    module: "scripts.preview_requests",
+    signature: requestSignature,
+};
+const previewWorker = createPreviewWorker(python, root, {
+    signature: requestSignature,
+});
+const chartWorker = createPreviewWorker(python, root, requestOptions);
+const audioWorker = createPreviewWorker(python, root, requestOptions);
+const searchWorker = createPreviewWorker(python, root, requestOptions);
 const previewCache = createPreviewCache({
-    signature: () => previewSourceSignature(previewSources, path.join(proxy, "player-data/playtime.json")),
+    signature: async () =>
+        JSON.stringify(
+            await Promise.all([
+                previewSourceSignature(
+                    previewSources,
+                    path.join(proxy, "player-data/playtime.json"),
+                ),
+                requestSignature(),
+            ]),
+        ),
     async build() {
         const started = performance.now();
         console.log("[preview] Building archive...");
@@ -146,19 +174,11 @@ const server = createServer(async (req, res) => {
             if (!audioTasks.has(key))
                 audioTasks.set(
                     key,
-                    runFile(
-                        python,
-                        [
-                            "-u",
-                            "-c",
-                            `from scripts.audio import preview; preview(${mid},${diff})`,
-                        ],
-                        { cwd: root, maxBuffer: 100000, timeout: 200000 },
-                    ).finally(() => audioTasks.delete(key)),
+                    audioWorker
+                        .request({ operation: "audio", music: mid, diff })
+                        .finally(() => audioTasks.delete(key)),
                 );
-            const result = await audioTasks.get(key);
-            if (result.stderr) process.stderr.write(result.stderr);
-            const record = JSON.parse(result.stdout);
+            const record = await audioTasks.get(key);
             res.writeHead(record ? 200 : 404, {
                 "Content-Type": types[".json"],
                 "Cache-Control": "no-store",
@@ -167,23 +187,19 @@ const server = createServer(async (req, res) => {
             return;
         }
         if (url.pathname === "/api/search") {
-            if (!searchCache || Date.now() - searchAt > 60000) {
+            const revision = await requestSignature();
+            if (
+                !searchCache ||
+                revision !== searchRevision ||
+                Date.now() - searchAt > 60000
+            ) {
                 if (!searchTask)
-                    searchTask = runFile(
-                        python,
-                        [
-                            "-c",
-                            "from scripts.chart_details import search_preview; search_preview()",
-                        ],
-                        { cwd: root, maxBuffer: 16000000 },
-                    )
+                    searchTask = searchWorker
+                        .request({ operation: "search" })
                         .then((result) => {
-                            if (result.stderr)
-                                process.stderr.write(result.stderr);
-                            searchCache = JSON.stringify(
-                                packSearchIndex(JSON.parse(result.stdout)),
-                            );
+                            searchCache = JSON.stringify(packSearchIndex(result));
                             searchAt = Date.now();
+                            searchRevision = revision;
                         })
                         .finally(() => {
                             searchTask = null;
@@ -212,24 +228,14 @@ const server = createServer(async (req, res) => {
                 res.end();
                 return;
             }
-            const result = await runFile(
-                python,
-                [
-                    "-c",
-                    (url.pathname === "/api/chart-view"
-                        ? "from scripts.chart_view import preview; preview("
-                        : "from scripts.chart_details import preview; preview(") +
-                        music +
-                        "," +
-                        diff +
-                        (url.pathname === "/api/chart-view" && url.searchParams.get("check") === "1" ? ",check=True" : "") +
-                        (url.pathname === "/api/chart-view" && url.searchParams.get("effects") === "1" ? ",effects=True" : "") +
-                        ")",
-                ],
-                { cwd: root, maxBuffer: 8 * 1024 * 1024 },
-            );
-            const record = JSON.parse(result.stdout);
-            if (result.stderr) process.stderr.write(result.stderr);
+            const record = await chartWorker.request({
+                operation:
+                    url.pathname === "/api/chart-view" ? "chart-view" : "chart",
+                music,
+                diff,
+                check: url.searchParams.get("check") === "1",
+                effects: url.searchParams.get("effects") === "1",
+            });
             res.writeHead(record ? 200 : 404, {
                 "Content-Type": types[".json"],
                 "Cache-Control": "no-store",
@@ -281,6 +287,7 @@ const server = createServer(async (req, res) => {
         }
         const body = await readFile(file);
         res.writeHead(200, {
+            "Cache-Control": "no-store",
             "Content-Type":
                 types[path.extname(file)] || "application/octet-stream",
             "X-Content-Type-Options": "nosniff",
@@ -305,4 +312,7 @@ server.on("close", () => {
     clearInterval(rescan);
     previewLive.close();
     previewWorker.close();
+    chartWorker.close();
+    audioWorker.close();
+    searchWorker.close();
 });

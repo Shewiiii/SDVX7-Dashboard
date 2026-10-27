@@ -260,7 +260,7 @@ function inspectPlots(plots, chart) {
     }
 }
 
-export function createChartDetails() {
+export function createChartDetails(isPreview = () => false) {
     const dialog = document.getElementById("chart-details");
     const body = document.getElementById("chart-details-body");
     const closeButton = document.getElementById("chart-details-close");
@@ -426,6 +426,7 @@ export function createChartDetails() {
         try {
             let saved = fallback;
             if (
+                isPreview() ||
                 !saved ||
                 Date.now() - saved.at > 3600000 ||
                 (saved.record.chart &&

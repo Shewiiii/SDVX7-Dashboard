@@ -353,8 +353,9 @@ class ChartDetails:
                             metadata[key]["is_custom"] = True
         self.metadata, self.files, self.signatures = metadata, files, signatures
 
-    def get(self, key: str) -> dict[str, Any] | None:
-        self.refresh()
+    def get(self, key: str, *, refresh: bool = True) -> dict[str, Any] | None:
+        if refresh:
+            self.refresh()
         if key not in self.metadata:
             return None
         path = self.files.get(key)
@@ -410,16 +411,12 @@ def preview(mid: int, diff: int) -> None:
     print(json.dumps(record["record"] if record else None, ensure_ascii=True))
 
 
-def search_preview() -> None:
-    """Project cached chart summaries into search metadata; omit graph arrays."""
-    from scripts.companion import resolve_proxy
-    from scripts.sync import Catalog
-
-    catalog = Catalog(resolve_proxy())
-    catalog.details.refresh()
+def search_records(details: ChartDetails) -> list[dict[str, Any]]:
+    """Project cached chart summaries into search metadata without graph arrays."""
+    details.refresh()
     records = []
-    for key in catalog.details.metadata:
-        record = catalog.details.get(key)["record"]
+    for key in details.metadata:
+        record = details.get(key, refresh=False)["record"]
         chart = record.get("chart") or {}
         records.append(
             {
@@ -431,4 +428,16 @@ def search_preview() -> None:
                 "visual_gimmicks_version": chart.get("visual_gimmicks_version"),
             }
         )
-    print(json.dumps(records, ensure_ascii=True, separators=(",", ":")))
+    return records
+
+
+def search_preview() -> None:
+    from scripts.companion import resolve_proxy
+    from scripts.sync import Catalog
+
+    catalog = Catalog(resolve_proxy())
+    print(
+        json.dumps(
+            search_records(catalog.details), ensure_ascii=True, separators=(",", ":")
+        )
+    )

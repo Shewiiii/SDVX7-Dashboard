@@ -373,7 +373,7 @@ let catalog = [],
     matches = [],
     activeMatch = -1;
 let cleanupDifficultyControl = null;
-const chartDetails = createChartDetails();
+const chartDetails = createChartDetails(() => data?.source === "local");
 const chartViewer = createChartViewer();
 const songLibrary = createLibrary(
     () => data,

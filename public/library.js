@@ -8,6 +8,7 @@ import {
     searchSongs,
 } from "./metrics.js";
 import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
+import { SKILL_ANALYZER_COURSES } from "./game-data/skill-analyzer.js";
 import {
     UNLOCK_METHODS,
     unlockFolder,
@@ -16,9 +17,18 @@ import {
 
 // Song folders retain search's selection. Chart folders open the exact difficulty.
 export const chartFolderMode = (mode) =>
-    ["level", "clear", "grade"].includes(mode);
+    ["level", "clear", "grade", "skill"].includes(mode);
 
 const versionNames = Object.values(SONG_VERSIONS);
+const skillFolderOrder = new Map(
+    [...SKILL_ANALYZER_COURSES]
+        .sort(
+            (a, b) =>
+                (a.level || Infinity) - (b.level || Infinity) ||
+                a.folder.localeCompare(b.folder, undefined, { numeric: true }),
+        )
+        .map((course, index) => [course.folder, index]),
+);
 const versionOrder = (name) => {
     const position = versionNames.indexOf(name);
     return position < 0 ? versionNames.length : position;
@@ -42,6 +52,7 @@ export function libraryEntries(
     mode,
     query = "",
     unlockMethods = new Map(),
+    skillCourses = SKILL_ANALYZER_COURSES,
 ) {
     const best = new Map();
     for (const chart of [...data.plays, ...(data.state.charts || [])]) {
@@ -55,7 +66,26 @@ export function libraryEntries(
     const entries = [];
     const searchQuery = mode === "boss" ? `${query} boss=true` : query;
     for (const song of searchSongs(catalog, searchQuery, data.plays, Infinity)) {
-        if (mode === "unlock") {
+        if (mode === "skill") {
+            for (const course of skillCourses) {
+                for (const [position, track] of course.tracks.entries()) {
+                    if (track.music_id !== song.music_id) continue;
+                    const difficulty = song.difficulties.find(
+                        (chart) => chart.diff_idx === track.diff_idx,
+                    );
+                    if (!difficulty) continue;
+                    entries.push({
+                        group: course.folder,
+                        position,
+                        song: {
+                            ...song,
+                            ...difficulty,
+                            difficulties: [difficulty],
+                        },
+                    });
+                }
+            }
+        } else if (mode === "unlock") {
             const grouped = new Map();
             for (const difficulty of song.difficulties) {
                 const key = chartKey({ music_id: song.music_id, ...difficulty });
@@ -121,11 +151,13 @@ export function libraryEntries(
         (a, b) =>
             (mode === "version"
                 ? versionOrder(a.group) - versionOrder(b.group)
-                : mode === "year"
-                  ? b.group.localeCompare(a.group, undefined, { numeric: true })
-                  : a.group.localeCompare(b.group, undefined, {
-                        numeric: true,
-                    })) ||
+                : mode === "skill"
+                  ? skillFolderOrder.get(a.group) - skillFolderOrder.get(b.group)
+                  : mode === "year"
+                    ? b.group.localeCompare(a.group, undefined, { numeric: true })
+                    : a.group.localeCompare(b.group, undefined, {
+                          numeric: true,
+                      })) ||
             a.song.title.localeCompare(b.song.title) ||
             a.song.music_id - b.song.music_id ||
             a.song.diff_idx - b.song.diff_idx,
@@ -145,6 +177,8 @@ export function sortLibraryEntries(entries, order = "date-desc") {
         song.release_date ||
         (song.release_year ? `${song.release_year}-01-01` : null);
     return [...entries].sort((a, b) => {
+        if (a.position !== undefined && b.position !== undefined)
+            return a.position - b.position;
         if (order.startsWith("date-")) {
             const x = date(a.song),
                 y = date(b.song);
@@ -228,16 +262,19 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         return [...names].sort((a, b) =>
             mode.value === "version"
                 ? versionOrder(a) - versionOrder(b)
-                : mode.value === "year"
-                  ? b.localeCompare(a, undefined, { numeric: true })
-                  : mode.value === "grade"
-                    ? gradeOrder.indexOf(a) - gradeOrder.indexOf(b)
-                    : mode.value === "clear"
-                      ? CLEARS.indexOf(a) - CLEARS.indexOf(b)
-                      : a.localeCompare(b, undefined, { numeric: true }),
+                : mode.value === "skill"
+                  ? skillFolderOrder.get(a) - skillFolderOrder.get(b)
+                  : mode.value === "year"
+                    ? b.localeCompare(a, undefined, { numeric: true })
+                    : mode.value === "grade"
+                      ? gradeOrder.indexOf(a) - gradeOrder.indexOf(b)
+                      : mode.value === "clear"
+                        ? CLEARS.indexOf(a) - CLEARS.indexOf(b)
+                        : a.localeCompare(b, undefined, { numeric: true }),
         );
     }
     function render(rebuild = false) {
+        sort.disabled = mode.value === "skill";
         const currentQuery = query.value.trim();
         if (currentQuery !== folderQuery) {
             folderQuery = currentQuery;

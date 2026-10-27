@@ -2279,6 +2279,7 @@ footer > :last-child {
     border-top: 1px solid var(--row-separator);
 }
 .similar-chart {
+    -webkit-tap-highlight-color: transparent;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 260px;
     align-items: center;

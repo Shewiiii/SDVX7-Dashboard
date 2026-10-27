@@ -35,8 +35,5 @@ if __name__ == "__main__":
         "This script will attempt to scrap data from known sources and Asphyxia, but will be incomplete. "
         "Missing entries can be completed in public/game-data/unlock_overrides.json."
     )
-    print(
-        "Requires Python 3.11+, and asphyxia-core-win-x64 folder in "
-        "your game's root folder"
-    )
+    print("Requires asphyxia-core-win-x64 folder in your game's root folder")
     main()

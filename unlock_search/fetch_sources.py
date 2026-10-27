@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import urllib.error
 import urllib.request
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from .paths import LOCAL_DATA
 
@@ -18,7 +18,7 @@ def fetch(name: str, url: str) -> dict[str, object]:
     )
     metadata: dict[str, object] = {
         "url": url,
-        "fetched_at": datetime.now(UTC).isoformat(),
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
     try:
         with urllib.request.urlopen(request, timeout=25) as response:

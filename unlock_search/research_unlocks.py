@@ -4,7 +4,7 @@ import collections
 import hashlib
 import json
 import re
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
@@ -402,7 +402,7 @@ def build_audit(
     return {
         "schema_version": 1,
         "as_of": as_of.isoformat(),
-        "generated_at": datetime.now(UTC).isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "input_sha256": digest(mdb),
         "sources": manifest,
         "summary": {

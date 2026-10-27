@@ -6,7 +6,7 @@ import re
 import time
 import urllib.parse
 import urllib.request
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from .paths import LOCAL_DATA
@@ -46,7 +46,11 @@ def get_batch(titles: list[str]) -> dict[str, Any]:
     data = json.loads(body)
     if "query" not in data or "pages" not in data["query"]:
         raise ValueError(f"Unrecognized wiki response: {str(data)[:160]}")
-    return {"url": url, "fetched_at": datetime.now(UTC).isoformat(), "response": data}
+    return {
+        "url": url,
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        "response": data,
+    }
 
 
 def match_pages(titles: list[str], response: dict[str, Any]) -> list[dict[str, Any]]:

@@ -12,7 +12,6 @@ export const UNLOCK_METHODS = Object.freeze({
     limited_time: "Limited-time charts",
     removed: "Removed",
     unknown: "Unknown",
-    conflict: "Uncertain",
 });
 
 export function unlockFolder(method) {

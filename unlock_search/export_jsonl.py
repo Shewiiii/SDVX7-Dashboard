@@ -32,7 +32,6 @@ METHODS = frozenset(
         "limited_time",
         "removed",
         "unknown",
-        "conflict",
     }
 )
 
@@ -127,8 +126,6 @@ def unlock_description(arcade: dict[str, Any]) -> str:
         return "This chart has been removed from arcade cabinets."
     if method == "conditional_input":
         return "Requires prerequisite song clears. Verify the exact conditions."
-    if method == "conflict":
-        return "Uncertain, verify the exact conditions"
     return "Unknown, may be unlocked by default"
 
 

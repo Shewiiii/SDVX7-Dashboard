@@ -373,7 +373,10 @@ let catalog = [],
     matches = [],
     activeMatch = -1;
 let cleanupDifficultyControl = null;
-const chartDetails = createChartDetails(() => data?.source === "local");
+const chartDetails = createChartDetails(
+    () => data?.source === "local",
+    chartSongMarkup,
+);
 const chartViewer = createChartViewer();
 const songLibrary = createLibrary(
     () => data,
@@ -392,9 +395,12 @@ const similarCharts = createSimilarCharts(
             .querySelector("[data-similar-charts]")
             ?.focus({ preventScroll: true });
     },
-    (chart) =>
-        `${coverMarkup(chart, "chart-viewer-jacket")}<div class="chart-viewer-song-info"><div class="chart-viewer-song-title">${escape(chart.title)}</div><div class="chart-viewer-song-artist">${escape(chart.artist)}</div>${badge(chart)}</div>`,
+    chartSongMarkup,
 );
+
+function chartSongMarkup(chart) {
+    return `${coverMarkup(chart, "chart-viewer-jacket")}<div class="chart-viewer-song-info"><div class="chart-viewer-song-title">${escape(chart.title)}</div><div class="chart-viewer-song-artist">${escape(chart.artist)}</div>${badge(chart)}</div>`;
+}
 
 const searchTools = initSearchTools(() => {
     if (!data) return;

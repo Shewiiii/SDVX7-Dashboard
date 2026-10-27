@@ -2415,18 +2415,12 @@ footer > :last-child {
 #chart-details-body {
     padding: 0 var(--panel-padding-inline) 24px;
 }
-.details-song {
-    margin: 0;
-    font-size: 18px;
-    overflow-wrap: anywhere;
+#chart-details-body > .chart-viewer-song {
+    margin-bottom: 20px;
 }
-.details-artist,
 .details-message {
     color: var(--muted);
     font-size: 12px;
-}
-.details-artist {
-    margin: 4px 0 20px;
 }
 .details-values {
     display: grid;

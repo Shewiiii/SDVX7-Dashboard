@@ -1,5 +1,4 @@
 import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
-import { DIFFS } from "./metrics.js";
 import { mountAudioPlayer } from "./audio-player.js";
 import { mountUnlockMethod } from "./unlock-method.js";
 import { isBossChart, loadBossCharts } from "./boss-charts.js";
@@ -260,7 +259,7 @@ function inspectPlots(plots, chart) {
     }
 }
 
-export function createChartDetails(isPreview = () => false) {
+export function createChartDetails(isPreview, renderSong) {
     const dialog = document.getElementById("chart-details");
     const body = document.getElementById("chart-details-body");
     const closeButton = document.getElementById("chart-details-close");
@@ -292,12 +291,9 @@ export function createChartDetails(isPreview = () => false) {
         disposeAudio?.();
         disposeUnlock?.();
         body.replaceChildren();
-        const subtitle = document.createElement("p");
-        subtitle.className = "details-song";
-        subtitle.textContent = `${record.title} · ${DIFFS[record.diff_idx]} ${record.level ?? "—"}`;
-        const artist = document.createElement("p");
-        artist.className = "details-artist";
-        artist.textContent = record.artist;
+        const song = document.createElement("div");
+        song.className = "chart-viewer-song";
+        song.innerHTML = renderSong(record);
         const chart = record.chart;
         const boss = isBossChart(record);
         const genres = SONG_GENRES.filter(
@@ -387,7 +383,7 @@ export function createChartDetails(isPreview = () => false) {
             cell.append(dt, dd);
             list.append(cell);
         }
-        body.append(subtitle, artist, list);
+        body.append(song, list);
         const unlock = document.createElement("section");
         body.append(unlock);
         disposeUnlock = mountUnlockMethod(unlock, record);

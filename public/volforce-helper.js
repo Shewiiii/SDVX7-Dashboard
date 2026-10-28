@@ -1,4 +1,5 @@
 import { VF_CLASSES, vf, volforceClass } from "./metrics.js";
+import { showPanel } from "./panels.js";
 
 export function createVolforceHelper(getTotal) {
     const dialog = document.getElementById("vf-helper");
@@ -10,7 +11,6 @@ export function createVolforceHelper(getTotal) {
     let trigger,
         navigationFrame,
         locating = false,
-        previousOverflow,
         closing = false;
 
     function updateFades() {
@@ -164,12 +164,9 @@ export function createVolforceHelper(getTotal) {
                     detail: "vf-helper",
                 }),
             );
-            previousOverflow = document.documentElement.style.overflow;
-            document.documentElement.style.overflow = "hidden";
-            dialog.showModal();
+            showPanel(dialog);
             body.scrollTop = 0;
             getComputedStyle(dialog).opacity;
-            getComputedStyle(dialog, "::backdrop").opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
             reveal();
@@ -200,7 +197,6 @@ export function createVolforceHelper(getTotal) {
         stopMotion();
         closing = false;
         dialog.classList.remove("is-visible");
-        document.documentElement.style.overflow = previousOverflow;
         if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     });
 }

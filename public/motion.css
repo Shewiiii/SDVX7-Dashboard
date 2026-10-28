@@ -264,12 +264,12 @@ body[data-loading="initial"] .panel-foot {
     transform: none;
 }
 .appearance-backdrop,
-.appeal-helper::backdrop {
+.panel-layer::before {
     opacity: 0;
     transition: opacity var(--panel-backdrop-duration) ease-out;
 }
 .appearance-backdrop.is-visible,
-.appeal-helper.is-visible::backdrop {
+.panel-layer:has(> dialog.is-visible)::before {
     opacity: 1;
 }
 .appeal-helper-image > .skeleton-shape {
@@ -290,7 +290,7 @@ body[data-loading="initial"] .panel-foot {
     .settings-panel,
     .appearance-backdrop,
     .appeal-helper,
-    .appeal-helper::backdrop {
+    .panel-layer::before {
         transition: none;
     }
     .appeal-helper-image > .skeleton-shape {

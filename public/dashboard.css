@@ -2260,6 +2260,26 @@ footer > :last-child {
 .radar-trigger:focus-visible > span {
     opacity: 1;
 }
+.panel-layer {
+    position: fixed;
+    inset: 0;
+    z-index: calc(10 + var(--panel-depth, 0));
+    display: grid;
+    place-items: center;
+    isolation: isolate;
+}
+.panel-layer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+.panel-layer > dialog {
+    position: relative;
+    inset: auto;
+    z-index: 1;
+    margin: auto;
+}
 .appeal-helper {
     width: min(1000px, calc(100vw - 36px));
     max-width: none;
@@ -2271,10 +2291,10 @@ footer > :last-child {
     scrollbar-gutter: stable;
 }
 .appearance-backdrop,
-.appeal-helper::backdrop {
+.panel-layer::before {
     background: rgb(0 0 0 / var(--panel-backdrop-dim));
 }
-.appeal-helper::backdrop,
+.panel-layer::before,
 .settings-panel {
     -webkit-backdrop-filter: blur(var(--panel-backdrop-blur));
     backdrop-filter: blur(var(--panel-backdrop-blur));

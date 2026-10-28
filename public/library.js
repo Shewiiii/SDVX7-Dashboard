@@ -1,4 +1,5 @@
 import { dismissSearchKeyboard } from "./search-tools.js";
+import { showPanel } from "./panels.js";
 import { parseSearch, songVersion } from "./search-query.js";
 import {
     CLEARS,
@@ -273,7 +274,6 @@ export function createLibrary(
     const openButton = document.getElementById("open-library");
     const closeButton = document.getElementById("library-close");
     let entries = [],
-        overflow = "",
         closing = false;
     let unlockMethods,
         unlockTask,
@@ -629,11 +629,8 @@ export function createLibrary(
         document.dispatchEvent(
             new CustomEvent("dashboard:panel-open", { detail: "song-library" }),
         );
-        overflow = document.documentElement.style.overflow;
-        document.documentElement.style.overflow = "hidden";
-        dialog.showModal();
+        showPanel(dialog);
         getComputedStyle(dialog).opacity;
-        getComputedStyle(dialog, "::backdrop").opacity;
         dialog.classList.add("is-visible");
         render(true);
         const initialFocus = matchMedia("(hover: hover) and (pointer: fine)")
@@ -646,7 +643,6 @@ export function createLibrary(
     dialog.addEventListener("close", () => {
         closing = false;
         dialog.classList.remove("is-visible");
-        document.documentElement.style.overflow = overflow;
         openButton.focus({ preventScroll: true });
     });
     closeButton.addEventListener("click", close);

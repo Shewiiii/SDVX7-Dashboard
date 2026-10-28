@@ -1,4 +1,5 @@
 import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
+import { showPanel } from "./panels.js";
 import { mountAudioPlayer } from "./audio-player.js";
 import { mountUnlockMethod } from "./unlock-method.js";
 import { isBossChart, loadBossCharts } from "./boss-charts.js";
@@ -283,7 +284,6 @@ export function createChartDetails(isPreview, renderSong) {
         disposeUnlock,
         controller,
         trigger,
-        previousOverflow = "",
         closing = false,
         current;
 
@@ -528,7 +528,6 @@ export function createChartDetails(isPreview, renderSong) {
         controller?.abort();
         closing = false;
         dialog.classList.remove("is-visible");
-        document.documentElement.style.overflow = previousOverflow;
         body.replaceChildren();
         if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     });
@@ -542,11 +541,8 @@ export function createChartDetails(isPreview, renderSong) {
                     detail: "chart-details",
                 }),
             );
-            previousOverflow = document.documentElement.style.overflow;
-            document.documentElement.style.overflow = "hidden";
-            dialog.showModal();
+            showPanel(dialog);
             getComputedStyle(dialog).opacity;
-            getComputedStyle(dialog, "::backdrop").opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
             closeButton.focus({ preventScroll: true });

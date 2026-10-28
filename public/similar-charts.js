@@ -1,4 +1,5 @@
 import { paintRadar, radarMarkup, validRadar } from "./radar.js";
+import { showPanel } from "./panels.js";
 import { dismissSearchKeyboard } from "./search-tools.js";
 import { mountAudioPlayer } from "./audio-player.js";
 import { nextDifficulty } from "./difficulty.js";
@@ -82,7 +83,6 @@ export function createSimilarCharts(
     let trigger,
         selection,
         unlockMethods,
-        overflow = "",
         closing = false,
         levelAbove = 1,
         playerRevision = 0;
@@ -296,7 +296,6 @@ export function createSimilarCharts(
     dialog.addEventListener("close", () => {
         closing = false;
         dialog.classList.remove("is-visible");
-        document.documentElement.style.overflow = overflow;
         disposePlayers();
         list.replaceChildren();
         const focus = trigger?.isConnected
@@ -349,13 +348,10 @@ export function createSimilarCharts(
                     detail: "similar-charts",
                 }),
             );
-            overflow = document.documentElement.style.overflow;
-            document.documentElement.style.overflow = "hidden";
-            dialog.showModal();
+            showPanel(dialog);
             render();
             void refreshUnlockMethods();
             getComputedStyle(dialog).opacity;
-            getComputedStyle(dialog, "::backdrop").opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
             closeButton.focus({ preventScroll: true });

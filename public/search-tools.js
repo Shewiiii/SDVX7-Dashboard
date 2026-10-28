@@ -1,4 +1,5 @@
 import { installSearchIndex, parseSearch } from "./search-query.js";
+import { showPanel } from "./panels.js";
 import { loadBossCharts } from "./boss-charts.js";
 
 export function dismissSearchKeyboard() {
@@ -150,22 +151,18 @@ export function initSearchTools(onReady) {
     const dialog = document.getElementById("search-help"),
         closeButton = document.getElementById("search-help-close");
     let trigger,
-        overflow,
         closing = false;
     document.querySelectorAll("[data-search-help]").forEach((button) =>
         button.addEventListener("click", () => {
             if (dialog.open || closing) return;
             trigger = button;
-            overflow = document.documentElement.style.overflow;
             document.dispatchEvent(
                 new CustomEvent("dashboard:panel-open", {
                     detail: "search-help",
                 }),
             );
-            document.documentElement.style.overflow = "hidden";
-            dialog.showModal();
+            showPanel(dialog);
             getComputedStyle(dialog).opacity;
-            getComputedStyle(dialog, "::backdrop").opacity;
             dialog.classList.add("is-visible");
             closeButton.focus({ preventScroll: true });
         }),
@@ -196,7 +193,6 @@ export function initSearchTools(onReady) {
     dialog.addEventListener("close", () => {
         closing = false;
         dialog.classList.remove("is-visible");
-        document.documentElement.style.overflow = overflow;
         trigger?.focus({ preventScroll: true });
     });
     return { ensure };

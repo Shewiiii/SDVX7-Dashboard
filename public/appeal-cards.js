@@ -1,4 +1,5 @@
 import { dismissSearchKeyboard } from "./search-tools.js";
+import { showPanel } from "./panels.js";
 import { normalizeSearch } from "./metrics.js";
 
 const TARGET_PAGE_SIZE = 48;
@@ -23,7 +24,6 @@ export function createAppealCardHelper(getState) {
         pageSize = TARGET_PAGE_SIZE,
         totalPages = 1;
     let scrollPosition = 0,
-        previousOverflow = "",
         closing = false;
     let detailHistoryActive = false,
         historyReturning = false,
@@ -317,13 +317,10 @@ export function createAppealCardHelper(getState) {
             selectedId = null;
             browser.hidden = false;
             detail.hidden = true;
-            previousOverflow = document.documentElement.style.overflow;
-            document.documentElement.style.overflow = "hidden";
-            dialog.showModal();
+            showPanel(dialog);
             renderBrowser({ anchorId: current?.id ?? null });
             // Establish both starting styles before fading the panel/backdrop in.
             getComputedStyle(dialog).opacity;
-            getComputedStyle(dialog, "::backdrop").opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
             // Browsing on a phone should not immediately open its keyboard.
@@ -364,7 +361,6 @@ export function createAppealCardHelper(getState) {
         leaveDetailHistory();
         closing = false;
         dialog.classList.remove("is-visible");
-        document.documentElement.style.overflow = previousOverflow;
         // Release thumbnails after closing; reopening starts with the full catalog.
         grid.replaceChildren();
         document.getElementById("appeal-helper-artwork").replaceChildren();

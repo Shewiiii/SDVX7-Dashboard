@@ -1,4 +1,5 @@
 import { validTimeline } from "./chart-timeline.js";
+import { showPanel } from "./panels.js";
 export { validTimeline } from "./chart-timeline.js";
 import { mountSilentChartPlayer } from "./chart-transport.js";
 import { getAudioMetadata, mountAudioPlayer } from "./audio-player.js";
@@ -657,7 +658,6 @@ export function createChartViewer() {
     let dispose,
         request,
         observer,
-        overflow,
         trigger,
         settingsPanel,
         chartCanvas,
@@ -686,7 +686,6 @@ export function createChartViewer() {
         dispose?.();
         request?.abort();
         observer?.disconnect();
-        document.documentElement.style.overflow = overflow;
         body.replaceChildren();
         settingsPanel?.remove();
         settingsPanel = undefined;
@@ -729,8 +728,6 @@ export function createChartViewer() {
                     detail: "chart-viewer",
                 }),
             );
-            overflow = document.documentElement.style.overflow;
-            document.documentElement.style.overflow = "hidden";
             body.innerHTML = `<div class="chart-viewer-song"><span class="cover-tile chart-viewer-jacket"><span class="cover-missing" aria-label="Cover unavailable">—</span></span><div class="chart-viewer-song-info"><div class="chart-viewer-song-title"></div><div class="chart-viewer-song-artist"></div><span class="difficulty-badge"></span></div></div>
                 <div class="chart-viewer-workspace"><div class="chart-viewer-main">
                     <p class="details-message" role="status">Loading song...</p><div class="chart-viewer-stage" hidden><canvas aria-label="Animated 2D chart preview"></canvas></div><section class="chart-viewer-player" aria-label="Song player"></section>
@@ -1135,9 +1132,8 @@ export function createChartViewer() {
                 },
                 { signal },
             );
-            dialog.showModal();
+            showPanel(dialog);
             getComputedStyle(dialog).opacity;
-            getComputedStyle(dialog, "::backdrop").opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
             closeButton.focus({ preventScroll: true });

@@ -182,7 +182,7 @@ class Catalog:
         """Read only the selected artwork, never publish the player record."""
         try:
             raw = json.loads(
-                (self.proxy / "player-data/total_volforce.json").read_text(
+                (self.proxy / "player-data/server_data.json").read_text(
                     encoding="utf-8"
                 )
             )
@@ -486,7 +486,7 @@ def observation_record(
 def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]:
     preferences = dashboard_settings()
     playtime = playtime_snapshot(proxy)
-    path = proxy / "player-data/total_volforce.json"
+    path = proxy / "player-data/server_data.json"
     if not path.exists():
         state = {
             "name": preferences["name"],
@@ -770,7 +770,7 @@ def source_paths(proxy: Path) -> tuple[Path, ...]:
     return (
         proxy / "player-data/score_log.jsonl",
         proxy / "player-data/volforce_history.jsonl",
-        proxy / "player-data/total_volforce.json",
+        proxy / "player-data/server_data.json",
         proxy / "player-data/playtime.json",
         proxy / ".env",
         ROOT / ".local/sync-config.json",

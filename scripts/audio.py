@@ -631,7 +631,7 @@ def sync_audio(
     keys = list(catalog.details.metadata)
     priority = {
         key.split(":", 1)[0]
-        for key in read_json(proxy / "player-data/total_volforce.json", {}).get(
+        for key in read_json(proxy / "player-data/server_data.json", {}).get(
             "chart_volforce", {}
         )
     }

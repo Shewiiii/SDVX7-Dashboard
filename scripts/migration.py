@@ -186,7 +186,7 @@ def backup_legacy(dashboard: Path, proxy: Path, legacy: Path) -> Migration:
         for name in (
             ".env",
             "player-data/playtime.json",
-            "player-data/total_volforce.json",
+            "player-data/server_data.json",
             "cache/total_volforce.json",
         ):
             path = proxy / name
@@ -353,7 +353,7 @@ def migrate_legacy(dashboard: Path, proxy: Path) -> Migration | None:
     merge_log(
         legacy / "volforce_history.jsonl", proxy / "player-data/volforce_history.jsonl"
     )
-    snapshot = proxy / "player-data/total_volforce.json"
+    snapshot = proxy / "player-data/server_data.json"
     if (legacy / "cache/total_volforce.json").is_file() and not snapshot.exists():
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(legacy / "cache/total_volforce.json", snapshot)

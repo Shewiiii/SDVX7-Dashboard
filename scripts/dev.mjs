@@ -36,7 +36,7 @@ let searchTask = null,
 const previewSources = [
     path.join(proxy, "player-data/score_log.jsonl"),
     path.join(proxy, "player-data/volforce_history.jsonl"),
-    path.join(proxy, "player-data/total_volforce.json"),
+    path.join(proxy, "player-data/server_data.json"),
     path.join(proxy, "player-data/playtime.json"),
     path.join(proxy, ".env"),
     path.join(root, ".local/sync-config.json"),

@@ -2274,7 +2274,7 @@ footer > :last-child {
     inset: 0;
     z-index: 0;
 }
-.panel-layer > dialog {
+.panel-layer > :where(dialog) {
     position: relative;
     inset: auto;
     z-index: 1;
@@ -2668,6 +2668,7 @@ footer > :last-child {
         /* Reserve equal space on either side of the centered main panel. */
         --chart-main-width: min(920px, calc(100vw - 696px));
         width: calc(var(--chart-main-width) + 324px);
+        justify-self: start;
         margin-left: calc((100vw - var(--chart-main-width)) / 2);
         margin-right: 0;
     }

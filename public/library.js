@@ -20,13 +20,11 @@ export const chartFolderMode = (mode) =>
     ["level", "clear", "grade", "skill"].includes(mode);
 
 const versionNames = Object.values(SONG_VERSIONS);
+const compareSkillCourses = (a, b) =>
+    (a.id || "").localeCompare(b.id || "", undefined, { numeric: true });
 const skillFolderOrder = new Map(
     [...SKILL_ANALYZER_COURSES]
-        .sort(
-            (a, b) =>
-                (a.level || Infinity) - (b.level || Infinity) ||
-                a.folder.localeCompare(b.folder, undefined, { numeric: true }),
-        )
+        .sort(compareSkillCourses)
         .map((course, index) => [course.folder, index]),
 );
 const versionOrder = (name) => {
@@ -41,6 +39,19 @@ export function danName(level) {
     return `${level}${suffix} Dan`;
 }
 
+export function folderDifficultyRange(items) {
+    const charts = items
+        .map(({ song }) => song)
+        .filter((chart) => Number.isFinite(chart.level))
+        .sort((a, b) => a.level - b.level || a.diff_idx - b.diff_idx);
+    if (!charts.length) return [];
+    const first = charts[0],
+        last = charts.at(-1);
+    return first.level === last.level && first.diff_idx === last.diff_idx
+        ? [first]
+        : [first, last];
+}
+
 export function skillAnalyzerFolders(entries, courses = SKILL_ANALYZER_COURSES) {
     const grouped = new Map();
     for (const entry of entries) {
@@ -49,11 +60,7 @@ export function skillAnalyzerFolders(entries, courses = SKILL_ANALYZER_COURSES) 
     }
 
     const folders = new Map();
-    const ordered = [...courses].sort(
-        (a, b) =>
-            (a.level || Infinity) - (b.level || Infinity) ||
-            a.folder.localeCompare(b.folder, undefined, { numeric: true }),
-    );
+    const ordered = [...courses].sort(compareSkillCourses);
     for (const course of ordered) {
         const items = grouped.get(course.folder);
         if (!items?.length) continue;
@@ -251,7 +258,13 @@ export function sortLibraryEntries(entries, order = "date-desc") {
     });
 }
 
-export function createLibrary(getData, getCatalog, renderSong, selectSong) {
+export function createLibrary(
+    getData,
+    getCatalog,
+    renderSong,
+    selectSong,
+    renderBadge,
+) {
     const dialog = document.getElementById("song-library");
     const query = document.getElementById("library-query");
     const mode = document.getElementById("library-group");
@@ -389,10 +402,13 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
             } else {
                 folder = document.createElement("details");
                 folder.className = "library-folder";
+                if (mode.value === "skill")
+                    folder.classList.add("library-skill-folder");
                 heading = document.createElement("summary");
                 const title = document.createElement("span"),
                     count = document.createElement("small");
                 title.textContent = name;
+                title.className = "library-folder-title";
                 if (dan >= 1 && dan <= 12) {
                     const icon = document.createElement("img");
                     icon.className = "library-dan-icon";
@@ -405,7 +421,21 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                 count.textContent = children
                     ? `${children.length.toLocaleString()} ${children.length === 1 ? "course" : "courses"}`
                     : `${items.length.toLocaleString()} ${chartFolderMode(mode.value) ? "charts" : "songs"}`;
-                heading.append(title, count);
+                heading.append(title);
+                if (mode.value === "skill") {
+                    const charts = folderDifficultyRange(items);
+                    if (charts.length) {
+                        const range = document.createElement("span");
+                        range.className =
+                            "song-option-range library-folder-range";
+                        range.setAttribute("aria-label", "Difficulty range");
+                        range.innerHTML = charts
+                            .map(renderBadge)
+                            .join("<span>~</span>");
+                        heading.append(range);
+                    }
+                }
+                heading.append(count);
                 folder.append(heading, content);
                 parent.append(folder);
             }

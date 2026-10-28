@@ -1628,6 +1628,10 @@ footer > :last-child {
     font-size: 12px;
     margin: 18px 0;
 }
+#library-sort:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
 .library-folder {
     margin-bottom: 8px;
 }
@@ -1667,6 +1671,23 @@ footer > :last-child {
     width: 85px;
     height: 24px;
     object-fit: contain;
+}
+.library-skill-folder > summary {
+    flex-wrap: wrap;
+}
+.library-skill-folder > summary > .library-folder-title {
+    flex: 1 1 180px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.library-folder-range {
+    margin-left: auto;
+}
+.library-skill-folder > summary > small {
+    flex: none;
+    min-width: 64px;
+    margin-left: 0;
+    text-align: right;
 }
 .library-folder-content {
     padding: 10px 0 12px;

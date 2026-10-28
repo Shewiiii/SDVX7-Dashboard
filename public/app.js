@@ -384,6 +384,7 @@ const songLibrary = createLibrary(
     (song) =>
         `${coverMarkup(song)}<span class="option-song"><span>${escape(song.title)}</span><small>${escape(song.artist)}</small></span>${difficultyRange(song)}`,
     (mid, diff) => selectChart(mid, diff),
+    badge,
 );
 const similarCharts = createSimilarCharts(
     () => catalog,

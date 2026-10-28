@@ -1402,6 +1402,17 @@ footer > :last-child {
     font-weight: 500;
     margin: 0 0 7px;
 }
+.dan-banner-trigger {
+    flex: none;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+}
+.dan-banner-trigger:hover,
+.dan-banner-trigger:focus-visible {
+    background: none;
+}
 .dan-banner {
     display: block;
     width: auto;
@@ -1651,8 +1662,20 @@ footer > :last-child {
     color: var(--muted);
     font-size: 11px;
 }
+.library-dan-icon {
+    flex: none;
+    width: 85px;
+    height: 24px;
+    object-fit: contain;
+}
 .library-folder-content {
     padding: 10px 0 12px;
+}
+.library-course-folders {
+    padding-left: 24px;
+}
+.library-course-folders > .library-folder:last-child {
+    margin-bottom: 0;
 }
 .library-song-grid {
     display: grid;
@@ -2179,6 +2202,7 @@ footer > :last-child {
 .radar-trigger .song-radar-area {
     pointer-events: fill;
 }
+.dan-banner-trigger .dan-banner,
 .appeal-card-trigger .appeal-card,
 .radar-trigger .song-radar-graphic {
     transition: filter 180ms;
@@ -2201,6 +2225,8 @@ footer > :last-child {
 .radar-trigger > span {
     font-size: 12px;
 }
+.dan-banner-trigger:hover .dan-banner,
+.dan-banner-trigger:focus-visible .dan-banner,
 .appeal-card-trigger:hover .appeal-card,
 .appeal-card-trigger:focus-visible .appeal-card,
 .radar-trigger:hover .song-radar-graphic,

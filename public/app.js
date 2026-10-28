@@ -523,6 +523,7 @@ function renderSummary({ animate = true } = {}) {
     const dan = data.state.skill_level;
     const danBanner = $("dan-banner");
     danBanner.hidden = !(Number.isInteger(dan) && dan >= 1 && dan <= 12);
+    $("dan-library-open").hidden = danBanner.hidden;
     if (!danBanner.hidden) {
         danBanner.src = `/assets/dan/${dan}.png`;
         danBanner.alt =
@@ -2253,6 +2254,11 @@ document.querySelector(".brand").addEventListener("click", (event) => {
         return;
     event.preventDefault();
     switchView("overview");
+});
+
+$("dan-library-open").addEventListener("click", () => {
+    switchView("search");
+    songLibrary.open("skill");
 });
 
 document.querySelectorAll("[data-view]").forEach((button) =>

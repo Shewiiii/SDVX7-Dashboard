@@ -34,6 +34,55 @@ const versionOrder = (name) => {
     return position < 0 ? versionNames.length : position;
 };
 
+export function danName(level) {
+    if (level === 12) return "Infinite Dan";
+    const suffix =
+        level === 1 ? "st" : level === 2 ? "nd" : level === 3 ? "rd" : "th";
+    return `${level}${suffix} Dan`;
+}
+
+export function skillAnalyzerFolders(entries, courses = SKILL_ANALYZER_COURSES) {
+    const grouped = new Map();
+    for (const entry of entries) {
+        if (!grouped.has(entry.group)) grouped.set(entry.group, []);
+        grouped.get(entry.group).push(entry);
+    }
+
+    const folders = new Map();
+    const ordered = [...courses].sort(
+        (a, b) =>
+            (a.level || Infinity) - (b.level || Infinity) ||
+            a.folder.localeCompare(b.folder, undefined, { numeric: true }),
+    );
+    for (const course of ordered) {
+        const items = grouped.get(course.folder);
+        if (!items?.length) continue;
+        const ranked = course.level >= 1 && course.level <= 12;
+        const key = ranked ? `dan:${course.level}` : course.folder;
+        if (!ranked) {
+            folders.set(key, { key, name: course.name, items });
+            continue;
+        }
+        if (!folders.has(key)) {
+            folders.set(key, {
+                key,
+                name: danName(course.level),
+                dan: course.level,
+                items: [],
+                children: [],
+            });
+        }
+        const folder = folders.get(key);
+        folder.items.push(...items);
+        folder.children.push({
+            key: course.folder,
+            name: course.season,
+            items,
+        });
+    }
+    return [...folders.values()];
+}
+
 export function autoOpenLibraryFolders(query, entries) {
     const parsed = parseSearch(query);
     const nameSearch =
@@ -324,9 +373,11 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         const autoOpen = autoOpenLibraryFolders(currentQuery, entries);
         results.replaceChildren();
         let visibleGroups = 0;
-        for (const [name, items] of grouped) {
-            if (query.value.trim() && !items.length) continue;
-            const key = `${mode.value}:${name}`;
+        function renderFolder(
+            { name, items, children, dan, key: folderKey = name },
+            parent,
+        ) {
+            const key = `${mode.value}:${folderKey}`;
             const state = folderState.get(key) || { open: false, page: 0 };
             folderState.set(key, state);
             const content = document.createElement("div");
@@ -334,7 +385,7 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
             let folder,
                 heading = content;
             if (["all", "boss"].includes(mode.value)) {
-                results.append(content);
+                parent.append(content);
             } else {
                 folder = document.createElement("details");
                 folder.className = "library-folder";
@@ -342,16 +393,32 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                 const title = document.createElement("span"),
                     count = document.createElement("small");
                 title.textContent = name;
-                count.textContent = `${items.length.toLocaleString()} ${chartFolderMode(mode.value) ? "charts" : "songs"}`;
+                if (dan >= 1 && dan <= 12) {
+                    const icon = document.createElement("img");
+                    icon.className = "library-dan-icon";
+                    icon.src = `/assets/dan/${dan}.png`;
+                    icon.alt = "";
+                    icon.width = 85;
+                    icon.height = 24;
+                    heading.append(icon);
+                }
+                count.textContent = children
+                    ? `${children.length.toLocaleString()} ${children.length === 1 ? "course" : "courses"}`
+                    : `${items.length.toLocaleString()} ${chartFolderMode(mode.value) ? "charts" : "songs"}`;
                 heading.append(title, count);
                 folder.append(heading, content);
-                results.append(folder);
+                parent.append(folder);
             }
             visibleGroups++;
             let populated = false;
             function populate() {
                 populated = true;
                 content.replaceChildren();
+                if (children) {
+                    content.classList.add("library-course-folders");
+                    for (const child of children) renderFolder(child, content);
+                    return;
+                }
                 const pages = Math.max(1, Math.ceil(items.length / 48));
                 state.page = Math.max(0, Math.min(state.page, pages - 1));
                 const list = document.createElement("div");
@@ -494,6 +561,14 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
                 populate();
             }
         }
+        const folders =
+            mode.value === "skill"
+                ? skillAnalyzerFolders(entries)
+                : [...grouped].map(([name, items]) => ({ name, items }));
+        for (const folder of folders) {
+            if (currentQuery && !folder.items.length) continue;
+            renderFolder(folder, results);
+        }
         if (!visibleGroups)
             results.textContent =
                 parseSearch(query.value).errors[0] || "No matching songs.";
@@ -514,8 +589,13 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         dialog.close();
         await closed;
     }
-    openButton.addEventListener("click", () => {
+    function open(group) {
         if (dialog.open || closing) return;
+        if (group) {
+            mode.value = group;
+            query.value = "";
+            clearTimeout(queryTimer);
+        }
         document.dispatchEvent(
             new CustomEvent("dashboard:panel-open", { detail: "song-library" }),
         );
@@ -531,7 +611,8 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
             ? query
             : closeButton;
         initialFocus.focus({ preventScroll: true });
-    });
+    }
+    openButton.addEventListener("click", () => open());
     dialog.addEventListener("close", () => {
         closing = false;
         dialog.classList.remove("is-visible");
@@ -579,6 +660,7 @@ export function createLibrary(getData, getCatalog, renderSong, selectSong) {
         render();
     });
     return {
+        open,
         update() {
             if (dialog.open && !closing) render(true);
         },

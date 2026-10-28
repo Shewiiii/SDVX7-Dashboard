@@ -183,7 +183,12 @@ def backup_legacy(dashboard: Path, proxy: Path, legacy: Path) -> Migration:
                     target.write(block)
                     hasher.update(block)
             signatures[relative] = hasher.hexdigest()
-        for name in (".env", "player-data/playtime.json", "cache/total_volforce.json"):
+        for name in (
+            ".env",
+            "player-data/playtime.json",
+            "player-data/total_volforce.json",
+            "cache/total_volforce.json",
+        ):
             path = proxy / name
             if path.is_file():
                 archive.write(path, "proxy-before/" + name)
@@ -348,7 +353,7 @@ def migrate_legacy(dashboard: Path, proxy: Path) -> Migration | None:
     merge_log(
         legacy / "volforce_history.jsonl", proxy / "player-data/volforce_history.jsonl"
     )
-    snapshot = proxy / "cache/total_volforce.json"
+    snapshot = proxy / "player-data/total_volforce.json"
     if (legacy / "cache/total_volforce.json").is_file() and not snapshot.exists():
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(legacy / "cache/total_volforce.json", snapshot)

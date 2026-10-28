@@ -176,20 +176,21 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     );
     let progress,
         lastUiUpdate = -Infinity;
-    function update(force = false) {
+    function update(force = false, resetClock = false) {
         if (!record || disposed) return;
         const now = performance.now();
-        if (audio.readyState && !seeking)
+        if (audio.readyState && !seeking) {
             position = clamp(
                 playbackTime(
                     audio.currentTime,
                     now,
                     !audio.paused && !audio.ended && !buffering,
                     audio.playbackRate,
-                    force === true,
+                    resetClock,
                 ),
                 record.duration,
             );
+        }
         const at = position + record.start - record.chart_offset;
         // Render before DOM writes, so canvas size reads do not force layout.
         if (record.variant === "full")
@@ -322,7 +323,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         "loadedmetadata",
         () => {
             audio.currentTime = clamp(position, audio.duration);
-            update(true);
+            update(true, true);
         },
         { signal },
     );
@@ -355,7 +356,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             event,
             () => {
                 cancelAnimationFrame(frame);
-                update(true);
+                update(true, event === "ended");
                 button();
             },
             { signal },
@@ -369,8 +370,8 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         },
         { signal },
     );
-    for (const event of ["seeked", "ratechange"])
-        audio.addEventListener(event, () => update(true), { signal });
+    audio.addEventListener("seeked", () => update(true, true), { signal });
+    audio.addEventListener("ratechange", () => update(true), { signal });
     audio.addEventListener("error", failed, { signal });
 
     async function load(force = false) {
@@ -479,6 +480,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     dispose.setPlaybackRate = (rate) => {
         if (disposed || !Number.isFinite(rate) || rate < 0.25 || rate > 4)
             return;
+        update(true);
         // load() restores defaultPlaybackRate when switching dry/processed audio.
         audio.defaultPlaybackRate = rate;
         audio.playbackRate = rate;

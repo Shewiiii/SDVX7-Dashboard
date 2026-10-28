@@ -1888,7 +1888,28 @@ footer > :last-child {
 }
 .song-radar-label {
     fill: var(--muted);
-    font: 11px var(--sans);
+    font: 12px var(--sans);
+}
+.song-radar-label-name {
+    font-weight: 400;
+}
+.song-radar-label[data-axis="notes"] {
+    fill: #2ee8e4;
+}
+.song-radar-label[data-axis="peak"] {
+    fill: #ff4d71;
+}
+.song-radar-label[data-axis="tsumami"] {
+    fill: #ff56e0;
+}
+.song-radar-label[data-axis="tricky"] {
+    fill: #ebee6a;
+}
+.song-radar-label[data-axis="hand-trip"] {
+    fill: #ab74da;
+}
+.song-radar-label[data-axis="one-hand"] {
+    fill: #1bee7e;
 }
 .song-radar-value {
     fill: var(--ink);

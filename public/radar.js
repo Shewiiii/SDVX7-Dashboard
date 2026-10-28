@@ -51,7 +51,7 @@ export function radarMarkup(values, { interactive = false } = {}) {
         const [x, y] = point(axis, gridRadius + 20);
         const anchor =
             axis === 0 || axis === 3 ? "middle" : axis < 3 ? "start" : "end";
-        return `<text x="${x}" y="${y - 3}" text-anchor="${anchor}" class="song-radar-label">${label}<tspan x="${x}" dy="14" class="song-radar-value">${values[axis]}</tspan></text>`;
+        return `<text x="${x}" y="${y - 3}" text-anchor="${anchor}" class="song-radar-label" data-axis="${label.toLowerCase()}"><tspan class="song-radar-label-name">${label}</tspan><tspan x="${x}" dy="14" class="song-radar-value">${values[axis]}</tspan></text>`;
     }).join("");
     const vertices = values.map((value, axis) => point(axis, value * unit));
     const left = Math.min(0, ...vertices.map(([x]) => Math.floor(x - 10)));

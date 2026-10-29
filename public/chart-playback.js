@@ -66,7 +66,16 @@ export function chartDensity(chart, record, bins = 128) {
 // A chart-specific presentation over the shared audio transport. Details keeps
 // its waveform; the chart viewer supplies this seekable action-density plot.
 export function createChartPlayback({ signal }) {
-    let chart, record, svg, seek, wave, context, playhead, popup, hoverLine;
+    let chart,
+        record,
+        svg,
+        seek,
+        wave,
+        measureReadout,
+        bpmReadout,
+        playhead,
+        popup,
+        hoverLine;
     let density,
         mounted = false,
         dragging = null,
@@ -166,8 +175,12 @@ export function createChartPlayback({ signal }) {
         )
             return;
         readout = { second, index, ...info };
-        const label = `Measure ${info.measure} / ${info.totalMeasures} · ${rate(info.bpm)} BPM`;
-        if (context.textContent !== label) context.textContent = label;
+        const measureLabel = `Measure ${info.measure} / ${info.totalMeasures}`;
+        const bpmLabel = `${rate(info.bpm)} BPM`;
+        if (measureReadout.textContent !== measureLabel)
+            measureReadout.textContent = measureLabel;
+        if (bpmReadout.textContent !== bpmLabel)
+            bpmReadout.textContent = bpmLabel;
         seek.setAttribute(
             "aria-valuetext",
             `${clock(at)} of ${clock(record.duration)}, measure ${info.measure} of ${info.totalMeasures}, ${rate(info.bpm)} BPM, ${rate(density.buttons[index])} BT/FX starts and ${rate(density.lasers[index])} laser actions per second`,
@@ -201,9 +214,11 @@ export function createChartPlayback({ signal }) {
                 readout.className = "chart-playback-readout";
                 const time = view.host.querySelector(".details-audio-time");
                 time.replaceWith(readout);
-                context = document.createElement("span");
-                context.className = "chart-playback-context";
-                readout.append(time, context);
+                measureReadout = document.createElement("span");
+                measureReadout.className = "chart-playback-context";
+                bpmReadout = document.createElement("span");
+                bpmReadout.className = "chart-playback-context";
+                readout.append(time, measureReadout, bpmReadout);
                 popup = document.createElement("div");
                 popup.className =
                     "details-popup details-density-popup chart-playback-popup";

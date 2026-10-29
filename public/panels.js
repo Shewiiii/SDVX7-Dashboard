@@ -1,10 +1,51 @@
 const panels = [];
+const openings = new WeakMap();
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 let background = [];
 let listening = false;
 let previousOverflow = "";
 
 const focusableSelector =
     'a[href], button, input, select, textarea, [tabindex], [contenteditable="true"]';
+
+const nextFrame = () => new Promise(requestAnimationFrame);
+
+async function prepareOpening(dialog, layer) {
+    if (reducedMotion.matches) return;
+    const cleanup = () => {
+        if (openings.get(dialog) !== cleanup) return;
+        dialog.classList.remove("panel-preparing", "panel-opening");
+        openings.delete(dialog);
+    };
+    const active = () =>
+        openings.get(dialog) === cleanup &&
+        dialog.open &&
+        dialog.classList.contains("is-visible");
+    openings.set(dialog, cleanup);
+    dialog.classList.add("panel-preparing", "panel-opening");
+
+    try {
+        // Let callers finish rendering and commit the hidden starting state.
+        await nextFrame();
+        await nextFrame();
+        if (!active()) return;
+        dialog.classList.remove("panel-preparing");
+        const animations = [...dialog.getAnimations(), ...layer.getAnimations()];
+
+        // Firefox needs a committed frame at time zero before playback starts.
+        for (const animation of animations) {
+            animation.pause();
+            animation.currentTime = 0;
+        }
+        await Promise.allSettled(animations.map((animation) => animation.ready));
+        await nextFrame();
+        if (!active()) return;
+        for (const animation of animations) animation.play();
+        await Promise.allSettled(animations.map((animation) => animation.finished));
+    } finally {
+        cleanup();
+    }
+}
 
 function focusableElements(dialog) {
     return [...dialog.querySelectorAll(focusableSelector)].filter(
@@ -42,6 +83,7 @@ function listen() {
             );
             if (index < 0 || event.target.open) return;
             const [{ dialog, layer, trigger }] = panels.splice(index, 1);
+            openings.get(dialog)?.();
             layer.before(dialog);
             layer.remove();
             syncPanels();
@@ -112,6 +154,7 @@ export function showPanel(dialog) {
     dialog.setAttribute("aria-modal", "true");
     dialog.setAttribute("tabindex", "-1");
     panels.push({ dialog, layer, trigger });
+    void prepareOpening(dialog, layer);
     dialog.show();
     syncPanels();
     getComputedStyle(layer, "::before").opacity;

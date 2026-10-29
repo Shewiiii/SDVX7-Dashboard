@@ -266,6 +266,21 @@ body[data-loading="initial"] .panel-foot {
 .panel-layer:has(> dialog.is-visible)::before {
     opacity: 1;
 }
+.panel-layer > dialog.panel-opening {
+    will-change: opacity, transform;
+}
+.panel-layer:has(> dialog.panel-opening)::before {
+    will-change: opacity;
+}
+.panel-layer > dialog.panel-preparing {
+    opacity: 0;
+    transform: scale(0.985);
+    transition: none;
+}
+.panel-layer:has(> dialog.panel-preparing)::before {
+    opacity: 0;
+    transition: none;
+}
 .appeal-helper-image > .skeleton-shape {
     animation: loading-shimmer 1.6s ease-in-out infinite;
 }

@@ -354,7 +354,6 @@ def main(argv: list[str] | None = None) -> int:
             cwd=proxy,
             check=True,
         )
-    python = check_proxy(proxy)
     config = load_config()
     if not args.update or not config.get("name") or not config.get("currency"):
         configure_preferences(config)
@@ -379,9 +378,8 @@ def main(argv: list[str] | None = None) -> int:
         configure_connection(config)
     else:
         raise ValueError("Choose 1 or 2.")
-    run([str(python), "-c", "from scripts.sync import run; run(once=True)"])
-    print("Ready. Use run-proxy-with-dashboard.bat for future sessions.")
-    print("Optional song playback: See README.")
+    print("Ready. Use run-proxy-with-dashboard.bat to start syncing.")
+    print("Optional song playback and crew setup: See README.")
     return 0
 
 

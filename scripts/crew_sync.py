@@ -348,12 +348,13 @@ def sync_crews(catalog: Any) -> None:
         write_json(checkpoint, state)
         return
     entry = entries[cursor]
+    crew_label = f"{entry.get('name', 'Unknown crew')} (#{entry['id']})"
     try:
         objects = prepared_assets(entry, config, state)
     except (OSError, ValueError, RuntimeError) as error:
         state.setdefault("failed", []).append(entry["key"])
         print(
-            f"Crew {entry['id']} preparation pending ({type(error).__name__}), continuing with other crews.",
+            f"Crew {crew_label} preparation pending ({type(error).__name__}), continuing with other crews.",
             flush=True,
         )
     else:
@@ -367,7 +368,8 @@ def sync_crews(catalog: Any) -> None:
     write_json(checkpoint, state)
     catalog.crew_pending = not state.get("complete", False)
     print(
-        f"Crew sync {len(state['ready'])}/{len(entries)} ready ({uploaded} files uploaded)",
+        f"Crew sync {len(state['ready'])}/{len(entries)} ready: "
+        f"{crew_label} ({uploaded} files uploaded)",
         flush=True,
     )
 

@@ -249,12 +249,6 @@ body[data-loading="initial"] .panel-foot {
     transition:
         opacity 240ms ease,
         transform 320ms var(--theme-transition-easing);
-}
-.settings-panel {
-    transform: translateY(10px) scale(0.985);
-    transform-origin: top right;
-}
-.appeal-helper {
     transform: scale(0.985);
     transform-origin: center;
 }

@@ -90,7 +90,8 @@ export function createCrewViewer(dialog, getState) {
     let panX = 0;
     let panY = 0;
     let zoom = 1;
-    let drag;
+    const pointers = new Map();
+    let gesture;
     let jumpTarget = null;
     let previewScrollFrame = 0;
     const options = { tracking: false, physics: true };
@@ -380,18 +381,31 @@ export function createCrewViewer(dialog, getState) {
 
     function applySettings() {
         applyView();
-        player?.tracking(!drag && options.tracking);
+        player?.tracking(!pointers.size && options.tracking);
         player?.physics(options.physics);
     }
 
     function endDrag() {
-        if (!drag) return;
-        const { pointerId } = drag;
-        drag = null;
+        const pointerIds = [...pointers.keys()];
+        pointers.clear();
+        gesture = null;
         stage.classList.remove("is-dragging");
-        if (stage.hasPointerCapture(pointerId))
-            stage.releasePointerCapture(pointerId);
+        for (const pointerId of pointerIds)
+            if (stage.hasPointerCapture(pointerId))
+                stage.releasePointerCapture(pointerId);
         player?.tracking(options.tracking);
+    }
+
+    function pointerGesture() {
+        const [first, second] = pointers.values();
+        return {
+            x: second ? (first.x + second.x) / 2 : first.x,
+            y: second ? (first.y + second.y) / 2 : first.y,
+            distance: second
+                ? Math.hypot(second.x - first.x, second.y - first.y)
+                : 0,
+            zoom,
+        };
     }
 
     stage.addEventListener(
@@ -421,30 +435,51 @@ export function createCrewViewer(dialog, getState) {
     );
 
     stage.addEventListener("pointerdown", (event) => {
-        if (event.button !== 0 || drag || !stage.classList.contains("is-ready"))
+        if (
+            event.button !== 0 ||
+            pointers.size >= 2 ||
+            !stage.classList.contains("is-ready")
+        )
             return;
-        drag = {
-            pointerId: event.pointerId,
+        pointers.set(event.pointerId, {
             x: event.clientX,
             y: event.clientY,
-        };
+        });
+        gesture = pointerGesture();
         stage.setPointerCapture(event.pointerId);
         stage.classList.add("is-dragging");
         player?.tracking(false);
         event.preventDefault();
     });
     stage.addEventListener("pointermove", (event) => {
-        if (!drag || drag.pointerId !== event.pointerId) return;
+        if (!pointers.has(event.pointerId)) return;
+        pointers.set(event.pointerId, {
+            x: event.clientX,
+            y: event.clientY,
+        });
+        const next = pointerGesture();
         const rect = stage.getBoundingClientRect();
-        panX += (event.clientX - drag.x) / Math.max(1, rect.width);
-        panY += (event.clientY - drag.y) / Math.max(1, rect.height);
-        drag.x = event.clientX;
-        drag.y = event.clientY;
+        if (gesture.distance && next.distance) {
+            // Use the initial distance so slow pinches accumulate past slider steps.
+            zoomAt(
+                gesture.zoom * 100 * (next.distance / gesture.distance),
+                (gesture.x - rect.left) / Math.max(1, rect.width) - 0.5,
+                (gesture.y - rect.top) / Math.max(1, rect.height) - 0.5,
+            );
+        }
+        panX += (next.x - gesture.x) / Math.max(1, rect.width);
+        panY += (next.y - gesture.y) / Math.max(1, rect.height);
+        gesture.x = next.x;
+        gesture.y = next.y;
         applyView();
     });
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
         stage.addEventListener(type, (event) => {
-            if (drag?.pointerId === event.pointerId) endDrag();
+            if (!pointers.delete(event.pointerId)) return;
+            if (stage.hasPointerCapture(event.pointerId))
+                stage.releasePointerCapture(event.pointerId);
+            if (pointers.size) gesture = pointerGesture();
+            else endDrag();
         });
 
     function renderStrip() {

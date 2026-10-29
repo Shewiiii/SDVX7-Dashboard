@@ -4,7 +4,7 @@ export function createCrewVoices(panel) {
     panel.setAttribute("aria-labelledby", "crew-voices-title");
     panel.innerHTML = `<h2 id="crew-voices-title">Voice bank</h2>
         <p class="settings-hint crew-voice-message" role="status"></p>
-        <fieldset class="crew-voice-list" aria-label="Voice lines" disabled></fieldset>
+        <div class="crew-voice-scroll"><fieldset class="crew-voice-list" aria-label="Voice lines" disabled></fieldset></div>
         <p class="crew-voice-label" hidden></p><div class="crew-voice-player" hidden></div>`;
     const message = panel.querySelector(".crew-voice-message");
     const list = panel.querySelector(".crew-voice-list");

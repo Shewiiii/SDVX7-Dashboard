@@ -79,6 +79,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         pageHidden = false,
         position = 0,
         seeking = false,
+        seekPointer,
         buffering = false,
         readyTask,
         sourceLabel,
@@ -206,7 +207,9 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         )
             return;
         lastUiUpdate = now;
-        seek.value = position;
+        // Prevent Firefox to reapply the pointer position on release
+        // so it does not repeat audio.
+        if (seekPointer === undefined) seek.value = position;
         if (!options.seekTimeline || record.variant !== "full")
             seek.setAttribute(
                 "aria-valuetext",
@@ -250,6 +253,21 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
                 playing ? "M6 5h4v14H6zM14 5h4v14h-4z" : "M8 5v14l11-7z",
             );
     }
+    seek.addEventListener(
+        "pointerdown",
+        (event) => {
+            seekPointer = event.pointerId;
+        },
+        { signal },
+    );
+    for (const event of ["pointerup", "pointercancel"])
+        window.addEventListener(
+            event,
+            ({ pointerId }) => {
+                if (seekPointer === pointerId) seekPointer = undefined;
+            },
+            { signal },
+        );
     seek.addEventListener(
         "input",
         () => {
@@ -334,7 +352,9 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             update(true);
             status.textContent =
                 sourceLabel ||
-                (record.variant === "preview" ? "In-game preview" : "Full song");
+                (record.variant === "preview"
+                    ? "In-game preview"
+                    : "Full song");
             button();
             cancelAnimationFrame(frame);
             tick();

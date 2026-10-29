@@ -634,7 +634,7 @@ function renderSummary({ animate = true } = {}) {
     setText(
         "top-foot",
         stats.top.length
-            ? `Top ${stats.top.length} average · ${vf(average(stats.top.map((p) => p.vf)))} VF`
+            ? `Top ${stats.top.length} average: ${vf(average(stats.top.map((p) => p.vf)))} VF`
             : "Your strongest saved charts",
     );
     renderSpark();

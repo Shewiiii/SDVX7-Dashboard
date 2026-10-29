@@ -25,6 +25,14 @@ function toggle(name, label, enabled, live2d = false) {
     return `<div class="settings-row" ${live2d ? "data-live2d-control" : ""}><span id="crew-${name}-label">${label}</span><div id="crew-${name}" class="segmented" role="group" aria-labelledby="crew-${name}-label">${[true, false].map((value) => `<button type="button" data-crew-toggle="${name}" data-value="${value}" aria-pressed="${value === enabled}" class="${value === enabled ? "selected" : ""}">${value ? "On" : "Off"}</button>`).join("")}</div></div>`;
 }
 
+function isResultPose(group) {
+    return /^r_(good|bad|verygood)_loop$/i.test(group);
+}
+
+function loops(group) {
+    return /^(idle\d*|loop|neu_loop|moto_neu)$/i.test(group) || isResultPose(group);
+}
+
 export function createCrewViewer(dialog, getState) {
     const host = document.getElementById("nemsys-crew-view");
     host.innerHTML = `
@@ -42,7 +50,7 @@ export function createCrewViewer(dialog, getState) {
         <h2 id="crew-settings-title" tabindex="-1">Crew settings</h2>
         <div class="settings-row"><label for="crew-motion">Animation</label><select id="crew-motion" disabled></select></div>
         <div class="settings-control"><span id="crew-speed-label">Playback speed</span><div class="segmented chart-viewer-rates" role="group" aria-labelledby="crew-speed-label">${[0.5, 0.75, 1, 1.5].map((rate) => `<button type="button" data-crew-rate="${rate}" aria-pressed="${rate === 1}" class="${rate === 1 ? "selected" : ""}">${rate}×</button>`).join("")}</div></div>
-        <div class="settings-control crew-scale"><label for="crew-zoom">Scale</label><div class="crew-scale-value"><button type="button" class="text-button" id="crew-scale-reset" aria-label="Reset character scale">Reset</button><output for="crew-zoom">100%</output></div><input id="crew-zoom" type="range" min="50" max="500" step="5" value="100"></div>
+        <div class="settings-control crew-scale"><label for="crew-zoom">Scale</label><div class="crew-scale-value"><button type="button" class="text-button" id="crew-scale-reset" aria-label="Reset character scale">Reset</button><output for="crew-zoom">100%</output></div><input id="crew-zoom" type="range" min="50" max="1000" step="5" value="100"></div>
         <div class="settings-row crew-position"><span id="crew-position-value">Position (0, 0)</span><button type="button" class="text-button" id="crew-position-reset">Reset</button></div>
         ${toggle("tracking", "Follow pointer", false, true)}
         ${toggle("physics", "Physics", true, true)}
@@ -53,6 +61,7 @@ export function createCrewViewer(dialog, getState) {
     sidebar.hidden = true;
     const voices = document.createElement("section");
     voices.className = "crew-voices";
+    voices.id = "crew-voices";
     const voiceBank = createCrewVoices(voices);
     sidebar.append(settings, voices);
     dialog.append(sidebar, browser);
@@ -83,14 +92,15 @@ export function createCrewViewer(dialog, getState) {
     let zoom = 1;
     let drag;
     let jumpTarget = null;
+    let previewScrollFrame = 0;
     const options = { tracking: false, physics: true };
     for (const group of settings.querySelectorAll(".segmented"))
         initSegmentedControl(group);
 
-    function settingsScrollTarget() {
+    function panelScrollTarget(element) {
         const top =
             dialog.scrollTop +
-            settings.getBoundingClientRect().bottom -
+            element.getBoundingClientRect().bottom -
             dialog.getBoundingClientRect().top -
             dialog.clientTop -
             dialog.clientHeight +
@@ -101,6 +111,26 @@ export function createCrewViewer(dialog, getState) {
         );
     }
 
+    function nextJump() {
+        const position = Math.max(dialog.scrollTop, jumpTarget ?? 0);
+        const panels = [
+            { element: settings, label: "crew settings" },
+            { element: voices, label: "voice bank" },
+            { element: browser, label: "crew members" },
+        ].filter(({ element }) => !element.hidden);
+        const destinations = panels.map((panel) => ({
+            ...panel,
+            top:
+                panel.element === browser
+                    ? dialog.scrollHeight - dialog.clientHeight
+                    : panelScrollTarget(panel.element),
+        }));
+        return (
+            destinations.find(({ top }) => top > position + 1) ||
+            destinations.at(-1)
+        );
+    }
+
     function updateJump() {
         jump.hidden =
             !active ||
@@ -108,17 +138,9 @@ export function createCrewViewer(dialog, getState) {
             browser.hidden ||
             dialog.scrollTop >= dialog.scrollHeight - dialog.clientHeight - 1;
         if (jump.hidden) return;
-        const toMembers =
-            Math.max(dialog.scrollTop, jumpTarget ?? 0) >=
-            settingsScrollTarget() - 1;
-        jump.setAttribute(
-            "aria-label",
-            toMembers ? "Scroll to crew members" : "Scroll to crew settings",
-        );
-        jump.setAttribute(
-            "aria-controls",
-            toMembers ? "crew-browser" : "crew-settings",
-        );
+        const target = nextJump();
+        jump.setAttribute("aria-label", `Scroll to ${target.label}`);
+        jump.setAttribute("aria-controls", target.element.id);
     }
 
     dialog.addEventListener("scroll", updateJump, { passive: true });
@@ -126,12 +148,44 @@ export function createCrewViewer(dialog, getState) {
         jumpTarget = null;
         updateJump();
     }
-    dialog.addEventListener("scrollend", clearJumpTarget);
-    dialog.addEventListener("wheel", clearJumpTarget, { passive: true });
+    function clearPreviewScroll() {
+        cancelAnimationFrame(previewScrollFrame);
+        previewScrollFrame = 0;
+        sidebar.style.minHeight = "";
+    }
+
+    function clearScrollIntent() {
+        clearJumpTarget();
+        clearPreviewScroll();
+    }
+
+    function scrollToPreview() {
+        if (!mobile.matches) return;
+        clearJumpTarget();
+        cancelAnimationFrame(previewScrollFrame);
+        // Keep loading states from shrinking the page beneath an active scroll.
+        sidebar.style.minHeight = `${sidebar.getBoundingClientRect().height}px`;
+        previewScrollFrame = requestAnimationFrame(() => {
+            previewScrollFrame = 0;
+            dialog.scrollTo({
+                top: 0,
+                behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+                    ? "instant"
+                    : "smooth",
+            });
+            if (dialog.scrollTop <= 1) clearPreviewScroll();
+        });
+    }
+
+    dialog.addEventListener("scrollend", () => {
+        clearJumpTarget();
+        if (dialog.scrollTop <= 1) clearPreviewScroll();
+    });
+    dialog.addEventListener("wheel", clearScrollIntent, { passive: true });
     dialog.addEventListener(
         "touchstart",
         (event) => {
-            if (!jump.contains(event.target)) clearJumpTarget();
+            if (!jump.contains(event.target)) clearScrollIntent();
         },
         { passive: true },
     );
@@ -146,29 +200,29 @@ export function createCrewViewer(dialog, getState) {
                 "End",
             ].includes(event.key)
         )
-            clearJumpTarget();
+            clearScrollIntent();
     });
-    mobile.addEventListener("change", updateJump);
+    mobile.addEventListener("change", () => {
+        if (!mobile.matches) clearPreviewScroll();
+        updateJump();
+    });
     const jumpObserver = new ResizeObserver(updateJump);
-    for (const element of [dialog, browser, settings])
+    for (const element of [dialog, browser, settings, voices])
         jumpObserver.observe(element);
     jump.addEventListener("click", () => {
         if (jump.hidden) return;
-        const settingsTop = settingsScrollTarget();
-        const toMembers =
-            Math.max(dialog.scrollTop, jumpTarget ?? 0) >= settingsTop - 1;
-        jumpTarget = toMembers
-            ? dialog.scrollHeight - dialog.clientHeight
-            : settingsTop;
+        clearPreviewScroll();
+        const target = nextJump();
+        jumpTarget = target.top;
         dialog.scrollTo({
             top: jumpTarget,
             behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
                 ? "instant"
                 : "smooth",
         });
-        $(toMembers ? "crew-browser-title" : "crew-settings-title").focus({
-            preventScroll: true,
-        });
+        const heading = target.element.querySelector("h2");
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
         updateJump();
     });
 
@@ -254,24 +308,38 @@ export function createCrewViewer(dialog, getState) {
         if (!item) return;
         const currentPlayer = player;
         const version = revision;
-        const idle = /^(in\d*|moto_in)$/i.test(item.group)
+        const returnsToIdle = /^(in\d*|moto_in|ok|kettei)$/i.test(item.group);
+        const followup = returnsToIdle
             ? player.motions.find((entry) =>
                   ["Idle", "idle", "loop", "neu_loop", "moto_neu"].includes(
                       entry.group,
                   ),
               )
-            : null;
-        const next = idle && {
-            ...idle,
+            : /^r_(good|bad|verygood)$/i.test(item.group)
+              ? player.motions.find(
+                    (entry) =>
+                        entry.group.toLowerCase() ===
+                        `${item.group}_loop`.toLowerCase(),
+                )
+              : null;
+        const next = followup && {
+            ...followup,
+            loop: true,
             onStart() {
                 if (player !== currentPlayer || version !== revision) return;
-                motion.value = player.motions.indexOf(idle);
+                if (!isResultPose(followup.group))
+                    motion.value = player.motions.indexOf(followup);
             },
         };
         try {
-            await player.motion(item.group, item.index, next);
+            await player.motion(
+                item.group,
+                item.index,
+                next,
+                loops(item.group),
+            );
         } catch {
-            if (active)
+            if (active && player === currentPlayer && version === revision)
                 setStatus(
                     "This animation could not play. Try another animation.",
                 );
@@ -279,16 +347,27 @@ export function createCrewViewer(dialog, getState) {
     }
 
     function applyView() {
-        const nextZoom = Number($("crew-zoom").value) / 100;
-        panX *= nextZoom / zoom;
-        panY *= nextZoom / zoom;
-        zoom = nextZoom;
+        zoom = Number($("crew-zoom").value) / 100;
         player?.zoom(zoom);
         player?.pan(panX, panY);
         image.style.transform = `translate(${panX * 100}%, ${panY * 100}%) scale(${zoom})`;
         settings.querySelector('output[for="crew-zoom"]').textContent =
             `${$("crew-zoom").value}%`;
         updatePosition();
+    }
+
+    function zoomAt(value, x = 0, y = 0) {
+        const slider = $("crew-zoom");
+        slider.value = Math.max(
+            Number(slider.min),
+            Math.min(Number(slider.max), value),
+        );
+        const ratio = Number(slider.value) / (zoom * 100);
+        if (ratio === 1) return;
+        // Keep the chosen point fixed while changing scale.
+        panX = x - (x - panX) * ratio;
+        panY = y - (y - panY) * ratio;
+        applyView();
     }
 
     function updatePosition() {
@@ -329,13 +408,14 @@ export function createCrewViewer(dialog, getState) {
             const value = Number(slider.value);
             const next =
                 event.deltaY < 0
-                    ? (Math.floor(value / 10) + 1) * 10
-                    : (Math.ceil(value / 10) - 1) * 10;
-            slider.value = Math.max(
-                Number(slider.min),
-                Math.min(Number(slider.max), next),
-            );
-            applyView();
+                    ? (Math.floor(value / 20) + 1) * 20
+                    : (Math.ceil(value / 20) - 1) * 20;
+            const rect = stage.getBoundingClientRect();
+            const x =
+                (event.clientX - rect.left) / Math.max(1, rect.width) - 0.5;
+            const y =
+                (event.clientY - rect.top) / Math.max(1, rect.height) - 0.5;
+            zoomAt(next, x, y);
         },
         { passive: false },
     );
@@ -439,6 +519,7 @@ export function createCrewViewer(dialog, getState) {
     }
 
     async function select(entry, scroll = null) {
+        if (scroll === null) scrollToPreview();
         stop();
         voices.hidden = catalog.voices_enabled === false;
         if (voices.hidden) voiceBank.stop();
@@ -509,6 +590,7 @@ export function createCrewViewer(dialog, getState) {
             }
             player = created;
             for (const [index, item] of player.motions.entries()) {
+                if (isResultPose(item.group)) continue;
                 const option = document.createElement("option");
                 option.value = index;
                 option.textContent = `${labels[item.group] || item.group.replaceAll("_", " ")}${entry.type === "live2d" && item.index ? ` ${item.index + 1}` : ""}`;
@@ -524,7 +606,7 @@ export function createCrewViewer(dialog, getState) {
             );
             motion.value =
                 playing && entrance >= 0 ? entrance : Math.max(0, idle);
-            motion.disabled = !player.motions.length;
+            motion.disabled = !motion.options.length;
             $("crew-play").disabled = false;
             $("crew-replay").disabled = !player.motions.length;
             applySettings();
@@ -562,26 +644,17 @@ export function createCrewViewer(dialog, getState) {
         void playMotion();
     });
     motion.addEventListener("change", () => {
-        if (mobile.matches) {
-            jumpTarget = null;
-            dialog.scrollTo({
-                top: 0,
-                behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-                    ? "instant"
-                    : "smooth",
-            });
-            updateJump();
-        }
+        scrollToPreview();
         playing = true;
         updatePlayback();
         void playMotion();
     });
-    $("crew-zoom").addEventListener("input", applyView);
+    $("crew-zoom").addEventListener("input", (event) => {
+        zoomAt(Number(event.target.value));
+    });
     $("crew-scale-reset").addEventListener("click", () => {
         endDrag();
-        $("crew-zoom").value = 100;
-        zoom = 1;
-        applyView();
+        zoomAt(100);
     });
     $("crew-position-reset").addEventListener("click", () => {
         endDrag();
@@ -657,6 +730,7 @@ export function createCrewViewer(dialog, getState) {
         },
         hide() {
             active = false;
+            clearPreviewScroll();
             voiceBank.stop();
             sidebar.hidden = true;
             jumpTarget = null;

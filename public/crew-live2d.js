@@ -187,7 +187,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
     document.addEventListener("pointerleave", resetFocus, { signal });
     window.addEventListener("blur", resetFocus, { signal });
     const manager = model.internalModel.motionManager;
-    // Only the explicit entrance-to-idle sequence starts a follow-up motion.
+    // The viewer chooses follow-up motions instead of the adapter's automatic idle.
     manager.state.shouldRequestIdleMotion = () => false;
     let motionRevision = 0;
     let playback;
@@ -212,7 +212,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                     file: entry.File,
                 })),
         ),
-        async motion(group, index, next) {
+        async motion(group, index, next, loop = false) {
             const version = ++motionRevision;
             playback = null;
             const [motion, nextMotion] = await Promise.all([
@@ -222,11 +222,11 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
             if (signal.aborted || version !== motionRevision) return;
             if (!motion || (next && !nextMotion))
                 throw Error("This character animation could not load.");
-            motion.setIsLoop(false);
+            motion.setIsLoop(loop);
             motion.setIsLoopFadeIn(false);
             motion.setFadeOutTime(0);
             if (nextMotion) {
-                nextMotion.setIsLoop(false);
+                nextMotion.setIsLoop(next.loop === true);
                 nextMotion.setIsLoopFadeIn(false);
                 nextMotion.setFadeOutTime(0);
             }
@@ -243,6 +243,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                 playback = {
                     next,
                     nextMotion,
+                    loop,
                     entry: queuedEntry,
                     duration: motion.getLoopDuration(),
                     version,
@@ -252,7 +253,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
             updateFocus();
             const pending = playback;
             let finished = false;
-            if (pending?.entry.isStarted()) {
+            if (pending && !pending.loop && pending.entry.isStarted()) {
                 const remaining =
                     (pending.entry.getStartTime() + pending.duration) * 1000 -
                     model.elapsedTime;
@@ -278,6 +279,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                                 playback = {
                                     entry: queuedEntry,
                                     duration: nextMotion.getLoopDuration(),
+                                    loop: next.loop === true,
                                     version,
                                 };
                                 next.onStart();

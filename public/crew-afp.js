@@ -98,6 +98,7 @@ export async function createAfpPlayer(canvas, url, base, signal) {
     let frameTime = 0;
     let end = main.frames.length;
     let followup;
+    let currentMotion;
     const fps = main.fps || 60;
     const labels = Object.entries(main.labels)
         .filter(([name]) => !name.endsWith("_end"))
@@ -106,7 +107,8 @@ export async function createAfpPlayer(canvas, url, base, signal) {
         root = clip({ ...main, movie: data.main });
         for (let index = 0; index <= frame; index++) step(root);
     }
-    function startMotion(group, index) {
+    function startMotion(group, index, loop = false) {
+        currentMotion = { group, index, loop };
         const start = main.labels[group] || 0;
         end =
             main.labels[`${group}_end`] ??
@@ -210,9 +212,9 @@ export async function createAfpPlayer(canvas, url, base, signal) {
     seek(0);
     return {
         motions: labels.map(([group], index) => ({ group, index })),
-        motion(group, index, next) {
+        motion(group, index, next, loop = false) {
             followup = next;
-            startMotion(group, index);
+            startMotion(group, index, loop);
         },
         render(delta) {
             frameTime += delta;
@@ -223,9 +225,14 @@ export async function createAfpPlayer(canvas, url, base, signal) {
                     if (followup) {
                         const next = followup;
                         followup = null;
-                        startMotion(next.group, next.index);
+                        startMotion(next.group, next.index, next.loop === true);
                         next.onStart();
-                    }
+                    } else if (currentMotion?.loop)
+                        startMotion(
+                            currentMotion.group,
+                            currentMotion.index,
+                            true,
+                        );
                 } else step(root);
             }
             const rect = canvas.parentElement.getBoundingClientRect();

@@ -51,7 +51,7 @@ def prepare_catalog() -> dict[str, Any]:
                 continue
             target = icon_root / icon
             if not target.exists():
-                target.write_bytes(images[icon].load())
+                target.write_bytes(images[icon].load())  # Writes to .local/crews/icons/
             entry["icon"] = f"icons/{icon}"
             voice = voice_for(entry) if enable_voices else None
             entry["voice"] = f"voices/{voice}.json" if voice else None

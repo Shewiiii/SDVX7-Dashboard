@@ -2616,6 +2616,7 @@ footer > :last-child {
     #appeal-helper[data-customize-view="crew"] {
         max-height: calc(100dvh - 24px);
         overflow-y: auto;
+        overflow-anchor: none;
     }
     #appeal-helper[data-customize-view="crew"] .customize-content {
         height: max(540px, calc(100dvh - 36px));

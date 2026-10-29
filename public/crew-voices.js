@@ -99,8 +99,8 @@ export function createCrewVoices(panel) {
             }
             list.disabled = !list.querySelector("button:not([disabled])");
             message.textContent = list.disabled
-                ? "This voice bank has no recorded lines."
-                : "Select a voice line to preview.";
+                ? "This voice bank has no recorded lines"
+                : "Select a voice line to preview";
         } catch {
             if (!signal.aborted)
                 message.textContent =

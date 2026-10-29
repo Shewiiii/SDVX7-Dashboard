@@ -100,7 +100,10 @@ def sync_crews(catalog: Any) -> None:
         cursor = 0
     client = r2_client(config)
     inventory = getattr(catalog, "crew_inventory", None)
-    if getattr(catalog, "crew_inventory_destination", None) != destination:
+    if (
+        getattr(catalog, "crew_inventory_destination", None) != destination
+        or time.monotonic() - getattr(catalog, "crew_inventory_at", 0) >= 30
+    ):
         inventory = None
     if inventory is None:
         inventory = {}
@@ -112,6 +115,7 @@ def sync_crews(catalog: Any) -> None:
             )
         catalog.crew_inventory = inventory
         catalog.crew_inventory_destination = destination
+        catalog.crew_inventory_at = time.monotonic()
     used = sum(inventory.values())
     audio = configuration()
     limit = int(
@@ -165,14 +169,7 @@ def sync_crews(catalog: Any) -> None:
         if not target.is_file():
             print(f"Downloading missing crew runtime {name}...", flush=True)
             download(url, target)
-
-    for name in (
-        "pixi.min.js",
-        "unsafe-eval.js",
-        "cubism4.min.js",
-        "live2dcubismcore.min.js",
-    ):
-        upload("runtime/" + name, ROOT / ".local/crew-tools" / name)
+        upload("runtime/" + name, target)
     entry = entries[cursor]
     try:
         objects = crew_assets(entry)

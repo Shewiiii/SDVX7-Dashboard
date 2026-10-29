@@ -21,23 +21,9 @@ export function createAppealCardHelper(getState) {
     const crewViewer = createCrewViewer(dialog, getState);
     const tabs = [...dialog.querySelectorAll("[data-customize-tab]")];
     const tabList = dialog.querySelector(".customize-tabs");
-    let crewAvailable = false;
-    let availabilityRequest = 0;
     let view = "cards";
 
-    async function checkCrewAvailability() {
-        const request = ++availabilityRequest;
-        crewAvailable = false;
-        tabList.hidden = true;
-        const available = await crewViewer.isAvailable();
-        if (request !== availabilityRequest || !dialog.open || closing) return;
-        crewAvailable = available;
-        tabList.hidden = !available;
-        resizeBrowser();
-    }
-
     function switchTab(next) {
-        if (next === "crew" && !crewAvailable) return;
         if (next === view) return;
         view = next;
         dialog.dataset.customizeView = view;
@@ -380,10 +366,10 @@ export function createAppealCardHelper(getState) {
             pageNumber.hidden = false;
             selectedId = null;
             switchTab("cards");
+            tabList.hidden = false;
             browser.hidden = false;
             detail.hidden = true;
             showPanel(dialog);
-            void checkCrewAvailability();
             renderBrowser({ anchorId: current?.id ?? null });
             // Establish both starting styles before fading the panel/backdrop in.
             getComputedStyle(dialog).opacity;
@@ -400,9 +386,6 @@ export function createAppealCardHelper(getState) {
     async function closeDialog() {
         if (!dialog.open || closing) return;
         closing = true;
-        availabilityRequest++;
-        crewAvailable = false;
-        tabList.hidden = true;
         crewViewer.hide();
         leaveDetailHistory();
         dialog.classList.remove("is-visible");

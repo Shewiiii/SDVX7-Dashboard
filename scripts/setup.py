@@ -291,6 +291,31 @@ def deploy(
         stages["database_connected"] = True
         stages_path.parent.mkdir(parents=True, exist_ok=True)
         stages_path.write_text(json.dumps(stages, indent=2), encoding="utf-8")
+    crew_config_path = ROOT / ".local/crew-config.json"
+    crew_config = (
+        json.loads(crew_config_path.read_text(encoding="utf-8"))
+        if crew_config_path.exists()
+        else {}
+    )
+    crew_url = (
+        crew_config.get("public_url", "").rstrip("/") + "/crews/"
+        if crew_config.get("mode") == "r2"
+        else ""
+    )
+    env_names = vercel(
+        npm, "env", "ls", "production", capture=True, stderr=subprocess.STDOUT
+    )
+    if re.search(r"\bCREW_ASSET_URL\b", env_names):
+        vercel(npm, "env", "rm", "CREW_ASSET_URL", "production", "--yes")
+    if crew_url:
+        vercel(
+            npm,
+            "env",
+            "add",
+            "CREW_ASSET_URL",
+            "production",
+            input=crew_url + "\n",
+        )
     # Keep the saved token, including on reruns. Never rotate an existing connection.
     config["token"] = config.get("token") or secrets.token_urlsafe(48)
     save_config(config)

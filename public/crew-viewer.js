@@ -651,8 +651,8 @@ export function createCrewViewer(dialog, getState) {
                     catalog.crews.find((item) => item.id === currentId) ||
                     catalog.crews[0];
                 await select(entry, "instant");
-            } catch (error) {
-                if (active) setStatus(error.message);
+            } catch {
+                if (active) setStatus("Nemsys crew preview is not available");
             }
         },
         hide() {

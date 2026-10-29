@@ -65,7 +65,14 @@ def sync_crews(catalog: Any) -> None:
     if state.get("destination") != destination:
         state = {"destination": destination, "objects": {}}
     if state.get("signature") != signature:
-        state.update(signature=signature, cursor=0, ready=[], failed=[], order=None)
+        state.update(
+            signature=signature,
+            cursor=0,
+            ready=[],
+            failed=[],
+            order=None,
+            complete=False,
+        )
     if (
         not hasattr(catalog, "crew_assets_catalog")
         or getattr(catalog, "crew_signature", None) != signature
@@ -75,6 +82,9 @@ def sync_crews(catalog: Any) -> None:
     assets = catalog.crew_assets_catalog
     entries = assets["crews"]
     if not entries:
+        return
+    if state.get("complete"):
+        catalog.crew_pending = False
         return
     if not state.get("order"):
         current = selected_crew()
@@ -89,13 +99,19 @@ def sync_crews(catalog: Any) -> None:
         state.update(cursor=0, failed=[])
         cursor = 0
     client = r2_client(config)
-    inventory = {}
-    for page in client.get_paginator("list_objects_v2").paginate(
-        Bucket=config["bucket"]
-    ):
-        inventory.update(
-            {item["Key"]: item["Size"] for item in page.get("Contents", [])}
-        )
+    inventory = getattr(catalog, "crew_inventory", None)
+    if getattr(catalog, "crew_inventory_destination", None) != destination:
+        inventory = None
+    if inventory is None:
+        inventory = {}
+        for page in client.get_paginator("list_objects_v2").paginate(
+            Bucket=config["bucket"]
+        ):
+            inventory.update(
+                {item["Key"]: item["Size"] for item in page.get("Contents", [])}
+            )
+        catalog.crew_inventory = inventory
+        catalog.crew_inventory_destination = destination
     used = sum(inventory.values())
     audio = configuration()
     limit = int(
@@ -164,8 +180,10 @@ def sync_crews(catalog: Any) -> None:
         write_json(path, published)
         upload("catalog.json", path)
     state["cursor"] = cursor + 1
+    if state["cursor"] >= len(entries) and len(state["ready"]) == len(entries):
+        state["complete"] = True
     write_json(checkpoint, state)
-    catalog.crew_pending = state["cursor"] < len(entries)
+    catalog.crew_pending = not state.get("complete", False)
     print(f"Crew sync {state['cursor']}/{len(entries)}", flush=True)
 
 
@@ -180,7 +198,10 @@ def start_crew_sync(catalog: Any) -> None:
 
     def work() -> None:
         try:
-            sync_crews(catalog)
+            for _ in range(4):
+                sync_crews(catalog)
+                if not catalog.crew_pending:
+                    break
             catalog.crew_next_sync = (
                 0 if catalog.crew_pending else time.monotonic() + 300
             )

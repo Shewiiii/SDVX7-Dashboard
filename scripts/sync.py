@@ -826,6 +826,10 @@ def sync_once(
     background_audio: bool = False,
     source_changed: Callable[[], bool] | None = None,
 ) -> None:
+    print(
+        f"Sync cycle started (background assets: {'yes' if background_audio else 'no'}).",
+        flush=True,
+    )
     state_path = ROOT / ".local/sync-state.json"
     saved = read_checkpoint(state_path)
     # The public URL can stay unchanged when Vercel/Neon is replaced. Bind all
@@ -845,6 +849,10 @@ def sync_once(
     if saved.get("play_schema") != PLAY_SCHEMA:
         saved.pop("plays", None)
     catalog.refresh()
+    print(
+        f"Catalog ready: {len(catalog.songs)} songs, {len(catalog.charts)} charts.",
+        flush=True,
+    )
     if hasattr(catalog, "prepare_covers"):
         catalog.prepare_covers()
         cover_state_path = ROOT / ".local/cover-sync-state.json"
@@ -905,6 +913,8 @@ def sync_once(
             break
     if uploaded:
         print(f"Synced {uploaded} records at {datetime.now().strftime('%H:%M:%S')}.")
+    else:
+        print("No new play or VolForce records to upload.", flush=True)
     if source_changed and source_changed():
         return
     sync_details(
@@ -914,6 +924,7 @@ def sync_once(
         current.get("charts", []),
         source_changed=source_changed,
     )
+    print("Chart detail sync complete.", flush=True)
     if source_changed and source_changed():
         return
     if hasattr(catalog, "prepare_covers"):
@@ -974,6 +985,14 @@ def sync_once(
             f"Crew sync pending ({type(error).__name__}). Check optional-setup.bat, other syncing continues.",
             flush=True,
         )
+    print(
+        "Sync cycle finished "
+        f"(details_pending={getattr(catalog, 'details_pending', False)}, "
+        f"covers_pending={getattr(catalog, 'covers_pending', False)}, "
+        f"audio_pending={getattr(catalog, 'audio_pending', False)}, "
+        f"crew_pending={getattr(catalog, 'crew_pending', False)}).",
+        flush=True,
+    )
 
 
 def sync_details(

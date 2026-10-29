@@ -32,7 +32,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         autoStart: false,
         backgroundAlpha: 0,
         antialias: true,
-        resolution: Math.min(devicePixelRatio || 1, 2),
+        resolution: Math.min(devicePixelRatio || 1, 3),
         autoDensity: true,
     });
     const model = await PIXI.live2d.Live2DModel.from(url, {

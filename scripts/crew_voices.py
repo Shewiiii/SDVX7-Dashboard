@@ -136,7 +136,9 @@ def prepare_manifest(folder: str) -> dict[str, Any]:
         if clips:
             banks.append({"label": CATEGORIES.get(category, category), "clips": clips})
     result = {"banks": banks, "silent_samples": silent_count}
-    write_json(CACHE / (folder + ".json"), result)
+    target = CACHE / (folder + ".json")
+    if read_json(target, {}) != result:
+        write_json(target, result)
     return result
 
 

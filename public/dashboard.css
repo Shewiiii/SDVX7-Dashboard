@@ -539,7 +539,7 @@
     background: var(--popup-bg);
     color: var(--popup-color);
     box-shadow: var(--popup-shadow);
-    font: var(--popup-font-size)/1.5 var(--sans);
+    font: var(--popup-font-size) / 1.5 var(--sans);
 }
 .chart-popup,
 .spending-popup,
@@ -1277,6 +1277,54 @@ footer > :last-child {
 .timing-section {
     margin-top: 8px;
 }
+.profile-radar-section {
+    margin-top: 24px;
+    padding-bottom: 24px;
+}
+.profile-radar-wrap {
+    display: grid;
+    place-items: center;
+    padding: 10px 24px 14px;
+    min-height: 240px;
+}
+.profile-radar-wrap > .profile-radar {
+    width: min(100%, 400px);
+    --radar-center-color: var(--profile-radar-center-color);
+    --radar-gradient-start: var(--profile-radar-gradient-start);
+    --radar-gradient-middle: var(--profile-radar-gradient-middle);
+    --radar-gradient-end: var(--profile-radar-gradient-end);
+    --radar-fill-opacity: var(--profile-radar-fill-opacity);
+}
+.profile-radar .song-radar-area {
+    fill: none;
+    stroke: var(--profile-radar-stroke-color);
+    stroke-opacity: 0.6;
+    stroke-width: 0.6;
+}
+.profile-radar-wrap > .profile-radar svg {
+    width: 100%;
+}
+.profile-radar .song-radar-grid {
+    fill: var(--profile-radar-grid-bg);
+}
+.profile-radar .song-radar-value {
+    font-size: 10px;
+}
+.profile-radar-note,
+.profile-radar-empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+}
+.profile-radar-note {
+    padding: 0 24px;
+}
+@media (max-width: 600px) {
+    .profile-radar-wrap {
+        padding-inline: 4px;
+    }
+}
 .timing-heading {
     padding: 14px 27px 12px;
 }
@@ -1938,22 +1986,22 @@ footer > :last-child {
     font-weight: 400;
 }
 .song-radar-label[data-axis="notes"] {
-    fill: #2ee8e4;
+    fill: var(--radar-label-notes);
 }
 .song-radar-label[data-axis="peak"] {
-    fill: #ff4d71;
+    fill: var(--radar-label-peak);
 }
 .song-radar-label[data-axis="tsumami"] {
-    fill: #ff56e0;
+    fill: var(--radar-label-tsumami);
 }
 .song-radar-label[data-axis="tricky"] {
-    fill: #ebee6a;
+    fill: var(--radar-label-tricky);
 }
 .song-radar-label[data-axis="hand-trip"] {
-    fill: #ab74da;
+    fill: var(--radar-label-hand-trip);
 }
 .song-radar-label[data-axis="one-hand"] {
-    fill: #1bee7e;
+    fill: var(--radar-label-one-hand);
 }
 .song-radar-value {
     fill: var(--ink);
@@ -2825,13 +2873,16 @@ footer > :last-child {
     text-align: right;
     overflow-wrap: anywhere;
 }
-.details-unlock-meta a {
+.details-unlock-meta a,
+.profile-radar-section .timing-heading a {
     color: inherit;
     text-decoration: none;
     transition: color var(--popup-enter-duration) var(--popup-easing);
 }
 .details-unlock-meta a:hover,
-.details-unlock-meta a:focus-visible {
+.details-unlock-meta a:focus-visible,
+.profile-radar-section .timing-heading a:hover,
+.profile-radar-section .timing-heading a:focus-visible {
     color: var(--accent);
 }
 .details-unlock p {

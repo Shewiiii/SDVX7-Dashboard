@@ -220,6 +220,9 @@ export function initSegmentedControls() {
 }
 
 export const motion = {
+    profileRadar(root, reveal, animate = true) {
+        if (animate) queue(root, reveal, 0.3);
+    },
     isPending(root) {
         return pending.has(root);
     },

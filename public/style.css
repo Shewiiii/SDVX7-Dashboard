@@ -140,6 +140,23 @@
     --radar-grid-color: #e4e9e0a6;
     --radar-transition-duration: 220ms;
 
+    /* Increase brightness a bit to make the text more readable */
+    --radar-label-notes: #2ee8e4;
+    --radar-label-peak: #ff4d71;
+    --radar-label-tsumami: #ff56e0;
+    --radar-label-tricky: #ebee6a;
+    --radar-label-hand-trip: #ab74da;
+    --radar-label-one-hand: #1bee7e;
+
+    /* Not sure about the colors here though */
+    --profile-radar-center-color: #ff7914;
+    --profile-radar-gradient-start: #692000;
+    --profile-radar-gradient-middle: #e85800;
+    --profile-radar-gradient-end: #ff8a0a;
+    --profile-radar-fill-opacity: 1;
+    --profile-radar-stroke-color: #ef6b0a;
+    --profile-radar-grid-bg: color-mix(in srgb, var(--panel) 20%, transparent);
+
     --performance-background-dim: 0.6;
     --performance-panel-dim: 0.75;
     --performance-background-blur: 9px;

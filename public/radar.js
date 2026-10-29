@@ -15,7 +15,10 @@ export function validRadar(values) {
     );
 }
 
-export function radarMarkup(values, { interactive = false } = {}) {
+export function radarMarkup(
+    values,
+    { interactive = false, profile = false } = {},
+) {
     if (!validRadar(values))
         return '<div class="song-radar song-radar-empty"><span>Effect radar unavailable</span></div>';
 
@@ -51,7 +54,8 @@ export function radarMarkup(values, { interactive = false } = {}) {
         const [x, y] = point(axis, gridRadius + 20);
         const anchor =
             axis === 0 || axis === 3 ? "middle" : axis < 3 ? "start" : "end";
-        return `<text x="${x}" y="${y - 3}" text-anchor="${anchor}" class="song-radar-label" data-axis="${label.toLowerCase()}"><tspan class="song-radar-label-name">${label}</tspan><tspan x="${x}" dy="14" class="song-radar-value">${values[axis]}</tspan></text>`;
+        const value = profile ? values[axis].toFixed(2) : values[axis];
+        return `<text x="${x}" y="${y - 3}" text-anchor="${anchor}" class="song-radar-label" data-axis="${label.toLowerCase()}"><tspan class="song-radar-label-name">${label}</tspan><tspan x="${x}" dy="14" class="song-radar-value">${value}</tspan></text>`;
     }).join("");
     const vertices = values.map((value, axis) => point(axis, value * unit));
     const left = Math.min(0, ...vertices.map(([x]) => Math.floor(x - 10)));
@@ -63,9 +67,9 @@ export function radarMarkup(values, { interactive = false } = {}) {
     const tag = interactive ? "button" : "figure";
     const attributes = interactive
         ? 'class="song-radar radar-trigger" type="button" data-similar-charts aria-label="Show similar charts" aria-haspopup="dialog" aria-controls="similar-charts"'
-        : 'class="song-radar"';
+        : `class="song-radar${profile ? " profile-radar" : ""}"`;
 
-    return `<${tag} ${attributes}><svg viewBox="${left} ${top} ${right - left} ${bottom - top}" role="img" aria-label="Effect radar, reference hexagon at 100; higher values extend beyond it. ${description}">
+    return `<${tag} ${attributes}><svg viewBox="${left} ${top} ${right - left} ${bottom - top}" role="img" aria-label="${profile ? "Profile" : "Effect"} radar, reference hexagon at 100; higher values extend beyond it. ${description}">
         <defs><clipPath id="${clipId}"><polygon points="${polygon(values.map((value) => value * unit))}"/></clipPath></defs>
         <g class="song-radar-graphic">
         <g class="song-radar-grid"><polygon points="${outline}"/></g>
@@ -73,7 +77,7 @@ export function radarMarkup(values, { interactive = false } = {}) {
         <polygon class="song-radar-area" points="${polygon(values.map((value) => value * unit))}"/>
         <g class="song-radar-axes">${spokes}${ticks}</g>
         </g>
-        ${labels}</svg>${interactive ? '<span>Similar charts</span>' : ""}</${tag}>`;
+        ${labels}</svg>${interactive ? "<span>Similar charts</span>" : ""}</${tag}>`;
 }
 
 function drawRadar(svg, values, resolution) {
@@ -92,6 +96,7 @@ function drawRadar(svg, values, resolution) {
         painter = {
             canvas,
             context,
+            profile: svg.closest(".profile-radar") !== null,
             centerColor: color("--radar-center-color"),
             blue: color("--radar-gradient-start"),
             purple: color("--radar-gradient-middle"),
@@ -107,6 +112,10 @@ function drawRadar(svg, values, resolution) {
     const mix = (a, b, amount) =>
         a.map((channel, i) => channel + (b[i] - channel) * amount);
     const vertexColor = (value) => {
+        if (painter.profile) {
+            if (value <= 100) return mix(blue, purple, value / 100);
+            return mix(purple, red, Math.min(1, (value - 100) / 50));
+        }
         if (value <= 100) return mix(centerColor, blue, value / 100);
         if (value <= 130) return mix(blue, purple, (value - 100) / 30);
         return mix(purple, red, Math.min(1, (value - 130) / 20));

@@ -29,6 +29,7 @@ from scripts.companion import (
 )
 from scripts.music import MusicCatalog
 from scripts.playtime import playtime_snapshot
+from scripts.profile_radar import calculate_profile_radar
 
 try:
     from pykakasi import kakasi
@@ -497,6 +498,7 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
             "appeal_cards": getattr(catalog, "appeal_cards", []),
             "playtime": playtime,
             "skill_level": None,
+            "profile_radar": None,
         }
         if hasattr(catalog, "public_catalog"):
             state["catalog"] = catalog.public_catalog()
@@ -534,6 +536,12 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
         "appeal_cards": getattr(catalog, "appeal_cards", []),
         "playtime": playtime,
         "skill_level": skill_level,
+        "profile_radar": calculate_profile_radar(
+            records,
+            getattr(getattr(catalog, "music", None), "radars", {}),
+            getattr(getattr(catalog, "music", None), "levels", {}),
+            getattr(getattr(catalog, "details", None), "metadata", {}),
+        ),
     }
     if hasattr(catalog, "public_catalog"):
         state["catalog"] = catalog.public_catalog()
@@ -724,6 +732,13 @@ def upload(
             ):
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing radar metadata"
+                )
+            if (
+                "profile_radar" in (payload.get("state") or {})
+                and result.get("profile_radar_schema", 0) < 1
+            ):
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing the profile radar"
                 )
     except urllib.error.HTTPError as error:
         # Do not expose secrets, request headers, response contents, or connection URLs.

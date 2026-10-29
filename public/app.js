@@ -39,11 +39,16 @@ import { createCalculator } from "./calculator.js";
 import { createAppealCardHelper } from "./appeal-cards.js";
 import { createVolforceHelper } from "./volforce-helper.js";
 import { radarMarkup, paintRadar } from "./radar.js";
+import { createProfileRadar } from "./profile-radar.js";
 import { createSimilarCharts } from "./similar-charts.js";
 import { createChartViewer } from "./chart-viewer.js";
 import { createChartDetails } from "./chart-details.js";
 
 const $ = (id) => document.getElementById(id);
+const profileRadar = createProfileRadar(
+    $("profile-radar"),
+    $("profile-radar-note"),
+);
 const playHighlights = createPlayHighlights();
 let highlightCleanup,
     highlightPending = false;
@@ -437,7 +442,9 @@ function chartSummaryMarkup(
     );
     const mark =
         saved?.clear_type ??
-        (plays.length ? Math.max(...plays.map((play) => play.clear_type)) : null);
+        (plays.length
+            ? Math.max(...plays.map((play) => play.clear_type))
+            : null);
     const averageTiming = average(
         data.plays
             .filter(
@@ -950,17 +957,18 @@ function renderChart({ animate = true, transition = false } = {}) {
     }
     animate = view === "overview" ? revealOnce("overview", animate) : false;
     if (!animate) {
+        // Keep the first reveal queued until this graph actually comes into view.
         for (const id of [
             "chart",
             "timing-chart",
             "chart-summary",
             "timing-summary",
         ])
-            // Keep the first reveal queued until this graph actually comes into view.
             if (!motion.isPending($(id))) motion.stop($(id));
     }
     const plays = performance(data.plays, { days, difficulty });
     renderTimingHistogram({ animate });
+    profileRadar.render(data.state.profile_radar, { animate });
     const svg = $("chart");
     svg.replaceChildren();
     svg.removeAttribute("aria-hidden");

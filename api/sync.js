@@ -120,7 +120,8 @@ export default async function handler(req, res) {
           'appeal_card', COALESCE(EXCLUDED.record->'appeal_card', dashboard_state.record->'appeal_card', 'null'::jsonb),
           'appeal_cards', COALESCE(EXCLUDED.record->'appeal_cards', dashboard_state.record->'appeal_cards', '[]'::jsonb),
           'playtime', COALESCE(EXCLUDED.record->'playtime', dashboard_state.record->'playtime', 'null'::jsonb),
-          'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb)),
+          'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb),
+          'profile_radar', COALESCE(EXCLUDED.record->'profile_radar', dashboard_state.record->'profile_radar', 'null'::jsonb)),
         synced_at = now()`);
         // Any changed play/observation batch must advance the lightweight archive
         // revision, even when the accompanying profile state is unchanged.
@@ -139,6 +140,7 @@ export default async function handler(req, res) {
             details_schema: 8,
             audio_schema: 2,
             catalog_schema: 3,
+            profile_radar_schema: 1,
         });
     } catch (error) {
         return res

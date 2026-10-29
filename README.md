@@ -37,8 +37,8 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
 ## Updates
 
 Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `run-proxy-with-dashboard.bat`.
-I might change the caching or database structure later with no backward compatibility possible.  
-If the site is not responding anymore because of this. delete your current Vercel project, its database, as well as `.local/` and `.vercel/`, then run again `setup.bat`. You will not lose data by doing so, except cache.
+
+Do the same with [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy) and keep `cache/` and `player-data/`.
 
 Connection settings and sync logs are in `.local/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
 
@@ -86,3 +86,4 @@ If you want to change the audio format or length, delete your old bucket, create
 - E-Amusement decoding utils from [RyuNET-core](https://github.com/Ryu7w7/RyuNET-core).
 - Chart view and scroll speed logic from [Unnamed SDVC Clone](https://github.com/Drewol/unnamed-sdvx-clone).
 - Audio DSP documentation from [vox2ksh](https://github.com/whiteou7/vox2ksh/blob/main/specs/audio_engine.md)
+- Profile radar calculation from [that very random note](https://note.com/logthm/n/n59dca7461be8), thank you !

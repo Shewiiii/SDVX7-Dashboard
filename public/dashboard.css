@@ -3171,6 +3171,8 @@ footer > :last-child {
     fill: var(--accent);
 }
 #appeal-helper:has(#appeal-helper-browser:not([hidden])) {
+    position: absolute;
+    inset-inline: 0;
     max-height: calc(var(--card-browser-viewport-height, 100dvh) - 36px);
     top: var(--card-browser-viewport-center, 50dvh);
     bottom: auto;

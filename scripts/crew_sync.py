@@ -156,7 +156,22 @@ def sync_crews(catalog: Any) -> None:
         state["objects"][name] = digest
         write_json(checkpoint, state)
 
-    for name in ("pixi.min.js", "cubism4.min.js", "live2dcubismcore.min.js"):
+    from scripts.crew_setup import RUNTIMES, download
+
+    runtime_dir = ROOT / ".local/crew-tools"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    for name, url in RUNTIMES.items():
+        target = runtime_dir / name
+        if not target.is_file():
+            print(f"Downloading missing crew runtime {name}...", flush=True)
+            download(url, target)
+
+    for name in (
+        "pixi.min.js",
+        "unsafe-eval.js",
+        "cubism4.min.js",
+        "live2dcubismcore.min.js",
+    ):
         upload("runtime/" + name, ROOT / ".local/crew-tools" / name)
     entry = entries[cursor]
     try:

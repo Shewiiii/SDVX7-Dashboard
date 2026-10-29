@@ -17,6 +17,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
     if (!runtime)
         runtime = (async () => {
             await script(new URL("runtime/pixi.min.js", base));
+            await script(new URL("runtime/unsafe-eval.js", base));
             await script(new URL("runtime/live2dcubismcore.min.js", base));
             await script(new URL("runtime/cubism4.min.js", base));
         })().catch((error) => {

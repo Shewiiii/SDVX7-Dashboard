@@ -20,6 +20,7 @@ from scripts.crews import CONFIG, prepare_catalog
 
 RUNTIMES = {
     "pixi.min.js": "https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js",
+    "unsafe-eval.js": "https://cdn.jsdelivr.net/npm/@pixi/unsafe-eval@6.5.10/dist/browser/unsafe-eval.js",
     "cubism4.min.js": "https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js",
     "live2dcubismcore.min.js": "https://cubism.live2d.com/sdk-web/core/06/live2dcubismcore.min.js",
 }

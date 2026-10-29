@@ -88,7 +88,7 @@ def configure_r2(config: dict[str, Any]) -> None:
                 "pip",
                 "install",
                 "-r",
-                str(ROOT / "requirements-audio.txt"),
+                str(ROOT / "requirements/requirements-audio.txt"),
             ],
             check=True,
         )

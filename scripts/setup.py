@@ -105,7 +105,7 @@ def check_proxy(proxy: Path) -> Path:
         raise ValueError(
             "Game music database missing. Put the proxy folder inside your SDVX game folder."
         )
-    run([str(python), "-m", "pip", "install", "-r", str(ROOT / "requirements.txt")])
+    run([str(python), "-m", "pip", "install", "-r", str(ROOT / "requirements/requirements.txt")])
     subprocess.run(
         [
             str(python),

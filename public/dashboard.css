@@ -2597,7 +2597,12 @@ footer > :last-child {
 }
 @media (min-width: 1200px) {
     #appeal-helper[data-customize-view="crew"] {
-        width: min(680px, calc(100vw - 700px));
+        /* Scale (only) the preview panel beyond Full HD */
+        --crew-preview-unit: clamp(1px, min(100vw / 1920, 100dvh / 1080), 2px);
+        width: min(calc(680 * var(--crew-preview-unit)), calc(100vw - 700px));
+    }
+    #appeal-helper[data-customize-view="crew"] .customize-content {
+        height: min(calc(1040 * var(--crew-preview-unit)), calc(100dvh - 36px));
     }
     .crew-browser {
         position: absolute;

@@ -2247,7 +2247,7 @@ footer > :last-child {
     width: 64px;
     height: 82px;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 0;
     flex: none;
 }
 .appeal-card-trigger {
@@ -3328,7 +3328,7 @@ footer > :last-child {
     display: block;
     position: relative;
     overflow: hidden;
-    border-radius: var(--item-radius);
+    border-radius: 0;
 }
 .appeal-helper-image img {
     display: block;

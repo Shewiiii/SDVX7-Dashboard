@@ -242,7 +242,11 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     }
     function button() {
         const playing = preparing || !audio.paused;
-        const song = options.compact ? chart.title || "song" : "song";
+        const song = options.mediaLabel
+            ? `${options.mediaLabel} ${chart.title || ""}`.trim()
+            : options.compact
+              ? chart.title || "song"
+              : "song";
         const label = `${playing ? "Pause" : "Play"} ${song}`;
         toggle.setAttribute("aria-label", label);
         toggle.title = label;
@@ -404,7 +408,9 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         try {
             const value = await (!force && options.initialAudio
                 ? options.initialAudio
-                : getAudioMetadata(chart, { force }));
+                : options.loadAudio
+                  ? options.loadAudio()
+                  : getAudioMetadata(chart, { force }));
             if (disposed) return;
             record = value;
             if (!record) throw new Error("Audio unavailable");
@@ -441,10 +447,14 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
                 download.setAttribute("aria-describedby", downloadPopup.id);
             }
             downloadAction.hidden = false;
+            button();
             update();
+            if (options.autoplay) void togglePlayback();
         } catch {
             if (disposed) return;
-            status.textContent = "Audio isn’t available for this chart yet.";
+            status.textContent =
+                options.unavailableLabel ||
+                "Audio isn’t available for this chart yet.";
             options.onUnavailable?.();
             retry.hidden = false;
         }

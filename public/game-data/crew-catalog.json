@@ -1,0 +1,1684 @@
+{
+    "version": 1,
+    "crews": [
+        {
+            "id": 2,
+            "key": "2-0",
+            "name": "Right",
+            "type": "afp",
+            "icon": "icon_right_i_eab",
+            "archive": "chara/chara_03a_right_battle.ifs",
+            "portrait": "psd_crew_o_0014"
+        },
+        {
+            "id": 3,
+            "key": "3-0",
+            "name": "Left",
+            "type": "afp",
+            "icon": "icon_left_i_eab",
+            "archive": "chara/chara_04a_left_battle.ifs",
+            "portrait": "psd_crew_o_0015"
+        },
+        {
+            "id": 3,
+            "key": "3-1",
+            "name": "Leftbag",
+            "type": "afp",
+            "icon": "icon_leftbag_i_eab",
+            "archive": "chara/chara_04a_leftbag_battle.ifs",
+            "portrait": "psd_crew_o_0016"
+        },
+        {
+            "id": 4,
+            "key": "4-0",
+            "name": "Rasis Battle",
+            "type": "afp",
+            "icon": "icon_rasis_battle_i_eab",
+            "archive": "chara/chara_02a_rasis_battle.ifs",
+            "portrait": "psd_crew_o_0002"
+        },
+        {
+            "id": 4,
+            "key": "4-1",
+            "name": "Rasis Shinka",
+            "type": "afp",
+            "icon": "icon_rasis_shinka_i_eab",
+            "archive": "chara/chara_09a_rasis_shinka.ifs",
+            "portrait": "psd_crew_o_0003"
+        },
+        {
+            "id": 5,
+            "key": "5-0",
+            "name": "Maximaap",
+            "type": "afp",
+            "icon": "icon_maximaap_i_eab",
+            "archive": "chara/chara_apb_maxma.ifs"
+        },
+        {
+            "id": 6,
+            "key": "6-0",
+            "name": "Kureha",
+            "type": "afp",
+            "icon": "icon_kureha_i_eab",
+            "archive": "chara/chara_05a_kureha.ifs",
+            "portrait": "psd_crew_o_0022"
+        },
+        {
+            "id": 7,
+            "key": "7-0",
+            "name": "Nianoa",
+            "type": "afp",
+            "icon": "icon_nianoa_i_eab",
+            "archive": "chara/chara_06a_nianoa.ifs",
+            "portrait": "psd_crew_o_0017"
+        },
+        {
+            "id": 8,
+            "key": "8-0",
+            "name": "Yukata Rasis",
+            "type": "afp",
+            "icon": "icon_yukata_rasis_i_eab",
+            "archive": "chara/chara_07a_rasis_yukata.ifs",
+            "portrait": "psd_crew_o_0004"
+        },
+        {
+            "id": 10,
+            "key": "10-0",
+            "name": "Kanade",
+            "type": "afp",
+            "icon": "icon_kanade_i_eab",
+            "archive": "chara/chara_08a_kanade.ifs",
+            "portrait": "psd_crew_o_0031"
+        },
+        {
+            "id": 11,
+            "type": "image",
+            "icon": "icon_hina_i_eab",
+            "portrait": "psd_crew_o_0031",
+            "archive": "chara/chara_08b_kanade.ifs",
+            "name": "Hina",
+            "key": "11-0"
+        },
+        {
+            "id": 12,
+            "type": "image",
+            "icon": "icon_ao_i_eab",
+            "name": "Ao",
+            "key": "12-0"
+        },
+        {
+            "id": 13,
+            "type": "image",
+            "icon": "icon_momo_i_eab",
+            "name": "Momo",
+            "key": "13-0"
+        },
+        {
+            "id": 14,
+            "type": "image",
+            "icon": "icon_gorilla_i_eab",
+            "name": "Gorilla",
+            "key": "14-0"
+        },
+        {
+            "id": 15,
+            "type": "image",
+            "icon": "icon_tsumabuki_i_eab",
+            "name": "Tsumabuki",
+            "key": "15-0"
+        },
+        {
+            "id": 16,
+            "type": "image",
+            "icon": "icon_chibii_rasis_i_eab",
+            "name": "Chibii Rasis",
+            "key": "16-0"
+        },
+        {
+            "id": 17,
+            "key": "17-0",
+            "name": "Mizugi Rasis",
+            "type": "afp",
+            "icon": "icon_mizugi_rasis_i_eab",
+            "archive": "chara/chara_10a_rasis_mizugi.ifs",
+            "portrait": "psd_crew_o_0007"
+        },
+        {
+            "id": 18,
+            "type": "image",
+            "icon": "icon_battle_tsumabuki_i_eab",
+            "portrait": "psd_crew_o_0007",
+            "archive": "chara/chara_10b_rasis_mizugi.ifs",
+            "name": "Battle Tsumabuki",
+            "key": "18-0"
+        },
+        {
+            "id": 19,
+            "key": "19-0",
+            "name": "Hb Meu",
+            "type": "afp",
+            "icon": "icon_hb_meu_i_eab",
+            "archive": "chara/chara_11a_meu.ifs",
+            "portrait": "psd_crew_o_0043"
+        },
+        {
+            "id": 20,
+            "type": "image",
+            "icon": "icon_hb_marika_i_eab",
+            "portrait": "psd_crew_o_0043",
+            "archive": "chara/chara_11b_meu.ifs",
+            "name": "Hb Marika",
+            "key": "20-0"
+        },
+        {
+            "id": 21,
+            "type": "image",
+            "icon": "icon_hb_ibuki_i_eab",
+            "name": "Hb Ibuki",
+            "key": "21-0"
+        },
+        {
+            "id": 22,
+            "type": "image",
+            "icon": "icon_hb_sakiko_i_eab",
+            "name": "Hb Sakiko",
+            "key": "22-0"
+        },
+        {
+            "id": 23,
+            "type": "image",
+            "icon": "icon_hb_rin_i_eab",
+            "name": "Hb Rin",
+            "key": "23-0"
+        },
+        {
+            "id": 24,
+            "key": "24-0",
+            "name": "Th Reimu",
+            "type": "afp",
+            "icon": "icon_th_reimu_i_eab",
+            "archive": "chara/chara_12a_reimu.ifs",
+            "portrait": "psd_crew_o_0038"
+        },
+        {
+            "id": 25,
+            "type": "image",
+            "icon": "icon_th_cirno_i_eab",
+            "portrait": "psd_crew_o_0038",
+            "archive": "chara/chara_12b_reimu.ifs",
+            "name": "Th Cirno",
+            "key": "25-0"
+        },
+        {
+            "id": 26,
+            "type": "image",
+            "icon": "icon_th_sakuya_i_eab",
+            "name": "Th Sakuya",
+            "key": "26-0"
+        },
+        {
+            "id": 27,
+            "type": "image",
+            "icon": "icon_th_flandre_i_eab",
+            "name": "Th Flandre",
+            "key": "27-0"
+        },
+        {
+            "id": 28,
+            "type": "image",
+            "icon": "icon_evileye_i_eab",
+            "name": "Evileye",
+            "key": "28-0"
+        },
+        {
+            "id": 29,
+            "key": "29-0",
+            "name": "Nianoa Santa",
+            "type": "afp",
+            "icon": "icon_nianoa_santa_i_eab",
+            "archive": "chara/chara_14a_nianoa_santa.ifs",
+            "portrait": "psd_crew_o_0018"
+        },
+        {
+            "id": 30,
+            "key": "30-0",
+            "name": "Konoha",
+            "type": "afp",
+            "icon": "icon_konoha_i_eab",
+            "archive": "chara/chara_15a_konoha.ifs",
+            "portrait": "psd_crew_o_0025"
+        },
+        {
+            "id": 31,
+            "type": "image",
+            "icon": "icon_tamaneko_i_eab",
+            "portrait": "psd_crew_o_0025",
+            "archive": "chara/chara_15b_konoha.ifs",
+            "name": "Tamaneko",
+            "key": "31-0"
+        },
+        {
+            "id": 32,
+            "type": "image",
+            "icon": "icon_watagashi_i_eab",
+            "name": "Watagashi",
+            "key": "32-0"
+        },
+        {
+            "id": 33,
+            "type": "image",
+            "icon": "icon_gangara_i_eab",
+            "name": "Gangara",
+            "key": "33-0"
+        },
+        {
+            "id": 34,
+            "type": "afp",
+            "icon": "icon_maxima_i_eab",
+            "portrait": "psd_crew_o_0020",
+            "archive": "chara/chara_16a_maxma3.ifs",
+            "name": "Maxima",
+            "key": "34-0"
+        },
+        {
+            "id": 34,
+            "type": "afp",
+            "icon": "icon_maxima_stone_i_eab",
+            "portrait": "psd_crew_o_0021",
+            "archive": "chara/chara_23a_maxma_ishi.ifs",
+            "name": "Maxima Stone",
+            "key": "34-1"
+        },
+        {
+            "id": 35,
+            "type": "afp",
+            "icon": "icon_natsuhi_i_eab",
+            "portrait": "psd_crew_o_0045",
+            "archive": "chara/chara_17a_natsuhi.ifs",
+            "name": "Natsuhi",
+            "key": "35-0"
+        },
+        {
+            "id": 36,
+            "type": "afp",
+            "icon": "icon_cocona_i_eab",
+            "portrait": "psd_crew_o_0044",
+            "archive": "chara/chara_18a_cocona.ifs",
+            "name": "Cocona",
+            "key": "36-0"
+        },
+        {
+            "id": 37,
+            "type": "image",
+            "icon": "icon_flooranthem1_i_eab",
+            "portrait": "psd_crew_o_0044",
+            "archive": "chara/chara_18a_cocona.ifs",
+            "name": "Flooranthem1",
+            "key": "37-0"
+        },
+        {
+            "id": 38,
+            "type": "image",
+            "icon": "icon_flooranthem2_i_eab",
+            "name": "Flooranthem2",
+            "key": "38-0"
+        },
+        {
+            "id": 39,
+            "type": "afp",
+            "icon": "icon_mitsuru_i_eab",
+            "portrait": "psd_crew_o_0036",
+            "archive": "chara/chara_20a_mitsuru.ifs",
+            "name": "Mitsuru",
+            "key": "39-0"
+        },
+        {
+            "id": 40,
+            "type": "afp",
+            "icon": "icon_soul_i_eab",
+            "portrait": "psd_crew_o_0033",
+            "archive": "chara/chara_19a_soul.ifs",
+            "name": "Soul",
+            "key": "40-0"
+        },
+        {
+            "id": 41,
+            "type": "image",
+            "icon": "icon_rain_i_eab",
+            "portrait": "psd_crew_o_0033",
+            "archive": "chara/chara_19a_soul.ifs",
+            "name": "Rain",
+            "key": "41-0"
+        },
+        {
+            "id": 42,
+            "type": "image",
+            "icon": "icon_hiiro_i_eab",
+            "name": "Hiiro",
+            "key": "42-0"
+        },
+        {
+            "id": 43,
+            "type": "image",
+            "icon": "icon_okome_i_eab",
+            "name": "Okome",
+            "key": "43-0"
+        },
+        {
+            "id": 44,
+            "type": "image",
+            "icon": "icon_nikuma_i_eab",
+            "name": "Nikuma",
+            "key": "44-0"
+        },
+        {
+            "id": 45,
+            "type": "image",
+            "icon": "icon_pen_i_eab",
+            "name": "Pen",
+            "key": "45-0"
+        },
+        {
+            "id": 46,
+            "type": "afp",
+            "icon": "icon_hb_rin_pur_i_eab",
+            "portrait": "psd_crew_o_0042",
+            "archive": "chara/chara_21a_lin.ifs",
+            "name": "Hb Rin Pur",
+            "key": "46-0"
+        },
+        {
+            "id": 47,
+            "type": "image",
+            "icon": "icon_hb_meu_ur_i_eab",
+            "portrait": "psd_crew_o_0042",
+            "archive": "chara/chara_21a_lin.ifs",
+            "name": "Hb Meu Ur",
+            "key": "47-0"
+        },
+        {
+            "id": 48,
+            "type": "image",
+            "icon": "icon_hb_hinata_i_eab",
+            "name": "Hb Hinata",
+            "key": "48-0"
+        },
+        {
+            "id": 49,
+            "type": "image",
+            "icon": "icon_hb_matoi_i_eab",
+            "name": "Hb Matoi",
+            "key": "49-0"
+        },
+        {
+            "id": 50,
+            "type": "image",
+            "icon": "icon_hb_hinachikun_i_eab",
+            "name": "Hb Hinachikun",
+            "key": "50-0"
+        },
+        {
+            "id": 51,
+            "type": "afp",
+            "icon": "icon_rasis_figure_i_eab",
+            "portrait": "psd_crew_o_0011",
+            "archive": "chara/chara_22a_rasis_figure.ifs",
+            "name": "Rasis Figure",
+            "key": "51-0"
+        },
+        {
+            "id": 52,
+            "type": "afp",
+            "icon": "icon_yukata_kureha_i_eab",
+            "portrait": "psd_crew_o_0023",
+            "archive": "chara/chara_25a_kureha_yukata.ifs",
+            "name": "Yukata Kureha",
+            "key": "52-0"
+        },
+        {
+            "id": 53,
+            "type": "afp",
+            "icon": "icon_hb_ibuki_pur_i_eab",
+            "portrait": "psd_crew_o_0041",
+            "archive": "chara/chara_26a_ibuki.ifs",
+            "name": "Hb Ibuki Pur",
+            "key": "53-0"
+        },
+        {
+            "id": 54,
+            "type": "image",
+            "icon": "icon_hb_natsuhii_ur_i_eab",
+            "portrait": "psd_crew_o_0041",
+            "archive": "chara/chara_26a_ibuki.ifs",
+            "name": "Hb Natsuhii Ur",
+            "key": "54-0"
+        },
+        {
+            "id": 55,
+            "type": "image",
+            "icon": "icon_hb_cocona_ur_i_eab",
+            "name": "Hb Cocona Ur",
+            "key": "55-0"
+        },
+        {
+            "id": 56,
+            "type": "afp",
+            "icon": "icon_hiyuki_i_eab",
+            "portrait": "psd_crew_o_0027",
+            "archive": "chara/chara_24a_hiyuki.ifs",
+            "name": "Hiyuki",
+            "key": "56-0"
+        },
+        {
+            "id": 57,
+            "type": "image",
+            "icon": "icon_yukitokun_i_eab",
+            "portrait": "psd_crew_o_0027",
+            "archive": "chara/chara_24a_hiyuki.ifs",
+            "name": "Yukitokun",
+            "key": "57-0"
+        },
+        {
+            "id": 58,
+            "type": "image",
+            "icon": "icon_sakurako_i_eab",
+            "name": "Sakurako",
+            "key": "58-0"
+        },
+        {
+            "id": 59,
+            "type": "afp",
+            "icon": "icon_grace_i_eab",
+            "portrait": "psd_crew_o_0012",
+            "archive": "chara/chara_28a_grace.ifs",
+            "name": "Grace",
+            "key": "59-0"
+        },
+        {
+            "id": 60,
+            "type": "image",
+            "icon": "icon_haruka_i_eab",
+            "portrait": "psd_crew_o_0012",
+            "archive": "chara/chara_28a_grace.ifs",
+            "name": "Haruka",
+            "key": "60-0"
+        },
+        {
+            "id": 61,
+            "type": "image",
+            "icon": "icon_ortlinde_i_eab",
+            "name": "Ortlinde",
+            "key": "61-0"
+        },
+        {
+            "id": 62,
+            "type": "image",
+            "icon": "icon_riot_i_eab",
+            "name": "Riot",
+            "key": "62-0"
+        },
+        {
+            "id": 63,
+            "type": "image",
+            "icon": "icon_pilica_i_eab",
+            "name": "Pilica",
+            "key": "63-0"
+        },
+        {
+            "id": 64,
+            "type": "image",
+            "icon": "icon_grace2_i_eab",
+            "name": "Grace2",
+            "key": "64-0"
+        },
+        {
+            "id": 65,
+            "type": "afp",
+            "icon": "icon_30reigure_i_eab",
+            "portrait": "psd_crew_o_0008",
+            "archive": "chara/chara_30a_reigure.ifs",
+            "name": "30Reigure",
+            "key": "65-0"
+        },
+        {
+            "id": 66,
+            "type": "afp",
+            "icon": "icon_kureha_miko_i_eab",
+            "portrait": "psd_crew_o_0024",
+            "archive": "chara/chara_31a_kurehamiko.ifs",
+            "name": "Kureha Miko",
+            "key": "66-0"
+        },
+        {
+            "id": 67,
+            "type": "afp",
+            "icon": "icon_36nianoa_kac_i_eab",
+            "portrait": "psd_crew_o_0019",
+            "archive": "chara/chara_32a_kac_nianoa.ifs",
+            "name": "36Nianoa Kac",
+            "key": "67-0"
+        },
+        {
+            "id": 68,
+            "type": "afp",
+            "icon": "icon_35sakiko_i_eab",
+            "portrait": "psd_crew_o_0040",
+            "archive": "chara/chara_33a_sakiki.ifs",
+            "name": "35Sakiko",
+            "key": "68-0"
+        },
+        {
+            "id": 69,
+            "type": "image",
+            "icon": "icon_sawanatsu_i_eab",
+            "portrait": "psd_crew_o_0040",
+            "archive": "chara/chara_33a_sakiki.ifs",
+            "name": "Sawanatsu",
+            "key": "69-0"
+        },
+        {
+            "id": 70,
+            "type": "afp",
+            "icon": "icon_37reigure_kac_i_eab",
+            "portrait": "psd_crew_o_0009",
+            "archive": "chara/chara_34a_kac_reigre.ifs",
+            "name": "37Reigure Kac",
+            "key": "70-0"
+        },
+        {
+            "id": 71,
+            "type": "image",
+            "icon": "icon_fumia_i_eab",
+            "portrait": "psd_crew_o_0009",
+            "archive": "chara/chara_34a_kac_reigre.ifs",
+            "name": "Fumia",
+            "key": "71-0"
+        },
+        {
+            "id": 72,
+            "type": "afp",
+            "icon": "icon_35marisa_i_eab",
+            "portrait": "psd_crew_o_0037",
+            "archive": "chara/chara_35a_marisa.ifs",
+            "name": "35Marisa",
+            "key": "72-0"
+        },
+        {
+            "id": 73,
+            "type": "image",
+            "icon": "icon_th_reimuUR_i_eab",
+            "portrait": "psd_crew_o_0037",
+            "archive": "chara/chara_35a_marisa.ifs",
+            "name": "Th Reimuur",
+            "key": "73-0"
+        },
+        {
+            "id": 74,
+            "type": "image",
+            "icon": "icon_th_alice_i_eab",
+            "name": "Th Alice",
+            "key": "74-0"
+        },
+        {
+            "id": 75,
+            "type": "image",
+            "icon": "icon_th_yuyuko_i_eab",
+            "name": "Th Yuyuko",
+            "key": "75-0"
+        },
+        {
+            "id": 76,
+            "type": "image",
+            "icon": "icon_th_yukari_i_eab",
+            "name": "Th Yukari",
+            "key": "76-0"
+        },
+        {
+            "id": 77,
+            "type": "image",
+            "icon": "icon_th_youmu_i_eab",
+            "name": "Th Youmu",
+            "key": "77-0"
+        },
+        {
+            "id": 78,
+            "type": "afp",
+            "icon": "icon_36marika_i_eab",
+            "portrait": "psd_crew_o_0039",
+            "archive": "chara/chara_36a_marika.ifs",
+            "name": "36Marika",
+            "key": "78-0"
+        },
+        {
+            "id": 79,
+            "type": "afp",
+            "icon": "icon_37hiyuki_i_eab",
+            "portrait": "psd_crew_o_0028",
+            "archive": "chara/chara_37a_hiyuki_mizugi.ifs",
+            "name": "37Hiyuki",
+            "key": "79-0"
+        },
+        {
+            "id": 80,
+            "type": "afp",
+            "icon": "icon_38konoha_yukata_i_eab",
+            "portrait": "psd_crew_o_0026",
+            "archive": "chara/chara_38a_konoha_yukata.ifs",
+            "name": "38Konoha Yukata",
+            "key": "80-0"
+        },
+        {
+            "id": 81,
+            "type": "afp",
+            "icon": "icon_ortlinde_mizugi_i_eab",
+            "portrait": "psd_crew_o_0030",
+            "archive": "chara/chara_39a_ortlinde_mizugi.ifs",
+            "name": "Ortlinde Mizugi",
+            "key": "81-0"
+        },
+        {
+            "id": 82,
+            "type": "afp",
+            "icon": "icon_40kanade_halloween_i_eab",
+            "portrait": "psd_crew_o_0032",
+            "archive": "chara/chara_40a_kanade_halloween.ifs",
+            "name": "40Kanade Halloween",
+            "key": "82-0"
+        },
+        {
+            "id": 83,
+            "type": "afp",
+            "icon": "icon_41grace_santa_i_eab",
+            "portrait": "psd_crew_o_0013",
+            "archive": "chara/chara_41a_grace_santa.ifs",
+            "name": "41Grace Santa",
+            "key": "83-0"
+        },
+        {
+            "id": 84,
+            "type": "afp",
+            "icon": "icon_tama_crew_i_eab",
+            "portrait": "psd_crew_o_0035",
+            "archive": "chara/chara_42a_tama_neco.ifs",
+            "name": "Tama Crew",
+            "key": "84-0"
+        },
+        {
+            "id": 85,
+            "type": "image",
+            "icon": "icon_usari_i_eab",
+            "portrait": "psd_crew_o_0035",
+            "archive": "chara/chara_42a_tama_neco.ifs",
+            "name": "Usari",
+            "key": "85-0"
+        },
+        {
+            "id": 86,
+            "type": "afp",
+            "icon": "icon_nana_i_eab",
+            "portrait": "psd_crew_o_0034",
+            "archive": "chara/chara_43a_nana.ifs",
+            "name": "Nana",
+            "key": "86-0"
+        },
+        {
+            "id": 87,
+            "type": "image",
+            "icon": "icon_usari2_i_eab",
+            "portrait": "psd_crew_o_0034",
+            "archive": "chara/chara_43a_nana.ifs",
+            "name": "Usari2",
+            "key": "87-0"
+        },
+        {
+            "id": 88,
+            "type": "afp",
+            "icon": "icon_44rasis_inaba_i_eab",
+            "portrait": "psd_crew_o_0010",
+            "archive": "chara/chara_44a_rasis_inaba.ifs",
+            "name": "44Rasis Inaba",
+            "key": "88-0"
+        },
+        {
+            "id": 89,
+            "type": "image",
+            "icon": "icon_th_merin_i_eab",
+            "portrait": "psd_crew_o_0010",
+            "archive": "chara/chara_44a_rasis_inaba.ifs",
+            "name": "Th Merin",
+            "key": "89-0"
+        },
+        {
+            "id": 90,
+            "type": "image",
+            "icon": "icon_th_pachu_i_eab",
+            "name": "Th Pachu",
+            "key": "90-0"
+        },
+        {
+            "id": 91,
+            "type": "image",
+            "icon": "icon_th_chen_i_eab",
+            "name": "Th Chen",
+            "key": "91-0"
+        },
+        {
+            "id": 92,
+            "type": "image",
+            "icon": "icon_th_ran_i_eab",
+            "name": "Th Ran",
+            "key": "92-0"
+        },
+        {
+            "id": 93,
+            "type": "afp",
+            "icon": "icon_ortlinde_yukata_i_eab",
+            "portrait": "psd_crew_o_0029",
+            "archive": "chara/chara_45a_ortlinde_yukata.ifs",
+            "name": "Ortlinde Yukata",
+            "key": "93-0"
+        },
+        {
+            "id": 94,
+            "type": "image",
+            "icon": "icon_rasis_qma_i_eab",
+            "portrait": "psd_crew_o_0029",
+            "archive": "chara/chara_45a_ortlinde_yukata.ifs",
+            "name": "Rasis Qma",
+            "key": "94-0"
+        },
+        {
+            "id": 95,
+            "type": "live2d",
+            "icon": "icon_rasis_ver5_i_eab",
+            "portrait": "psd_crew_0002",
+            "model": "live2d/rasis_ver5/rasis_ver5_0103.model3.json",
+            "name": "Rasis V",
+            "key": "95-0"
+        },
+        {
+            "id": 96,
+            "type": "live2d",
+            "icon": "icon_kureha_ver5_i_eab",
+            "portrait": "psd_crew_0003",
+            "model": "live2d/kureha_ver5/kureha_ver5_0101.model3.json",
+            "name": "Kureha V",
+            "key": "96-0"
+        },
+        {
+            "id": 97,
+            "type": "image",
+            "icon": "icon_itsukiri01_i_eab",
+            "portrait": "psd_crew_0003",
+            "name": "Itsukiri01",
+            "key": "97-0"
+        },
+        {
+            "id": 98,
+            "type": "image",
+            "icon": "icon_itsukiri02_i_eab",
+            "name": "Itsukiri02",
+            "key": "98-0"
+        },
+        {
+            "id": 99,
+            "type": "image",
+            "icon": "icon_zuho_i_eab",
+            "name": "Zuho",
+            "key": "99-0"
+        },
+        {
+            "id": 100,
+            "type": "live2d",
+            "icon": "icon_reimu_ver5_i_eab",
+            "portrait": "psd_crew_0004",
+            "model": "live2d/reimu_ver5/reimu_ver5_0101.model3.json",
+            "name": "Reimu V",
+            "key": "100-0"
+        },
+        {
+            "id": 101,
+            "type": "live2d",
+            "icon": "icon_right_ver5_i_eab",
+            "portrait": "psd_crew_0005",
+            "model": "live2d/right_ver5/right_ver5_0101.model3.json",
+            "name": "Right V",
+            "key": "101-0"
+        },
+        {
+            "id": 102,
+            "type": "live2d",
+            "icon": "icon_grace_yukata_i_eab",
+            "portrait": "psd_crew_0006",
+            "model": "live2d/grace_yukata_ver5/grace_yukata_0101.model3.json",
+            "name": "Grace Yukata V",
+            "key": "102-0"
+        },
+        {
+            "id": 103,
+            "type": "live2d",
+            "icon": "icon_nianoa_ver5_i_eab",
+            "portrait": "psd_crew_0007",
+            "model": "live2d/nianoa_ver5/nianoa_ver5_0101.model3.json",
+            "name": "Nianoa V",
+            "key": "103-0"
+        },
+        {
+            "id": 104,
+            "type": "live2d",
+            "icon": "icon_nana_ver5_i_eab",
+            "portrait": "psd_crew_0008",
+            "model": "live2d/nana_ver5/nana_ver5_0101.model3.json",
+            "name": "Nana V",
+            "key": "104-0"
+        },
+        {
+            "id": 105,
+            "type": "live2d",
+            "icon": "icon_left_ver5_i_eab",
+            "portrait": "psd_crew_0009",
+            "model": "live2d/left_ver5/left_ver5_0101.model3.json",
+            "name": "Left V",
+            "key": "105-0"
+        },
+        {
+            "id": 106,
+            "type": "live2d",
+            "icon": "icon_natsuhi_2_i_eab",
+            "portrait": "psd_crew_0010",
+            "model": "live2d/natsuhi_otona/natsuhi_otona_0100.model3.json",
+            "name": "Natsuhi Otona",
+            "key": "106-0"
+        },
+        {
+            "id": 107,
+            "type": "live2d",
+            "icon": "icon_cocona_2_i_eab",
+            "portrait": "psd_crew_0011",
+            "model": "live2d/cocona_otona/cocona_otona_0101.model3.json",
+            "name": "Cocona Otona",
+            "key": "107-0"
+        },
+        {
+            "id": 109,
+            "type": "live2d",
+            "icon": "icon_kureha_666_i_eab",
+            "portrait": "psd_crew_0012",
+            "model": "live2d/kureha_666/kureha_666_0101.model3.json",
+            "name": "Kureha 666",
+            "key": "109-0"
+        },
+        {
+            "id": 110,
+            "type": "image",
+            "icon": "icon_maru9th_i_eab",
+            "portrait": "psd_crew_0012",
+            "name": "Maru9Th",
+            "key": "110-0"
+        },
+        {
+            "id": 111,
+            "type": "image",
+            "icon": "icon_nogito9th_i_eab",
+            "name": "Nogito9Th",
+            "key": "111-0"
+        },
+        {
+            "id": 112,
+            "type": "live2d",
+            "icon": "icon_konoha_ver5_i_eab",
+            "portrait": "psd_crew_0013",
+            "model": "live2d/konoha_ver5/konoha_ver5_0101.model3.json",
+            "name": "Konoha V",
+            "key": "112-0"
+        },
+        {
+            "id": 113,
+            "type": "live2d",
+            "icon": "icon_rasis_ver6_i_eab",
+            "portrait": "psd_crew_0014",
+            "model": "live2d/rasis_ver6/rasis_ver6_0101.model3.json",
+            "name": "Rasis Vi",
+            "key": "113-0"
+        },
+        {
+            "id": 114,
+            "type": "afp",
+            "icon": "icon_rasis_i_eab",
+            "portrait": "psd_crew_o_0001",
+            "archive": "chara/chara_01a_rasis.ifs",
+            "name": "Rasis",
+            "key": "114-0"
+        },
+        {
+            "id": 114,
+            "type": "afp",
+            "icon": "icon_rasis_noize_i_eab",
+            "portrait": "psd_crew_o_0046",
+            "archive": "chara/chara_13a_rasis_bug.ifs",
+            "name": "Rasis Noize",
+            "key": "114-1"
+        },
+        {
+            "id": 115,
+            "type": "afp",
+            "icon": "icon_rasis_ver4_i_eab",
+            "portrait": "psd_crew_o_0005",
+            "archive": "chara/chara_27a_4rasis.ifs",
+            "name": "Rasis Ver4",
+            "key": "115-0"
+        },
+        {
+            "id": 115,
+            "type": "afp",
+            "icon": "icon_29rasis_change_i_eab",
+            "portrait": "psd_crew_o_0006",
+            "archive": "chara/chara_29a_4rasis_change.ifs",
+            "name": "29Rasis Change",
+            "key": "115-1"
+        },
+        {
+            "id": 116,
+            "type": "live2d",
+            "icon": "icon_grace_ver5_i_eab",
+            "portrait": "psd_crew_0001",
+            "model": "live2d/grace_ver5/grace_ver5_0102.model3.json",
+            "name": "Grace V",
+            "key": "116-0"
+        },
+        {
+            "id": 117,
+            "type": "live2d",
+            "icon": "icon_grace_ver6_i_eab",
+            "portrait": "psd_crew_0015",
+            "model": "live2d/grace_ver6/grace_ver6_0101.model3.json",
+            "name": "Grace Vi",
+            "key": "117-0"
+        },
+        {
+            "id": 118,
+            "type": "live2d",
+            "icon": "icon_grace_ver6april_i_eab",
+            "portrait": "psd_crew_0016",
+            "model": "live2d/grace_ver6april/grace_ver6april_0101.model3.json",
+            "name": "Grace Viapril",
+            "key": "118-0"
+        },
+        {
+            "id": 119,
+            "type": "live2d",
+            "icon": "icon_tsumabuki_ver6_i_eab",
+            "portrait": "psd_crew_0017",
+            "model": "live2d/tsumabuki_ver6/tsumabuki_ver6_0101.model3.json",
+            "name": "Tsumabuki Vi",
+            "key": "119-0"
+        },
+        {
+            "id": 120,
+            "type": "live2d",
+            "icon": "icon_nianoa_ver6mizugi_i_eab",
+            "portrait": "psd_crew_0018",
+            "model": "live2d/nianoa_ver6/nianoa_ver6_0101.model3.json",
+            "name": "Nianoa Vi",
+            "key": "120-0"
+        },
+        {
+            "id": 121,
+            "type": "live2d",
+            "icon": "icon_kawoashi_ver6_halloween_i_eab",
+            "portrait": "psd_crew_0019",
+            "model": "live2d/kawoashi_ver6/kawoashi_ver6_0101.model3.json",
+            "name": "Kawoashi Vi",
+            "key": "121-0"
+        },
+        {
+            "id": 122,
+            "type": "live2d",
+            "icon": "icon_tanakahime_ver6_i_eab",
+            "portrait": "psd_crew_0020",
+            "model": "live2d/tanakahime_ver6/tanakahime_ver6_0101.model3.json",
+            "name": "Tanakahime Vi",
+            "key": "122-0"
+        },
+        {
+            "id": 123,
+            "type": "live2d",
+            "icon": "icon_suzukihina_ver6_i_eab",
+            "portrait": "psd_crew_0021",
+            "model": "live2d/suzukihina_ver6/suzukihina_ver6_0101.model3.json",
+            "name": "Suzukihina Vi",
+            "key": "123-0"
+        },
+        {
+            "id": 124,
+            "type": "live2d",
+            "icon": "icon_hiyuki_santa_i_eab",
+            "portrait": "psd_crew_0022",
+            "model": "live2d/hiyuki_santa/hiyuki_santa_0101.model3.json",
+            "name": "Hiyuki Santa",
+            "key": "124-0"
+        },
+        {
+            "id": 128,
+            "type": "live2d",
+            "icon": "icon_rasismion_xhrono_i_eab",
+            "portrait": "psd_crew_0023",
+            "model": "live2d/rasis_xhrono/rasis_xhrono_0101.model3.json",
+            "name": "Rasis Xhrono",
+            "key": "128-0"
+        },
+        {
+            "id": 129,
+            "type": "live2d",
+            "icon": "icon_grace_mixxion_i_eab",
+            "portrait": "psd_crew_0024",
+            "model": "live2d/grace_mixxion/grace_mixxion_0101.model3.json",
+            "name": "Grace Mixxion",
+            "key": "129-0"
+        },
+        {
+            "id": 130,
+            "type": "live2d",
+            "icon": "icon_ortlinde_normal_i_eab",
+            "portrait": "psd_crew_0025",
+            "model": "live2d/ortlinde_normal/ortlinde_normal_0101.model3.json",
+            "name": "Ortlinde Normal",
+            "key": "130-0"
+        },
+        {
+            "id": 131,
+            "type": "live2d",
+            "icon": "icon_konosuba_aqua_i_eab",
+            "portrait": "psd_crew_0026",
+            "model": "live2d/konosuba_aqua/konosuba_aqua_01.model3.json",
+            "name": "Konosuba Aqua",
+            "key": "131-0"
+        },
+        {
+            "id": 133,
+            "type": "live2d",
+            "icon": "icon_rasis_energy_i_eab",
+            "portrait": "psd_crew_0027",
+            "model": "live2d/rasis_energy/rasis_energy.model3.json",
+            "name": "Rasis Energy",
+            "key": "133-0"
+        },
+        {
+            "id": 134,
+            "type": "live2d",
+            "icon": "icon_kureha_ver6_i_eab",
+            "portrait": "psd_crew_0028",
+            "model": "live2d/kureha_ver6/kureha_ver6_0101.model3.json",
+            "name": "Kureha Vi",
+            "key": "134-0"
+        },
+        {
+            "id": 136,
+            "type": "live2d",
+            "icon": "icon_grace_suddendeath_i_eab",
+            "portrait": "psd_crew_0029",
+            "model": "live2d/grace_suddendeath/grace_suddendeath_0101.model3.json",
+            "name": "Grace Suddendeath",
+            "key": "136-0"
+        },
+        {
+            "id": 137,
+            "type": "live2d",
+            "icon": "icon_maxima_vm_i_eab",
+            "portrait": "psd_crew_0030",
+            "model": "live2d/maxima_vm/maxima_vm_0101.model3.json",
+            "name": "Maxima Vm",
+            "key": "137-0"
+        },
+        {
+            "id": 138,
+            "type": "live2d",
+            "icon": "icon_tsumabuki_setu-o_i_eab",
+            "portrait": "psd_crew_0031",
+            "model": "live2d/tsumabuki_setu-o/tsumabuki_setu-o.model3.json",
+            "name": "Tsumabuki Setu-O",
+            "key": "138-0"
+        },
+        {
+            "id": 139,
+            "type": "live2d",
+            "icon": "icon_rezero_rem_i_eab",
+            "portrait": "psd_crew_0032",
+            "model": "live2d/rezero_rem/rezero_rem.model3.json",
+            "name": "Rezero Rem",
+            "key": "139-0"
+        },
+        {
+            "id": 140,
+            "type": "live2d",
+            "icon": "icon_rezero_emilia_i_eab",
+            "portrait": "psd_crew_0033",
+            "model": "live2d/rezero_emilia/rezero_emilia.model3.json",
+            "name": "Rezero Emilia",
+            "key": "140-0"
+        },
+        {
+            "id": 141,
+            "type": "live2d",
+            "icon": "icon_haruka_nomal_i_eab",
+            "portrait": "psd_crew_0034",
+            "model": "live2d/haruka/haruka.model3.json",
+            "name": "Haruka",
+            "key": "141-0"
+        },
+        {
+            "id": 142,
+            "type": "live2d",
+            "icon": "icon_kanade_normal_i_eab",
+            "portrait": "psd_crew_0035",
+            "model": "live2d/kanade_normal/kanade_normal_0101.model3.json",
+            "name": "Kanade Normal",
+            "key": "142-0"
+        },
+        {
+            "id": 143,
+            "type": "live2d",
+            "icon": "icon_shirakami_fubuki_i_eab",
+            "portrait": "psd_crew_0036",
+            "model": "live2d/shirakami_fubuki/shirakami_fubuki_0100.model3.json",
+            "name": "Shirakami Fubuki",
+            "key": "143-0"
+        },
+        {
+            "id": 146,
+            "type": "live2d",
+            "icon": "icon_natsuhi_3_i_eab",
+            "portrait": "psd_crew_0037",
+            "model": "live2d/natsuhi_bunny/natsuhi_bunny.model3.json",
+            "name": "Natsuhi Bunny",
+            "key": "146-0"
+        },
+        {
+            "id": 147,
+            "type": "live2d",
+            "icon": "icon_cocona_3_i_eab",
+            "portrait": "psd_crew_0038",
+            "model": "live2d/cocona_bunny/cocona_bunny_0101.model3.json",
+            "name": "Cocona Bunny",
+            "key": "147-0"
+        },
+        {
+            "id": 148,
+            "type": "live2d",
+            "icon": "icon_ortlinde_akasha1_i_eab",
+            "portrait": "psd_crew_0039",
+            "model": "live2d/ortlinde_akasha/ortlinde_akasha_0101.model3.json",
+            "name": "Ortlinde Akasha",
+            "key": "148-0"
+        },
+        {
+            "id": 148,
+            "type": "live2d",
+            "icon": "icon_ortlinde_akasha2_i_eab",
+            "portrait": "psd_crew_0040",
+            "model": "live2d/ortlinde_akasha/ortlinde_akasha_0102.model3.json",
+            "name": "Ortlinde Akasha",
+            "key": "148-1"
+        },
+        {
+            "id": 149,
+            "type": "live2d",
+            "icon": "icon_nekomata_okayu_i_eab",
+            "portrait": "psd_crew_0041",
+            "model": "live2d/nekomata_okayu/nekomata_okayu_0101.model3.json",
+            "name": "Nekomata Okayu",
+            "key": "149-0"
+        },
+        {
+            "id": 150,
+            "type": "live2d",
+            "icon": "icon_rasis_hexathlon_i_eab",
+            "portrait": "psd_crew_0042",
+            "model": "live2d/rasis_hexathlon_bpl/rasis_hexathlon.model3.json",
+            "name": "Rasis Hexathlon Bpl",
+            "key": "150-0"
+        },
+        {
+            "id": 151,
+            "type": "live2d",
+            "icon": "icon_right_hexathlon_i_eab",
+            "portrait": "psd_crew_0043",
+            "model": "live2d/left_right_hexathlon_bpl/right_hexathlon.model3.json",
+            "name": "Left Right Hexathlon Bpl",
+            "key": "151-0"
+        },
+        {
+            "id": 152,
+            "type": "live2d",
+            "icon": "icon_left_hexathlon_i_eab",
+            "portrait": "psd_crew_0044",
+            "model": "live2d/left_right_hexathlon_bpl/left_hexathlon.model3.json",
+            "name": "Left Right Hexathlon Bpl",
+            "key": "152-0"
+        },
+        {
+            "id": 159,
+            "type": "live2d",
+            "icon": "icon_grace_mini_i_eab",
+            "portrait": "psd_crew_0045",
+            "model": "live2d/grace_mini/grace_mini.model3.json",
+            "name": "Grace Mini",
+            "key": "159-0"
+        },
+        {
+            "id": 160,
+            "type": "live2d",
+            "icon": "icon_tsunomaki_watame_i_eab",
+            "portrait": "psd_crew_0046",
+            "model": "live2d/tsunomaki_watame/tsunomaki_watame_0101.model3.json",
+            "name": "Tsunomaki Watame",
+            "key": "160-0"
+        },
+        {
+            "id": 161,
+            "type": "live2d",
+            "icon": "icon_nianoa_egbpl1_i_eab",
+            "portrait": "psd_crew_0047",
+            "model": "live2d/nianoa_egbpl/nianoa_egbpl_0101.model3.json",
+            "name": "Nianoa Egbpl",
+            "key": "161-0"
+        },
+        {
+            "id": 161,
+            "type": "live2d",
+            "icon": "icon_nianoa_egbpl2_i_eab",
+            "portrait": "psd_crew_0048",
+            "model": "live2d/nianoa_egbpl/nianoa_egbpl_0201.model3.json",
+            "name": "Nianoa Egbpl",
+            "key": "161-1"
+        },
+        {
+            "id": 162,
+            "type": "live2d",
+            "icon": "icon_konosuba_megumin_i_eab",
+            "portrait": "psd_crew_0049",
+            "model": "live2d/konosuba_megmin/konosuba_megmin_0101.model3.json",
+            "name": "Konosuba Megmin",
+            "key": "162-0"
+        },
+        {
+            "id": 163,
+            "type": "live2d",
+            "icon": "icon_konosuba_darkness_i_eab",
+            "portrait": "psd_crew_0050",
+            "model": "live2d/konosuba_darkness/konosuba_darkness_0101.model3.json",
+            "name": "Konosuba Darkness",
+            "key": "163-0"
+        },
+        {
+            "id": 164,
+            "type": "live2d",
+            "icon": "icon_houshou_marine_i_eab",
+            "portrait": "psd_crew_0051",
+            "model": "live2d/houshou_marine/houshou_marine.model3.json",
+            "name": "Houshou Marine",
+            "key": "164-0"
+        },
+        {
+            "id": 165,
+            "type": "live2d",
+            "icon": "icon_cat_i_eab",
+            "portrait": "psd_crew_0052",
+            "model": "live2d/cat/cat_hina.model3.json",
+            "name": "Cat",
+            "key": "165-0"
+        },
+        {
+            "id": 165,
+            "type": "live2d",
+            "icon": "icon_cat_i_eab",
+            "portrait": "psd_crew_0052",
+            "model": "live2d/cat/cat_momo.model3.json",
+            "name": "Cat",
+            "key": "165-1"
+        },
+        {
+            "id": 165,
+            "type": "live2d",
+            "icon": "icon_cat_i_eab",
+            "portrait": "psd_crew_0052",
+            "model": "live2d/cat/cat_ao.model3.json",
+            "name": "Cat",
+            "key": "165-2"
+        },
+        {
+            "id": 166,
+            "type": "live2d",
+            "icon": "icon_meu_normal_i_eab",
+            "portrait": "psd_crew_0053",
+            "model": "live2d/meu_normal/meu_normal.model3.json",
+            "name": "Meu Normal",
+            "key": "166-0"
+        },
+        {
+            "id": 167,
+            "type": "live2d",
+            "icon": "icon_usada_pekora_i_eab",
+            "portrait": "psd_crew_0054",
+            "model": "live2d/usada_pekora/usada_pekora.model3.json",
+            "name": "Usada Pekora",
+            "key": "167-0"
+        },
+        {
+            "id": 168,
+            "type": "live2d",
+            "icon": "icon_right_mini_i_eab",
+            "portrait": "psd_crew_0055",
+            "model": "live2d/right_mini/right_mini.model3.json",
+            "name": "Right Mini",
+            "key": "168-0"
+        },
+        {
+            "id": 169,
+            "type": "live2d",
+            "icon": "icon_left_mini_i_eab",
+            "portrait": "psd_crew_0056",
+            "model": "live2d/left_mini/left_mini.model3.json",
+            "name": "Left Mini",
+            "key": "169-0"
+        },
+        {
+            "id": 170,
+            "type": "live2d",
+            "icon": "icon_kurumi_noah_i_eab",
+            "portrait": "psd_crew_0057",
+            "model": "live2d/kurumi_noah/noah_00_t08.model3.json",
+            "name": "Kurumi Noah",
+            "key": "170-0"
+        },
+        {
+            "id": 172,
+            "type": "live2d",
+            "icon": "icon_ichika_a_i_eab",
+            "portrait": "psd_crew_0059",
+            "model": "live2d/ichika/ichika_a.model3.json",
+            "name": "Ichika",
+            "key": "172-0"
+        },
+        {
+            "id": 172,
+            "type": "live2d",
+            "icon": "icon_ichika_b_i_eab",
+            "portrait": "psd_crew_0060",
+            "model": "live2d/ichika/ichika_b.model3.json",
+            "name": "Ichika",
+            "key": "172-1"
+        },
+        {
+            "id": 172,
+            "type": "live2d",
+            "icon": "icon_ichika_c_i_eab",
+            "portrait": "psd_crew_0061",
+            "model": "live2d/ichika/ichika_c.model3.json",
+            "name": "Ichika",
+            "key": "172-2"
+        },
+        {
+            "id": 173,
+            "type": "live2d",
+            "icon": "icon_grace_yumebuki_a_i_eab",
+            "portrait": "psd_crew_0063",
+            "model": "live2d/grace_yumebuki/grace_yumebuki_a.model3.json",
+            "name": "Grace Yumebuki",
+            "key": "173-0"
+        },
+        {
+            "id": 173,
+            "type": "live2d",
+            "icon": "icon_grace_yumebuki_b_i_eab",
+            "portrait": "psd_crew_0064",
+            "model": "live2d/grace_yumebuki/grace_yumebuki_b.model3.json",
+            "name": "Grace Yumebuki",
+            "key": "173-1"
+        },
+        {
+            "id": 173,
+            "type": "live2d",
+            "icon": "icon_grace_yumebuki_c_i_eab",
+            "portrait": "psd_crew_0065",
+            "model": "live2d/grace_yumebuki/grace_yumebuki_c.model3.json",
+            "name": "Grace Yumebuki",
+            "key": "173-2"
+        },
+        {
+            "id": 173,
+            "type": "live2d",
+            "icon": "icon_grace_yumebuki_d_i_eab",
+            "portrait": "psd_crew_0066",
+            "model": "live2d/grace_yumebuki/grace_yumebuki_d.model3.json",
+            "name": "Grace Yumebuki",
+            "key": "173-3"
+        },
+        {
+            "id": 174,
+            "type": "live2d",
+            "icon": "icon_kaga_sumire_i_eab",
+            "portrait": "psd_crew_0062",
+            "model": "live2d/kaga_sumire/kaga_sumire_0101.model3.json",
+            "name": "花芽すみれ / Kaga Sumire",
+            "key": "174-0"
+        },
+        {
+            "id": 175,
+            "type": "live2d",
+            "icon": "icon_asumi_sena_i_eab",
+            "portrait": "psd_crew_0067",
+            "model": "live2d/asumi_sena/asumi_sena_0101.model3.json",
+            "name": "空澄セナ / Asumi Sena",
+            "key": "175-0"
+        },
+        {
+            "id": 176,
+            "type": "live2d",
+            "icon": "icon_rio_gitadora_i_eab",
+            "portrait": "psd_crew_0068",
+            "model": "live2d/rio_gitadora/rio_gitadora.model3.json",
+            "name": "Rio Gitadora",
+            "key": "176-0"
+        },
+        {
+            "id": 177,
+            "type": "live2d",
+            "icon": "icon_grace_ver7_i_eab",
+            "portrait": "psd_crew_0069",
+            "model": "live2d/grace_ver7/grace_ver7.model3.json",
+            "name": "Grace Nabla",
+            "key": "177-0"
+        },
+        {
+            "id": 178,
+            "type": "live2d",
+            "icon": "icon_rasis_ver7_i_eab",
+            "portrait": "psd_crew_0070",
+            "model": "live2d/rasis_ver7/rasis_ver7.model3.json",
+            "name": "Rasis Nabla",
+            "key": "178-0"
+        },
+        {
+            "id": 179,
+            "type": "live2d",
+            "icon": "icon_hatsune_miku_i_eab",
+            "portrait": "psd_crew_0071",
+            "model": "live2d/hatsune_miku/hatsune_miku.model3.json",
+            "name": "Hatsune Miku",
+            "key": "179-0"
+        },
+        {
+            "id": 180,
+            "type": "live2d",
+            "icon": "icon_rasis_BPLS5_i_eab",
+            "portrait": "psd_crew_0073",
+            "model": "live2d/rasis_bpls5/rasis_bpls5.model3.json",
+            "name": "Rasis Bpls5",
+            "key": "180-0"
+        },
+        {
+            "id": 181,
+            "type": "live2d",
+            "icon": "icon_grace_BPLS5_i_eab",
+            "portrait": "psd_crew_0072",
+            "model": "live2d/grace_bpls5/grace_bpls5.model3.json",
+            "name": "Grace Bpls5",
+            "key": "181-0"
+        },
+        {
+            "id": 182,
+            "type": "live2d",
+            "icon": "icon_konoha_kiskil_a_i_eab",
+            "portrait": "psd_crew_0074",
+            "model": "live2d/konoha_kiskil/konoha_kiskil_a.model3.json",
+            "name": "Konoha Kiskil",
+            "key": "182-0"
+        },
+        {
+            "id": 182,
+            "type": "live2d",
+            "icon": "icon_konoha_kiskil_b_i_eab",
+            "portrait": "psd_crew_0075",
+            "model": "live2d/konoha_kiskil/konoha_kiskil_b.model3.json",
+            "name": "Konoha Kiskil",
+            "key": "182-1"
+        },
+        {
+            "id": 183,
+            "type": "live2d",
+            "icon": "icon_shiranui_flare_i_eab",
+            "portrait": "psd_crew_0076",
+            "model": "live2d/shiranui_flare/shiranui_flare_0101.model3.json",
+            "name": "Shiranui Flare",
+            "key": "183-0"
+        },
+        {
+            "id": 184,
+            "type": "afp",
+            "archive": "crew_portrait/crew_184.ifs",
+            "icon": "icon_port_refrig_i_eab",
+            "portrait": "psd_crew_0077",
+            "name": "Port Refrig",
+            "key": "184-0"
+        },
+        {
+            "id": 185,
+            "type": "afp",
+            "archive": "crew_portrait/crew_185.ifs",
+            "icon": "icon_port_kanade_i_eab",
+            "portrait": "psd_crew_0078",
+            "name": "Port Kanade",
+            "key": "185-0"
+        },
+        {
+            "id": 186,
+            "type": "image",
+            "icon": "icon_port_tsubaki_i_eab",
+            "portrait": "psd_crew_0079",
+            "name": "Port Tsubaki",
+            "key": "186-0"
+        },
+        {
+            "id": 187,
+            "type": "image",
+            "icon": "icon_port_gangara_i_eab",
+            "portrait": "psd_crew_0080",
+            "name": "Port Gangara",
+            "key": "187-0"
+        },
+        {
+            "id": 188,
+            "type": "image",
+            "icon": "icon_port_loire_i_eab",
+            "portrait": "psd_crew_0081",
+            "name": "Port Loire",
+            "key": "188-0"
+        },
+        {
+            "id": 189,
+            "type": "image",
+            "icon": "icon_port_shion_i_eab",
+            "portrait": "psd_crew_0082",
+            "name": "Port Shion",
+            "key": "189-0"
+        },
+        {
+            "id": 190,
+            "type": "image",
+            "icon": "icon_port_harlequin_i_eab",
+            "portrait": "psd_crew_0083",
+            "name": "Port Harlequin",
+            "key": "190-0"
+        },
+        {
+            "id": 191,
+            "type": "image",
+            "icon": "icon_port_hiryubi_i_eab",
+            "portrait": "psd_crew_0084",
+            "name": "Port Hiryubi",
+            "key": "191-0"
+        },
+        {
+            "id": 192,
+            "type": "image",
+            "icon": "icon_port_kisa_i_eab",
+            "portrait": "psd_crew_0085",
+            "name": "Port Kisa",
+            "key": "192-0"
+        },
+        {
+            "id": 193,
+            "type": "image",
+            "icon": "icon_port_noisia_i_eab",
+            "portrait": "psd_crew_0086",
+            "name": "Port Noisia",
+            "key": "193-0"
+        },
+        {
+            "id": 196,
+            "type": "live2d",
+            "icon": "icon_grim_aloe_a_i_eab",
+            "portrait": "psd_crew_0087",
+            "model": "live2d/grim_aloe/grim_aloe_a.model3.json",
+            "name": "Grim Aloe",
+            "key": "196-0"
+        },
+        {
+            "id": 196,
+            "type": "live2d",
+            "icon": "icon_grim_aloe_b_i_eab",
+            "portrait": "psd_crew_0088",
+            "model": "live2d/grim_aloe/grim_aloe_b.model3.json",
+            "name": "Grim Aloe",
+            "key": "196-1"
+        },
+        {
+            "id": 199,
+            "type": "live2d",
+            "icon": "icon_pilica_saihate_a_i_eab",
+            "portrait": "psd_crew_0089",
+            "model": "live2d/pilica_saihate/pilica_saihate_a.model3.json",
+            "name": "Pilica Saihate",
+            "key": "199-0"
+        },
+        {
+            "id": 199,
+            "type": "live2d",
+            "icon": "icon_pilica_saihate_b_i_eab",
+            "portrait": "psd_crew_0090",
+            "model": "live2d/pilica_saihate/pilica_saihate_b.model3.json",
+            "name": "Pilica Saihate",
+            "key": "199-1"
+        },
+        {
+            "id": 200,
+            "type": "live2d",
+            "icon": "icon_pilica_mini_i_eab",
+            "portrait": "psd_crew_0091",
+            "model": "live2d/pilica_mini/pilica_mini.model3.json",
+            "name": "Pilica Mini",
+            "key": "200-0"
+        }
+    ]
+}

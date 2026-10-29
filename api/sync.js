@@ -118,6 +118,7 @@ export default async function handler(req, res) {
       ON CONFLICT (id) DO UPDATE SET record = EXCLUDED.record ||
         jsonb_build_object('catalog', COALESCE(EXCLUDED.record->'catalog', dashboard_state.record->'catalog', '[]'::jsonb),
           'appeal_card', COALESCE(EXCLUDED.record->'appeal_card', dashboard_state.record->'appeal_card', 'null'::jsonb),
+          'crew_id', COALESCE(EXCLUDED.record->'crew_id', dashboard_state.record->'crew_id', 'null'::jsonb),
           'appeal_cards', COALESCE(EXCLUDED.record->'appeal_cards', dashboard_state.record->'appeal_cards', '[]'::jsonb),
           'playtime', COALESCE(EXCLUDED.record->'playtime', dashboard_state.record->'playtime', 'null'::jsonb),
           'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb),

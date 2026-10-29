@@ -245,7 +245,9 @@ def main() -> None:
                 "WARNING: FLAC files are much larger and WILL EXCEED R2's free storage allowance and incur charges."
             )
             print(
-                "Existing uploads also consume storage. Download/read-operation charges remain possible with either format."
+                "Existing uploads also consume storage. "
+                "I recommend deleting your old bucket if you want "
+                "to change audio format or length."
             )
             keep_limit = prompt("Keep the 9 GB upload limit? (Y/n)", "n").lower()
             if keep_limit not in ("y", "yes", "n", "no"):
@@ -266,9 +268,6 @@ def main() -> None:
     write_json(CONFIG, config)
     print("Saved locally. Restart preview / the proxy companion to apply.")
     if mode == "2":
-        print(
-            "The companion converts and uploads a few tracks per pass, then syncs player metadata."
-        )
         print(
             "Deploy the updated dashboard once with update-dashboard.bat. Upload progress appears in the proxy console and .local/sync.log."
         )

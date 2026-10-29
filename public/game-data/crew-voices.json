@@ -1,0 +1,301 @@
+{
+    "version": 1,
+    "binary_sha256": "486e3ada4c78f3da6271f0ee27c1939c64819174c68ef3696a9c6c7dcfa17b06",
+    "registrations": [
+        {
+            "crew_id": 113,
+            "variant": 0,
+            "folder": "vo001_rasis",
+            "prefix": "vo001"
+        },
+        {
+            "crew_id": 131,
+            "variant": 0,
+            "folder": "vo002_aqua",
+            "prefix": "vo002"
+        },
+        {
+            "crew_id": 134,
+            "variant": 0,
+            "folder": "vo003_kureha",
+            "prefix": "vo003"
+        },
+        {
+            "crew_id": 136,
+            "variant": 0,
+            "folder": "vo004_grace",
+            "prefix": "vo004"
+        },
+        {
+            "crew_id": 137,
+            "variant": 0,
+            "folder": "vo005_maxima",
+            "prefix": "vo005"
+        },
+        {
+            "crew_id": 138,
+            "variant": 0,
+            "folder": "vo006_tsumabuki",
+            "prefix": "vo006"
+        },
+        {
+            "crew_id": 139,
+            "variant": 0,
+            "folder": "vo007_rem",
+            "prefix": "vo007"
+        },
+        {
+            "crew_id": 140,
+            "variant": 0,
+            "folder": "vo008_emilia",
+            "prefix": "vo008"
+        },
+        {
+            "crew_id": 142,
+            "variant": 0,
+            "folder": "vo009_kanade_brother",
+            "prefix": "vo009"
+        },
+        {
+            "crew_id": 142,
+            "variant": 2,
+            "folder": "vo010_kanade_sister",
+            "prefix": "vo010"
+        },
+        {
+            "crew_id": 143,
+            "variant": 0,
+            "folder": "vo011_fubuki",
+            "prefix": "vo011"
+        },
+        {
+            "crew_id": 146,
+            "variant": 0,
+            "folder": "vo012_natsuhi",
+            "prefix": "vo012"
+        },
+        {
+            "crew_id": 147,
+            "variant": 0,
+            "folder": "vo013_kokona",
+            "prefix": "vo013"
+        },
+        {
+            "crew_id": 149,
+            "variant": 0,
+            "folder": "vo014_okayu",
+            "prefix": "vo014"
+        },
+        {
+            "crew_id": 150,
+            "variant": 0,
+            "folder": "vo015_rasis_bpl",
+            "prefix": "vo015"
+        },
+        {
+            "crew_id": 151,
+            "variant": 0,
+            "folder": "vo016_right",
+            "prefix": "vo016"
+        },
+        {
+            "crew_id": 152,
+            "variant": 0,
+            "folder": "vo017_left",
+            "prefix": "vo017"
+        },
+        {
+            "crew_id": 160,
+            "variant": 0,
+            "folder": "vo018_watame",
+            "prefix": "vo018"
+        },
+        {
+            "crew_id": 161,
+            "variant": 0,
+            "folder": "vo019_nearnoah",
+            "prefix": "vo019"
+        },
+        {
+            "crew_id": 161,
+            "variant": 2,
+            "folder": "vo019_nearnoah",
+            "prefix": "vo019"
+        },
+        {
+            "crew_id": 162,
+            "variant": 0,
+            "folder": "vo020_megumin",
+            "prefix": "vo020"
+        },
+        {
+            "crew_id": 163,
+            "variant": 0,
+            "folder": "vo021_darkness",
+            "prefix": "vo021"
+        },
+        {
+            "crew_id": 164,
+            "variant": 0,
+            "folder": "vo022_marine",
+            "prefix": "vo022"
+        },
+        {
+            "crew_id": 166,
+            "variant": 0,
+            "folder": "vo023_meumeu",
+            "prefix": "vo023"
+        },
+        {
+            "crew_id": 167,
+            "variant": 0,
+            "folder": "vo024_pekora",
+            "prefix": "vo024"
+        },
+        {
+            "crew_id": 170,
+            "variant": 0,
+            "folder": "vo025_kuruminoa",
+            "prefix": "vo025"
+        },
+        {
+            "crew_id": 171,
+            "variant": 0,
+            "folder": "vo026_yukkuri",
+            "prefix": "vo026"
+        },
+        {
+            "crew_id": 172,
+            "variant": 0,
+            "folder": "vo027_ichika",
+            "prefix": "vo027"
+        },
+        {
+            "crew_id": 172,
+            "variant": 1,
+            "folder": "vo027_ichika",
+            "prefix": "vo027"
+        },
+        {
+            "crew_id": 172,
+            "variant": 2,
+            "folder": "vo027_ichika",
+            "prefix": "vo027"
+        },
+        {
+            "crew_id": 174,
+            "variant": 0,
+            "folder": "vo028_kagasumire",
+            "prefix": "vo028"
+        },
+        {
+            "crew_id": 173,
+            "variant": 0,
+            "folder": "vo029_grace_yumebuki",
+            "prefix": "vo029"
+        },
+        {
+            "crew_id": 173,
+            "variant": 1,
+            "folder": "vo029_grace_yumebuki",
+            "prefix": "vo029"
+        },
+        {
+            "crew_id": 173,
+            "variant": 2,
+            "folder": "vo029_grace_yumebuki",
+            "prefix": "vo029"
+        },
+        {
+            "crew_id": 173,
+            "variant": 3,
+            "folder": "vo029_grace_yumebuki",
+            "prefix": "vo029"
+        },
+        {
+            "crew_id": 175,
+            "variant": 0,
+            "folder": "vo030_asumisena",
+            "prefix": "vo030"
+        },
+        {
+            "crew_id": 176,
+            "variant": 0,
+            "folder": "vo031_rio_gitadora",
+            "prefix": "vo031"
+        },
+        {
+            "crew_id": 177,
+            "variant": 0,
+            "folder": "vo033_grace_nabra",
+            "prefix": "vo033"
+        },
+        {
+            "crew_id": 178,
+            "variant": 0,
+            "folder": "vo032_rasis_nabra",
+            "prefix": "vo032"
+        },
+        {
+            "crew_id": 179,
+            "variant": 0,
+            "folder": "vo034_miku",
+            "prefix": "vo034"
+        },
+        {
+            "crew_id": 182,
+            "variant": 0,
+            "folder": "vo035_konoha_before",
+            "prefix": "vo035"
+        },
+        {
+            "crew_id": 182,
+            "variant": 1,
+            "folder": "vo035_konoha_after",
+            "prefix": "vo035"
+        },
+        {
+            "crew_id": 183,
+            "variant": 0,
+            "folder": "vo036_flare",
+            "prefix": "vo036"
+        },
+        {
+            "crew_id": 196,
+            "variant": 0,
+            "folder": "vo037_grim_aloe",
+            "prefix": "vo037"
+        },
+        {
+            "crew_id": 196,
+            "variant": 1,
+            "folder": "vo037_grim_aloe",
+            "prefix": "vo037"
+        },
+        {
+            "crew_id": 199,
+            "variant": 0,
+            "folder": "vo038_pilica",
+            "prefix": "vo038"
+        },
+        {
+            "crew_id": 199,
+            "variant": 1,
+            "folder": "vo038_pilica",
+            "prefix": "vo038"
+        }
+    ],
+    "silent_packets": [
+        "ad2a705210afbc4ce4094210d5e431e47b53ea16a9bac8995f65e4706caaccae",
+        "9ba61776907881f42d954bd5c742f6ba641ccffceba92536aa9b37c52cfe2b25",
+        "bbdd5af7a2df5cac0a7ff30b24fae7912e58b5536faf6ca0cb3c876ad64484a8",
+        "f7cefdd0ef7e56cad6112ce69918e288841c93c03981224757a53adb3f71c40d",
+        "e0c7d0eedf773bdcbe00cf332e4b6d3cd410dcc0469b9b24370f55806cbb3131",
+        "6a9d0b23c36fcc85c72a451e75212f110e859d3c75210e9a2e7e0506c23c5b52",
+        "e41a5ed4335a5454af8e29f4147720ea760cceb37ed0356f3c1095b1db6897e2",
+        "db20ed1c1b051ffc50ba5169b060d99fd57a05c42632facd6ddca3d89d3cfb32",
+        "7b7e99f6502dba340ea26d3012b309655db5283b685814495735cc9be53ddd66",
+        "d7731ab771939a4a4ba39fe2e1f4e6d68f570ba77941d2ff1b5251b6e4e8ebe8",
+        "b48b6b7c41055d7769c3017a345a16c2f3ca47cb69be2a0566ba6feba33c1892"
+    ]
+}

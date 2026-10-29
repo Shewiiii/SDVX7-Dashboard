@@ -55,12 +55,33 @@ def configuration() -> dict[str, Any]:
     if config.get("mode") not in ("off", "local", "r2") or config.get(
         "variant", "full"
     ) not in ("full", "preview"):
-        raise ValueError("Invalid audio configuration. Run setup-audio.bat.")
+        raise ValueError("Invalid audio configuration. Run optional-setup.bat.")
     config.setdefault("format", "opus")
     if config["format"] not in ("opus", "flac"):
         raise ValueError("Audio format must be opus or flac")
     config.setdefault("bitrate", 256)
     return config
+
+
+def encoding_args(config: dict[str, Any]) -> list[str]:
+    if config.get("format", "opus") == "flac":
+        return ["-c:a", "flac", "-compression_level", "5"]
+    return [
+        "-c:a",
+        "libopus",
+        "-b:a",
+        f"{int(config.get('bitrate', 256))}k",
+        "-vbr",
+        "constrained",
+        "-compression_level",
+        "10",
+        "-application",
+        "audio",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+    ]
 
 
 def tools(config: dict[str, Any]) -> tuple[str, str]:
@@ -81,7 +102,7 @@ def tools(config: dict[str, Any]) -> tuple[str, str]:
         or not Path(ffprobe).is_file()
     ):
         raise RuntimeError(
-            "Audio needs FFmpeg and ffprobe. Run setup-audio.bat to select them."
+            "Audio needs FFmpeg and ffprobe. Run optional-setup.bat to select them."
         )
     return ffmpeg, ffprobe
 
@@ -303,26 +324,7 @@ class AudioLibrary:
                 "-i",
                 str(input_file),
             ]
-            encoder = (
-                ["-c:a", "flac", "-compression_level", "5"]
-                if codec == "flac"
-                else [
-                    "-c:a",
-                    "libopus",
-                    "-b:a",
-                    f"{int(self.config.get('bitrate', 256))}k",
-                    "-vbr",
-                    "constrained",
-                    "-compression_level",
-                    "10",
-                    "-application",
-                    "audio",
-                    "-ar",
-                    "48000",
-                    "-ac",
-                    "2",
-                ]
-            )
+            encoder = encoding_args(self.config)
             command(
                 args
                 + ["-map", "0:a:0", "-vn", "-map_metadata", "-1"]
@@ -482,7 +484,7 @@ def r2_client(config: dict[str, Any]) -> Any:
         from botocore.config import Config
     except ImportError:
         raise RuntimeError(
-            "Run setup-audio.bat to install the optional R2 tools."
+            "Run optional-setup.bat to install the optional R2 tools."
         ) from None
     return boto3.client(
         "s3",
@@ -522,7 +524,7 @@ def start_audio_sync(
         except Exception as error:  # noqa: BLE001 - isolate optional SDK failures from score sync
             catalog.audio_pending = False
             print(
-                f"Audio sync pending ({type(error).__name__}). Check setup-audio.bat; other syncing continues.",
+                f"Audio sync pending ({type(error).__name__}). Check optional-setup.bat; other syncing continues.",
                 flush=True,
             )
 
@@ -550,7 +552,7 @@ def sync_audio(
         or parsed.query
         or parsed.fragment
     ):
-        raise ValueError("Set a public HTTPS audio URL in setup-audio.bat")
+        raise ValueError("Set a public HTTPS audio URL in optional-setup.bat")
     library = getattr(catalog, "audio_library", None)
     if library is None or library.config != audio:
         library = catalog.audio_library = AudioLibrary(catalog.details, audio)

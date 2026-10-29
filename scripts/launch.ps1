@@ -1,4 +1,4 @@
-param([switch]$Setup, [switch]$Update, [switch]$Audio)
+param([switch]$Setup, [switch]$Update, [switch]$Audio, [switch]$Optional)
 $ErrorActionPreference = 'Stop'
 $taskDashboard = Split-Path -Parent $PSScriptRoot
 $taskGame = Split-Path -Parent $taskDashboard
@@ -21,7 +21,7 @@ if ($Setup -or $Update) {
     if (-not (Test-Path -LiteralPath $taskPython)) {
         throw 'Run setup-dashboard.bat first to install the sibling proxy.'
     }
-    $taskEntry = if ($Audio) { 'scripts.audio_setup' } else { 'scripts.launcher' }
+    $taskEntry = if ($Optional) { 'scripts.optional_setup' } elseif ($Audio) { 'scripts.audio_setup' } else { 'scripts.launcher' }
 }
 Push-Location $taskDashboard
 try {

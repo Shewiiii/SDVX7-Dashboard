@@ -1,6 +1,7 @@
 import { dismissSearchKeyboard } from "./search-tools.js";
 import { showPanel } from "./panels.js";
 import { normalizeSearch } from "./metrics.js";
+import { createCrewViewer } from "./crew-viewer.js";
 
 const TARGET_PAGE_SIZE = 48;
 
@@ -17,6 +18,67 @@ export function createAppealCardHelper(getState) {
     const previous = document.getElementById("appeal-helper-previous");
     const next = document.getElementById("appeal-helper-next");
     const back = document.getElementById("appeal-helper-back");
+    const crewViewer = createCrewViewer(dialog, getState);
+    const tabs = [...dialog.querySelectorAll("[data-customize-tab]")];
+    const tabList = dialog.querySelector(".customize-tabs");
+    let crewAvailable = false;
+    let availabilityRequest = 0;
+    let view = "cards";
+
+    async function checkCrewAvailability() {
+        const request = ++availabilityRequest;
+        crewAvailable = false;
+        tabList.hidden = true;
+        const available = await crewViewer.isAvailable();
+        if (request !== availabilityRequest || !dialog.open || closing) return;
+        crewAvailable = available;
+        tabList.hidden = !available;
+        resizeBrowser();
+    }
+
+    function switchTab(next) {
+        if (next === "crew" && !crewAvailable) return;
+        if (next === view) return;
+        view = next;
+        dialog.dataset.customizeView = view;
+        for (const tab of tabs) {
+            const selected = tab.dataset.customizeTab === view;
+            tab.classList.toggle("selected", selected);
+            tab.setAttribute("aria-selected", String(selected));
+            tab.tabIndex = selected ? 0 : -1;
+        }
+        if (view === "crew") {
+            if (!detail.hidden) leaveDetailHistory();
+            browser.hidden = true;
+            detail.hidden = true;
+            dialog.setAttribute("closedby", "closerequest");
+            void crewViewer.show();
+        } else {
+            crewViewer.hide();
+            renderBrowser();
+        }
+    }
+    for (const [index, tab] of tabs.entries()) {
+        tab.addEventListener("click", () =>
+            switchTab(tab.dataset.customizeTab),
+        );
+        tab.addEventListener("keydown", (event) => {
+            if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+                return;
+            event.preventDefault();
+            const next =
+                event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                      ? tabs.length - 1
+                      : (index +
+                            (event.key === "ArrowRight" ? 1 : -1) +
+                            tabs.length) %
+                        tabs.length;
+            tabs[next].click();
+            tabs[next].focus();
+        });
+    }
     let cards = [],
         signature,
         selectedId = null,
@@ -250,8 +312,9 @@ export function createAppealCardHelper(getState) {
             detailHistoryActive = false;
             historyReturning = false;
             if (dialog.open && !closing) {
-                if (samePage) restoreBrowser();
-                else void closeDialog();
+                if (samePage) {
+                    if (view === "cards") restoreBrowser();
+                } else void closeDialog();
             }
             // Preserve the dashboard's filters and scroll when only the card changed.
             return samePage;
@@ -259,6 +322,7 @@ export function createAppealCardHelper(getState) {
         if (dialog.open && !closing && !historyReturning && cardId) {
             const card = cards.find((item) => item.id === cardId);
             if (card) {
+                switchTab("cards");
                 detailHistoryActive = true;
                 detailHistoryUrl = location.href;
                 if (detail.hidden) scrollPosition = dialog.scrollTop;
@@ -287,7 +351,7 @@ export function createAppealCardHelper(getState) {
                 ...card,
                 search: normalizeSearch(`${card.id} ${card.title}`),
             }));
-        if (!dialog.open) return;
+        if (!dialog.open || view !== "cards") return;
         const selected = cards.find((card) => card.id === selectedId);
         if (selected && !detail.hidden) showDetail(selected);
         else renderBrowser();
@@ -315,9 +379,11 @@ export function createAppealCardHelper(getState) {
             pageInput.hidden = true;
             pageNumber.hidden = false;
             selectedId = null;
+            switchTab("cards");
             browser.hidden = false;
             detail.hidden = true;
             showPanel(dialog);
+            void checkCrewAvailability();
             renderBrowser({ anchorId: current?.id ?? null });
             // Establish both starting styles before fading the panel/backdrop in.
             getComputedStyle(dialog).opacity;
@@ -334,6 +400,10 @@ export function createAppealCardHelper(getState) {
     async function closeDialog() {
         if (!dialog.open || closing) return;
         closing = true;
+        availabilityRequest++;
+        crewAvailable = false;
+        tabList.hidden = true;
+        crewViewer.hide();
         leaveDetailHistory();
         dialog.classList.remove("is-visible");
         // Only wait for the panel; its children may still have loading shimmers.
@@ -360,6 +430,7 @@ export function createAppealCardHelper(getState) {
     dialog.addEventListener("close", () => {
         leaveDetailHistory();
         closing = false;
+        crewViewer.hide();
         dialog.classList.remove("is-visible");
         // Release thumbnails after closing; reopening starts with the full catalog.
         grid.replaceChildren();
@@ -461,7 +532,8 @@ export function createAppealCardHelper(getState) {
         });
     }
     function resizeBrowser() {
-        if (dialog.open && !browser.hidden && fitPageSize()) renderBrowser();
+        if (dialog.open && view === "cards" && !browser.hidden && fitPageSize())
+            renderBrowser();
     }
     const observer = new ResizeObserver(resizeBrowser);
     for (const element of [

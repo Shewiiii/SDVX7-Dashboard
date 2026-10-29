@@ -1,7 +1,11 @@
-import { createPreviewCache, previewSourceSignature } from "../lib/preview-cache.mjs";
+import {
+    createPreviewCache,
+    previewSourceSignature,
+} from "../lib/preview-cache.mjs";
 import { createPreviewWorker } from "../lib/preview-worker.mjs";
 import { createPreviewLive } from "../lib/preview-live.mjs";
 import { sendAudioFile } from "./audio-http.mjs";
+import { createCrewPreview } from "./crew-http.mjs";
 import { packSearchIndex } from "../lib/search-index.mjs";
 import { unlockResponse } from "../lib/unlocks.mjs";
 import { createServer } from "node:http";
@@ -29,6 +33,7 @@ const types = {
     ".json": "application/json",
 };
 const audioTasks = new Map();
+const crewPreview = createCrewPreview(root, python);
 let searchTask = null,
     searchCache = null,
     searchAt = 0,
@@ -83,9 +88,14 @@ const previewCache = createPreviewCache({
         const started = performance.now();
         console.log("[preview] Building archive...");
         await previewWorker.export();
-        console.log(`[preview] Archive ready in ${Math.round(performance.now() - started)} ms`);
+        console.log(
+            `[preview] Archive ready in ${Math.round(performance.now() - started)} ms`,
+        );
     },
-    read: async () => JSON.parse(await readFile(path.join(root, ".local/preview-data.json"), "utf8")),
+    read: async () =>
+        JSON.parse(
+            await readFile(path.join(root, ".local/preview-data.json"), "utf8"),
+        ),
 });
 try {
     await previewCache.refresh();
@@ -93,7 +103,9 @@ try {
     previewWorker.close();
     throw error;
 }
-const previewLive = createPreviewLive(previewSources, () => previewCache.refresh());
+const previewLive = createPreviewLive(previewSources, () =>
+    previewCache.refresh(),
+);
 // Periodic background rescans also recover changes missed by file notifications.
 const rescan = setInterval(() => previewLive.refresh(), 60000);
 rescan.unref();
@@ -119,6 +131,7 @@ const server = createServer(async (req, res) => {
             return;
         }
         const url = new URL(req.url, "http://localhost");
+        if (await crewPreview(req, res, url)) return;
         if (url.pathname === "/api/unlocks") {
             const result = await unlockResponse(req.url);
             res.writeHead(result.status, {
@@ -197,7 +210,9 @@ const server = createServer(async (req, res) => {
                     searchTask = searchWorker
                         .request({ operation: "search" })
                         .then((result) => {
-                            searchCache = JSON.stringify(packSearchIndex(result));
+                            searchCache = JSON.stringify(
+                                packSearchIndex(result),
+                            );
                             searchAt = Date.now();
                             searchRevision = revision;
                         })
@@ -266,13 +281,22 @@ const server = createServer(async (req, res) => {
                 res.end(JSON.stringify({ error: "Invalid archive request" }));
                 return;
             }
-            const result = previewCache.get(section, url.searchParams.get("revision"));
+            const result = previewCache.get(
+                section,
+                url.searchParams.get("revision"),
+            );
             if (!result) {
-                res.writeHead(409, { "Content-Type": types[".json"], "Cache-Control": "no-store" });
+                res.writeHead(409, {
+                    "Content-Type": types[".json"],
+                    "Cache-Control": "no-store",
+                });
                 res.end(JSON.stringify({ code: "REVISION_CHANGED" }));
                 return;
             }
-            res.writeHead(200, { "Content-Type": types[".json"], "Cache-Control": "no-store" });
+            res.writeHead(200, {
+                "Content-Type": types[".json"],
+                "Cache-Control": "no-store",
+            });
             res.end(JSON.stringify(result));
             return;
         }

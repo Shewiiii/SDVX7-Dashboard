@@ -93,11 +93,16 @@ Songs upload will occur during the first sync, which may take a long time.
 
 </details>
 
-4. Run `optional-audio.bat`, select audio playback, then option [2], and follow the instructions until "Cloudflare account ID".
+4. Run `optional-audio.bat`, select Audio playback [1], then option [2], and follow the instructions until "Cloudflare account ID".
 5. Go back to R2 Object Storage, copy your account ID and paste it in the setup.
 6. Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
 If you want to change the audio format or length, delete your old bucket, create a new one and follow the setup again from step 2.
+
+## Crew setup
+
+You can preview NemSys Crews directly on the dashboard by clicking the appeal card locally without extra setup. If you want to enable crews preview on Vercel, Follow the instructions above, but choose Nemsys Crew [2] in `optional-audio.bat` instead. If you want to customize audio bitrate, choose Audio playback [1].
+
 
 ## Credits
 

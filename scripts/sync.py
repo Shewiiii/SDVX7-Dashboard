@@ -498,12 +498,24 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
             "appeal_cards": getattr(catalog, "appeal_cards", []),
             "playtime": playtime,
             "skill_level": None,
+            "crew_id": None,
             "profile_radar": None,
         }
         if hasattr(catalog, "public_catalog"):
             state["catalog"] = catalog.public_catalog()
         return state, None
     raw = json.loads(path.read_text(encoding="utf-8"))
+    crew_id = next(
+        (
+            entry["param"][24]
+            for entry in raw.get("profile_parameters", [])
+            if entry.get("type") == 2
+            and entry.get("id") == 1
+            and len(entry.get("param", [])) > 24
+            and type(entry["param"][24]) is int
+        ),
+        None,
+    )
     if raw.get("source") != "sv7_load_m":
         raise ValueError("Unsupported snapshot")
     records = raw.get("chart_records") or {}
@@ -536,6 +548,7 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
         "appeal_cards": getattr(catalog, "appeal_cards", []),
         "playtime": playtime,
         "skill_level": skill_level,
+        "crew_id": crew_id,
         "profile_radar": calculate_profile_radar(
             records,
             getattr(getattr(catalog, "music", None), "radars", {}),
@@ -944,7 +957,21 @@ def sync_once(
     except Exception as error:  # noqa: BLE001
         catalog.audio_pending = False
         print(
-            f"Audio sync pending ({type(error).__name__}). Check setup-audio.bat configuration. other syncing continues.",
+            f"Audio sync pending ({type(error).__name__}). Check optional-setup.bat configuration. other syncing continues.",
+            flush=True,
+        )
+
+    try:
+        from scripts.crew_sync import start_crew_sync, sync_crews
+
+        if background_audio:
+            start_crew_sync(catalog)
+        else:
+            sync_crews(catalog)
+    except Exception as error:  # noqa: BLE001
+        catalog.crew_pending = False
+        print(
+            f"Crew sync pending ({type(error).__name__}). Check optional-setup.bat, other syncing continues.",
             flush=True,
         )
 
@@ -1163,6 +1190,7 @@ def _sync_loop(
                         getattr(catalog, "details_pending", False)
                         or getattr(catalog, "covers_pending", False)
                         or getattr(catalog, "audio_pending", False)
+                        or getattr(catalog, "crew_pending", False)
                     )
                     else 30
                 )

@@ -1,38 +1,38 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "buildCommand": "",
-  "installCommand": "npm ci --omit=dev",
-  "outputDirectory": "public",
-  "regions": [
-    "fra1"
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "framework": null,
+    "buildCommand": "",
+    "installCommand": "npm ci --omit=dev",
+    "outputDirectory": "public",
+    "regions": [
+        "fra1"
+    ],
+    "headers": [
         {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; media-src 'self' blob: https://sdvxaudio.shewi.app; connect-src 'self' https://api.frankfurter.dev https://sdvxaudio.shewi.app"
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "strict-origin-when-cross-origin"
+                },
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "default-src 'self'; script-src 'self' https://sdvxaudio.shewi.app; style-src 'self'; img-src 'self' data: https://sdvxaudio.shewi.app; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; media-src 'self' blob: https://sdvxaudio.shewi.app; connect-src 'self' https://api.frankfurter.dev https://sdvxaudio.shewi.app"
+                }
+            ]
         }
-      ]
+    ],
+    "functions": {
+        "api/unlocks.js": {
+            "includeFiles": "public/game-data/unlocks.jsonl"
+        },
+        "api/events.js": {
+            "maxDuration": 60,
+            "supportsCancellation": true
+        }
     }
-  ],
-  "functions": {
-    "api/unlocks.js": {
-      "includeFiles": "public/game-data/unlocks.jsonl"
-    },
-    "api/events.js": {
-      "maxDuration": 60,
-      "supportsCancellation": true
-    }
-  }
 }

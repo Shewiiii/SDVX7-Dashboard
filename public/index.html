@@ -100,7 +100,7 @@
                                     data-theme-option="nabla"
                                     aria-pressed="false"
                                 >
-                                    Nabla
+                                    Whatsapp
                                 </button>
                             </div>
                         </div>
@@ -208,7 +208,7 @@
                                 id="appeal-helper-open"
                                 class="appeal-card-trigger"
                                 type="button"
-                                aria-label="Open Appeal Card Helper"
+                                aria-label="Customize"
                                 aria-haspopup="dialog"
                                 aria-controls="appeal-helper"
                                 hidden
@@ -221,7 +221,7 @@
                                     height="82"
                                     hidden
                                 />
-                                <span>Open Appeal Card Helper</span>
+                                <span>Customize</span>
                             </button>
                             <div>
                                 <h1 id="player-name">Player</h1>
@@ -469,7 +469,9 @@
                                         href="https://note.com/logthm/n/n59dca7461be8"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                    >Based on the top 50 songs in each skill</a>
+                                        >Based on the top 50 songs in each
+                                        skill</a
+                                    >
                                 </p>
                             </div>
                             <div id="profile-radar" class="profile-radar-wrap">
@@ -589,7 +591,6 @@
                                 type="button"
                                 id="records-page-number"
                                 class="pagination-page-number"
-                                title="Enter page number"
                                 aria-label="Enter page number"
                             >
                                 1</button
@@ -1429,137 +1430,182 @@
             class="panel appeal-helper"
             id="appeal-helper"
             aria-labelledby="appeal-helper-title"
+            data-customize-view="cards"
+            closedby="closerequest"
         >
-            <div class="appeal-helper-heading">
-                <h2 id="appeal-helper-title">Appeal Card Helper</h2>
-                <button
-                    type="button"
-                    id="appeal-helper-close"
-                    aria-label="Close Appeal Card Helper"
-                >
-                    ×
-                </button>
-            </div>
-            <div id="appeal-helper-browser">
-                <div class="table-tools appeal-helper-tools">
-                    <div class="search-wrap">
-                        <span aria-hidden="true">⌕</span>
-                        <input
-                            type="text"
-                            role="searchbox"
-                            inputmode="search"
-                            enterkeyhint="search"
-                            id="appeal-helper-search"
-                            aria-label="Search appeal cards by number or title"
-                            placeholder="Type anything..."
-                            autocomplete="off"
-                        />
-                        <button
-                            type="button"
-                            class="search-clear"
-                            id="appeal-helper-search-clear"
-                            data-clear-input="appeal-helper-search"
-                            aria-label="Clear appeal card search"
-                            hidden
-                        >
-                            <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 16 16"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    d="m4 4 8 8m0-8-8 8"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                    <label class="select-wrap">
-                        <span class="sr-only">Sort appeal cards</span>
-                        <select id="appeal-helper-sort">
-                            <option value="newest">Newest</option>
-                            <option value="oldest">Oldest</option>
-                        </select>
-                    </label>
-                    <div
-                        class="pagination appeal-helper-pagination"
-                        role="group"
-                        aria-label="Appeal card pages"
+            <div class="customize-content">
+                <div class="appeal-helper-heading">
+                    <h2 id="appeal-helper-title">Customize</h2>
+                    <button
+                        type="button"
+                        id="appeal-helper-close"
+                        aria-label="Close Customize"
                     >
-                        <button
-                            type="button"
-                            id="appeal-helper-previous"
-                            aria-label="Previous appeal cards"
-                        >
-                            ←
-                        </button>
-                        <span
-                            class="appeal-helper-page"
-                            id="appeal-helper-page"
+                        ×
+                    </button>
+                </div>
+                <div
+                    class="segmented customize-tabs"
+                    role="tablist"
+                    aria-label="Customization"
+                    hidden
+                >
+                    <button
+                        type="button"
+                        role="tab"
+                        id="customize-cards-tab"
+                        class="selected"
+                        data-customize-tab="cards"
+                        aria-selected="true"
+                        aria-controls="appeal-helper-browser"
+                    >
+                        Card helper
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        id="customize-crew-tab"
+                        data-customize-tab="crew"
+                        aria-selected="false"
+                        aria-controls="nemsys-crew-view"
+                        tabindex="-1"
+                    >
+                        Nemsys Crew
+                    </button>
+                </div>
+                <div id="appeal-helper-browser">
+                    <div class="table-tools appeal-helper-tools">
+                        <div class="search-wrap">
+                            <span aria-hidden="true">⌕</span>
+                            <input
+                                type="text"
+                                role="searchbox"
+                                inputmode="search"
+                                enterkeyhint="search"
+                                id="appeal-helper-search"
+                                aria-label="Search appeal cards by number or title"
+                                placeholder="Type anything..."
+                                autocomplete="off"
+                            />
+                            <button
+                                type="button"
+                                class="search-clear"
+                                id="appeal-helper-search-clear"
+                                data-clear-input="appeal-helper-search"
+                                aria-label="Clear appeal card search"
+                                hidden
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 16 16"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="m4 4 8 8m0-8-8 8"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                        <label class="select-wrap">
+                            <span class="sr-only">Sort appeal cards</span>
+                            <select id="appeal-helper-sort">
+                                <option value="newest">Newest</option>
+                                <option value="oldest">Oldest</option>
+                            </select>
+                        </label>
+                        <div
+                            class="pagination appeal-helper-pagination"
+                            role="group"
+                            aria-label="Appeal card pages"
                         >
                             <button
                                 type="button"
-                                id="appeal-helper-page-number"
-                                class="appeal-helper-page-number"
-                                title="Enter page number"
+                                id="appeal-helper-previous"
+                                aria-label="Previous appeal cards"
                             >
-                                1
+                                ←
                             </button>
-                            <input
-                                type="number"
-                                id="appeal-helper-page-input"
-                                class="appeal-helper-page-input"
-                                min="1"
-                                step="1"
-                                inputmode="numeric"
-                                aria-label="Page number"
-                                hidden
-                            />
-                            /
-                            <span id="appeal-helper-total-pages">1</span>
-                        </span>
-                        <button
-                            type="button"
-                            id="appeal-helper-next"
-                            aria-label="Next appeal cards"
-                        >
-                            →
-                        </button>
+                            <span
+                                class="appeal-helper-page"
+                                id="appeal-helper-page"
+                            >
+                                <button
+                                    type="button"
+                                    id="appeal-helper-page-number"
+                                    class="appeal-helper-page-number"
+                                >
+                                    1
+                                </button>
+                                <input
+                                    type="number"
+                                    id="appeal-helper-page-input"
+                                    class="appeal-helper-page-input"
+                                    min="1"
+                                    step="1"
+                                    inputmode="numeric"
+                                    aria-label="Page number"
+                                    hidden
+                                />
+                                /
+                                <span id="appeal-helper-total-pages">1</span>
+                            </span>
+                            <button
+                                type="button"
+                                id="appeal-helper-next"
+                                aria-label="Next appeal cards"
+                            >
+                                →
+                            </button>
+                        </div>
                     </div>
+                    <p
+                        class="appeal-helper-count"
+                        id="appeal-helper-count"
+                        aria-live="polite"
+                    ></p>
+                    <div
+                        class="appeal-helper-grid"
+                        id="appeal-helper-grid"
+                    ></div>
                 </div>
-                <p
-                    class="appeal-helper-count"
-                    id="appeal-helper-count"
-                    aria-live="polite"
-                ></p>
-                <div class="appeal-helper-grid" id="appeal-helper-grid"></div>
-            </div>
-            <div class="appeal-helper-detail" id="appeal-helper-detail" hidden>
-                <button
-                    type="button"
-                    class="text-button"
-                    id="appeal-helper-back"
+                <div
+                    class="appeal-helper-detail"
+                    id="appeal-helper-detail"
+                    hidden
                 >
-                    ← All appeal cards
-                </button>
-                <div id="appeal-helper-artwork"></div>
-                <h3 id="appeal-helper-card-title"></h3>
-                <p>
-                    To apply, log into
-                    <a
-                        href="https://x.ryu7w7.xyz"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <button
+                        type="button"
+                        class="text-button"
+                        id="appeal-helper-back"
                     >
-                        Ryu's WebUI</a
-                    >, then go to Games > SDVX > Profile > Customization, choose
-                    the matching card, submit at the bottom, then log into the
-                    game with your E-Amusement card !
-                </p>
+                        ← All appeal cards
+                    </button>
+                    <div id="appeal-helper-artwork"></div>
+                    <h3 id="appeal-helper-card-title"></h3>
+                    <p>
+                        To apply, log into
+                        <a
+                            href="https://x.ryu7w7.xyz"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Ryu's WebUI</a
+                        >, then go to Games > SDVX > Profile > Customization,
+                        choose the matching card, submit at the bottom, then log
+                        into the game with your E-Amusement card !
+                    </p>
+                </div>
+                <section
+                    id="nemsys-crew-view"
+                    role="tabpanel"
+                    aria-labelledby="customize-crew-tab"
+                    hidden
+                ></section>
             </div>
         </dialog>
         <div

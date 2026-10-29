@@ -52,7 +52,16 @@ To migrate:
 - Move `.local/` and `.vercel/` located in `/SDVX7-VolForce-Tracker-main/SDVX7-Tracker-Dashboard-main` into `SDVX7-Dashboard-main/`.
 - Run `update-dashboard.bat`. It will delete the legacy `/SDVX7-VolForce-Tracker-main`, but you can choose to create a backup.
 
-## Optional audio setup
+## Optional setup
+
+You can enable the following features, but they require a lot of storage. You will either need to use them locally, or use [R2](https://www.cloudflare.com/products/r2/).
+
+> [!IMPORTANT]
+> To create an R2 API token, you need an R2 subscription. 10GB is included in the free plan, but **you cannot hard cap storage on R2, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** Full Opus songs or FLAC previews should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
+>
+> Instead, [use my dashboard](https://sdvx.shewi.app/).
+
+## Audio setup
 
 By default, the dashboard cannot play any song. To solve this, additional setup is required.
 
@@ -63,21 +72,30 @@ By default, the dashboard cannot play any song. To solve this, additional setup 
 
 ### Full song on Vercel:
 
-> [!CAUTION]
-> This setup is overkill for most people: a custom domain and an R2 API token are needed, which requires an R2 subscription. **You cannot hard cap storage, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** Full Opus songs or FLAC previews should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
->
-> Instead, [use my dashboard](https://sdvx.shewi.app/).
-
 Songs upload will occur during the first sync, which may take a long time.
 
 1. Create a [Cloudflare account](https://dash.cloudflare.com/login).
 2. Under [R2 Object Storage](https://dash.cloudflare.com/?to=/:account/r2/overview), create a bucket. Leave the options to default.
-3. Under Domains > Overview, Regiser a custom domain.
-4. Click on "Continue to activation" and follow the instructions.
-5. After a few hours, go back to your bucket' settings, and add a custom domain (e.g. `audio.[yourdomain]`). Alternatively, use the public development URL for now.
-6. Run `setup-audio.bat`, select [2], and follow the instructions until "Cloudflare account ID".
-7. Go back to R2 Object Storage, copy your account ID and paste it in the setup.
-8. Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
+3. You need an URL to expose your bucket to the internet:
+ <details>
+ <summary>If you have a custom domain</summary>
+
+- Under Domains > Overview, Regiser a custom domain.
+- Click on "Continue to activation" and follow the instructions.
+- After a few hours, go back to your bucket' settings, and add a custom domain (e.g. `audio.[yourdomain]`).
+
+</details>
+
+<details>
+<summary>If you do not have a custom domain or do not want to use Cloudflare's nameservers</summary>
+
+- Go to your bucket' settings, and enable the public development URL. You will use it as your bucket URL.
+
+</details>
+
+4. Run `optional-audio.bat`, select audio playback, then option [2], and follow the instructions until "Cloudflare account ID".
+5. Go back to R2 Object Storage, copy your account ID and paste it in the setup.
+6. Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
 If you want to change the audio format or length, delete your old bucket, create a new one and follow the setup again from step 2.
 

@@ -1734,6 +1734,7 @@ function renderTable({ animate = true } = {}) {
     );
     setText("first-column", top ? "Rank" : grouped ? "Plays" : "Played");
     setText("records-score-heading", grouped ? "Best score" : "Score");
+    setText("records-vf-heading", top ? "Chart VF" : "Play VF");
     updateSearchClearButtons();
     if (!data) return;
     animate = revealOnce(view, animate);

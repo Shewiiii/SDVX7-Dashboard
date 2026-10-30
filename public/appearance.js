@@ -189,7 +189,7 @@
         const navigation = document.querySelector(".navigation-row");
         const tabs = navigation.querySelector(".tabs");
         const rankingSlot = document.getElementById("ranking-settings-slot");
-        const compactRanking = matchMedia("(max-width: 700px)");
+        const compactRanking = matchMedia("(max-width: 900px)");
         let rankingControlWidth = 0;
 
         function placeRankingControl() {

@@ -550,7 +550,7 @@ function prepareLoading() {
         $("song-search-results").hidden = !selected;
         $("song-search-empty").hidden = !!selected;
     }
-    const mobile = window.matchMedia("(max-width: 700px)").matches;
+    const mobile = window.matchMedia("(max-width: 900px)").matches;
     const width = mobile ? 400 : 1100;
     for (const [id, height] of [
         ["chart", mobile ? 300 : 380],
@@ -767,7 +767,7 @@ function renderTimingHistogram({ animate = true } = {}) {
         setText("timing-summary", "No recorded timing in this range.");
         return;
     }
-    const mobile = window.matchMedia("(max-width: 700px)").matches;
+    const mobile = window.matchMedia("(max-width: 900px)").matches;
     const width = mobile ? 400 : 1100,
         height = mobile ? 250 : 260;
     const left = mobile ? 48 : 69,
@@ -1038,7 +1038,7 @@ function renderChart({ animate = true, transition = false } = {}) {
         );
         return;
     }
-    const mobile = window.matchMedia("(max-width: 700px)").matches;
+    const mobile = window.matchMedia("(max-width: 900px)").matches;
     const width = mobile ? 400 : 1100,
         height = mobile ? 300 : 380;
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -1786,7 +1786,7 @@ function updateSearchOptionsHeight() {
     const options = $("song-options");
     if (
         document.activeElement !== input ||
-        !matchMedia("(max-width: 700px)").matches
+        !matchMedia("(max-width: 900px)").matches
     ) {
         options.style.removeProperty("--search-options-max-height");
         return;
@@ -1810,7 +1810,7 @@ function scheduleSearchReveal() {
         if (
             !input?.matches(".search-wrap input") ||
             input.closest("dialog") ||
-            !matchMedia("(max-width: 700px)").matches
+            !matchMedia("(max-width: 900px)").matches
         )
             return;
         scrollToCard({ keyboardAware: true });

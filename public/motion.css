@@ -218,7 +218,7 @@ body[data-loading="initial"] .panel-foot {
     transform-box: view-box;
     transform-origin: 0 0;
 }
-@media (max-width: 700px) {
+@media (max-width: 900px) {
     body[data-loading="initial"] #session-meta::after {
         left: 18px;
     }

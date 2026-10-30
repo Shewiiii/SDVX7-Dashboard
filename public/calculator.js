@@ -357,7 +357,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             animate &&
             previous?.mode === state.mode &&
             previous.showPuc !== showPuc;
-        const mobile = matchMedia("(max-width: 700px)").matches;
+        const mobile = matchMedia("(max-width: 900px)").matches;
         const width = mobile
             ? Math.max(260, svg.getBoundingClientRect().width)
             : 1100;

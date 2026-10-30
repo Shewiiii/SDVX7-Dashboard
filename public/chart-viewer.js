@@ -44,6 +44,8 @@ const timingCache = new WeakMap();
 const SPEED_KEY = "sdvx-chart-mod-speed";
 const SCALE_KEY = "sdvx-chart-scale";
 const BASE_VISUAL_SCALE = 0.8;
+const BASE_TRACK_WIDTH = 340;
+const BASE_PIXELS_PER_BEAT = 150; // Arbitrary value
 const FPS_KEY = "sdvx-chart-fps";
 const OFFSET_KEY = "sdvx-chart-offset";
 const EXTENDED_LASERS_KEY = "sdvx-chart-extended-lasers";
@@ -85,8 +87,8 @@ export function createFrameLimiter(getLimit) {
     };
 }
 
-// USC MMod: choose the BPM with the longest cumulative duration, then keep
-// HiSpeed = ModSpeed / that BPM fixed. Its visible track spans 8 / HiSpeed beats.
+// Choose the BPM with the longest cumulative duration, then keep
+// HiSpeed = ModSpeed / that BPM fixed, with a fixed distance per beat
 export function chartTiming(chart) {
     if (timingCache.has(chart)) return timingCache.get(chart);
     let beat = 0;
@@ -191,7 +193,7 @@ export function chartTiming(chart) {
 // Six lane widths, as in USC: four BT lanes between the two laser lanes.
 // Keep the lane size fixed while extended lasers leave the panel.
 export function chartLayout(width, height) {
-    const track = Math.min(340, width - 56);
+    const track = Math.min(BASE_TRACK_WIDTH, width - 56);
     const lane = track / 6,
         left = (width - track) / 2;
     return {
@@ -414,7 +416,7 @@ export function drawChart(
     ctx.beginPath();
     ctx.rect(viewLeft, top, viewWidth, Math.max(0, viewBottom - top));
     ctx.clip();
-    const speed = ((bottom - 20) * hiSpeed) / 8;
+    const speed = BASE_PIXELS_PER_BEAT * hiSpeed;
     const now = timing.beatAt(time),
         lastBeat = now + (bottom - top) / speed;
     const y = (at) => bottom - (at - now) * speed;

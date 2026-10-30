@@ -32,7 +32,9 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
 1. Download the ZIP of this repository under Code, unzip it, and move `SDVX7-Dashboard-main/` folder into your game folder.
 2. Run `setup-dashboard.bat` and follow the instructions.  
    **If setup fails** one way or another, don't delete the created project on Vercel, and choose 1 on the next try. If you did it, delete both `.local/` and `.vercel/` and try again.
-3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point.
+3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point*.
+
+*Note: If you do this, then score a play that makes your top 50 change, the performance history will consider that play to have been played before the beginning of the tracking, making the Total VF graph slightly inaccurate. 
 
 ## Updates
 

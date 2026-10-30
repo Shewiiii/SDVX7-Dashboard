@@ -551,12 +551,14 @@ function prepareLoading() {
         $("song-search-empty").hidden = !!selected;
     }
     const mobile = window.matchMedia("(max-width: 900px)").matches;
-    const width = mobile ? 400 : 1100;
     for (const [id, height] of [
         ["chart", mobile ? 300 : 380],
         ["timing-chart", mobile ? 250 : 260],
     ]) {
         const svg = $(id);
+        const width = mobile
+            ? Math.max(260, svg.getBoundingClientRect().width)
+            : 1100;
         svg.removeAttribute("hidden");
         svg.setAttribute("aria-hidden", "true");
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -768,7 +770,9 @@ function renderTimingHistogram({ animate = true } = {}) {
         return;
     }
     const mobile = window.matchMedia("(max-width: 900px)").matches;
-    const width = mobile ? 400 : 1100,
+    const width = mobile
+            ? Math.max(260, svg.getBoundingClientRect().width)
+            : 1100,
         height = mobile ? 250 : 260;
     const left = mobile ? 48 : 69,
         right = width - (mobile ? 22 : 72);
@@ -1039,7 +1043,9 @@ function renderChart({ animate = true, transition = false } = {}) {
         return;
     }
     const mobile = window.matchMedia("(max-width: 900px)").matches;
-    const width = mobile ? 400 : 1100,
+    const width = mobile
+            ? Math.max(260, svg.getBoundingClientRect().width)
+            : 1100,
         height = mobile ? 300 : 380;
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     const left = mobile ? 52 : 69,
@@ -1049,7 +1055,6 @@ function renderChart({ animate = true, transition = false } = {}) {
     let start = Date.parse(plays[0].received_at),
         end = Date.parse(plays.at(-1).received_at);
     const history = rankingHistory(data, rankingOptions());
-    $("ranking-history-note").hidden = !history.estimated;
     const lastObservation = history.observations.length
         ? Math.max(...history.observations.map((o) => Date.parse(o.timestamp)))
         : end;
@@ -2555,8 +2560,23 @@ function rankingOptions() {
     };
 }
 
-document.addEventListener("dashboard:ranking-change", () => {
+let rankingUpdateVersion = 0;
+document.addEventListener("dashboard:ranking-change", async () => {
+    const version = ++rankingUpdateVersion;
     if (!data) return;
+    await new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+    if (version !== rankingUpdateVersion) return;
+
+    const control = document.querySelector(".ranking-settings .segmented");
+    await Promise.allSettled(
+        (control?.getAnimations({ subtree: true }) || []).map(
+            (animation) => animation.finished,
+        ),
+    );
+    if (version !== rankingUpdateVersion) return;
+
     setSearchData(data, rankingOptions());
     renderSummary({ animate: false });
     renderChart({ animate: false });

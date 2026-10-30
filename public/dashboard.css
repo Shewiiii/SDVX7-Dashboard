@@ -397,6 +397,7 @@
     align-items: center;
 }
 .segmented {
+    height: var(--button-height);
     position: relative;
     isolation: isolate;
     display: flex;
@@ -406,13 +407,20 @@
     border-radius: var(--control-radius);
 }
 .segmented button {
-    height: var(--button-height-desktop);
+    height: 100%;
     border: 0;
     background: none;
     color: var(--muted);
     font: 10px var(--sans);
     padding: 0 10px;
     border-radius: 4px;
+}
+.segmented.time-range {
+    height: auto;
+}
+.time-range button {
+    height: auto;
+    padding: 7px 10px;
 }
 .segmented .selected,
 .segmented button:focus-visible {
@@ -444,12 +452,13 @@
     z-index: 1;
 }
 .select-wrap select {
+    height: var(--button-height);
     font-size: 12px;
     color: var(--ink);
     border: 0;
     border-radius: var(--control-radius);
     background: var(--control-bg);
-    padding: 10px 25px 10px 11px;
+    padding: 0 25px 0 11px;
     cursor: pointer;
     max-width: 170px;
 }
@@ -600,6 +609,11 @@
     font: 12px var(--sans);
     gap: 14px;
 }
+.history-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
 .chart-summary strong {
     color: var(--chart-summary-color);
     font-weight: 400;
@@ -642,7 +656,8 @@
 .calculator-field input,
 .number-control input {
     width: 150px;
-    padding: 10px 12px;
+    height: var(--button-height);
+    padding: 0 12px;
     border: 0;
     border-radius: var(--control-radius);
     background: var(--control-bg);
@@ -652,6 +667,7 @@
     outline: 1px solid var(--accent);
 }
 .number-control {
+    display: flex;
     position: relative;
 }
 .number-control input {
@@ -1144,12 +1160,14 @@ td.row-index + td {
 }
 :is(.records-panel .table-tools, .library-tools) .search-wrap,
 :is(.records-panel .table-tools, .library-tools) select {
-    min-height: 40px;
+    min-height: var(--button-height);
 }
 :is(.records-panel .table-tools, .library-tools) .select-wrap select {
     padding-block: 0;
 }
 .search-wrap {
+    height: var(--button-height);
+    min-height: var(--button-height);
     position: relative;
     scroll-margin-top: 16px;
     display: flex;
@@ -1166,6 +1184,7 @@ td.row-index + td {
     font-size: 22px;
 }
 .search-wrap input {
+    height: 100%;
     border: 0;
     outline: none;
     background: none;
@@ -1173,7 +1192,7 @@ td.row-index + td {
     width: 100%;
     min-width: 0;
     font-size: 12px;
-    padding: 11px 32px 11px 0;
+    padding: 0 32px 0 0;
 }
 .search-clear {
     position: absolute;
@@ -1183,7 +1202,7 @@ td.row-index + td {
     display: grid;
     place-items: center;
     width: 44px;
-    height: 44px;
+    height: 100%;
     padding: 0;
     border: 0;
     border-radius: var(--item-radius);
@@ -1657,7 +1676,8 @@ footer > :last-child {
 }
 .library-open {
     flex: none;
-    padding: 11px 14px;
+    height: var(--button-height);
+    padding: 0 14px;
     border: 0;
     border-radius: var(--control-radius);
     background: var(--control-bg);
@@ -2075,12 +2095,14 @@ footer > :last-child {
     flex-wrap: nowrap;
 }
 .difficulty-tabs button {
+    height: calc(
+        var(--difficulty-button-height-desktop) * var(--difficulty-scale, 1)
+    );
     font: calc(12px * var(--difficulty-scale, 1)) var(--sans);
     background: transparent;
     border: 0;
     border-radius: 3px;
-    padding: calc(8px * var(--difficulty-scale, 1))
-        calc(11px * var(--difficulty-scale, 1));
+    padding: 0 calc(11px * var(--difficulty-scale, 1));
     flex: none;
     white-space: nowrap;
     color: var(--difficulty-color, var(--muted));
@@ -2456,7 +2478,7 @@ footer > :last-child {
     display: flex;
 }
 .crew-browser-tools select {
-    min-height: 40px;
+    min-height: var(--button-height);
     padding-block: 0;
     width: 100%;
     max-width: none;
@@ -2612,7 +2634,8 @@ footer > :last-child {
 }
 .crew-settings select {
     width: min(160px, 60%);
-    padding: 10px;
+    height: var(--button-height);
+    padding: 0 10px;
     border: 0;
     border-radius: var(--control-radius);
     background: var(--control-bg);
@@ -2854,11 +2877,11 @@ footer > :last-child {
 .similar-charts-filter select {
     width: 210px;
     max-width: 100%;
-    height: 38px;
+    height: var(--button-height);
 }
 .similar-charts-level input {
     width: 84px;
-    height: 38px;
+    height: var(--button-height);
     font: inherit;
 }
 #similar-charts-description {
@@ -3126,7 +3149,7 @@ footer > :last-child {
 .chart-viewer-settings .chart-viewer-rates button {
     flex: 1;
     min-width: 0;
-    padding: 11px 4px;
+    padding: 0 4px;
     font-size: 12px;
 }
 @media (max-width: 640px) {
@@ -3148,7 +3171,8 @@ footer > :last-child {
 }
 .chart-viewer-lane-number {
     box-sizing: border-box;
-    padding: 6px;
+    height: var(--button-height);
+    padding: 0 6px;
     border: 0;
     border-radius: var(--control-radius);
     background: var(--control-bg);
@@ -4117,6 +4141,9 @@ footer > :last-child {
     }
 }
 @media (max-width: 900px) {
+    :root {
+        --button-height: var(--button-height-mobile);
+    }
     #appeal-helper-artwork {
         width: 160px;
     }
@@ -4245,12 +4272,14 @@ footer > :last-child {
     .select-wrap select {
         font-size: 11px;
         max-width: 140px;
-        padding: 9px 17px 9px 9px;
+        padding: 0 17px 0 9px;
     }
     .segmented button {
-        height: var(--button-height-mobile);
         font-size: 9px;
         padding: 0 9px;
+    }
+    .time-range button {
+        padding: 6px 9px;
     }
     .chart-legend {
         justify-content: flex-start;
@@ -4550,9 +4579,11 @@ footer > :last-child {
         gap: calc(5px * var(--difficulty-scale, 1));
     }
     .difficulty-tabs button {
+        height: calc(
+            var(--difficulty-button-height-mobile) * var(--difficulty-scale, 1)
+        );
         font-size: calc(10px * var(--difficulty-scale, 1));
-        padding: calc(6px * var(--difficulty-scale, 1))
-            calc(7px * var(--difficulty-scale, 1));
+        padding: 0 calc(7px * var(--difficulty-scale, 1));
     }
     .difficulty-tabs button span {
         font-size: calc(9px * var(--difficulty-scale, 1));

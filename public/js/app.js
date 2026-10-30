@@ -1,8 +1,8 @@
-import { createArchiveLoader } from "./archive.js";
-import { createPlayHighlights, subscribeArchive } from "./live.js";
-import { initSearchTools, dismissSearchKeyboard } from "./search-tools.js";
-import { setSearchData, parseSearch } from "./search-query.js";
-import { createLibrary } from "./library.js";
+import { createArchiveLoader } from "./core/archive.js";
+import { createPlayHighlights, subscribeArchive } from "./core/live.js";
+import { initSearchTools, dismissSearchKeyboard } from "./search/search-tools.js";
+import { setSearchData, parseSearch } from "./search/search-query.js";
+import { createLibrary } from "./library/library.js";
 import {
     DIFFS,
     CLEARS,
@@ -28,27 +28,27 @@ import {
     timingText,
     timingHistogram,
     TIMING_OFFSETS,
-} from "./metrics.js";
+} from "./profile/metrics.js";
 import {
     motion,
     initSegmentedControl,
     initSegmentedControls,
-} from "./motion.js";
-import { svgElement, pathData } from "./svg.js";
-import { createCalculator } from "./calculator.js";
-import { createAppealCardHelper } from "./appeal-cards.js";
-import { createVolforceHelper } from "./volforce-helper.js";
-import { radarMarkup, paintRadar } from "./radar.js";
-import { createProfileRadar } from "./profile-radar.js";
-import { rankingHistory } from "./ranking-history.js";
-import { createSimilarCharts } from "./similar-charts.js";
-import { createChartViewer } from "./chart-viewer.js";
-import { createChartDetails } from "./chart-details.js";
+} from "./core/motion.js";
+import { svgElement, pathData } from "./core/svg.js";
+import { createCalculator } from "./profile/calculator.js";
+import { createAppealCardHelper } from "./crew/appeal-cards.js";
+import { createVolforceHelper } from "./profile/volforce-helper.js";
+import { radarMarkup, paintRadar } from "./profile/radar.js";
+import { createProfileRadar } from "./profile/profile-radar.js";
+import { rankingHistory } from "./profile/ranking-history.js";
+import { createSimilarCharts } from "./charts/similar-charts.js";
+import { createChartViewer } from "./charts/chart-viewer.js";
+import { createChartDetails } from "./charts/chart-details.js";
 import {
     preparePanelHistory,
     readPanelLink,
     samePanelLink,
-} from "./panel-links.js";
+} from "./core/panel-links.js";
 
 const $ = (id) => document.getElementById(id);
 const profileRadar = createProfileRadar(

@@ -1,6 +1,6 @@
-import { SONG_GENRES } from "./song-metadata.js";
-import { isBossChart } from "./boss-charts.js";
-import { topCharts } from "./top-charts.js";
+import { SONG_GENRES } from "../library/song-metadata.js";
+import { isBossChart } from "../library/boss-charts.js";
+import { topCharts } from "../profile/top-charts.js";
 
 export function normalizeSearch(value) {
     return String(value)

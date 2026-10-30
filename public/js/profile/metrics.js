@@ -3,12 +3,12 @@ import {
     parseSearch,
     extraSearchText,
     matchesSearchFilters,
-} from "./search-query.js";
+} from "../search/search-query.js";
 import { topCharts } from "./top-charts.js";
 import { rankingHistory } from "./ranking-history.js";
 export { topCharts } from "./top-charts.js";
 export { SCORE_GRADES, VF_CLEARS, grade, calculateChartVf } from "./volforce.js";
-export { normalizeSearch } from "./search-query.js";
+export { normalizeSearch } from "../search/search-query.js";
 export const DIFFS = ["NOV", "ADV", "EXH", "INF/VVD", "MXM", "ULT"];
 export const CLEARS = [
     "No clear",

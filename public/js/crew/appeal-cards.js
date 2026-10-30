@@ -1,6 +1,6 @@
-import { dismissSearchKeyboard } from "./search-tools.js";
-import { showPanel } from "./panels.js";
-import { normalizeSearch } from "./metrics.js";
+import { dismissSearchKeyboard } from "../search/search-tools.js";
+import { showPanel } from "../core/panels.js";
+import { normalizeSearch } from "../profile/metrics.js";
 import { createCrewViewer } from "./crew-viewer.js";
 import {
     backToCardBrowser,
@@ -9,7 +9,7 @@ import {
     openPanelLink,
     readPanelLink,
     setPanelLink,
-} from "./panel-links.js";
+} from "../core/panel-links.js";
 
 const TARGET_PAGE_SIZE = 48;
 

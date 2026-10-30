@@ -1,13 +1,13 @@
-import { paintRadar, radarMarkup, validRadar } from "./radar.js";
-import { showPanel } from "./panels.js";
-import { dismissSearchKeyboard } from "./search-tools.js";
-import { mountAudioPlayer } from "./audio-player.js";
-import { nextDifficulty } from "./difficulty.js";
+import { paintRadar, radarMarkup, validRadar } from "../profile/radar.js";
+import { showPanel } from "../core/panels.js";
+import { dismissSearchKeyboard } from "../search/search-tools.js";
+import { mountAudioPlayer } from "../audio/audio-player.js";
+import { nextDifficulty } from "../library/difficulty.js";
 import {
     UNLOCK_METHODS,
     chartUnlockFolder,
     loadUnlockMethods,
-} from "./unlock-methods.js";
+} from "../library/unlock-methods.js";
 
 export function radarDistance(first, second) {
     if (!validRadar(first) || !validRadar(second)) return null;

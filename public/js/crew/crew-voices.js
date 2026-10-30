@@ -1,4 +1,4 @@
-import { mountAudioPlayer } from "./audio-player.js";
+import { mountAudioPlayer } from "../audio/audio-player.js";
 
 export function createCrewVoices(panel) {
     panel.setAttribute("aria-labelledby", "crew-voices-title");

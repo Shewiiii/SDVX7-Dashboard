@@ -1,5 +1,5 @@
 import { VF_CLASSES, vf, volforceClass } from "./metrics.js";
-import { showPanel } from "./panels.js";
+import { showPanel } from "../core/panels.js";
 
 export function createVolforceHelper(getTotal) {
     const dialog = document.getElementById("vf-helper");

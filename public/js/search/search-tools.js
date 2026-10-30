@@ -1,6 +1,6 @@
 import { installSearchIndex, parseSearch } from "./search-query.js";
-import { showPanel } from "./panels.js";
-import { loadBossCharts } from "./boss-charts.js";
+import { showPanel } from "../core/panels.js";
+import { loadBossCharts } from "../library/boss-charts.js";
 
 export function dismissSearchKeyboard() {
     const input = document.activeElement;

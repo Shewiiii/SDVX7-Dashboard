@@ -101,7 +101,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        const { createSettingsPanel } = await import("./settings-panel.js");
+        const { createSettingsPanel } = await import("/js/core/settings-panel.js");
         const toggle = document.getElementById("settings-toggle");
         const panel = document.getElementById("settings-panel");
         const backdrop = document.getElementById("settings-backdrop");

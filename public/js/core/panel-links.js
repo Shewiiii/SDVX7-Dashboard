@@ -1,4 +1,4 @@
-import { DIFFS } from "./metrics.js";
+import { DIFFS } from "../profile/metrics.js";
 
 const PANEL_PARAMS = ["panel", "card", "crew"];
 let leavingHistory = false;

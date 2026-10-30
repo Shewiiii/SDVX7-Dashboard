@@ -1,15 +1,15 @@
-import { dismissSearchKeyboard } from "./search-tools.js";
-import { showPanel } from "./panels.js";
-import { parseSearch, songVersion } from "./search-query.js";
+import { dismissSearchKeyboard } from "../search/search-tools.js";
+import { showPanel } from "../core/panels.js";
+import { parseSearch, songVersion } from "../search/search-query.js";
 import {
     CLEARS,
     SCORE_GRADES,
     grade,
     chartKey,
     searchSongs,
-} from "./metrics.js";
+} from "../profile/metrics.js";
 import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
-import { SKILL_ANALYZER_COURSES } from "./game-data/skill-analyzer.js";
+import { SKILL_ANALYZER_COURSES } from "../../game-data/skill-analyzer.js";
 import {
     UNLOCK_METHODS,
     unlockFolder,

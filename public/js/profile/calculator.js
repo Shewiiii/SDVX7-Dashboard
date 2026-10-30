@@ -7,13 +7,13 @@ import {
     calculateChartVf,
     vf,
 } from "./metrics.js";
-import { svgElement, pathData } from "./svg.js";
-import { motion } from "./motion.js";
+import { svgElement, pathData } from "../core/svg.js";
+import { motion } from "../core/motion.js";
 import {
     DIFFICULTY_LIMITS,
     difficultyStep,
     nextDifficulty,
-} from "./difficulty.js";
+} from "../library/difficulty.js";
 
 const defaults = {
     mode: "score",

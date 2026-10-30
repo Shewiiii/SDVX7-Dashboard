@@ -1,13 +1,13 @@
-import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
-import { showPanel } from "./panels.js";
-import { mountAudioPlayer } from "./audio-player.js";
-import { mountUnlockMethod } from "./unlock-method.js";
-import { isBossChart, loadBossCharts } from "./boss-charts.js";
+import { SONG_GENRES, SONG_VERSIONS } from "../library/song-metadata.js";
+import { showPanel } from "../core/panels.js";
+import { mountAudioPlayer } from "../audio/audio-player.js";
+import { mountUnlockMethod } from "../library/unlock-method.js";
+import { isBossChart, loadBossCharts } from "../library/boss-charts.js";
 import {
     closePanelLink,
     createPanelShareButton,
     openPanelLink,
-} from "./panel-links.js";
+} from "../core/panel-links.js";
 
 const LANES = [
     "VOL-L",

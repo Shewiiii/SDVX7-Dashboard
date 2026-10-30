@@ -1,16 +1,16 @@
 import { validTimeline } from "./chart-timeline.js";
-import { showPanel } from "./panels.js";
+import { showPanel } from "../core/panels.js";
 export { validTimeline } from "./chart-timeline.js";
 import { mountSilentChartPlayer } from "./chart-transport.js";
-import { getAudioMetadata, mountAudioPlayer } from "./audio-player.js";
+import { getAudioMetadata, mountAudioPlayer } from "../audio/audio-player.js";
 import { createChartPlayback } from "./chart-playback.js";
-import { createChartAudio } from "./chart-audio.js";
-import { DIFFS } from "./metrics.js";
+import { createChartAudio } from "../audio/chart-audio.js";
+import { DIFFS } from "../profile/metrics.js";
 import {
     closePanelLink,
     createPanelShareButton,
     openPanelLink,
-} from "./panel-links.js";
+} from "../core/panel-links.js";
 
 // Single-note thickness in CSS pixels. Adjust BT and FX independently here.
 export const SINGLE_NOTE_HEIGHT = { bt: 10, fx: 10 };
@@ -911,7 +911,7 @@ export function createChartViewer() {
             setEffects(effectsEnabled);
             // This control is created after the page's initial motion setup.
             // Reuse its sliding highlight and release the observers on close.
-            void import("./motion.js").then(({ initSegmentedControl }) => {
+            void import("../core/motion.js").then(({ initSegmentedControl }) => {
                 if (signal.aborted) return;
                 for (const control of settings.querySelectorAll(".segmented")) {
                     const cleanup = initSegmentedControl(control);

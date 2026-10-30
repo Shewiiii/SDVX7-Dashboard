@@ -4,7 +4,7 @@ import {
     validRadar,
     selectProfileRadar,
 } from "./radar.js";
-import { motion } from "./motion.js";
+import { motion } from "../core/motion.js";
 
 export function createProfileRadar(root, note) {
     let signature;

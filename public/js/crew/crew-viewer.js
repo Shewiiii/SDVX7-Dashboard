@@ -1,8 +1,8 @@
 import { createLive2dPlayer } from "./crew-live2d.js";
 import { createAfpPlayer } from "./crew-afp.js";
-import { initSegmentedControl } from "./motion.js";
+import { initSegmentedControl } from "../core/motion.js";
 import { createCrewVoices } from "./crew-voices.js";
-import { clearPanelLink, setPanelLink } from "./panel-links.js";
+import { clearPanelLink, setPanelLink } from "../core/panel-links.js";
 
 const labels = {
     In: "Entrance",

@@ -2087,6 +2087,24 @@ footer > :last-child {
     color: var(--muted);
     margin-top: 18px;
 }
+.chart-vf-trigger {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: default;
+}
+.chart-vf-value {
+    color: var(--accent);
+}
+.chart-vf-trigger:hover,
+.chart-vf-trigger:focus-visible {
+    color: var(--accent);
+}
+.chart-vf-popup {
+    white-space: pre-line;
+}
 .song-search-empty {
     padding: 25px 27px 45px;
     font-size: 12px;

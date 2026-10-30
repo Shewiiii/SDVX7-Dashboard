@@ -237,6 +237,7 @@ function bindSongReadingPopup(reading) {
     const title = document.querySelector(".song-reading-title");
     if (!title || !reading) return;
     const show = () => {
+        hideChartVfPopup();
         clearTimeout(songReadingHideTimer);
         const popup = $("song-reading-popup");
         popup.textContent = reading;
@@ -248,6 +249,28 @@ function bindSongReadingPopup(reading) {
     title.addEventListener("pointerleave", scheduleSongReadingHide);
     title.addEventListener("focus", show);
     title.addEventListener("blur", scheduleSongReadingHide);
+}
+
+let chartVfHideTimer;
+function hideChartVfPopup() {
+    clearTimeout(chartVfHideTimer);
+    hideAnimatedPopup($("chart-vf-popup"));
+}
+
+function scheduleChartVfHide() {
+    clearTimeout(chartVfHideTimer);
+    chartVfHideTimer = setTimeout(() => {
+        if (!document.activeElement?.matches(".chart-vf-trigger"))
+            hideChartVfPopup();
+    }, 150);
+}
+
+function showChartVfPopup(trigger) {
+    clearTimeout(chartVfHideTimer);
+    hideSongReadingPopup();
+    const popup = $("chart-vf-popup");
+    popup.textContent = trigger.dataset.chartVfDescription;
+    showAnimatedPopup(popup, trigger);
 }
 
 async function loadExchangeRate() {
@@ -448,10 +471,27 @@ function chartSummaryMarkup(
             record.diff_idx === chart.diff_idx,
     );
     const mark =
-        saved?.clear_type ??
-        (plays.length
-            ? Math.max(...plays.map((play) => play.clear_type))
-            : null);
+        saved || plays.length
+            ? Math.max(
+                  saved?.clear_type || 0,
+                  ...plays.map((play) => play.clear_type),
+              )
+            : null;
+    const scores = [saved?.score, ...plays.map((play) => play.score)].filter(
+        Number.isSafeInteger,
+    );
+    const score = scores.length ? Math.max(...scores) : null;
+    const level =
+        chart.level ??
+        saved?.level ??
+        songs
+            .get(chart.music_id)
+            ?.difficulties.find(
+                (difficulty) => difficulty.diff_idx === chart.diff_idx,
+            )?.level;
+    const chartVf = calculateChartVf(level, score, mark) ?? saved?.vf ?? null;
+    const popupText =
+        "Chart VF combines the highest score and clear mark for this chart, even when they come from different plays";
     const averageTiming = average(
         data.plays
             .filter(
@@ -462,7 +502,7 @@ function chartSummaryMarkup(
             )
             .map((play) => play.timing),
     );
-    return `<div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><span>Best VF: ${vf(plays.length ? Math.max(...plays.map((play) => play.play_vf)) : null)}</span><span>Timing: ${timingText(averageTiming)}</span></div>`;
+    return `<div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><button type="button" class="chart-vf-trigger" aria-describedby="chart-vf-popup" data-chart-vf-description="${escape(popupText)}">Chart VF: <span class="chart-vf-value">${vf(chartVf)}</span></button><span>Timing: ${timingText(averageTiming)}</span></div>`;
 }
 
 function playAttributes(play) {
@@ -1168,11 +1208,8 @@ function renderChart({ animate = true, transition = false } = {}) {
         )
         .map((play) => {
             const value =
-                calculateChartVf(
-                    play.level,
-                    play.score,
-                    play.clear_type,
-                ) ?? play.play_vf;
+                calculateChartVf(play.level, play.score, play.clear_type) ??
+                play.play_vf;
             best = Math.max(best, value);
             return [Date.parse(play.received_at), best];
         });
@@ -1620,6 +1657,7 @@ function switchView(
     { animate = true, scroll = false } = {},
 ) {
     hideSongReadingPopup();
+    hideChartVfPopup();
     if (recordHistory) {
         pendingScroll = null;
         rememberScroll();
@@ -1932,6 +1970,7 @@ function fitDifficultyButtons() {
 
 function renderSongSearch({ animate = true, restartRadar = false } = {}) {
     hideSongReadingPopup();
+    hideChartVfPopup();
     updateSearchClearButtons();
     if (!data) return;
     if (selected) animate = revealOnce(`song:${selected.music_id}`, animate);
@@ -2510,7 +2549,8 @@ $("all-top").addEventListener("click", () =>
 );
 function rankingOptions() {
     return {
-        includeCustom: document.documentElement.dataset.includeCustom === "true",
+        includeCustom:
+            document.documentElement.dataset.includeCustom === "true",
     };
 }
 
@@ -2568,7 +2608,35 @@ $("song-reading-popup").addEventListener(
     "pointerleave",
     scheduleSongReadingHide,
 );
+$("chart-vf-popup").addEventListener("pointerenter", () =>
+    clearTimeout(chartVfHideTimer),
+);
+$("chart-vf-popup").addEventListener("pointerleave", scheduleChartVfHide);
+document.addEventListener("pointerover", (event) => {
+    const trigger = event.target.closest(".chart-vf-trigger");
+    if (
+        trigger &&
+        !trigger.contains(event.relatedTarget) &&
+        event.pointerType === "mouse"
+    )
+        showChartVfPopup(trigger);
+});
+document.addEventListener("pointerout", (event) => {
+    const trigger = event.target.closest(".chart-vf-trigger");
+    if (trigger && !trigger.contains(event.relatedTarget))
+        scheduleChartVfHide();
+});
+document.addEventListener("focusin", (event) => {
+    if (event.target.matches(".chart-vf-trigger"))
+        showChartVfPopup(event.target);
+});
+document.addEventListener("focusout", (event) => {
+    if (event.target.matches(".chart-vf-trigger")) scheduleChartVfHide();
+});
 document.addEventListener("click", (event) => {
+    const trigger = event.target.closest(".chart-vf-trigger");
+    if (trigger) showChartVfPopup(trigger);
+    else if (!event.target.closest("#chart-vf-popup")) hideChartVfPopup();
     if (!event.target.closest(".spending-price, #spending-popup"))
         hideSpendingPopup();
     if (!event.target.closest(".song-reading-title, #song-reading-popup"))
@@ -2578,6 +2646,7 @@ document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
         hideSpendingPopup();
         hideSongReadingPopup();
+        hideChartVfPopup();
     }
 });
 window.addEventListener(
@@ -2585,11 +2654,13 @@ window.addEventListener(
     (event) => {
         if (event.target !== $("spending-popup")) hideSpendingPopup();
         if (event.target !== $("song-reading-popup")) hideSongReadingPopup();
+        if (event.target !== $("chart-vf-popup")) hideChartVfPopup();
     },
     { capture: true, passive: true },
 );
 window.addEventListener("resize", hideSpendingPopup);
 window.addEventListener("resize", hideSongReadingPopup);
+window.addEventListener("resize", hideChartVfPopup);
 initSegmentedControls();
 preparePanelHistory();
 restoreUrl();

@@ -20,22 +20,26 @@ function findOpacityParameter(core) {
     const epsilon = 0.001;
 
     for (let index = 0; index < parameters.ids.length; index++) {
-        // Only probe controls whose range matches normalized opacity
-        if (
-            parameters.minimumValues[index] !== 0 ||
-            parameters.maximumValues[index] !== 1
-        )
+        // Models use different ranges and may increase transparency as the value rises
+        const low = parameters.minimumValues[index];
+        const high = parameters.maximumValues[index];
+        if (!Number.isFinite(low) || !Number.isFinite(high) || high <= low)
             continue;
 
         const saved = parameters.values[index];
         // Compare both endpoints in the same pose. Copy the arrays because Core
         // reuses their storage on each update
-        parameters.values[index] = 1;
+        parameters.values[index] = high;
         core.update();
-        const opaque = core.drawables.opacities.slice();
-        parameters.values[index] = 0;
+        const atHigh = core.drawables.opacities.slice();
+        parameters.values[index] = low;
         core.update();
-        const hidden = core.drawables.opacities.slice();
+        const atLow = core.drawables.opacities.slice();
+        const increasing =
+            atHigh.reduce((sum, opacity) => sum + opacity, 0) >
+            atLow.reduce((sum, opacity) => sum + opacity, 0);
+        const opaque = increasing ? atHigh : atLow;
+        const hidden = increasing ? atLow : atHigh;
         let visible = 0;
         let fading = 0;
         let valid = true;
@@ -53,35 +57,43 @@ function findOpacityParameter(core) {
             const vertices = core.drawables.vertexPositions.map((points) =>
                 points.slice(),
             );
-            parameters.values[index] = 0.5;
+            parameters.values[index] = (low + high) / 2;
             core.update();
-            // A uniform fade halves opacity without moving vertices. Reject
-            // controls that change the pose or use different fades for parts
+            let linear = 0;
+            // Most meshes must share a linear fade without moving vertices
+            // Allow a few parts to keep their own fade timing within that fade
             valid = opaque.every((opacity, mesh) => {
-                const expected =
-                    hidden[mesh] <= epsilon ? opacity * 0.5 : opacity;
+                const current = core.drawables.opacities[mesh];
+                const fades = opacity > epsilon && hidden[mesh] <= epsilon;
+                if (fades && Math.abs(current - opacity * 0.5) <= epsilon)
+                    linear++;
                 return (
-                    Math.abs(core.drawables.opacities[mesh] - expected) <=
-                        epsilon &&
+                    current >= hidden[mesh] - epsilon &&
+                    current <= opacity + epsilon &&
                     core.drawables.vertexPositions[mesh].every(
                         (value, offset) =>
                             Math.abs(value - vertices[mesh][offset]) <= epsilon,
                     )
                 );
             });
+            valid = valid && linear / fading >= 0.9;
         } else valid = false;
 
-        // Restore the authored value before returning or probing another control.
+        // Restore the authored value before returning or probing another control
         parameters.values[index] = saved;
         if (valid) {
             core.update();
-            return index;
+            return {
+                index,
+                opaque: increasing ? high : low,
+                hidden: increasing ? low : high,
+            };
         }
     }
 
-    // Refresh the restored pose and leave models without a matching fade alone.
+    // Refresh the restored pose and leave models without a matching fade alone
     core.update();
-    return -1;
+    return null;
 }
 
 export async function createLive2dPlayer(canvas, url, base, signal) {
@@ -180,14 +192,44 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         core.update();
     }
     const opacityParameter = findOpacityParameter(core);
-    if (opacityParameter >= 0)
+    if (opacityParameter) {
+        let opacity = 1;
+        const opacities = core.drawables.opacities;
+        const savedOpacities = new Float32Array(opacities.length);
+        const draw = internal.draw.bind(internal);
+
         internal.on("beforeModelUpdate", () => {
-            // Fade the composed canvas so overlapping meshes stay opaque.
-            canvas.style.opacity = String(
-                Math.max(0, Math.min(1, core.parameters.values[opacityParameter])),
+            const { index, opaque, hidden } = opacityParameter;
+            opacity = Math.max(
+                0,
+                Math.min(
+                    1,
+                    (core.parameters.values[index] - hidden) / (opaque - hidden),
+                ),
             );
-            core.parameters.values[opacityParameter] = 1;
         });
+
+        internal.draw = (gl) => {
+            // Apply the common fade once to the fully composed character
+            canvas.style.opacity = String(opacity);
+            if (opacity <= 0 || opacity >= 1) {
+                draw(gl);
+                return;
+            }
+
+            // Remove the shared opacity while preserving additional part effects
+            savedOpacities.set(opacities);
+            for (let mesh = 0; mesh < opacities.length; mesh++)
+                opacities[mesh] = Math.min(1, opacities[mesh] / opacity);
+
+            try {
+                draw(gl);
+            } finally {
+                // Restore Core's output so paused frames cannot accumulate changes
+                opacities.set(savedOpacities);
+            }
+        };
+    }
     const pointerPoint = new PIXI.Point();
     function updateFocus() {
         if (!tracking || !pointer) return;

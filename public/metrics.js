@@ -4,6 +4,10 @@ import {
     extraSearchText,
     matchesSearchFilters,
 } from "./search-query.js";
+import { topCharts } from "./top-charts.js";
+import { rankingHistory } from "./ranking-history.js";
+export { topCharts } from "./top-charts.js";
+export { SCORE_GRADES, VF_CLEARS, grade, calculateChartVf } from "./volforce.js";
 export { normalizeSearch } from "./search-query.js";
 export const DIFFS = ["NOV", "ADV", "EXH", "INF/VVD", "MXM", "ULT"];
 export const CLEARS = [
@@ -188,28 +192,19 @@ export function visibleObservations(observations, start, end) {
     return visible;
 }
 
-export function topCharts(state) {
-    return [...(state.charts || [])]
-        .sort(
-            (a, b) =>
-                b.vf - a.vf ||
-                a.music_id - b.music_id ||
-                a.diff_idx - b.diff_idx,
-        )
-        .slice(0, 50);
-}
-
-export function summary(data) {
-    const top = topCharts(data.state);
-    const observed = [...data.observations].sort(byTime);
+export function summary(data, options = {}) {
+    const top = topCharts(data.state, options);
+    const bestChart = top[0] ?? null;
+    const observed = rankingHistory(data, options).observations;
     const latest = observed.at(-1);
-    const total = top.length
+    const total = data.state.charts?.length
         ? top.reduce((s, p) => s + p.vf, 0)
         : (latest?.total_vf ?? null);
     return {
         total,
         top,
-        best: top[0]?.vf ?? null,
+        best: bestChart?.vf ?? null,
+        bestChart,
         entry:
             top.length === 50
                 ? (Math.round(top[49].vf * 1000) + 1) / 1000
@@ -248,10 +243,10 @@ function groupChartPlays(plays) {
 export function recordList(
     data,
     catalog,
-    { top = false, query = "", sort = "recent" } = {},
+    { top = false, query = "", sort = "recent", includeCustom = false } = {},
 ) {
     const source = top
-        ? topCharts(data.state).map((chart, index) => ({
+        ? topCharts(data.state, { includeCustom }).map((chart, index) => ({
               ...chart,
               rank: index + 1,
           }))
@@ -483,50 +478,4 @@ export function chartPlays(data, musicId, difficulty) {
                 Number.isFinite(p.play_vf),
         )
         .sort((a, b) => b.score - a.score || byTime(b, a));
-}
-
-export const SCORE_GRADES = [
-    [9900000, "S", 105],
-    [9800000, "AAA+", 102],
-    [9700000, "AAA", 100],
-    [9500000, "AA+", 97],
-    [9300000, "AA", 94],
-    [9000000, "A+", 91],
-    [8700000, "A", 88],
-    [7500000, "B", 85],
-    [6500000, "C", 82],
-    [0, "D", 80],
-];
-export const VF_CLEARS = [
-    { type: 1, multiplier: 50 },
-    { type: 2, multiplier: 100 },
-    { type: 3, multiplier: 102 },
-    { type: 4, multiplier: 104 },
-    { type: 5, multiplier: 106 },
-    { type: 6, multiplier: 110 },
-];
-
-export function grade(score) {
-    return SCORE_GRADES.find(([min]) => score >= min)?.[1] || "—";
-}
-
-export function calculateChartVf(level, score, clearType) {
-    const clear = VF_CLEARS.find(({ type }) => type === clearType);
-    if (
-        !Number.isFinite(level) ||
-        level <= 0 ||
-        !Number.isSafeInteger(score) ||
-        score < 0 ||
-        score > 10000000 ||
-        !clear
-    )
-        return null;
-    const multiplier = SCORE_GRADES.find(([min]) => score >= min)[2];
-    const numerator =
-        BigInt(Math.round(level * 10)) *
-        BigInt(score) *
-        BigInt(multiplier) *
-        BigInt(clear.multiplier) *
-        20n;
-    return Number(numerator / 1000000000000n) / 1000;
 }

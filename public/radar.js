@@ -5,6 +5,11 @@ const transitions = new WeakMap();
 const painters = new WeakMap();
 let radarSequence = 0;
 
+export function selectProfileRadar(radar, { includeCustom = false } = {}) {
+    if (includeCustom || radar == null) return radar;
+    return radar.without_custom;
+}
+
 export function validRadar(values) {
     return (
         Array.isArray(values) &&

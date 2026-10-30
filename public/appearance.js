@@ -57,6 +57,8 @@
         }
     }
     let theme = saved.theme === "exceed" ? "exceed" : "nabla";
+    let includeCustom = saved.includeCustom === true;
+    root.dataset.includeCustom = String(includeCustom);
     const themeSettings = Object.fromEntries(
         ["exceed", "nabla"].map((name) => {
             // Keep legacy shared settings for the theme they were saved with.
@@ -141,7 +143,11 @@
             try {
                 localStorage.setItem(
                     storageKey,
-                    JSON.stringify({ theme, themes: themeSettings }),
+                    JSON.stringify({
+                        theme,
+                        themes: themeSettings,
+                        includeCustom,
+                    }),
                 );
                 storageAvailable = true;
             } catch {
@@ -178,6 +184,30 @@
             });
         }
         setTheme(theme);
+        const customButtons = panel.querySelectorAll("[data-custom-option]");
+
+        function updateCustomButtons() {
+            for (const button of customButtons) {
+                const selected =
+                    (button.dataset.customOption === "true") === includeCustom;
+                button.classList.toggle("selected", selected);
+                button.setAttribute("aria-pressed", String(selected));
+            }
+        }
+
+        updateCustomButtons();
+        for (const button of customButtons) {
+            button.addEventListener("click", () => {
+                const value = button.dataset.customOption === "true";
+                if (includeCustom === value) return;
+                includeCustom = value;
+                root.dataset.includeCustom = String(includeCustom);
+                updateCustomButtons();
+                persist();
+                document.dispatchEvent(new Event("dashboard:ranking-change"));
+            });
+        }
+
         for (const button of themeButtons) {
             button.addEventListener("click", () => {
                 if (theme === button.dataset.themeOption) return;

@@ -184,6 +184,32 @@
                                 value="3"
                             />
                         </label>
+                        <div class="settings-row">
+                            <span id="appearance-custom-label">
+                                Rank custom charts
+                            </span>
+                            <div
+                                class="segmented"
+                                role="group"
+                                aria-labelledby="appearance-custom-label"
+                            >
+                                <button
+                                    type="button"
+                                    data-custom-option="true"
+                                    aria-pressed="false"
+                                >
+                                    On
+                                </button>
+                                <button
+                                    type="button"
+                                    data-custom-option="false"
+                                    class="selected"
+                                    aria-pressed="true"
+                                >
+                                    Off
+                                </button>
+                            </div>
+                        </div>
                         <div class="settings-footer">
                             <button
                                 class="text-button"
@@ -257,7 +283,9 @@
                 <div id="notice" class="notice" role="status" hidden></div>
                 <section class="metrics" aria-label="Performance summary">
                     <article class="metric featured">
-                        <div class="metric-label">Total VolForce</div>
+                        <div class="metric-label" id="total-vf-label">
+                            Total VolForce
+                        </div>
                         <button
                             type="button"
                             class="metric-value vf-helper-trigger"
@@ -428,6 +456,15 @@
                         <div class="chart-summary">
                             <span id="chart-summary">Loading...</span>
                         </div>
+                        <p
+                            id="ranking-history-note"
+                            class="panel-subtitle"
+                            title="Saved bests without matching tracked plays are treated as starting records"
+                            hidden
+                        >
+                            Earlier VF totals are approximate where scores
+                            predate tracking
+                        </p>
                         <section
                             class="timing-section"
                             aria-labelledby="timing-title"

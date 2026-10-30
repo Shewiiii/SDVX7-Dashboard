@@ -12,7 +12,6 @@ import {
     rolling,
     lineValue,
     visibleObservations,
-    topCharts,
     summary,
     byTime,
     songCatalog,
@@ -23,6 +22,7 @@ import {
     PAGE_SIZE,
     chartPlays,
     grade,
+    calculateChartVf,
     volforceClass,
     playtimeText,
     timingText,
@@ -40,6 +40,7 @@ import { createAppealCardHelper } from "./appeal-cards.js";
 import { createVolforceHelper } from "./volforce-helper.js";
 import { radarMarkup, paintRadar } from "./radar.js";
 import { createProfileRadar } from "./profile-radar.js";
+import { rankingHistory } from "./ranking-history.js";
 import { createSimilarCharts } from "./similar-charts.js";
 import { createChartViewer } from "./chart-viewer.js";
 import { createChartDetails } from "./chart-details.js";
@@ -530,7 +531,13 @@ function revealOnce(key, animate) {
 }
 
 function renderSummary({ animate = true } = {}) {
-    stats = summary(data);
+    stats = summary(data, rankingOptions());
+    setText(
+        "total-vf-label",
+        rankingOptions().includeCustom
+            ? "Total VolForce (+Custom)"
+            : "Total VolForce",
+    );
     const name = data.state.name || "Player";
     setText("player-name", name);
     document.title = `${name} · SOUND VOLTEX`;
@@ -572,7 +579,7 @@ function renderSummary({ animate = true } = {}) {
         $("vf-class-icon").src = `/assets/vf-classes/${vfClass.number}.png`;
     }
     setText("best-vf", vf(stats.best));
-    const bestChart = stats.top[0];
+    const bestChart = stats.bestChart;
     if (bestChart) {
         const song = songs.get(bestChart.music_id);
         const level =
@@ -659,7 +666,7 @@ function renderSummary({ animate = true } = {}) {
 }
 
 function renderSpark() {
-    const points = [...data.observations].sort(byTime);
+    const points = rankingHistory(data, rankingOptions()).observations;
     if (points.length < 2) {
         $("spark").replaceChildren();
         return;
@@ -974,7 +981,10 @@ function renderChart({ animate = true, transition = false } = {}) {
     }
     const plays = performance(data.plays, { days, difficulty });
     renderTimingHistogram({ animate });
-    profileRadar.render(data.state.profile_radar, { animate });
+    profileRadar.render(data.state.profile_radar, {
+        animate,
+        ...rankingOptions(),
+    });
     const svg = $("chart");
     svg.replaceChildren();
     svg.removeAttribute("aria-hidden");
@@ -998,15 +1008,17 @@ function renderChart({ animate = true, transition = false } = {}) {
         bottom = height - 50;
     let start = Date.parse(plays[0].received_at),
         end = Date.parse(plays.at(-1).received_at);
-    const lastObservation = data.observations.length
-        ? Math.max(...data.observations.map((o) => Date.parse(o.timestamp)))
+    const history = rankingHistory(data, rankingOptions());
+    $("ranking-history-note").hidden = !history.estimated;
+    const lastObservation = history.observations.length
+        ? Math.max(...history.observations.map((o) => Date.parse(o.timestamp)))
         : end;
     end = Math.max(end, lastObservation);
     if (start === end) {
         start -= 30000;
         end += 30000;
     }
-    const observations = visibleObservations(data.observations, start, end);
+    const observations = visibleObservations(history.observations, start, end);
     const values = plays.map((p) => p.play_vf);
     const thresholds = observations
         .filter((o) => o.minimum_vf !== null)
@@ -1147,10 +1159,25 @@ function renderChart({ animate = true, transition = false } = {}) {
     }
     line("threshold", segment, "var(--chart-top50)", 1.2, y, true, "4 5");
     let best = 0;
-    const bestPoints = plays.map((p) => {
-        best = Math.max(best, p.play_vf);
-        return [Date.parse(p.received_at), best];
-    });
+    const bestPoints = plays
+        .filter(
+            (play) =>
+                rankingOptions().includeCustom ||
+                (play.is_custom !== true &&
+                    songs.get(play.music_id)?.is_custom !== true),
+        )
+        .map((play) => {
+            const value =
+                calculateChartVf(
+                    play.level,
+                    play.score,
+                    play.clear_type,
+                ) ?? play.play_vf;
+            best = Math.max(best, value);
+            return [Date.parse(play.received_at), best];
+        });
+    if (bestPoints.length && bestPoints.at(-1)[0] < end)
+        bestPoints.push([end, best]);
     const avg10Points = rolling(plays, 10),
         avg100Points = rolling(plays, 100);
     const totalPoints = observations.map((o) => [o.time, o.total_vf]);
@@ -1229,7 +1256,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     svg.append(crosshair, markers);
     hover = { series, x, start, end, left, right, crosshair, markers, width };
     $("chart-summary").innerHTML =
-        `<strong>${number(plays.length)}</strong> plays · Best <strong>${vf(Math.max(...values))}</strong> · Average <strong>${vf(average(values))}</strong>`;
+        `<strong>${number(plays.length)}</strong> plays · Best <strong>${vf(bestPoints.length ? best : null)}</strong> · Average <strong>${vf(average(values))}</strong>`;
     motion.history(svg, animate);
     if (animate) motion.data($("chart-summary"));
 }
@@ -1676,6 +1703,7 @@ function renderTable({ animate = true } = {}) {
         for (const id of ["records", "page-info"]) motion.stop($(id));
     }
     const { records, totalPlays, playCounts } = recordList(data, catalog, {
+        ...rankingOptions(),
         top,
         sort,
         query: $("search").value,
@@ -2286,7 +2314,7 @@ async function load({ fresh = false, check = false, live = false } = {}) {
         dataFingerprint = fingerprint;
         playHighlights.update(next.plays);
         data = next;
-        setSearchData(data);
+        setSearchData(data, rankingOptions());
         appealHelper.update();
         catalog = songCatalog(data);
         songs = new Map(catalog.map((song) => [song.music_id, song]));
@@ -2480,6 +2508,23 @@ $("all-plays").addEventListener("click", () =>
 $("all-top").addEventListener("click", () =>
     switchView("top", true, { scroll: true }),
 );
+function rankingOptions() {
+    return {
+        includeCustom: document.documentElement.dataset.includeCustom === "true",
+    };
+}
+
+document.addEventListener("dashboard:ranking-change", () => {
+    if (!data) return;
+    setSearchData(data, rankingOptions());
+    renderSummary({ animate: false });
+    renderChart({ animate: false });
+    songLibrary.update();
+    if (view === "calculator") calculator.updateData({ animate: false });
+    else if (view === "search") renderSongSearch({ animate: false });
+    else if (["top", "history"].includes(view)) renderTable({ animate: false });
+});
+
 document.addEventListener("visibilitychange", () => {
     if (!document.hidden) load({ check: true });
 });

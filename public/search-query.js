@@ -1,5 +1,6 @@
 import { SONG_GENRES } from "./song-metadata.js";
 import { isBossChart } from "./boss-charts.js";
+import { topCharts } from "./top-charts.js";
 
 export function normalizeSearch(value) {
     return String(value)
@@ -137,7 +138,7 @@ export function installSearchIndex(packed) {
     }
     index = next;
 }
-export function setSearchData(data) {
+export function setSearchData(data, options = {}) {
     best = new Map();
     for (const chart of [...data.plays, ...(data.state.charts || [])]) {
         const key = `${chart.music_id}:${chart.diff_idx}`,
@@ -148,15 +149,7 @@ export function setSearchData(data) {
         });
     }
     top = new Set(
-        [...(data.state.charts || [])]
-            .sort(
-                (a, b) =>
-                    b.vf - a.vf ||
-                    a.music_id - b.music_id ||
-                    a.diff_idx - b.diff_idx,
-            )
-            .slice(0, 50)
-            .map((c) => `${c.music_id}:${c.diff_idx}`),
+        topCharts(data.state, options).map((c) => `${c.music_id}:${c.diff_idx}`),
     );
 }
 export function parseSearch(query) {

@@ -24,10 +24,17 @@ def calculate_profile_radar(
     radars: Mapping[int, Mapping[int, list[int] | None]],
     levels: Mapping[int, Mapping[int, float]],
     metadata: Mapping[str, Mapping[str, Any]],
+    *,
+    include_custom: bool = True,
 ) -> dict[str, Any] | None:
     best: list[dict[int, int]] = [{} for _ in range(6)]
     excluded = 0
     used = 0
+    custom_songs = {
+        key.partition(":")[0]
+        for key, info in metadata.items()
+        if info.get("is_custom") is True
+    }
 
     for key, record in records.items():
         if not isinstance(record, dict):
@@ -38,6 +45,8 @@ def calculate_profile_radar(
         try:
             mid, diff = map(int, key.split(":"))
         except (AttributeError, TypeError, ValueError):
+            continue
+        if not include_custom and str(mid) in custom_songs:
             continue
         radar = radars.get(mid, {}).get(diff)
         level = levels.get(mid, {}).get(diff)

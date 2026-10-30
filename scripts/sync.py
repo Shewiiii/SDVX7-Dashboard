@@ -541,6 +541,18 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
             }
         )
     charts.sort(key=lambda c: (-c["vf"], c["music_id"], c["diff_idx"]))
+    radar_sources = (
+        records,
+        getattr(getattr(catalog, "music", None), "radars", {}),
+        getattr(getattr(catalog, "music", None), "levels", {}),
+        getattr(getattr(catalog, "details", None), "metadata", {}),
+    )
+    profile_radar = calculate_profile_radar(*radar_sources)
+    if profile_radar is not None:
+        profile_radar["without_custom"] = calculate_profile_radar(
+            *radar_sources, include_custom=False
+        )
+
     state = {
         "name": preferences["name"],
         "currency": preferences["currency"],
@@ -551,12 +563,7 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
         "playtime": playtime,
         "skill_level": skill_level,
         "crew_id": crew_id,
-        "profile_radar": calculate_profile_radar(
-            records,
-            getattr(getattr(catalog, "music", None), "radars", {}),
-            getattr(getattr(catalog, "music", None), "levels", {}),
-            getattr(getattr(catalog, "details", None), "metadata", {}),
-        ),
+        "profile_radar": profile_radar,
     }
     if hasattr(catalog, "public_catalog"):
         state["catalog"] = catalog.public_catalog()
@@ -768,6 +775,13 @@ def upload(
             ):
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing the profile radar"
+                )
+            if (
+                "without_custom" in (payload.get("state", {}).get("profile_radar") or {})
+                and result.get("profile_radar_schema", 0) < 2
+            ):
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing filtered profile radars"
                 )
     except urllib.error.HTTPError as error:
         if compressed and error.code in (400, 415):

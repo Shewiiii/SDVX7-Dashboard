@@ -30,6 +30,7 @@ def source_signature(config: dict[str, Any]) -> str:
         ROOT / "public/game-data/crew-catalog.json",
         ROOT / "public/game-data/crew-voices.json",
         ROOT / "scripts/crews.py",
+        ROOT / "scripts/crew_afp.py",
         ROOT / "scripts/crew_voices.py",
     ]
     for folder in ["live2d", "chara", "crew_icon", "crew_portrait"]:
@@ -321,11 +322,16 @@ def sync_crews(catalog: Any) -> None:
             write_json(checkpoint, state)
 
     def publish(ready: set[str]) -> None:
+        path = CACHE / "published-catalog.json"
+        previous = read_json(path, {}) if state["objects"].get("catalog.json") else {}
+        available = {row["key"]: row for row in previous.get("crews", [])}
+        available.update((row["key"], row) for row in entries if row["key"] in ready)
         published = {
             **assets,
-            "crews": [row for row in entries if row["key"] in ready],
+            "crews": [
+                available[row["key"]] for row in entries if row["key"] in available
+            ],
         }
-        path = CACHE / "published-catalog.json"
         write_json(path, published)
         upload({"catalog.json": path})
         state["ready"] = [row["key"] for row in entries if row["key"] in ready]

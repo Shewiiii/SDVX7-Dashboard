@@ -92,9 +92,7 @@ def prepare_afp(key: str) -> dict[str, Any]:
     tools = ROOT / ".local/crew-tools"
     sys.path.insert(0, str(tools))
     try:
-        from sdvx_afp.geo import Shape
-
-        from scripts.crew_afp import CrewMovie, geometry_data
+        from scripts.crew_afp import CrewMovie, CrewShape, geometry_data
     except ImportError:
         raise RuntimeError(
             "Run optional-setup.bat to install the crew renderer tools."
@@ -123,7 +121,7 @@ def prepare_afp(key: str) -> dict[str, Any]:
                 movie.parse()
                 movies[movie.exported_name] = movie.as_dict()
             elif name.startswith("geo/"):
-                shape = Shape(file.name, geometry_data(file.load()))
+                shape = CrewShape(file.name, geometry_data(file.load()))
                 shape.parse()
                 shapes[file.name] = shape.as_dict()
             elif name.startswith("tex/") and name.endswith(".png"):
@@ -166,8 +164,19 @@ def crew_assets(entry: dict[str, Any]) -> dict[str, Path]:
         )
     if entry.get("model"):
         model = source / entry["model"]
-        refs = read_json(model, {})["FileReferences"]
-        paths = [model]
+        document = read_json(model, {})
+        refs = document["FileReferences"]
+        display_info = refs.get("DisplayInfo")
+        if display_info and not (model.parent / display_info).is_file():
+            # Editor display names are optional and are absent from some game models.
+            del refs["DisplayInfo"]
+            exported = CACHE / entry["model"]
+            if read_json(exported, {}) != document:
+                write_json(exported, document)
+            objects[entry["model"]] = exported
+        else:
+            objects[entry["model"]] = model
+        paths: list[Path] = []
         paths.extend(model.parent / name for name in refs.get("Textures", []))
         paths.extend(
             model.parent / refs[kind]

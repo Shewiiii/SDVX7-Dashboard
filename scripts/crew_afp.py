@@ -5,8 +5,35 @@ from __future__ import annotations
 import struct
 from typing import Any
 
+from sdvx_afp.geo import Shape
 from sdvx_afp.swf import SWF
 from sdvx_afp.types import AP2Tag
+
+
+class CrewShape(Shape):
+    def __init__(self, name: str, data: bytes) -> None:
+        super().__init__(name, data)
+        self.unicode_labels: dict[str, str] = {}
+
+    def get_until_null(self, offset: int) -> bytes:
+        raw = super().get_until_null(offset)
+        try:
+            label = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            return raw
+        if label.isascii():
+            return raw
+        # The parser expects ASCII, but some crews use plain UTF-8 labels.
+        token = "utf8_" + raw.hex()
+        self.unicode_labels[token] = label
+        return token.encode("ascii")
+
+    def as_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        result = super().as_dict(*args, **kwargs)
+        for parameters in result["draw_params"]:
+            region = parameters["region"]
+            parameters["region"] = self.unicode_labels.get(region, region)
+        return result
 
 
 class CrewMovie(SWF):

@@ -43,6 +43,11 @@ import { createProfileRadar } from "./profile-radar.js";
 import { createSimilarCharts } from "./similar-charts.js";
 import { createChartViewer } from "./chart-viewer.js";
 import { createChartDetails } from "./chart-details.js";
+import {
+    preparePanelHistory,
+    readPanelLink,
+    samePanelLink,
+} from "./panel-links.js";
 
 const $ = (id) => document.getElementById(id);
 const profileRadar = createProfileRadar(
@@ -383,6 +388,7 @@ const chartDetails = createChartDetails(
     chartSongMarkup,
 );
 const chartViewer = createChartViewer();
+let panelRestoreVersion = 0;
 const songLibrary = createLibrary(
     () => data,
     () => catalog,
@@ -1374,6 +1380,7 @@ function scrollToCard({ keyboardAware = false } = {}) {
 
 function updateUrl(replace = false) {
     const params = new URLSearchParams();
+    const panelLink = replace ? readPanelLink() : null;
     if (view === "overview") {
         if (days) params.set("days", days);
         if (difficulty !== 1) params.set("difficulty", difficulty);
@@ -1394,18 +1401,25 @@ function updateUrl(replace = false) {
         if ($("sort").value !== defaultSort)
             params.set("sort", $("sort").value);
     }
+    if (panelLink)
+        for (const [name, value] of Object.entries(panelLink))
+            params.set(name, value);
     const hash = `#${view}${params.size ? "?" + params.toString() : ""}`;
     if (location.hash !== hash)
         history[replace ? "replaceState" : "pushState"](
-            { dashboardScroll: pendingScroll || { x: scrollX, y: scrollY } },
+            {
+                ...(replace ? history.state : {}),
+                dashboardScroll: pendingScroll || { x: scrollX, y: scrollY },
+            },
             "",
             hash,
         );
 }
 
 function restoreUrl() {
-    if (appealHelper.restoreHistory()) return;
     const savedScroll = history.state?.dashboardScroll;
+    const previousSelection = selected;
+    const previousSongSearchPage = songSearchPage;
     const previousDays = days;
     const previousChart = JSON.stringify([difficulty, [...shown]]);
     const [route, query = ""] = location.hash.slice(1).split("?");
@@ -1478,11 +1492,19 @@ function restoreUrl() {
                 : "";
     }
     closeMatches();
+    const sameSongSearch =
+        data &&
+        next === "search" &&
+        view === "search" &&
+        selected &&
+        selected.music_id === previousSelection?.music_id &&
+        selected.diff_idx === previousSelection?.diff_idx &&
+        songSearchPage === previousSongSearchPage;
     if (data && next === "overview" && view === "overview") {
         if (days !== previousDays) renderChart({ transition: true });
         else if (previousChart !== JSON.stringify([difficulty, [...shown]]))
             renderChart();
-    } else switchView(next, false, { animate: false });
+    } else if (!sameSongSearch) switchView(next, false, { animate: false });
     if (["top", "history"].includes(next)) {
         page = restoredPage;
         $("search").value = params.get("q") || "";
@@ -1498,6 +1520,71 @@ function restoreUrl() {
         renderTable({ animate: false });
     }
     restoreScroll(savedScroll);
+    void restorePanelLink();
+}
+
+async function restorePanelLink() {
+    const version = ++panelRestoreVersion;
+    const link = readPanelLink();
+    const owner =
+        link?.panel === "details"
+            ? chartDetails
+            : link?.panel === "chart"
+              ? chartViewer
+              : link
+                ? appealHelper
+                : null;
+    for (const [id, controller] of [
+        ["chart-details", chartDetails],
+        ["chart-viewer", chartViewer],
+        ["appeal-helper", appealHelper],
+    ]) {
+        if (
+            $(id).open &&
+            (controller !== owner ||
+                (controller !== appealHelper &&
+                    !samePanelLink(controller.link, link)))
+        ) {
+            const closed = new Promise((resolve) =>
+                $(id).addEventListener("close", resolve, { once: true }),
+            );
+            await controller.close({ fromHistory: true });
+            await closed;
+        }
+        if (version !== panelRestoreVersion) return;
+    }
+    if (
+        !link ||
+        !samePanelLink(readPanelLink(), link) ||
+        samePanelLink(owner.link, link)
+    )
+        return;
+    if (owner === appealHelper && appealHelper.restoreLink(link)) return;
+    if (link.panel === "crew")
+        appealHelper.open({
+            crewKey: link.crew ?? null,
+            tab: "crew",
+            fromHistory: true,
+        });
+    else if (link.panel === "card" || link.panel === "cards") {
+        if (data)
+            appealHelper.open({ cardId: link.card ?? null, fromHistory: true });
+    } else if (link.panel === "details" && data) {
+        chartDetails.open({ music_id: link.song, diff_idx: link.diff });
+    } else if (data) {
+        const song = songs.get(link.song);
+        const difficulty = song?.difficulties.find(
+            (entry) => entry.diff_idx === link.diff,
+        );
+        void chartViewer.open({
+            music_id: link.song,
+            diff_idx: link.diff,
+            title: song?.title,
+            artist: song?.artist,
+            level: difficulty?.level,
+            cover: difficulty?.cover,
+        });
+    }
 }
 
 function switchView(
@@ -2217,6 +2304,13 @@ async function load({ fresh = false, check = false, live = false } = {}) {
         document.body.dataset.ready = "true";
         clearExpiredHighlights();
         restoreScroll(pendingScroll);
+        if (
+            readPanelLink() &&
+            !chartDetails.link &&
+            !chartViewer.link &&
+            !$("appeal-helper").open
+        )
+            void restorePanelLink();
     } catch (error) {
         setText(
             "notice",
@@ -2452,6 +2546,7 @@ window.addEventListener(
 window.addEventListener("resize", hideSpendingPopup);
 window.addEventListener("resize", hideSongReadingPopup);
 initSegmentedControls();
+preparePanelHistory();
 restoreUrl();
 updateUrl(true);
 // Show the saved cloud archive before waiting for the local sync worker.

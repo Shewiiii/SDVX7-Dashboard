@@ -6,6 +6,11 @@ import { getAudioMetadata, mountAudioPlayer } from "./audio-player.js";
 import { createChartPlayback } from "./chart-playback.js";
 import { createChartAudio } from "./chart-audio.js";
 import { DIFFS } from "./metrics.js";
+import {
+    closePanelLink,
+    createPanelShareButton,
+    openPanelLink,
+} from "./panel-links.js";
 
 // Single-note thickness in CSS pixels. Adjust BT and FX independently here.
 export const SINGLE_NOTE_HEIGHT = { bt: 10, fx: 10 };
@@ -650,6 +655,7 @@ export function createChartViewer() {
     const dialog = document.getElementById("chart-viewer");
     const body = document.getElementById("chart-viewer-body");
     const closeButton = document.getElementById("chart-viewer-close");
+    dialog.setAttribute("closedby", "none");
     const content = document.createElement("div");
     content.className = "chart-viewer-content";
     content.append(...dialog.children);
@@ -661,10 +667,23 @@ export function createChartViewer() {
         trigger,
         settingsPanel,
         chartCanvas,
+        current,
         closing = false;
+    const panelLink = () =>
+        current && {
+            panel: "chart",
+            song: current.music_id,
+            diff: current.diff_idx,
+        };
+    const actions = document.createElement("div");
+    actions.className = "panel-heading-actions";
+    closeButton.before(actions);
+    actions.append(createPanelShareButton(panelLink, "chart viewer"), closeButton);
+
     async function close() {
         if (!dialog.open || closing) return;
         closing = true;
+        closePanelLink(panelLink());
         dispose?.();
         request?.abort();
         observer?.disconnect();
@@ -683,6 +702,7 @@ export function createChartViewer() {
         if (e.target === dialog) void close();
     });
     dialog.addEventListener("close", () => {
+        closePanelLink(panelLink());
         dispose?.();
         request?.abort();
         observer?.disconnect();
@@ -695,6 +715,10 @@ export function createChartViewer() {
         if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     });
     return {
+        close,
+        get link() {
+            return dialog.open ? panelLink() : null;
+        },
         async updateButton(button, chart) {
             if (!button) return;
             const key = `${chart.music_id}:${chart.diff_idx}`;
@@ -720,6 +744,8 @@ export function createChartViewer() {
             )
                 return;
             trigger = button;
+            current = chart;
+            openPanelLink(panelLink());
             dispose = undefined;
             request = new AbortController();
             const { signal } = request;
@@ -1136,7 +1162,7 @@ export function createChartViewer() {
             getComputedStyle(dialog).opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
-            closeButton.focus({ preventScroll: true });
+            (button ? closeButton : dialog).focus({ preventScroll: true });
             const onTime = (at, frame) => {
                 time = at;
                 if (shouldDraw(frame.timestamp, frame.force)) draw();

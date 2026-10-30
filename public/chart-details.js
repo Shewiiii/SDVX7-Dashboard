@@ -3,6 +3,11 @@ import { showPanel } from "./panels.js";
 import { mountAudioPlayer } from "./audio-player.js";
 import { mountUnlockMethod } from "./unlock-method.js";
 import { isBossChart, loadBossCharts } from "./boss-charts.js";
+import {
+    closePanelLink,
+    createPanelShareButton,
+    openPanelLink,
+} from "./panel-links.js";
 
 const LANES = [
     "VOL-L",
@@ -264,6 +269,7 @@ export function createChartDetails(isPreview, renderSong) {
     const dialog = document.getElementById("chart-details");
     const body = document.getElementById("chart-details-body");
     const closeButton = document.getElementById("chart-details-close");
+    dialog.setAttribute("closedby", "none");
     const cache = new Map();
     const cacheKey = "chart-details-cache-v6";
     try {
@@ -286,6 +292,17 @@ export function createChartDetails(isPreview, renderSong) {
         trigger,
         closing = false,
         current;
+
+    const panelLink = () =>
+        current && {
+            panel: "details",
+            song: current.music_id,
+            diff: current.diff_idx,
+        };
+    const actions = document.createElement("div");
+    actions.className = "panel-heading-actions";
+    closeButton.before(actions);
+    actions.append(createPanelShareButton(panelLink, "chart details"), closeButton);
 
     function showDetails(record) {
         disposeAudio?.();
@@ -488,6 +505,7 @@ export function createChartDetails(isPreview, renderSong) {
     async function close() {
         if (!dialog.open || closing) return;
         closing = true;
+        closePanelLink(panelLink());
         disposeAudio?.();
         disposeUnlock?.();
         disposeAudio = null;
@@ -522,6 +540,7 @@ export function createChartDetails(isPreview, renderSong) {
             void close();
     });
     dialog.addEventListener("close", () => {
+        closePanelLink(panelLink());
         disposeAudio?.();
         disposeUnlock?.();
         disposeAudio = null;
@@ -532,9 +551,14 @@ export function createChartDetails(isPreview, renderSong) {
         if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     });
     return {
+        close,
+        get link() {
+            return dialog.open ? panelLink() : null;
+        },
         open(selection, button) {
             if (dialog.open || closing) return;
             current = { ...selection };
+            openPanelLink(panelLink());
             trigger = button;
             document.dispatchEvent(
                 new CustomEvent("dashboard:panel-open", {
@@ -545,7 +569,7 @@ export function createChartDetails(isPreview, renderSong) {
             getComputedStyle(dialog).opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;
-            closeButton.focus({ preventScroll: true });
+            (button ? closeButton : dialog).focus({ preventScroll: true });
             void load();
         },
     };

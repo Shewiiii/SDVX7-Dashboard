@@ -2,6 +2,14 @@ import { dismissSearchKeyboard } from "./search-tools.js";
 import { showPanel } from "./panels.js";
 import { normalizeSearch } from "./metrics.js";
 import { createCrewViewer } from "./crew-viewer.js";
+import {
+    backToCardBrowser,
+    closePanelLink,
+    createPanelShareButton,
+    openPanelLink,
+    readPanelLink,
+    setPanelLink,
+} from "./panel-links.js";
 
 const TARGET_PAGE_SIZE = 48;
 
@@ -23,8 +31,31 @@ export function createAppealCardHelper(getState) {
     const tabList = dialog.querySelector(".customize-tabs");
     let view = "cards";
 
-    function switchTab(next) {
-        if (next === view) return;
+    function panelLink() {
+        if (view === "crew") return crewViewer.link;
+        return !detail.hidden && selectedId !== null
+            ? { panel: "card", card: selectedId }
+            : { panel: "cards" };
+    }
+
+    const share = createPanelShareButton(panelLink, "this selection");
+    share.hidden = true;
+    const closeButton = document.getElementById("appeal-helper-close");
+    const actions = document.createElement("div");
+    actions.className = "panel-heading-actions";
+    closeButton.before(actions);
+    actions.append(share, closeButton);
+
+    async function switchTab(next, crewKey = null) {
+        if (returningToBrowser || closing) return;
+        if (next === view) {
+            if (next === "crew" && crewKey !== null)
+                void crewViewer.show(crewKey);
+            return;
+        }
+        if (next === "crew" && readPanelLink()?.panel === "card")
+            await returnToBrowser();
+        if (!dialog.open || closing) return;
         view = next;
         dialog.dataset.customizeView = view;
         for (const tab of tabs) {
@@ -34,13 +65,13 @@ export function createAppealCardHelper(getState) {
             tab.tabIndex = selected ? 0 : -1;
         }
         if (view === "crew") {
-            if (!detail.hidden) leaveDetailHistory();
+            share.hidden = false;
             browser.hidden = true;
             detail.hidden = true;
-            dialog.setAttribute("closedby", "closerequest");
-            void crewViewer.show();
+            void crewViewer.show(crewKey);
         } else {
             crewViewer.hide();
+            setPanelLink({ panel: "cards" });
             renderBrowser();
         }
     }
@@ -73,9 +104,7 @@ export function createAppealCardHelper(getState) {
         totalPages = 1;
     let scrollPosition = 0,
         closing = false;
-    let detailHistoryActive = false,
-        historyReturning = false,
-        detailHistoryUrl = "";
+    let returningToBrowser = false;
 
     function image(card, lazy = true) {
         const frame = document.createElement("span");
@@ -90,6 +119,7 @@ export function createAppealCardHelper(getState) {
         error.hidden = true;
         const img = document.createElement("img");
         img.alt = card.title;
+        img.draggable = !lazy;
         img.loading = lazy ? "lazy" : "eager";
         img.decoding = "async";
         img.width = 128;
@@ -198,7 +228,8 @@ export function createAppealCardHelper(getState) {
     }
 
     function renderBrowser({ anchorId = null } = {}) {
-        dialog.setAttribute("closedby", "closerequest");
+        share.hidden = true;
+        dialog.setAttribute("closedby", "none");
         browser.hidden = false;
         detail.hidden = true;
         const matches = matchingCards();
@@ -254,9 +285,10 @@ export function createAppealCardHelper(getState) {
     }
 
     function showDetail(card) {
-        // Let Back traverse the detail history entry instead of dismissing the modal.
         dialog.setAttribute("closedby", "none");
         selectedId = card.id;
+        share.hidden = false;
+        setPanelLink({ panel: "card", card: card.id });
         browser.hidden = true;
         detail.hidden = false;
         document
@@ -267,9 +299,11 @@ export function createAppealCardHelper(getState) {
         dialog.scrollTop = 0;
     }
 
-    function returnToBrowser() {
-        restoreBrowser();
-        leaveDetailHistory();
+    async function returnToBrowser() {
+        if (returningToBrowser || closing) return;
+        returningToBrowser = true;
+        await backToCardBrowser();
+        returningToBrowser = false;
     }
 
     function restoreBrowser() {
@@ -280,47 +314,31 @@ export function createAppealCardHelper(getState) {
         });
     }
 
-    function leaveDetailHistory() {
-        if (
-            !detailHistoryActive ||
-            historyReturning ||
-            !history.state?.appealCardHelper
-        )
-            return;
-        historyReturning = true;
-        history.back();
-    }
-
-    function restoreHistory() {
-        const cardId = history.state?.appealCardHelper;
-        if (detailHistoryActive && !cardId) {
-            const samePage = location.href === detailHistoryUrl;
-            detailHistoryActive = false;
-            historyReturning = false;
-            if (dialog.open && !closing) {
-                if (samePage) {
-                    if (view === "cards") restoreBrowser();
-                } else void closeDialog();
-            }
-            // Preserve the dashboard's filters and scroll when only the card changed.
-            return samePage;
+    function restoreLink(link) {
+        if (!dialog.open || closing) return false;
+        if (link.panel === "crew") {
+            void switchTab("crew", link.crew);
+            return true;
         }
-        if (dialog.open && !closing && !historyReturning && cardId) {
-            const card = cards.find((item) => item.id === cardId);
+        if (!["card", "cards"].includes(link.panel)) return false;
+        void switchTab("cards");
+        if (link.panel === "cards") restoreBrowser();
+        else {
+            const card = cards.find((item) => item.id === link.card);
             if (card) {
-                switchTab("cards");
-                detailHistoryActive = true;
-                detailHistoryUrl = location.href;
                 if (detail.hidden) scrollPosition = dialog.scrollTop;
                 showDetail(card);
                 back.focus({ preventScroll: true });
-                return true;
+            } else {
+                setPanelLink({ panel: "cards" });
+                restoreBrowser();
             }
         }
-        return false;
+        return true;
     }
 
     function update() {
+        crewViewer.update();
         const source = getState()?.appeal_cards || [];
         const nextSignature = JSON.stringify(source);
         if (nextSignature === signature) return;
@@ -343,51 +361,62 @@ export function createAppealCardHelper(getState) {
         else renderBrowser();
     }
 
+    function open({
+        cardId = null,
+        crewKey = null,
+        tab = "cards",
+        fromHistory = false,
+    } = {}) {
+        if (dialog.open || closing || returningToBrowser) return;
+        if (!fromHistory) openPanelLink({ panel: "cards" });
+        document.dispatchEvent(
+            new CustomEvent("dashboard:panel-open", {
+                detail: "appeal-helper",
+            }),
+        );
+        update();
+        search.value = "";
+        const current = cards.find(
+            (card) => card.image === getState()?.appeal_card,
+        );
+        page = 1;
+        pageInput.hidden = true;
+        pageNumber.hidden = false;
+        selectedId = null;
+        tabList.hidden = false;
+        browser.hidden = false;
+        detail.hidden = true;
+        showPanel(dialog);
+        void switchTab("cards");
+        renderBrowser({ anchorId: current?.id ?? null });
+        if (tab === "crew" || crewKey !== null) void switchTab("crew", crewKey);
+        else if (cardId !== null) {
+            const card = cards.find((item) => item.id === cardId);
+            if (card) showDetail(card);
+            else setPanelLink({ panel: "cards" });
+        }
+        // Establish both starting styles before fading the panel/backdrop in
+        getComputedStyle(dialog).opacity;
+        dialog.classList.add("is-visible");
+        dialog.scrollTop = 0;
+        // Browsing on a phone should not immediately open its keyboard
+        const initialFocus = matchMedia("(hover: hover) and (pointer: fine)")
+            .matches
+            ? search
+            : document.getElementById("appeal-helper-close");
+        (fromHistory ? dialog : initialFocus).focus({
+            preventScroll: true,
+        });
+    }
     document
         .getElementById("appeal-helper-open")
-        .addEventListener("click", () => {
-            if (dialog.open || closing || historyReturning) return;
-            if (history.state?.appealCardHelper) {
-                const { appealCardHelper, ...state } = history.state;
-                history.replaceState(state, "");
-            }
-            document.dispatchEvent(
-                new CustomEvent("dashboard:panel-open", {
-                    detail: "appeal-helper",
-                }),
-            );
-            update();
-            search.value = "";
-            const current = cards.find(
-                (card) => card.image === getState()?.appeal_card,
-            );
-            page = 1;
-            pageInput.hidden = true;
-            pageNumber.hidden = false;
-            selectedId = null;
-            switchTab("cards");
-            tabList.hidden = false;
-            browser.hidden = false;
-            detail.hidden = true;
-            showPanel(dialog);
-            renderBrowser({ anchorId: current?.id ?? null });
-            // Establish both starting styles before fading the panel/backdrop in.
-            getComputedStyle(dialog).opacity;
-            dialog.classList.add("is-visible");
-            dialog.scrollTop = 0;
-            // Browsing on a phone should not immediately open its keyboard.
-            const initialFocus = matchMedia(
-                "(hover: hover) and (pointer: fine)",
-            ).matches
-                ? search
-                : document.getElementById("appeal-helper-close");
-            initialFocus.focus({ preventScroll: true });
-        });
+        .addEventListener("click", () => open());
+
     async function closeDialog() {
         if (!dialog.open || closing) return;
         closing = true;
+        closePanelLink(panelLink());
         crewViewer.hide();
-        leaveDetailHistory();
         dialog.classList.remove("is-visible");
         // Only wait for the panel; its children may still have loading shimmers.
         await Promise.allSettled(
@@ -411,16 +440,13 @@ export function createAppealCardHelper(getState) {
         else void closeDialog();
     });
     dialog.addEventListener("close", () => {
-        leaveDetailHistory();
+        closePanelLink(panelLink());
         closing = false;
         crewViewer.hide();
         dialog.classList.remove("is-visible");
         // Release thumbnails after closing; reopening starts with the full catalog.
         grid.replaceChildren();
         document.getElementById("appeal-helper-artwork").replaceChildren();
-        document
-            .getElementById("appeal-helper-open")
-            .focus({ preventScroll: true });
     });
     dialog.addEventListener("click", (event) => {
         if (event.target !== dialog) return;
@@ -436,7 +462,7 @@ export function createAppealCardHelper(getState) {
         }
     });
     grid.addEventListener("click", (event) => {
-        if (historyReturning || closing) return;
+        if (returningToBrowser || closing) return;
         const button = event.target.closest("[data-appeal-id]");
         if (!button) return;
         const card = cards.find(
@@ -445,9 +471,7 @@ export function createAppealCardHelper(getState) {
         if (!card) return;
         dismissSearchKeyboard();
         scrollPosition = dialog.scrollTop;
-        detailHistoryUrl = location.href;
-        history.pushState({ ...history.state, appealCardHelper: card.id }, "");
-        detailHistoryActive = true;
+        openPanelLink({ panel: "card", card: card.id });
         showDetail(card);
         back.focus({ preventScroll: true });
     });
@@ -529,5 +553,13 @@ export function createAppealCardHelper(getState) {
     window.visualViewport?.addEventListener("resize", resizeBrowser);
     window.visualViewport?.addEventListener("scroll", resizeBrowser);
     document.fonts?.ready.then(resizeBrowser);
-    return { update, restoreHistory };
+    return {
+        update,
+        restoreLink,
+        open,
+        close: closeDialog,
+        get link() {
+            return dialog.open ? panelLink() : null;
+        },
+    };
 }

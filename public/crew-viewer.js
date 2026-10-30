@@ -2,6 +2,7 @@ import { createLive2dPlayer } from "./crew-live2d.js";
 import { createAfpPlayer } from "./crew-afp.js";
 import { initSegmentedControl } from "./motion.js";
 import { createCrewVoices } from "./crew-voices.js";
+import { clearPanelLink, setPanelLink } from "./panel-links.js";
 
 const labels = {
     In: "Entrance",
@@ -92,6 +93,8 @@ export function createCrewViewer(dialog, getState) {
     let catalog;
     let catalogTask;
     let selected;
+    let requestedKey = null;
+    let showRevision = 0;
     let player;
     let request;
     let active = false;
@@ -567,6 +570,25 @@ export function createCrewViewer(dialog, getState) {
         });
     }
 
+    function renderCurrentLabel() {
+        const currentLabel = $("crew-current");
+        const isCurrent = selected.id === currentId;
+        currentLabel.hidden = false;
+        currentLabel.textContent = isCurrent
+            ? "Current crew in-game"
+            : "To apply, select this crew in-game !";
+        currentLabel.classList.toggle("is-preview", !isCurrent);
+    }
+
+    function update() {
+        const nextId = getState()?.crew_id ?? catalog?.selected;
+        if (nextId === currentId) return;
+        currentId = nextId;
+        if (!active || !catalog || !selected) return;
+        renderCurrentLabel();
+        renderStrip();
+    }
+
     async function select(entry, scroll = null) {
         if (scroll === null) scrollToPreview();
         stop();
@@ -574,18 +596,14 @@ export function createCrewViewer(dialog, getState) {
         if (voices.hidden) voiceBank.stop();
         else void voiceBank.show(entry, catalog.base);
         selected = entry;
+        requestedKey = entry.key;
+        setPanelLink({ panel: "crew", crew: entry.key });
         const version = revision;
         request = new AbortController();
         const { signal } = request;
         $("crew-name").textContent = entry.name;
         $("crew-subtitle").textContent = `Nemsys Crew · #${entry.id}`;
-        const currentLabel = $("crew-current");
-        const isCurrent = entry.id === currentId;
-        currentLabel.hidden = false;
-        currentLabel.textContent = isCurrent
-            ? "Current crew in-game"
-            : "To apply, select this crew in-game !";
-        currentLabel.classList.toggle("is-preview", !isCurrent);
+        renderCurrentLabel();
         $("crew-renderer-note").hidden = entry.type !== "afp";
         for (const row of settings.querySelectorAll("[data-live2d-control]"))
             row.hidden = entry.type !== "live2d";
@@ -755,6 +773,14 @@ export function createCrewViewer(dialog, getState) {
         void playMotion();
     });
     return {
+        update,
+        get link() {
+            const key = requestedKey ?? selected?.key;
+            if (!active) return null;
+            return key === undefined
+                ? { panel: "crew" }
+                : { panel: "crew", crew: key };
+        },
         async isAvailable() {
             try {
                 await loadCatalog(true);
@@ -763,8 +789,16 @@ export function createCrewViewer(dialog, getState) {
                 return false;
             }
         },
-        async show() {
+        async show(crewKey = null) {
+            const version = ++showRevision;
+            requestedKey = crewKey;
             active = true;
+            const key = crewKey ?? selected?.key;
+            setPanelLink(
+                key === undefined
+                    ? { panel: "crew" }
+                    : { panel: "crew", crew: key },
+            );
             host.hidden = false;
             browser.hidden = false;
             settings.hidden = false;
@@ -772,18 +806,24 @@ export function createCrewViewer(dialog, getState) {
             updateJump();
             try {
                 catalog = await loadCatalog();
-                if (!active) return;
+                if (!active || version !== showRevision) return;
                 currentId = getState()?.crew_id ?? catalog.selected;
                 const entry =
+                    catalog.crews.find((item) => item.key === crewKey) ||
                     selected ||
                     catalog.crews.find((item) => item.id === currentId) ||
                     catalog.crews[0];
                 await select(entry, "instant");
             } catch {
-                if (active) setStatus("Nemsys crew preview is not available");
+                if (active && version === showRevision)
+                    setStatus("Nemsys crew preview is not available");
             }
         },
         hide() {
+            const key = requestedKey ?? selected?.key;
+            if (active && key !== undefined)
+                clearPanelLink({ panel: "crew", crew: key });
+            showRevision++;
             active = false;
             clearPreviewScroll();
             voiceBank.stop();

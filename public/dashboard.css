@@ -8,7 +8,7 @@
             rgb(30 30 46 / var(--performance-background-dim)),
             rgb(30 30 46 / var(--performance-background-dim))
         ),
-        var(--exceed-background) center/cover no-repeat;
+        var(--nabla-background) center/cover no-repeat;
     filter: blur(var(--performance-background-blur));
     opacity: 1;
 }
@@ -21,12 +21,12 @@
             rgb(30 30 46 / var(--performance-background-dim)),
             rgb(30 30 46 / var(--performance-background-dim))
         ),
-        var(--nabla-background) center/cover no-repeat;
+        var(--exceed-background) center/cover no-repeat;
     opacity: 0;
     transition: opacity var(--theme-transition-duration)
         var(--theme-transition-easing);
 }
-:root[data-theme="nabla"] .ambient::after {
+:root[data-theme="exceed"] .ambient::after {
     opacity: 1;
 }
 @media (max-width: 700px), (hover: none) {
@@ -4107,12 +4107,12 @@ footer > :last-child {
         filter: blur(var(--performance-background-blur-mobile));
         background-position:
             center,
-            calc(50% + var(--exceed-background-offset-x-mobile)) center;
+            calc(50% + var(--nabla-background-offset-x-mobile)) center;
     }
     .ambient::after {
         background-position:
             center,
-            calc(50% + var(--nabla-background-offset-x-mobile)) center;
+            calc(50% + var(--exceed-background-offset-x-mobile)) center;
     }
     .calculator-target output {
         flex-basis: 100%;

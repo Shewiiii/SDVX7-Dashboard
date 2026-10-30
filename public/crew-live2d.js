@@ -192,6 +192,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
     let motionRevision = 0;
     let playback;
     let queuedEntry;
+    let needsMotionUpdate = false;
     // The bundled adapter clears the queue before Cubism can blend motions.
     manager._startMotion = (motion, onFinish) => {
         motion.setFinishedMotionHandler(onFinish);
@@ -239,7 +240,8 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
             internal.eyeBlink = eyeBlink;
             const started = await model.motion(group, index, 3);
             if (signal.aborted || version !== motionRevision) return;
-            if (started)
+            if (started) {
+                needsMotionUpdate = true;
                 playback = {
                     next,
                     nextMotion,
@@ -248,6 +250,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                     duration: motion.getLoopDuration(),
                     version,
                 };
+            }
         },
         render(delta) {
             updateFocus();
@@ -261,6 +264,10 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                 if (finished) delta = Math.max(0, remaining - 0.001);
             }
             model.update(delta);
+            // The adapter skips animation evaluation when no time has elapsed.
+            if (needsMotionUpdate && delta === 0)
+                internal.update(0, model.elapsedTime);
+            needsMotionUpdate = false;
             app.renderer.render(app.stage);
             if (finished) {
                 playback = null;
@@ -276,6 +283,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                                 !signal.aborted &&
                                 version === motionRevision
                             ) {
+                                needsMotionUpdate = true;
                                 playback = {
                                     entry: queuedEntry,
                                     duration: nextMotion.getLoopDuration(),

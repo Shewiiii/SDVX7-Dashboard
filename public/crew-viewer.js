@@ -618,7 +618,6 @@ export function createCrewViewer(dialog, getState) {
                 setStatus("");
                 return;
             }
-            canvas.hidden = false;
             const created =
                 entry.type === "live2d"
                     ? await createLive2dPlayer(
@@ -667,6 +666,8 @@ export function createCrewViewer(dialog, getState) {
             updatePlayback();
             await playMotion();
             if (version !== revision || !active) return;
+            player.render(0);
+            canvas.hidden = false;
             setStatus("");
             stage.classList.add("is-ready");
             frame = requestAnimationFrame(tick);

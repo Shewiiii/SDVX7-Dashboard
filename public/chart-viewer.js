@@ -763,17 +763,17 @@ export function createChartViewer() {
                     <div class="settings-control"><span id="chart-playback-speed-label">Playback speed</span><div class="segmented chart-viewer-rates" role="group" aria-labelledby="chart-playback-speed-label">${[0.25, 0.5, 0.75, 1, 1.5].map((rate) => `<button type="button" data-playback-rate="${rate}" aria-pressed="${rate === 1}" class="${rate === 1 ? "selected" : ""}">${rate}×</button>`).join("")}</div></div>
                     <div class="chart-viewer-settings-grid">
                         <div>
-                            <label class="settings-control" for="chart-scale" title="Zoom the chart while keeping its proportions. Smaller scales show more upcoming notes."><span>Scale</span><output for="chart-scale">100%</output><input id="chart-scale" type="range" min="25" max="150" step="5" value="100"></label>
+                            <label class="settings-control" for="chart-scale"><span>Scale</span><output for="chart-scale">100%</output><input id="chart-scale" type="range" min="25" max="150" step="5" value="100"></label>
                             <div class="settings-control">
-                                <label for="chart-lane-speed" title="Current BPM × HiSpeed ÷ 100">Lane speed</label>
-                                <output for="chart-lane-speed" title="Actual speed follows BPM and can go outside 1–20."></output>
+                                <label for="chart-lane-speed">Lane speed</label>
+                                <output for="chart-lane-speed"></output>
                                 <div class="chart-viewer-lane-controls">
                                     <input id="chart-lane-speed" type="range" min="1" max="20" step="0.01" aria-label="Set lane speed">
                                     <input class="chart-viewer-lane-number" type="number" min="1" max="20" step="0.01" aria-label="Type lane speed from 1 to 20">
                                 </div>
                             </div>
                             <label class="settings-control" for="chart-fps"><span>FPS limit</span><output for="chart-fps"></output><input id="chart-fps" type="range" min="15" max="245" step="5" value="245"></label>
-                            <label class="settings-control" for="chart-offset" title="Positive values delay chart visuals relative to the audio."><span>Offset</span><output for="chart-offset">0 ms</output><input id="chart-offset" type="range" min="-500" max="500" step="1" value="0"></label>
+                            <label class="settings-control" for="chart-offset"><span>Offset</span><output for="chart-offset">0 ms</output><input id="chart-offset" type="range" min="-500" max="500" step="1" value="0"></label>
                         </div>
                         <div>
                             <div class="settings-row"><span id="chart-extended-lasers-label">Extended lasers</span><div class="segmented" role="group" aria-labelledby="chart-extended-lasers-label"><button type="button" data-extended-lasers="on" aria-pressed="true">On</button><button type="button" data-extended-lasers="off" aria-pressed="false">Off</button></div></div>

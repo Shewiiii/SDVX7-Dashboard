@@ -63,26 +63,26 @@
 .site-header .load-status {
     margin-left: auto;
 }
-.appearance-settings {
+.dashboard-settings {
     position: relative;
     margin-left: 12px;
 }
-:root.appearance-open {
+:root.settings-open {
     overflow: hidden;
 }
-.appearance-settings.is-active {
+.dashboard-settings.is-active {
     z-index: 6;
 }
-.appearance-backdrop {
+.settings-backdrop {
     position: fixed;
     inset: 0;
     z-index: 5;
     touch-action: none;
 }
-.appearance-backdrop:not(.is-visible) {
+.settings-backdrop:not(.is-visible) {
     pointer-events: none;
 }
-.appearance-toggle {
+.settings-toggle {
     display: grid;
     place-items: center;
     width: 34px;
@@ -93,8 +93,8 @@
     background: transparent;
     color: var(--muted);
 }
-.appearance-toggle:hover,
-.appearance-toggle[aria-expanded="true"] {
+.settings-toggle:hover,
+.settings-toggle[aria-expanded="true"] {
     background: var(--accent-wash);
     color: var(--accent);
 }
@@ -307,23 +307,6 @@
     margin: 32px 0 24px;
     border-bottom: 1px solid #ffffff16;
     margin-top: 25px;
-}
-.ranking-settings {
-    display: flex;
-    flex: none;
-    align-items: center;
-    gap: 12px;
-    padding-bottom: 12px;
-    color: var(--muted);
-    font-size: 12px;
-}
-.ranking-settings > span {
-    white-space: nowrap;
-}
-.settings-panel .ranking-settings {
-    justify-content: space-between;
-    margin-bottom: 18px;
-    padding-bottom: 0;
 }
 .tabs {
     display: flex;
@@ -641,8 +624,7 @@
     font-size: 10px;
 }
 .calculator-controls .segmented button,
-.settings-row .segmented button,
-.ranking-settings .segmented button {
+.settings-row .segmented button {
     padding: 0 14px;
     font-size: 12px;
 }
@@ -2797,7 +2779,7 @@ footer > :last-child {
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
 }
-.appearance-backdrop,
+.settings-backdrop,
 .panel-layer::before {
     background: rgb(0 0 0 / var(--panel-backdrop-dim));
 }
@@ -4244,9 +4226,6 @@ footer > :last-child {
     .navigation-row {
         margin-bottom: 18px;
         justify-content: center;
-    }
-    .navigation-row > .ranking-settings {
-        display: none;
     }
     .tabs {
         width: 100%;

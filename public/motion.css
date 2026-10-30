@@ -257,12 +257,12 @@ body[data-loading="initial"] .panel-foot {
     opacity: 1;
     transform: none;
 }
-.appearance-backdrop,
+.settings-backdrop,
 .panel-layer::before {
     opacity: 0;
     transition: opacity var(--panel-backdrop-duration) ease-out;
 }
-.appearance-backdrop.is-visible,
+.settings-backdrop.is-visible,
 .panel-layer:has(> dialog.is-visible)::before {
     opacity: 1;
 }
@@ -297,7 +297,7 @@ body[data-loading="initial"] .panel-foot {
 }
 @media (prefers-reduced-motion: reduce) {
     .settings-panel,
-    .appearance-backdrop,
+    .settings-backdrop,
     .appeal-helper,
     .panel-layer::before {
         transition: none;

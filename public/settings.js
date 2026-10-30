@@ -1,5 +1,6 @@
 (() => {
-    const storageKey = "rasis-tracker-appearance";
+    const storageKey = "rasis-tracker-settings";
+    const legacyStorageKey = "rasis-tracker-appearance";
     const root = document.documentElement;
     const styles = getComputedStyle(root);
     const controls = [
@@ -17,9 +18,17 @@
     let saved = {};
     let storageAvailable = true;
     try {
-        const stored = JSON.parse(localStorage.getItem(storageKey));
-        if (stored && typeof stored === "object" && !Array.isArray(stored))
+        const current = localStorage.getItem(storageKey);
+        const stored = JSON.parse(
+            current ?? localStorage.getItem(legacyStorageKey),
+        );
+        if (stored && typeof stored === "object" && !Array.isArray(stored)) {
             saved = stored;
+            if (current === null) {
+                localStorage.setItem(storageKey, JSON.stringify(saved));
+                localStorage.removeItem(legacyStorageKey);
+            }
+        }
     } catch {
         // Malformed or unavailable storage must not prevent dashboard loading.
     }
@@ -82,7 +91,7 @@
     );
     root.dataset.theme = theme;
 
-    // Restore before the page renders to avoid flashing the default appearance.
+    // Restore before the page renders to avoid flashing the default settings
     for (const control of controls) {
         control.value = themeSettings[theme][control.name];
         root.style.setProperty(
@@ -93,10 +102,10 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
         const { createSettingsPanel } = await import("./settings-panel.js");
-        const toggle = document.getElementById("appearance-toggle");
-        const panel = document.getElementById("appearance-panel");
-        const backdrop = document.getElementById("appearance-backdrop");
-        const container = toggle.closest(".appearance-settings");
+        const toggle = document.getElementById("settings-toggle");
+        const panel = document.getElementById("settings-panel");
+        const backdrop = document.getElementById("settings-backdrop");
+        const container = toggle.closest(".dashboard-settings");
         const themeButtons = panel.querySelectorAll("[data-theme-option]");
         const artworkCredit = document.getElementById("artwork-credit");
         const artworkCredits = {
@@ -172,10 +181,10 @@
 
         for (const control of controls) {
             control.input = document.getElementById(
-                `appearance-${control.name}`,
+                `settings-${control.name}`,
             );
             control.output = document.getElementById(
-                `appearance-${control.name}-value`,
+                `settings-${control.name}-value`,
             );
             control.input.addEventListener("input", () => {
                 control.value = Number(control.input.value);
@@ -185,44 +194,10 @@
         }
         setTheme(theme);
         const customButtons = document.querySelectorAll("[data-custom-option]");
-        const rankingControl = document.querySelector(".ranking-settings");
-        const navigation = document.querySelector(".navigation-row");
-        const tabs = navigation.querySelector(".tabs");
-        const rankingSlot = document.getElementById("ranking-settings-slot");
-        const compactRanking = matchMedia("(max-width: 900px)");
-        let rankingControlWidth = 0;
-
-        function placeRankingControl() {
-            const childrenWidth = [...rankingControl.children].reduce(
-                (width, child) => width + child.getBoundingClientRect().width,
-                0,
-            );
-            if (childrenWidth > 0)
-                rankingControlWidth =
-                    childrenWidth +
-                    (parseFloat(getComputedStyle(rankingControl).columnGap) || 0);
-            const gap = parseFloat(getComputedStyle(navigation).columnGap) || 0;
-            const fits =
-                tabs.scrollWidth + rankingControlWidth + gap <=
-                navigation.clientWidth;
-            const target =
-                compactRanking.matches || !fits ? rankingSlot : navigation;
-            if (rankingControl.parentElement !== target)
-                target.append(rankingControl);
-        }
-
-        let rankingFrame;
-        const rankingLayout = new ResizeObserver(() => {
-            cancelAnimationFrame(rankingFrame);
-            rankingFrame = requestAnimationFrame(placeRankingControl);
-        });
-        rankingLayout.observe(navigation);
-        rankingLayout.observe(tabs);
-        compactRanking.addEventListener("change", placeRankingControl);
-        document.fonts.ready.then(placeRankingControl);
-        placeRankingControl();
-
         function updateCustomButtons() {
+            document.getElementById("ranking-status").textContent = includeCustom
+                ? "Custom charts ranked"
+                : "Custom charts not ranked";
             for (const button of customButtons) {
                 const selected =
                     (button.dataset.customOption === "true") === includeCustom;
@@ -259,14 +234,14 @@
             container,
             canOpen: () => !document.querySelector("dialog[open]"),
             focus: "[data-theme-option].selected",
-            onOpen: () => root.classList.add("appearance-open"),
-            onClosed: () => root.classList.remove("appearance-open"),
+            onOpen: () => root.classList.add("settings-open"),
+            onClosed: () => root.classList.remove("settings-open"),
         });
         document.addEventListener("dashboard:panel-open", (event) => {
-            if (event.detail !== "appearance") setOpen(false, true);
+            if (event.detail !== "settings") setOpen(false, true);
         });
         document
-            .getElementById("appearance-reset")
+            .getElementById("settings-reset")
             .addEventListener("click", () => {
                 for (const control of controls) {
                     control.value = control.defaultValue;

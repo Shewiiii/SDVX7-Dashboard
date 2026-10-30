@@ -1,4 +1,4 @@
-// Shared disclosure lifecycle for the appearance and chart settings panels.
+// Shared disclosure lifecycle for dashboard and chart settings panels
 export function createSettingsPanel({
     toggle,
     panel,

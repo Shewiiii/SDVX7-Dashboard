@@ -92,7 +92,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     host.classList.toggle("details-audio-compact", !!options.compact);
     host.innerHTML = `<div class="details-audio-heading"><span>Song audio</span><span class="details-audio-actions"><span class="details-audio-status" role="status">Loading audio...</span><span class="details-audio-download-action" hidden><span aria-hidden="true"> · </span><span class="details-audio-download-wrap"><button type="button" class="text-button details-audio-download" aria-describedby="${downloadTooltipId}">Download</button><span id="${downloadTooltipId}" class="details-audio-download-popup" role="tooltip">No lossy transcoding has been applied, but the audio is already compressed in-game, so the audio is not lossless !</span></span></span></span></div>
         <div class="details-audio-controls" hidden>
-            <button type="button" class="details-audio-toggle" aria-label="Play song" title="Play song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
+            <button type="button" class="details-audio-toggle" aria-label="Play song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
             <div class="details-audio-track"><div class="details-audio-wave"><svg viewBox="0 0 512 48" preserveAspectRatio="none" aria-hidden="true"></svg><input class="details-audio-seek" type="range" min="0" step="0.01" value="0" aria-label="Seek in song"></div><span class="details-audio-time">0:00</span></div>
         </div><button type="button" class="text-button details-audio-retry" hidden>Try again</button>`;
     const status = host.querySelector(".details-audio-status");

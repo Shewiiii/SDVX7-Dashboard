@@ -451,7 +451,7 @@ function coverMarkup(p, size = "small") {
     return `<span class="cover-tile ${size}">${id && /^[a-f0-9]{64}$/.test(id) ? `<img src="/api/cover?id=${id}" alt="${escape(song.title)} cover" loading="lazy" decoding="async">` : '<span class="cover-missing" aria-label="Cover unavailable">—</span>'}</span>`;
 }
 const chartButton = (p) =>
-    `<button class="song-title open-chart" data-music="${p.music_id}" data-diff="${p.diff_idx}" title="View plays for ${escape(chartTitle(p))}">${escape(chartTitle(p))}</button>`;
+    `<button class="song-title open-chart" data-music="${p.music_id}" data-diff="${p.diff_idx}">${escape(chartTitle(p))}</button>`;
 
 function chartInfo(p, { artist = false, detailsClass = "" } = {}) {
     return `<div class="entry-song-info">${chartButton(p)}${artist ? `<div class="artist">${escape(p.artist)}</div>` : ""}<div class="song-details ${detailsClass}">${badge(p)}${clear(p)}</div></div>`;
@@ -652,13 +652,6 @@ function renderSummary({ animate = true } = {}) {
             ? "in Top 50"
             : `${stats.top.length} / 50 charts recorded`,
     );
-    const sorted = [...data.plays].sort(byTime);
-    setText(
-        "archive-dates",
-        sorted.length
-            ? `Tracking since ${date(sorted[0].received_at)}`
-            : "No plays yet",
-    );
     const updated = data.state.updated_at || data.synced_at;
     setText(
         "updated",
@@ -666,6 +659,7 @@ function renderSummary({ animate = true } = {}) {
             ? `Last update ${shortDate(updated)} ${clock(updated)}`
             : "Waiting for sync",
     );
+    document.querySelector(".hero-meta").hidden = false;
     const latest = stats.sessions.at(-1) || [];
     setText(
         "session-meta",
@@ -695,12 +689,8 @@ function renderSummary({ animate = true } = {}) {
     renderSpark();
     if (animate) {
         motion.metrics(document.querySelector(".metrics"));
-        for (const id of [
-            "archive-dates",
-            "updated",
-            "session-meta",
-            "top-foot",
-        ])
+        motion.data(document.querySelector(".hero-meta"));
+        for (const id of ["session-meta", "top-foot"])
             motion.data($(id));
         motion.data($("recent-plays"), ".play-row, .empty-list");
         motion.data($("top-plays"), ".play-row, .empty-list");
@@ -2396,7 +2386,6 @@ async function load({ fresh = false, check = false, live = false } = {}) {
         $("notice").hidden = false;
         if (!data) {
             setText("chart-summary", "Waiting for your archive.");
-            setText("archive-dates", "No history loaded");
             for (const id of ["recent-plays", "top-plays"])
                 $(id).innerHTML =
                     '<div class="empty-list">No data available yet.</div>';

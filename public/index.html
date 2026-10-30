@@ -10,15 +10,15 @@
         <link rel="stylesheet" href="/style.css" />
         <link rel="stylesheet" href="/dashboard.css" />
         <link rel="stylesheet" href="/motion.css" />
-        <script src="/appearance.js"></script>
+        <script src="/settings.js"></script>
         <script type="module" src="/app.js"></script>
     </head>
     <body data-loading="initial">
         <a class="skip-link" href="#main">Skip to content</a>
         <div class="ambient" aria-hidden="true"></div>
         <div
-            class="appearance-backdrop"
-            id="appearance-backdrop"
+            class="settings-backdrop"
+            id="settings-backdrop"
             aria-hidden="true"
             hidden
         ></div>
@@ -48,15 +48,14 @@
                         Loading records...
                     </span>
                 </div>
-                <div class="appearance-settings">
+                <div class="dashboard-settings">
                     <button
-                        class="appearance-toggle"
-                        id="appearance-toggle"
+                        class="settings-toggle"
+                        id="settings-toggle"
                         type="button"
-                        aria-label="Appearance settings"
-                        title="Appearance settings"
+                        aria-label="Settings"
                         aria-expanded="false"
-                        aria-controls="appearance-panel"
+                        aria-controls="settings-panel"
                     >
                         <svg
                             width="18"
@@ -75,17 +74,17 @@
                     </button>
                     <section
                         class="panel settings-panel"
-                        id="appearance-panel"
-                        aria-labelledby="appearance-title"
+                        id="settings-panel"
+                        aria-labelledby="settings-title"
                         hidden
                     >
-                        <h2 id="appearance-title">Appearance</h2>
+                        <h2 id="settings-title">Settings</h2>
                         <div class="settings-row">
-                            <span id="appearance-theme-label">Theme</span>
+                            <span id="settings-theme-label">Theme</span>
                             <div
                                 class="segmented"
                                 role="group"
-                                aria-labelledby="appearance-theme-label"
+                                aria-labelledby="settings-theme-label"
                             >
                                 <button
                                     type="button"
@@ -106,17 +105,17 @@
                         </div>
                         <label
                             class="settings-control"
-                            for="appearance-background-dim"
+                            for="settings-background-dim"
                         >
                             <span>Background dimming</span>
                             <output
-                                id="appearance-background-dim-value"
-                                for="appearance-background-dim"
+                                id="settings-background-dim-value"
+                                for="settings-background-dim"
                             >
                                 60%
                             </output>
                             <input
-                                id="appearance-background-dim"
+                                id="settings-background-dim"
                                 type="range"
                                 min="0"
                                 max="1"
@@ -126,17 +125,17 @@
                         </label>
                         <label
                             class="settings-control"
-                            for="appearance-panel-dim"
+                            for="settings-panel-dim"
                         >
                             <span>Panel opacity</span>
                             <output
-                                id="appearance-panel-dim-value"
-                                for="appearance-panel-dim"
+                                id="settings-panel-dim-value"
+                                for="settings-panel-dim"
                             >
                                 60%
                             </output>
                             <input
-                                id="appearance-panel-dim"
+                                id="settings-panel-dim"
                                 type="range"
                                 min="0"
                                 max="1"
@@ -146,17 +145,17 @@
                         </label>
                         <label
                             class="settings-control"
-                            for="appearance-background-blur"
+                            for="settings-background-blur"
                         >
                             <span>Background blur</span>
                             <output
-                                id="appearance-background-blur-value"
-                                for="appearance-background-blur"
+                                id="settings-background-blur-value"
+                                for="settings-background-blur"
                             >
                                 6px
                             </output>
                             <input
-                                id="appearance-background-blur"
+                                id="settings-background-blur"
                                 type="range"
                                 min="0"
                                 max="30"
@@ -166,17 +165,17 @@
                         </label>
                         <label
                             class="settings-control"
-                            for="appearance-background-blur-mobile"
+                            for="settings-background-blur-mobile"
                         >
                             <span>Mobile background blur</span>
                             <output
-                                id="appearance-background-blur-mobile-value"
-                                for="appearance-background-blur-mobile"
+                                id="settings-background-blur-mobile-value"
+                                for="settings-background-blur-mobile"
                             >
                                 3px
                             </output>
                             <input
-                                id="appearance-background-blur-mobile"
+                                id="settings-background-blur-mobile"
                                 type="range"
                                 min="0"
                                 max="30"
@@ -184,11 +183,36 @@
                                 value="3"
                             />
                         </label>
-                        <div id="ranking-settings-slot"></div>
+                        <div class="settings-row ranking-settings">
+                            <span id="ranking-custom-label">
+                                Rank custom charts
+                            </span>
+                            <div
+                                class="segmented"
+                                role="group"
+                                aria-labelledby="ranking-custom-label"
+                            >
+                                <button
+                                    type="button"
+                                    data-custom-option="true"
+                                    aria-pressed="false"
+                                >
+                                    On
+                                </button>
+                                <button
+                                    type="button"
+                                    data-custom-option="false"
+                                    class="selected"
+                                    aria-pressed="true"
+                                >
+                                    Off
+                                </button>
+                            </div>
+                        </div>
                         <div class="settings-footer">
                             <button
                                 class="text-button"
-                                id="appearance-reset"
+                                id="settings-reset"
                                 type="button"
                             >
                                 Reset
@@ -250,9 +274,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="hero-meta">
-                        <span id="archive-dates">Loading history...</span>
+                    <div class="hero-meta" hidden>
                         <span id="updated"></span>
+                        <span id="ranking-status">Custom charts not ranked</span>
                     </div>
                 </section>
                 <div id="notice" class="notice" role="status" hidden></div>
@@ -346,32 +370,6 @@
                             VF Calculator
                         </button>
                     </nav>
-                    <div class="ranking-settings">
-                        <span id="ranking-custom-label">
-                            Rank custom charts
-                        </span>
-                        <div
-                            class="segmented"
-                            role="group"
-                            aria-labelledby="ranking-custom-label"
-                        >
-                            <button
-                                type="button"
-                                data-custom-option="true"
-                                aria-pressed="false"
-                            >
-                                On
-                            </button>
-                            <button
-                                type="button"
-                                data-custom-option="false"
-                                class="selected"
-                                aria-pressed="true"
-                            >
-                                Off
-                            </button>
-                        </div>
-                    </div>
                 </div>
                 <section id="overview-view">
                     <article class="panel performance-panel">
@@ -642,7 +640,6 @@
                                 type="button"
                                 id="first-page"
                                 aria-label="First page"
-                                title="First page"
                             >
                                 ⇇
                             </button>
@@ -654,7 +651,6 @@
                                 type="button"
                                 id="last-page"
                                 aria-label="Last page"
-                                title="Last page"
                             >
                                 ⇉
                             </button>
@@ -1015,7 +1011,6 @@
                                 id="calculator-filter-remove"
                                 type="button"
                                 aria-label="Remove song filter"
-                                title="Remove song filter"
                             >
                                 <span aria-hidden="true">×</span>
                             </button>
@@ -1040,7 +1035,6 @@
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="SDVX Dashboard on GitHub"
-                    title="SDVX Dashboard on GitHub"
                 >
                     <svg
                         width="22"

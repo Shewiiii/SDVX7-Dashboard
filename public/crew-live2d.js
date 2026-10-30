@@ -192,11 +192,19 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         core.update();
     }
     const opacityParameter = findOpacityParameter(core);
+    let restoreOpacity = false;
     if (opacityParameter) {
         let opacity = 1;
         const opacities = core.drawables.opacities;
         const savedOpacities = new Float32Array(opacities.length);
         const draw = internal.draw.bind(internal);
+
+        internal.on("afterMotionUpdate", () => {
+            // Motions without a visibility curve must not inherit Exit's hidden state
+            if (restoreOpacity)
+                core.parameters.values[opacityParameter.index] =
+                    opacityParameter.opaque;
+        });
 
         internal.on("beforeModelUpdate", () => {
             const { index, opaque, hidden } = opacityParameter;
@@ -317,6 +325,12 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
     let needsMotionUpdate = false;
     // The bundled adapter clears the queue before Cubism can blend motions.
     manager._startMotion = (motion, onFinish) => {
+        restoreOpacity =
+            opacityParameter !== null &&
+            !motion._motionData.curves.some(
+                (curve) =>
+                    curve.id === core.parameters.ids[opacityParameter.index],
+            );
         motion.setFinishedMotionHandler(onFinish);
         const handle = manager.queueManager.startMotion(
             motion,

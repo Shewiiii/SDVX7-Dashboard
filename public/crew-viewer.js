@@ -21,6 +21,18 @@ const labels = {
     R_Verygood_Loop: "Very good result pose",
 };
 
+const motionOrder = new Map(
+    [
+        "Entrance",
+        "Idle",
+        "Confirm",
+        "Exit",
+        "Bad result",
+        "Good result",
+        "Very good result",
+    ].map((label, index) => [label, index]),
+);
+
 function toggle(name, label, enabled, live2d = false) {
     return `<div class="settings-row" ${live2d ? "data-live2d-control" : ""}><span id="crew-${name}-label">${label}</span><div id="crew-${name}" class="segmented" role="group" aria-labelledby="crew-${name}-label">${[true, false].map((value) => `<button type="button" data-crew-toggle="${name}" data-value="${value}" aria-pressed="${value === enabled}" class="${value === enabled ? "selected" : ""}">${value ? "On" : "Off"}</button>`).join("")}</div></div>`;
 }
@@ -626,7 +638,12 @@ export function createCrewViewer(dialog, getState) {
                 return;
             }
             player = created;
-            for (const [index, item] of player.motions.entries()) {
+            const orderedMotions = Array.from(player.motions.entries()).sort(
+                ([, left], [, right]) =>
+                    (motionOrder.get(labels[left.group]) ?? motionOrder.size) -
+                    (motionOrder.get(labels[right.group]) ?? motionOrder.size),
+            );
+            for (const [index, item] of orderedMotions) {
                 if (isResultPose(item.group)) continue;
                 const option = document.createElement("option");
                 option.value = index;

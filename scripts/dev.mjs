@@ -284,6 +284,7 @@ const server = createServer(async (req, res) => {
             const result = previewCache.get(
                 section,
                 url.searchParams.get("revision"),
+                url.searchParams.get("since"),
             );
             if (!result) {
                 res.writeHead(409, {

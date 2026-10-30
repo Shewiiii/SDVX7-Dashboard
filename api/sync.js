@@ -2,6 +2,7 @@ import { cleanAudio } from "../lib/audio.mjs";
 import { ARCHIVE_CHANNEL } from "../lib/events.mjs";
 import { database, initialize, databaseFailure } from "../lib/database.mjs";
 import { syncStatus, completeRefresh } from "../lib/refresh.mjs";
+import { readSyncBody } from "../lib/sync-body.mjs";
 import {
     authorized,
     cleanPlay,
@@ -22,6 +23,7 @@ export default async function handler(req, res) {
         try {
             return res.status(200).json({
                 ok: true,
+                upload_compression: "gzip",
                 ...(await syncStatus(database())),
             });
         } catch (error) {
@@ -32,8 +34,7 @@ export default async function handler(req, res) {
     }
     let plays, observations, state, covers, details, audio, refreshId;
     try {
-        const body =
-            typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+        const body = await readSyncBody(req);
         if (
             !body ||
             !Array.isArray(body.plays) ||
@@ -69,8 +70,10 @@ export default async function handler(req, res) {
             (!Number.isSafeInteger(refreshId) || refreshId < 1)
         )
             throw new Error("Invalid refresh acknowledgement");
-    } catch {
-        return res.status(400).json({ error: "Invalid upload" });
+    } catch (error) {
+        return res
+            .status(error.status || 400)
+            .json({ error: "Invalid upload" });
     }
     try {
         const sql = database();
@@ -107,12 +110,27 @@ export default async function handler(req, res) {
                 candidates.map((row) => [row.kind + ":" + row.id, row]),
             ).values(),
         ];
-        const queries = [
-            sql`INSERT INTO dashboard_records (kind, id, record)
-      SELECT x.kind, x.id, x.record FROM jsonb_to_recordset(${JSON.stringify(rows)}::jsonb)
-      AS x(kind text, id text, record jsonb) ON CONFLICT (kind, id) DO UPDATE SET record = EXCLUDED.record
+        const queries = [];
+        if (state || plays.length || observations.length)
+            // Lock the profile row before assigning revisions to changed history.
+            // Concurrent uploads commit their records and cursor in the same order.
+            queries.push(sql`INSERT INTO dashboard_state (id, record, history_revision)
+                VALUES (1, '{"name":"Player","charts":[]}'::jsonb, 1)
+                ON CONFLICT (id) DO UPDATE SET
+                    history_revision = dashboard_state.history_revision + 1,
+                    synced_at = GREATEST(clock_timestamp(),
+                        dashboard_state.synced_at + interval '1 microsecond')`);
+        queries.push(
+            sql`INSERT INTO dashboard_records (kind, id, record, history_revision)
+      SELECT x.kind, x.id, x.record,
+        CASE WHEN x.kind IN ('play', 'observation')
+            THEN (SELECT history_revision FROM dashboard_state WHERE id = 1)
+            ELSE 0 END
+      FROM jsonb_to_recordset(${JSON.stringify(rows)}::jsonb)
+      AS x(kind text, id text, record jsonb) ON CONFLICT (kind, id) DO UPDATE SET
+        record = EXCLUDED.record, history_revision = EXCLUDED.history_revision
       WHERE dashboard_records.record IS DISTINCT FROM EXCLUDED.record`,
-        ];
+        );
         if (state)
             queries.push(sql`INSERT INTO dashboard_state (id, record) VALUES (1, ${JSON.stringify(state)}::jsonb)
       ON CONFLICT (id) DO UPDATE SET record = EXCLUDED.record ||
@@ -122,20 +140,14 @@ export default async function handler(req, res) {
           'appeal_cards', COALESCE(EXCLUDED.record->'appeal_cards', dashboard_state.record->'appeal_cards', '[]'::jsonb),
           'playtime', COALESCE(EXCLUDED.record->'playtime', dashboard_state.record->'playtime', 'null'::jsonb),
           'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb),
-          'profile_radar', COALESCE(EXCLUDED.record->'profile_radar', dashboard_state.record->'profile_radar', 'null'::jsonb)),
-        synced_at = now()`);
-        // Any changed play/observation batch must advance the lightweight archive
-        // revision, even when the accompanying profile state is unchanged.
-        if (!state && (plays.length || observations.length))
-            queries.push(
-                sql`UPDATE dashboard_state SET synced_at = now() WHERE id = 1`,
-            );
+          'profile_radar', COALESCE(EXCLUDED.record->'profile_radar', dashboard_state.record->'profile_radar', 'null'::jsonb))`);
         if (state || plays.length || observations.length)
             queries.push(sql`SELECT pg_notify(${ARCHIVE_CHANNEL}, '')`);
         await sql.transaction(queries);
         if (refreshId !== undefined) await completeRefresh(sql, refreshId);
         return res.status(200).json({
             ok: true,
+            upload_compression: "gzip",
             accepted: rows.length,
             play_schema: 4,
             details_schema: 8,

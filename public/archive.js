@@ -1,3 +1,5 @@
+import { mergeArchive } from "./history.js";
+
 export function createArchiveLoader() {
     let current, revision, catalog;
     const key = "dashboard-catalog-v1";
@@ -18,6 +20,20 @@ export function createArchiveLoader() {
         }
         return response.json();
     }
+    async function readArchive(version) {
+        const url = `/api/data?section=archive&revision=${encodeURIComponent(version.revision)}`;
+        const since =
+            current?.history_cursor && version.history_cursor
+                ? `&since=${encodeURIComponent(current.history_cursor)}`
+                : "";
+        const update = await read(url + since);
+        try {
+            return mergeArchive(current, update);
+        } catch (error) {
+            if (error.code !== "HISTORY_RESET") throw error;
+            return read(url);
+        }
+    }
     return async ({ fresh = false, check = false } = {}) => {
         for (let attempt = 0; attempt < 3; attempt++) {
             const version = await read(
@@ -31,16 +47,17 @@ export function createArchiveLoader() {
             if (
                 current &&
                 revision === version.revision &&
+                current.history_cursor === version.history_cursor &&
                 catalog?.revision === version.catalog_revision
             )
                 return current;
             try {
                 const [archive, library] = await Promise.all([
-                    current && revision === version.revision
+                    current &&
+                    revision === version.revision &&
+                    current.history_cursor === version.history_cursor
                         ? current
-                        : read(
-                              `/api/data?section=archive&revision=${encodeURIComponent(version.revision)}`,
-                          ),
+                        : readArchive(version),
                     catalog?.revision === version.catalog_revision &&
                     Array.isArray(catalog.state?.catalog) &&
                     Array.isArray(catalog.state?.appeal_cards)

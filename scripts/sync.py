@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import errno
+import gzip
 import hashlib
 import json
 import math
@@ -68,6 +69,7 @@ def search_forms(text: str, *, reading: bool = False) -> list[str]:
 
 PLAY_SCHEMA = 5
 DETAILS_SCHEMA = 8
+UPLOAD_COMPRESSION: dict[str, bool] = {}
 CLEARS = {1: 50, 2: 100, 3: 102, 4: 106, 5: 110, 6: 104}
 GRADES = (
     (9900000, 105),
@@ -694,9 +696,21 @@ def upload(
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     if bypass:
         headers["x-vercel-protection-bypass"] = bypass
+    endpoint = url.rstrip("/")
+    body = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8")
+    compressed = False
+    if UPLOAD_COMPRESSION.get(endpoint) and len(body) >= 1024:
+        encoded = gzip.compress(body, compresslevel=6, mtime=0)
+        if len(encoded) < len(body):
+            body = encoded
+            compressed = True
+            # Keep Vercel's JSON body parser away from the compressed bytes.
+            headers.update(
+                {"Content-Type": "application/octet-stream", "Content-Encoding": "gzip"}
+            )
     request = urllib.request.Request(
-        url.rstrip("/") + "/api/sync",
-        json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8"),
+        endpoint + "/api/sync",
+        body,
         headers,
         method="POST",
     )
@@ -705,6 +719,8 @@ def upload(
             result = json.load(response)
             if result.get("ok") is not True:
                 raise ValueError("Upload was not acknowledged")
+            if result.get("upload_compression") == "gzip":
+                UPLOAD_COMPRESSION[endpoint] = True
             if payload.get("plays") and result.get("play_schema", 0) < 4:
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing timing histograms"
@@ -754,6 +770,10 @@ def upload(
                     "Deploy the updated dashboard API before syncing the profile radar"
                 )
     except urllib.error.HTTPError as error:
+        if compressed and error.code in (400, 415):
+            error.close()
+            UPLOAD_COMPRESSION[endpoint] = False
+            return upload(url, token, payload, bypass)
         # Do not expose secrets, request headers, response contents, or connection URLs.
         raise http_failure(error, "Upload") from None
     except urllib.error.URLError:
@@ -785,6 +805,9 @@ def refresh_request(config: dict[str, Any]) -> int | None:
     ):
         raise ValueError("Invalid dashboard sync status")
     database_id = result.get("database_id")
+    UPLOAD_COMPRESSION[config["url"].rstrip("/")] = (
+        result.get("upload_compression") == "gzip"
+    )
     if database_id is not None:
         if not isinstance(database_id, str):
             raise TypeError("Dashboard database identity must be text")
@@ -876,6 +899,14 @@ def sync_once(
     current_hash = hashlib.sha256(
         json.dumps(current, sort_keys=True).encode()
     ).hexdigest()
+    catalog_fields = ("catalog", "appeal_cards")
+    catalog_hashes = {
+        field: hashlib.sha256(
+            json.dumps(current[field], sort_keys=True).encode()
+        ).hexdigest()
+        for field in catalog_fields
+        if field in current
+    }
     uploaded = 0
     while True:
         plays, pc = read_batch(
@@ -888,17 +919,32 @@ def sync_once(
             saved.get("observations", {}),
             lambda o: observation_record(o, profile),
         )
+        changed_catalogs = {
+            field
+            for field, digest in catalog_hashes.items()
+            if saved.get("catalog_schema") != 3
+            or saved.get("catalog_hashes", {}).get(field) != digest
+        }
         changed = (
             force
             or saved.get("catalog_schema") != 3
             or saved.get("snapshot") != current_hash
+            or bool(changed_catalogs)
         )
         if plays or observations or changed:
             payload = {"plays": plays, "observations": observations}
             if changed:
-                payload["state"] = current
+                # Omitted catalogs are preserved by the API's state merge.
+                payload["state"] = {
+                    field: value
+                    for field, value in current.items()
+                    if field not in catalog_fields or field in changed_catalogs
+                }
             upload(config["url"], config["token"], payload, config.get("bypass"))
             uploaded += len(plays) + len(observations)
+            if changed:
+                # Only acknowledge these hashes after the upload succeeds.
+                saved.setdefault("catalog_hashes", {}).update(catalog_hashes)
         saved.update(
             endpoint=endpoint_id,
             plays=pc,

@@ -6,6 +6,8 @@ import {
     revisionQuery,
     emptyRevision,
     etag,
+    historyCursor,
+    compatibleHistoryCursor,
 } from "../lib/archive.mjs";
 
 export const config = { maxDuration: 30 };
@@ -19,9 +21,11 @@ export default async function handler(req, res) {
     const params = new URL(req.url, "http://localhost").searchParams;
     const section = params.get("section") || "full";
     const wanted = params.get("revision");
+    const since = params.get("since");
     if (
         !["full", "revision", "archive", "catalog"].includes(section) ||
-        (wanted && wanted.length > 128)
+        (wanted && wanted.length > 128) ||
+        (since !== null && (section !== "archive" || !historyCursor(since)))
     )
         return res.status(400).json({ error: "Invalid archive request" });
     try {
@@ -46,15 +50,25 @@ export default async function handler(req, res) {
                     code: "REVISION_CHANGED",
                     error: "Archive changed. Check the revision again.",
                 });
+            const cursor = compatibleHistoryCursor(
+                since,
+                revision.history_cursor,
+            )
+                ? since
+                : null;
             const key =
                 section === "full"
                     ? `${section}:${revision.revision}:${revision.catalog_revision}`
-                    : `${section}:${token}`;
+                    : `${section}:${token}:${cursor || "full"}`;
             body = await cachedArchive(
                 key,
                 section === "catalog" ? 86400000 : 60000,
                 async () => {
-                    const snapshot = await archiveSnapshot(sql, section);
+                    const snapshot = await archiveSnapshot(
+                        sql,
+                        section,
+                        cursor,
+                    );
                     const actual =
                         section === "catalog"
                             ? snapshot.catalog_revision

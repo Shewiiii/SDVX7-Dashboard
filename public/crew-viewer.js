@@ -30,7 +30,9 @@ function isResultPose(group) {
 }
 
 function loops(group) {
-    return /^(idle\d*|loop|neu_loop|moto_neu)$/i.test(group) || isResultPose(group);
+    return (
+        /^(idle\d*|loop|neu_loop|moto_neu)$/i.test(group) || isResultPose(group)
+    );
 }
 
 export function createCrewViewer(dialog, getState) {
@@ -229,7 +231,7 @@ export function createCrewViewer(dialog, getState) {
 
     function loadCatalog(refresh = false) {
         if (!catalogTask || refresh) {
-            const task = fetch("/api/crews", { cache: "no-store" }).then(
+            const task = fetch("/api/crews", { cache: "default" }).then(
                 async (response) => {
                     if (!response.ok)
                         throw Error("Crew members are unavailable.");

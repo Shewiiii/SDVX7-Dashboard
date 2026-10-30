@@ -13,6 +13,77 @@ function script(url) {
     });
 }
 
+function findOpacityParameter(core) {
+    // Parameter names differ between models, so identify the fade by its effect
+    const parameters = core.parameters;
+    // Allow small floating point differences when comparing Core's output
+    const epsilon = 0.001;
+
+    for (let index = 0; index < parameters.ids.length; index++) {
+        // Only probe controls whose range matches normalized opacity
+        if (
+            parameters.minimumValues[index] !== 0 ||
+            parameters.maximumValues[index] !== 1
+        )
+            continue;
+
+        const saved = parameters.values[index];
+        // Compare both endpoints in the same pose. Copy the arrays because Core
+        // reuses their storage on each update
+        parameters.values[index] = 1;
+        core.update();
+        const opaque = core.drawables.opacities.slice();
+        parameters.values[index] = 0;
+        core.update();
+        const hidden = core.drawables.opacities.slice();
+        let visible = 0;
+        let fading = 0;
+        let valid = true;
+
+        for (let mesh = 0; mesh < opaque.length; mesh++) {
+            if (opaque[mesh] > epsilon) visible++;
+            if (opaque[mesh] > epsilon && hidden[mesh] <= epsilon) fading++;
+            else if (Math.abs(opaque[mesh] - hidden[mesh]) > epsilon)
+                valid = false;
+        }
+
+        // Require almost every visible mesh to disappear, allowing a few
+        // independent effect meshes that do not participate in the fade
+        if (valid && visible > 0 && fading / visible >= 0.98) {
+            const vertices = core.drawables.vertexPositions.map((points) =>
+                points.slice(),
+            );
+            parameters.values[index] = 0.5;
+            core.update();
+            // A uniform fade halves opacity without moving vertices. Reject
+            // controls that change the pose or use different fades for parts
+            valid = opaque.every((opacity, mesh) => {
+                const expected =
+                    hidden[mesh] <= epsilon ? opacity * 0.5 : opacity;
+                return (
+                    Math.abs(core.drawables.opacities[mesh] - expected) <=
+                        epsilon &&
+                    core.drawables.vertexPositions[mesh].every(
+                        (value, offset) =>
+                            Math.abs(value - vertices[mesh][offset]) <= epsilon,
+                    )
+                );
+            });
+        } else valid = false;
+
+        // Restore the authored value before returning or probing another control.
+        parameters.values[index] = saved;
+        if (valid) {
+            core.update();
+            return index;
+        }
+    }
+
+    // Refresh the restored pose and leave models without a matching fade alone.
+    core.update();
+    return -1;
+}
+
 export async function createLive2dPlayer(canvas, url, base, signal) {
     if (!runtime)
         runtime = (async () => {
@@ -108,6 +179,15 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         core.parameters.values[eyeParameter] = saved;
         core.update();
     }
+    const opacityParameter = findOpacityParameter(core);
+    if (opacityParameter >= 0)
+        internal.on("beforeModelUpdate", () => {
+            // Fade the composed canvas so overlapping meshes stay opaque.
+            canvas.style.opacity = String(
+                Math.max(0, Math.min(1, core.parameters.values[opacityParameter])),
+            );
+            core.parameters.values[opacityParameter] = 1;
+        });
     const pointerPoint = new PIXI.Point();
     function updateFocus() {
         if (!tracking || !pointer) return;
@@ -315,6 +395,7 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
             motionRevision++;
             playback = null;
             observer.disconnect();
+            canvas.style.opacity = "";
             model.destroy({ children: true, texture: true, baseTexture: true });
             app.destroy(false);
         },

@@ -184,32 +184,7 @@
                                 value="3"
                             />
                         </label>
-                        <div class="settings-row">
-                            <span id="appearance-custom-label">
-                                Rank custom charts
-                            </span>
-                            <div
-                                class="segmented"
-                                role="group"
-                                aria-labelledby="appearance-custom-label"
-                            >
-                                <button
-                                    type="button"
-                                    data-custom-option="true"
-                                    aria-pressed="false"
-                                >
-                                    On
-                                </button>
-                                <button
-                                    type="button"
-                                    data-custom-option="false"
-                                    class="selected"
-                                    aria-pressed="true"
-                                >
-                                    Off
-                                </button>
-                            </div>
-                        </div>
+                        <div id="ranking-settings-slot"></div>
                         <div class="settings-footer">
                             <button
                                 class="text-button"
@@ -371,6 +346,32 @@
                             VF Calculator
                         </button>
                     </nav>
+                    <div class="ranking-settings">
+                        <span id="ranking-custom-label">
+                            Rank custom charts
+                        </span>
+                        <div
+                            class="segmented"
+                            role="group"
+                            aria-labelledby="ranking-custom-label"
+                        >
+                            <button
+                                type="button"
+                                data-custom-option="true"
+                                aria-pressed="false"
+                            >
+                                On
+                            </button>
+                            <button
+                                type="button"
+                                data-custom-option="false"
+                                class="selected"
+                                aria-pressed="true"
+                            >
+                                Off
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <section id="overview-view">
                     <article class="panel performance-panel">

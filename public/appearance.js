@@ -184,7 +184,43 @@
             });
         }
         setTheme(theme);
-        const customButtons = panel.querySelectorAll("[data-custom-option]");
+        const customButtons = document.querySelectorAll("[data-custom-option]");
+        const rankingControl = document.querySelector(".ranking-settings");
+        const navigation = document.querySelector(".navigation-row");
+        const tabs = navigation.querySelector(".tabs");
+        const rankingSlot = document.getElementById("ranking-settings-slot");
+        const compactRanking = matchMedia("(max-width: 700px)");
+        let rankingControlWidth = 0;
+
+        function placeRankingControl() {
+            const childrenWidth = [...rankingControl.children].reduce(
+                (width, child) => width + child.getBoundingClientRect().width,
+                0,
+            );
+            if (childrenWidth > 0)
+                rankingControlWidth =
+                    childrenWidth +
+                    (parseFloat(getComputedStyle(rankingControl).columnGap) || 0);
+            const gap = parseFloat(getComputedStyle(navigation).columnGap) || 0;
+            const fits =
+                tabs.scrollWidth + rankingControlWidth + gap <=
+                navigation.clientWidth;
+            const target =
+                compactRanking.matches || !fits ? rankingSlot : navigation;
+            if (rankingControl.parentElement !== target)
+                target.append(rankingControl);
+        }
+
+        let rankingFrame;
+        const rankingLayout = new ResizeObserver(() => {
+            cancelAnimationFrame(rankingFrame);
+            rankingFrame = requestAnimationFrame(placeRankingControl);
+        });
+        rankingLayout.observe(navigation);
+        rankingLayout.observe(tabs);
+        compactRanking.addEventListener("change", placeRankingControl);
+        document.fonts.ready.then(placeRankingControl);
+        placeRankingControl();
 
         function updateCustomButtons() {
             for (const button of customButtons) {

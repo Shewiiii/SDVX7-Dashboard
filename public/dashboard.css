@@ -3120,6 +3120,9 @@ footer > :last-child {
         align-items: start;
         gap: 24px;
     }
+    .chart-viewer-content {
+        height: calc(100dvh - 36px);
+    }
     .chart-viewer-content > .appeal-helper-heading {
         padding-inline: var(--panel-padding-inline);
     }

@@ -120,5 +120,8 @@
     "sys05": "Track unlocked 2",
     "sys06": "Effect unlocked",
     "mm01": "Exceed Gear !",
+    "mm05": "Victory",
+    "mm06": "Defeat",
+    "mm07": "Draw",
     "arena01": "Matchmaking"
 }

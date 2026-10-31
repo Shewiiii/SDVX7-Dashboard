@@ -2,8 +2,8 @@
     "title01": "Konami",
     "title02": "Title call 1",
     "title03": "Title call 2",
-    "entry01": "Greetings",
-    "entry02": "Self-introduction",
+    "entry01": "Greetings 1",
+    "entry02": "Greetings 2",
     "entry03": "EA Pass tap",
     "entry04": "Unrecognized EA Pass",
     "entry05": "Unsupported EA Pass",
@@ -120,6 +120,5 @@
     "sys05": "Track unlocked 2",
     "sys06": "Effect unlocked",
     "mm01": "Exceed Gear !",
-    "mm02": ""
-
+    "arena01": "Matchmaking"
 }

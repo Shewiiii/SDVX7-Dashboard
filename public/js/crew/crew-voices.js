@@ -34,9 +34,18 @@ export function createCrewVoices(panel) {
         request = new AbortController();
         const { signal } = request;
         try {
-            const response = await fetch(new URL(entry.voice, base), {
-                signal,
-            });
+            const [response, overrides] = await Promise.all([
+                fetch(new URL(entry.voice, base), { signal }),
+                fetch(
+                    new URL(
+                        "../../game-data/voice_label_overrides.json",
+                        import.meta.url,
+                    ),
+                    { signal },
+                )
+                    .then((response) => (response.ok ? response.json() : {}))
+                    .catch(() => ({})),
+            ]);
             if (!response.ok) throw Error("Voice bank unavailable");
             const manifest = await response.json();
             if (signal.aborted) return;
@@ -45,16 +54,21 @@ export function createCrewVoices(panel) {
                 heading.textContent = bank.label;
                 list.append(heading);
                 for (const clip of bank.clips) {
+                    const override = overrides?.[clip.label];
+                    const hasOverride =
+                        typeof override === "string" && override.trim().length > 0;
+                    const displayLabel = hasOverride ? override : clip.label;
                     const button = document.createElement("button");
                     button.type = "button";
                     button.className = "crew-voice-option";
-                    button.textContent = clip.label;
+                    button.classList.toggle("has-label-override", hasOverride);
+                    button.textContent = displayLabel;
                     button.disabled = clip.silent === true;
                     if (button.disabled) {
                         button.title = "Empty sample";
                         button.setAttribute(
                             "aria-label",
-                            `${clip.label} (empty sample)`,
+                            `${displayLabel} (empty sample)`,
                         );
                     }
                     button.setAttribute("aria-pressed", "false");
@@ -66,12 +80,12 @@ export function createCrewVoices(panel) {
                             item.classList.toggle("selected", selected);
                             item.setAttribute("aria-pressed", String(selected));
                         }
-                        label.textContent = `${bank.label} · ${clip.label}`;
+                        label.textContent = `${bank.label} · ${displayLabel}`;
                         label.hidden = false;
                         playerHost.hidden = false;
                         disposePlayer = mountAudioPlayer(
                             playerHost,
-                            { title: clip.label },
+                            { title: displayLabel },
                             null,
                             {
                                 autoplay: true,

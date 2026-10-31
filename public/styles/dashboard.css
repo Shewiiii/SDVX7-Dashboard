@@ -2586,6 +2586,9 @@ footer > :last-child {
     font-size: 10px;
     cursor: pointer;
 }
+.crew-voice-option.has-label-override {
+    color: var(--ink);
+}
 .crew-voice-option.selected,
 .crew-voice-option:hover:not(:disabled) {
     background: var(--accent-wash);

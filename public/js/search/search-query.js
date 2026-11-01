@@ -203,10 +203,6 @@ export function parseSearch(query) {
             continue;
         }
         if (field === "id") {
-            if (!["=", "!="].includes(operator)) {
-                errors.push("Use = or != with id");
-                continue;
-            }
             const id = value.match(/^([1-9]\d{0,7})(?::([0-5]|\*))?$/);
             if (!id || Number(id[1]) > 10000000) {
                 errors.push(`Invalid value: ${word}`);
@@ -321,16 +317,19 @@ export function matchesSearchFilters(song, d, search) {
     const key = `${song.music_id}:${d.diff_idx}`,
         record = index.get(key),
         played = best.get(key);
-    for (const { field, operator, expected } of search.filters) {
-        if (field === "id") {
-            const matches =
-                song.music_id === expected.music_id &&
-                (expected.diff_idx === null || d.diff_idx === expected.diff_idx);
-            if (operator === "!=" ? matches : !matches) return false;
-            continue;
-        }
+    for (const filter of search.filters) {
+        const { field, operator } = filter;
+        let { expected } = filter;
         let actual;
-        if (field === "level") actual = d.level;
+
+        if (field === "id") {
+            const { music_id, diff_idx } = expected;
+            actual =
+                diff_idx === null
+                    ? song.music_id
+                    : song.music_id * 6 + d.diff_idx;
+            expected = diff_idx === null ? music_id : music_id * 6 + diff_idx;
+        } else if (field === "level") actual = d.level;
         else if (field === "diff_idx") actual = d.diff_idx;
         else if (field === "score") actual = played?.score || 0;
         else if (field === "clear") actual = played?.clear || 0;

@@ -107,7 +107,7 @@ class Catalog:
         game = proxy.parent
         self.music = MusicCatalog(game / "data/others/music_db.xml")
         self.details = ChartDetails(
-            self.music, metadata_path("chart-details-cache.json", ROOT)
+            self.music, ROOT / ".local/chart-details-cache.json"
         )
         self.paths = self.music.paths
         self.signature = None

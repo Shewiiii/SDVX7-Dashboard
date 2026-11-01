@@ -434,7 +434,7 @@ def plan_audio(library: AudioLibrary) -> dict[str, Any]:
         library.source(*map(int, key.split(":"))) for key in library.details.metadata
     }
     sources.discard(None)
-    path = metadata_path("audio-plan.json", ROOT)
+    path = ROOT / ".local/audio-plan.json"
     saved = read_json(path, {})
     previous = {row["path"]: row for row in saved.get("sources", [])}
     probe = tools(library.config)[1]

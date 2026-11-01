@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from scripts.chart_gimmicks import VISUAL_GIMMICKS_VERSION, has_visual_gimmicks
-from scripts.local_config import metadata_path
 
 if TYPE_CHECKING:
     from scripts.music import MusicCatalog
@@ -407,7 +406,7 @@ def preview(mid: int, diff: int) -> None:
     catalog.music.refresh()
     details = ChartDetails(
         catalog.music,
-        metadata_path("chart-details-cache.json", Path(__file__).resolve().parents[1]),
+        Path(__file__).resolve().parents[1] / ".local/chart-details-cache.json",
     )
     record = details.get(f"{mid}:{diff}")
     print(json.dumps(record["record"] if record else None, ensure_ascii=True))

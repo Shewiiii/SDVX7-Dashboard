@@ -10,7 +10,7 @@ import { sendAudioFile } from "./audio-http.mjs";
 const execute = promisify(execFile);
 
 export function createCrewPreview(root, python) {
-    const cache = protectedPath(root, "crews");
+    const cache = path.join(root, ".local/crews");
     const graphics = path.resolve(root, "../data/graphics");
     let preparing;
     const afpTasks = new Map();

@@ -21,9 +21,8 @@ from scripts.audio import (
 )
 from scripts.companion import ROOT, resolve_proxy
 from scripts.local_config import config_path as local_config_path
-from scripts.local_config import protected_path
 
-CACHE = protected_path("crews", ROOT) / "voices"
+CACHE = ROOT / ".local/crews/voices"
 MAPPING = ROOT / "public/game-data/crew-voices.json"
 
 

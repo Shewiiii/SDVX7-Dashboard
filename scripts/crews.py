@@ -12,7 +12,7 @@ from scripts.companion import ROOT, resolve_proxy
 from scripts.local_config import config_path as local_config_path
 from scripts.local_config import protected_path
 
-CACHE = protected_path("crews", ROOT)
+CACHE = ROOT / ".local/crews"
 CONFIG = local_config_path("crew-config.json", ROOT)
 CATALOG = ROOT / "public/game-data/crew-catalog.json"
 sys.path.insert(0, str(protected_path("crew-tools", ROOT)))

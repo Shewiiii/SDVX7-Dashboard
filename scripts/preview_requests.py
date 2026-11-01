@@ -12,16 +12,13 @@ from typing import Any
 from scripts.chart_details import ChartDetails, search_records
 from scripts.chart_view import prepare, visual_timeline
 from scripts.companion import ROOT, resolve_proxy
-from scripts.local_config import metadata_path
 from scripts.music import MusicCatalog
 
 
 class PreviewRequests:
     def __init__(self) -> None:
         music = MusicCatalog(resolve_proxy().parent / "data/others/music_db.xml")
-        self.details = ChartDetails(
-            music, metadata_path("chart-details-cache.json", ROOT)
-        )
+        self.details = ChartDetails(music, ROOT / ".local/chart-details-cache.json")
         self.audio: Any = None
         self.jackets: Any = None
         self.scanned_at = 0.0

@@ -1019,6 +1019,19 @@ def sync_once(
             )
             catalog.covers_pending = True
 
+    try:
+        from scripts.jackets import start_jacket_sync, sync_jackets
+
+        if background_audio:
+            start_jacket_sync(catalog)
+        else:
+            sync_jackets(catalog)
+    except Exception as error:  # noqa: BLE001
+        print(
+            f"High quality jacket sync pending ({type(error).__name__}), other syncing continues",
+            flush=True,
+        )
+
     # Optional audio failures must never stop scores, jackets, or details syncing.
     try:
         from scripts.audio import start_audio_sync, sync_audio

@@ -316,6 +316,23 @@ def deploy(
             "production",
             input=crew_url + "\n",
         )
+    jacket_path = ROOT / ".local/jacket-config.json"
+    jacket_config = (
+        json.loads(jacket_path.read_text(encoding="utf-8"))
+        if jacket_path.exists()
+        else {}
+    )
+    if re.search(r"\bJACKET_ASSET_URL\b", env_names):
+        vercel(npm, "env", "rm", "JACKET_ASSET_URL", "production", "--yes")
+    if jacket_config.get("mode") == "r2":
+        vercel(
+            npm,
+            "env",
+            "add",
+            "JACKET_ASSET_URL",
+            "production",
+            input=jacket_config["public_url"].rstrip("/") + "/jackets/\n",
+        )
     # Keep the saved token, including on reruns. Never rotate an existing connection.
     config["token"] = config.get("token") or secrets.token_urlsafe(48)
     save_config(config)
@@ -363,6 +380,10 @@ def main(argv: list[str] | None = None) -> int:
     from scripts.audio_setup import apply_media_policy
 
     apply_media_policy(configuration())
+    from scripts.jacket_setup import apply_hosted_settings as apply_jacket_settings
+    from scripts.jackets import configuration as jacket_configuration
+
+    apply_jacket_settings(jacket_configuration())
     node, npm = node_tools()
     run([npm, "ci", "--no-audit", "--no-fund"])
     if args.update:
@@ -378,8 +399,7 @@ def main(argv: list[str] | None = None) -> int:
         configure_connection(config)
     else:
         raise ValueError("Choose 1 or 2.")
-    print("Ready. Use run-proxy-with-dashboard.bat to start syncing.")
-    print("Optional song playback and crew setup: See README.")
+    print("Ready. Run run-proxy-with-dashboard.bat to start syncing.")
     return 0
 
 

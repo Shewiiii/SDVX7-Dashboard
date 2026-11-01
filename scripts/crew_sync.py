@@ -222,7 +222,7 @@ def sync_crews(catalog: Any) -> None:
         catalog.crew_inventory_at = time.monotonic()
     used = sum(inventory.values())
     limit = int(
-        (9 if audio["format"] == "opus" else float(audio.get("storage_limit_gb", 9)))
+        (9 if audio["format"] == "opus" else float(audio.get("storage_limit_gb", 9.5)))
         * 1e9
     )
 

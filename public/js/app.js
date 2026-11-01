@@ -44,6 +44,7 @@ import { rankingHistory } from "./profile/ranking-history.js";
 import { createSimilarCharts } from "./charts/similar-charts.js";
 import { createChartViewer } from "./charts/chart-viewer.js";
 import { createChartDetails } from "./charts/chart-details.js";
+import { createJacketViewer } from "./library/jacket-viewer.js";
 import {
     preparePanelHistory,
     readPanelLink,
@@ -412,6 +413,7 @@ const chartDetails = createChartDetails(
     chartSongMarkup,
 );
 const chartViewer = createChartViewer();
+const jacketViewer = createJacketViewer();
 let panelRestoreVersion = 0;
 const songLibrary = createLibrary(
     () => data,
@@ -2046,6 +2048,14 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
         chart.innerHTML = songMarkup;
         chart.dataset.musicId = selected.music_id;
     }
+    const jacket = chart.querySelector(".cover-tile.large");
+    if (jacket?.querySelector("img")) {
+        jacket.setAttribute("role", "button");
+        jacket.tabIndex = 0;
+        jacket.setAttribute("aria-label", `View ${song.title} jacket`);
+        jacket.setAttribute("aria-haspopup", "dialog");
+        jacket.dataset.viewJacket = "";
+    }
     void chartViewer.updateButton(
         chart.querySelector("[data-view-chart]"),
         selected,
@@ -2222,7 +2232,25 @@ $("song-options").addEventListener("click", (event) => {
         selectChart(match.music_id, match.diff_idx);
     }
 });
+document.addEventListener("keydown", (event) => {
+    if (
+        event.target.matches("[data-view-jacket]") &&
+        (event.key === "Enter" || event.key === " ")
+    ) {
+        event.preventDefault();
+        event.target.click();
+    }
+});
+
 document.addEventListener("click", (event) => {
+    const jacket = event.target.closest("[data-view-jacket]");
+    if (jacket && selected) {
+        void jacketViewer.open({
+            ...selected,
+            title: songs.get(selected.music_id)?.title,
+        });
+        return;
+    }
     if (!event.target.closest('.song-search, [data-view="search"]'))
         closeMatches();
     const radarButton = event.target.closest("[data-similar-charts]");

@@ -20,6 +20,7 @@ class PreviewRequests:
         music = MusicCatalog(resolve_proxy().parent / "data/others/music_db.xml")
         self.details = ChartDetails(music, ROOT / ".local/chart-details-cache.json")
         self.audio: Any = None
+        self.jackets: Any = None
         self.scanned_at = 0.0
 
     def request(self, command: dict[str, Any]) -> Any:
@@ -35,6 +36,16 @@ class PreviewRequests:
         if operation == "search":
             return search_records(self.details)
         mid, diff = int(command["music"]), int(command["diff"])
+        if operation == "jacket":
+            from scripts.jackets import JacketLibrary, configuration
+
+            if configuration()["mode"] == "off":
+                return None
+            if self.jackets is None:
+                self.jackets = JacketLibrary(resolve_proxy().parent)
+            record = self.jackets.get(mid, diff)
+            self.jackets.save()
+            return {"url": f"/api/jacket-file?id={record['id']}"} if record else None
         if operation == "chart":
             key = f"{mid}:{diff}"
             # Recompute the small summary so parser edits need no schema bump.

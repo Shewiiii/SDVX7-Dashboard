@@ -59,6 +59,7 @@ const requestSignature = async () => {
     return previewSourceSignature([
         ...scripts,
         path.join(root, ".local/audio-config.json"),
+        path.join(root, ".local/jacket-config.json"),
         path.join(root, ".local/sync-config.json"),
         path.join(proxy, ".env"),
     ]);
@@ -86,7 +87,7 @@ const previewCache = createPreviewCache({
         ),
     async build() {
         const started = performance.now();
-        console.log("[preview] Building archive...");
+        console.log("[preview] Building archive and cache, this may take a long time...");
         await previewWorker.export();
         console.log(
             `[preview] Archive ready in ${Math.round(performance.now() - started)} ms`,
@@ -230,7 +231,8 @@ const server = createServer(async (req, res) => {
         }
         if (
             url.pathname === "/api/chart" ||
-            url.pathname === "/api/chart-view"
+            url.pathname === "/api/chart-view" ||
+            url.pathname === "/api/jacket"
         ) {
             const music = url.searchParams.get("music"),
                 diff = url.searchParams.get("diff");
@@ -243,9 +245,23 @@ const server = createServer(async (req, res) => {
                 res.end();
                 return;
             }
+            if (url.pathname === "/api/jacket") {
+                let config = {};
+                try {
+                    config = JSON.parse(
+                        await readFile(path.join(root, ".local/jacket-config.json"), "utf8"),
+                    );
+                } catch (error) {
+                    if (error.code !== "ENOENT") throw error;
+                }
+                if (!["local", "r2"].includes(config.mode)) {
+                    res.writeHead(404, { "Cache-Control": "no-store" });
+                    res.end();
+                    return;
+                }
+            }
             const record = await chartWorker.request({
-                operation:
-                    url.pathname === "/api/chart-view" ? "chart-view" : "chart",
+                operation: url.pathname.slice("/api/".length),
                 music,
                 diff,
                 check: url.searchParams.get("check") === "1",
@@ -256,6 +272,29 @@ const server = createServer(async (req, res) => {
                 "Cache-Control": "no-store",
             });
             res.end(JSON.stringify(record || { error: "Chart not found" }));
+            return;
+        }
+        if (url.pathname === "/api/jacket-file") {
+            const id = url.searchParams.get("id");
+            if (!/^[a-f0-9]{64}$/.test(id || "")) {
+                res.writeHead(400);
+                res.end();
+                return;
+            }
+            const config = JSON.parse(
+                await readFile(path.join(root, ".local/jacket-config.json"), "utf8"),
+            );
+            if (!["local", "r2"].includes(config.mode)) {
+                res.writeHead(404);
+                res.end();
+                return;
+            }
+            const body = await readFile(path.join(root, ".local/jackets", `${id}.jpg`));
+            res.writeHead(200, {
+                "Content-Type": "image/jpeg",
+                "Cache-Control": "public, max-age=31536000, immutable",
+            });
+            res.end(body);
             return;
         }
         if (url.pathname === "/api/cover") {

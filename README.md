@@ -32,9 +32,9 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
 1. Download the ZIP of this repository under Code, unzip it, and move `SDVX7-Dashboard-main/` folder into your game folder.
 2. Run `setup-dashboard.bat` and follow the instructions.  
    **If setup fails** one way or another, don't delete the created project on Vercel, and choose 1 on the next try. If you did it, delete both `.local/` and `.vercel/` and try again.
-3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point*.
+3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point\*.
 
-*Note: If you do this, then score a play that makes your top 50 change, the performance history will consider that play to have been played before the beginning of the tracking, making the Total VF graph slightly inaccurate. 
+\*Note: If you do this, then score a play that makes your top 50 change, the performance history will consider that play to have been played before the beginning of the tracking, making the Total VF graph slightly inaccurate.
 
 ## Updates
 
@@ -58,6 +58,7 @@ To migrate:
 
 You can enable the following features, but they require a lot of storage. You will either need to use them locally, or use [R2](https://www.cloudflare.com/products/r2/).
 
+
 > [!IMPORTANT]
 > To create an R2 API token, you need an R2 subscription. 10GB is included in the free plan, but **you cannot hard cap storage on R2, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** Full Opus songs or FLAC previews should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
 >
@@ -74,7 +75,7 @@ By default, the dashboard cannot play any song. To solve this, additional setup 
 
 ### Full song on Vercel:
 
-Songs upload will occur during the first sync, which may take a long time.
+Songs upload will occur during the first sync, which may take a long time. You should enable this after enabling the other features, to avoid exceeding the 10GB quota if you choose to use Opus.
 
 1. Create a [Cloudflare account](https://dash.cloudflare.com/login).
 2. Under [R2 Object Storage](https://dash.cloudflare.com/?to=/:account/r2/overview), create a bucket. Leave the options to default.
@@ -99,12 +100,19 @@ Songs upload will occur during the first sync, which may take a long time.
 5. Go back to R2 Object Storage, copy your account ID and paste it in the setup.
 6. Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
-If you want to change the audio format or length, delete your old bucket, create a new one and follow the setup again from step 2.
+If you want to change the audio format or length, run `optional-audio.bat` and select Delete data from Cloudflare R2 [5] on the first menu.
 
 ## Crew setup
 
-You can preview NemSys Crews directly on the dashboard by clicking the appeal card locally without extra setup. If you want to enable crews preview on Vercel, Follow the instructions above, but choose Nemsys Crew [2] in `optional-audio.bat` instead. If you want to customize audio bitrate, choose Audio playback [1].
+You can preview NemSys Crews directly on the dashboard by clicking the appeal card locally without extra setup.
 
+If you want to enable crews preview on Vercel, follow the instructions above, but choose Nemsys Crew [2] on the first menu of `optional-audio.bat` instead. If you want to customize audio bitrate, choose Audio playback [1].
+
+## High quality jackets setup
+
+"High quality" being `*_b.png` files converted to quality 90 JPEGs. Neon stores 256\*256 quality 85 with method 4 WebP images by default.
+
+Setup is the same as Crew setup. Simply choose High quality jackets [3] on the first menu.
 
 ## Credits
 

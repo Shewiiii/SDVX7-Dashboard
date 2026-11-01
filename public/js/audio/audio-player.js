@@ -2,6 +2,7 @@ import { createPlaybackClock } from "./playback-clock.js";
 
 const metadata = new Map();
 let playerSequence = 0;
+let mediaOwner;
 const clock = (seconds) =>
     `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 const clamp = (value, maximum) => Math.max(0, Math.min(maximum, value));
@@ -73,6 +74,37 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
     const audio = new Audio();
     audio.preload = "none";
     audio.crossOrigin = "anonymous";
+    const artwork =
+        options.artwork ||
+        (/^[a-f0-9]{64}$/.test(chart.cover || "")
+            ? `/api/cover?id=${chart.cover}`
+            : undefined);
+    let sessionMetadata;
+
+    function updateMediaSession() {
+        if (!("mediaSession" in navigator) || typeof MediaMetadata === "undefined")
+            return;
+        try {
+            sessionMetadata = new MediaMetadata({
+                title: chart.title || "Song",
+                artist: chart.artist || "",
+                artwork: artwork
+                    ? [{ src: new URL(artwork, location.href).href }]
+                    : [],
+            });
+            navigator.mediaSession.metadata = sessionMetadata;
+            mediaOwner = audio;
+        } catch {
+            // Optional system metadata must never interrupt playback
+        }
+    }
+
+    function clearMediaSession() {
+        if (mediaOwner !== audio) return;
+        if (navigator.mediaSession.metadata === sessionMetadata)
+            navigator.mediaSession.metadata = null;
+        mediaOwner = undefined;
+    }
     let record,
         frame,
         disposed = false,
@@ -127,10 +159,15 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             download.disabled = true;
             download.textContent = "Downloading...";
             try {
-                // A blob download works for CORS-enabled R2 URLs as well as preview.
-                const response = await fetch(record.url, { signal });
-                if (!response.ok) throw new Error("Download failed");
-                const blob = await response.blob();
+                const { prepareAudioDownload } =
+                    await import("./audio-download.js");
+                const blob = await prepareAudioDownload(
+                    record,
+                    chart,
+                    artwork,
+                    fileFormat(),
+                    signal,
+                );
                 if (disposed) return;
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
@@ -353,6 +390,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         "playing",
         () => {
             buffering = false;
+            updateMediaSession();
             update(true);
             status.textContent =
                 sourceLabel ||
@@ -481,6 +519,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
         request.abort();
         cancelAnimationFrame(frame);
         audio.pause();
+        clearMediaSession();
         audio.removeAttribute("src");
         audio.load();
         lines.forEach((line) => line.remove());
@@ -525,6 +564,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             playRequest++;
             preparing = false;
             audio.pause();
+            clearMediaSession();
             cancelAnimationFrame(frame);
             audio.removeAttribute("src");
             audio.load();

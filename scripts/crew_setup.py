@@ -13,7 +13,7 @@ from typing import Any
 
 from scripts.audio import CONFIG as AUDIO_CONFIG
 from scripts.audio import configuration, read_json, tools, write_json
-from scripts.audio_setup import configure_r2, origin, prompt
+from scripts.audio_setup import configure_r2, origin, prompt, reuse_r2
 from scripts.companion import ROOT
 from scripts.crew_voices import voices_enabled
 from scripts.crews import CONFIG, prepare_catalog
@@ -141,7 +141,6 @@ def apply_hosted_settings(config: dict[str, Any]) -> None:
 
 def main() -> None:
     config = read_json(CONFIG, {"mode": "local"})
-    print("Nemsys Crew is optional. Local preview needs no cloud account.")
     print(
         "1. Local preview only\n2. Local + hosted crews with Cloudflare R2\n3. Disable crews"
     )
@@ -163,22 +162,16 @@ def main() -> None:
             print(
                 "Voice encoding follows your audio playback setup's format and bitrate."
             )
-    if choice == "2":
-        audio = configuration()
-        fields = ("endpoint", "bucket", "access_key", "secret_key", "public_url")
-        if all(audio.get(field) for field in fields):
-            config.update({field: audio[field] for field in fields})
-            print("Using the saved R2 bucket from audio playback setup.")
-        elif not all(config.get(field) for field in fields):
-            configure_r2(config)
+    if choice == "2" and not reuse_r2(config):
+        configure_r2(config)
     write_json(CONFIG, config)
     if choice != "3":
         install_tools()
     apply_hosted_settings(config)
-    print("Saved locally. Restart preview / the proxy companion to apply.")
+    print("Saved locally. Restart the dashboard or preview to apply.")
     if choice == "2":
         print(
-            "Deploy the updated dashboard once with update-dashboard.bat. Progress appears in the proxy console and .local/sync.log."
+            "Deploy the updated dashboard with update-dashboard.bat. Progress appears in the console and .local/sync.log."
         )
 
 

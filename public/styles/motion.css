@@ -244,6 +244,7 @@ body[data-loading="initial"] .panel-foot {
     }
 }
 .settings-panel,
+.jacket-viewer,
 .appeal-helper {
     opacity: 0;
     transition:
@@ -253,6 +254,7 @@ body[data-loading="initial"] .panel-foot {
     transform-origin: center;
 }
 .settings-panel.is-visible,
+.jacket-viewer.is-visible,
 .appeal-helper.is-visible {
     opacity: 1;
     transform: none;
@@ -297,6 +299,7 @@ body[data-loading="initial"] .panel-foot {
 }
 @media (prefers-reduced-motion: reduce) {
     .settings-panel,
+    .jacket-viewer,
     .settings-backdrop,
     .appeal-helper,
     .panel-layer::before {

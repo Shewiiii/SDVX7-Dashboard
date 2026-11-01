@@ -85,10 +85,13 @@ export function createCrewVoices(panel) {
                         playerHost.hidden = false;
                         disposePlayer = mountAudioPlayer(
                             playerHost,
-                            { title: displayLabel },
+                            { title: displayLabel, artist: entry.name },
                             null,
                             {
                                 autoplay: true,
+                                artwork: entry.icon
+                                    ? new URL(entry.icon, base).href
+                                    : undefined,
                                 mediaLabel: "voice line",
                                 unavailableLabel:
                                     "Could not load this voice line.",

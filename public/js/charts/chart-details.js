@@ -421,7 +421,9 @@ export function createChartDetails(isPreview, renderSong) {
                 "Chart statistics are unavailable for this difficulty.";
             body.append(note);
         }
-        disposeAudio = mountAudioPlayer(player, record, plots);
+        disposeAudio = mountAudioPlayer(player, record, plots, {
+            artwork: song.querySelector("img")?.src,
+        });
     }
 
     async function load() {

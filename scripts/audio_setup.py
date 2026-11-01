@@ -6,8 +6,56 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from scripts.audio import CONFIG, configuration, r2_client, tools, write_json
+from scripts.audio import CONFIG, configuration, r2_client, read_json, tools, write_json
 from scripts.companion import ROOT, load_config, with_https
+
+R2_FIELDS = ("endpoint", "bucket", "access_key", "secret_key", "public_url")
+R2_CONFIG_FILES = ("audio-config.json", "crew-config.json", "jacket-config.json")
+
+
+def saved_r2(config: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    candidates = [config] if config is not None else []
+    candidates.extend(read_json(ROOT / ".local" / name, {}) for name in R2_CONFIG_FILES)
+    for candidate in candidates:
+        if all(candidate.get(field) for field in R2_FIELDS):
+            return {field: candidate[field] for field in R2_FIELDS}
+    return None
+
+
+def reuse_r2(config: dict[str, Any]) -> bool:
+    saved = saved_r2(config)
+    if saved is None:
+        return False
+    config.update(saved)
+    print("Using the saved Cloudflare R2 configuration.")
+    return True
+
+
+def edit_r2() -> None:
+    config = saved_r2()
+    if config is None:
+        raise ValueError("Configure Cloudflare R2 through an optional feature first.")
+    configure_r2(config)
+    features = {}
+    for name in R2_CONFIG_FILES:
+        path = ROOT / ".local" / name
+        if path.exists():
+            feature = read_json(path, {})
+            feature.update({field: config[field] for field in R2_FIELDS})
+            features[name] = feature
+    for name, feature in features.items():
+        write_json(ROOT / ".local" / name, feature)
+
+    from scripts.crew_setup import apply_hosted_settings as apply_crew_settings
+    from scripts.jacket_setup import apply_hosted_settings as apply_jacket_settings
+
+    apply_media_policy(features.get("audio-config.json", {"mode": "local"}))
+    if "crew-config.json" in features:
+        apply_crew_settings(features["crew-config.json"])
+    if "jacket-config.json" in features:
+        apply_jacket_settings(features["jacket-config.json"])
+    print("Saved locally. Restart the dashboard or preview to apply.")
+    print("Deploy the updated dashboard with update-dashboard.bat.")
 
 
 def prompt(label: str, default: str = "") -> str:
@@ -31,6 +79,12 @@ def origin(value: str) -> str:
 def apply_media_policy(config: dict[str, Any]) -> None:
     """Allow local rendered audio and the configured bucket across setup/update runs."""
     allowed = "'self' blob:"
+    asset_origins = {
+        origin(saved["public_url"])
+        for file in ("crew-config.json", "jacket-config.json")
+        for saved in [read_json(ROOT / ".local" / file, {})]
+        if saved.get("mode") == "r2" and saved.get("public_url")
+    }
     if config.get("mode") == "r2":
         public = config.get("public_url", "")
         if not public.startswith("https://"):
@@ -60,7 +114,12 @@ def apply_media_policy(config: dict[str, Any]) -> None:
                 ),
                 ["'self'"],
             )
-            connections = [source for source in connections if source not in old_audio]
+            connections = [
+                source
+                for source in connections
+                if source not in old_audio or source in asset_origins
+            ]
+            connections.extend(sorted(asset_origins))
             if config.get("mode") == "r2":
                 connections.append(origin(config["public_url"]))
             directives = [
@@ -103,7 +162,7 @@ def configure_r2(config: dict[str, Any]) -> None:
             "The Cloudflare account ID must have 32 hexadecimal characters."
         )
     config["endpoint"] = f"https://{account}.r2.cloudflarestorage.com"
-    config["bucket"] = prompt("Audio bucket name", config.get("bucket", "sdvx-audio"))
+    config["bucket"] = prompt("R2 bucket name", config.get("bucket", "sdvx-audio"))
     if not re.fullmatch(r"[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]", config["bucket"]):
         raise ValueError("Invalid bucket name.")
     for field, label in [
@@ -150,7 +209,7 @@ def configure_r2(config: dict[str, Any]) -> None:
         ):
             raise
         raise ValueError(
-            "Create this bucket in Cloudflare, then rerun audio setup."
+            "Create this bucket in Cloudflare, then rerun optional setup."
         ) from None
     rule = {
         "ID": "sdvx-audio",
@@ -200,7 +259,6 @@ def configure_r2(config: dict[str, Any]) -> None:
 
 def main() -> None:
     config = configuration()
-    print("Audio is optional. Local preview needs no cloud account.")
     print(
         "1. Local playback only\n2. Local + hosted audio with Cloudflare R2\n3. Disable audio"
     )
@@ -262,14 +320,14 @@ def main() -> None:
                 AudioLibrary(Catalog(resolve_proxy()).details, config)
             )["bitrate"]
 
-    if mode == "2":
+    if mode == "2" and not reuse_r2(config):
         configure_r2(config)
     apply_media_policy(config)
     write_json(CONFIG, config)
-    print("Saved locally. Restart preview / the proxy companion to apply.")
+    print("Saved locally. Restart the dashboard or preview to apply.")
     if mode == "2":
         print(
-            "Deploy the updated dashboard once with update-dashboard.bat. Upload progress appears in the proxy console and .local/sync.log."
+            "Deploy the updated dashboard with update-dashboard.bat. Upload progress appears in the console and .local/sync.log."
         )
 
 

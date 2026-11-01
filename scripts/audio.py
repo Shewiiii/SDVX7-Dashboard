@@ -564,7 +564,7 @@ def sync_audio(
             library.config = dict(audio)
             write_json(CONFIG, audio)
     codec = audio.get("format", "opus")
-    limit_gb = 9 if codec == "opus" else float(audio.get("storage_limit_gb", 9))
+    limit_gb = 9 if codec == "opus" else float(audio.get("storage_limit_gb", 9.5))
     if not math.isfinite(limit_gb) or limit_gb < 0:
         raise ValueError("Invalid audio storage limit")
     limit_bytes = int(limit_gb * 1e9)

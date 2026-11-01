@@ -2757,6 +2757,30 @@ footer > :last-child {
     place-items: center;
     isolation: isolate;
 }
+[data-view-jacket] {
+    cursor: pointer;
+}
+[data-view-jacket]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+}
+.jacket-viewer {
+    border: 0;
+    padding: 0;
+    max-width: calc(100vw - 36px);
+    max-height: calc(100dvh - 36px);
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+}
+.jacket-viewer img {
+    display: block;
+    width: 676px;
+    height: auto;
+    max-width: calc(100vw - 36px);
+    max-height: calc(100dvh - 36px);
+    object-fit: contain;
+}
 .panel-layer::before {
     content: "";
     position: absolute;

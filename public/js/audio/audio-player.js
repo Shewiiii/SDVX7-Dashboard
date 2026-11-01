@@ -173,7 +173,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
                 const link = document.createElement("a");
                 link.href = url;
                 link.download =
-                    `${chart.title || "Song"}${record.variant === "preview" ? " (preview)" : ""}`.replace(
+                    `${chart.artist || "Unknown Artist"} - ${chart.title || "Song"}${record.variant === "preview" ? " (preview)" : ""}`.replace(
                         /[<>:"/\\|?*\x00-\x1f]/g,
                         "_",
                     ) +

@@ -2781,6 +2781,16 @@ footer > :last-child {
     max-height: calc(100dvh - 36px);
     object-fit: contain;
 }
+.jacket-viewer-loading {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-top: 12px;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    white-space: nowrap;
+}
 .panel-layer::before {
     content: "";
     position: absolute;

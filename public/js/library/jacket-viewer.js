@@ -7,7 +7,12 @@ export function createJacketViewer() {
     dialog.setAttribute("closedby", "none");
     const image = document.createElement("img");
     image.draggable = true;
-    dialog.append(image);
+    const loading = document.createElement("span");
+    loading.className = "jacket-viewer-loading";
+    loading.setAttribute("role", "status");
+    loading.textContent = "Loading...";
+    loading.hidden = true;
+    dialog.append(image, loading);
     document.body.append(dialog);
     let request;
     let closing = false;
@@ -36,6 +41,7 @@ export function createJacketViewer() {
     dialog.addEventListener("close", () => {
         request?.abort();
         image.removeAttribute("src");
+        loading.hidden = true;
         closing = false;
     });
     window.addEventListener("pagehide", () => {
@@ -50,20 +56,32 @@ export function createJacketViewer() {
             request?.abort();
             request = new AbortController();
             const { signal } = request;
+            image.alt = `${chart.title || "Song"} jacket`;
+            image.hidden = true;
+            loading.hidden = false;
+            dialog.setAttribute("aria-label", image.alt);
+            showPanel(dialog);
+            getComputedStyle(dialog).opacity;
+            dialog.classList.add("is-visible");
+            dialog.focus({ preventScroll: true });
+
             try {
-                const original = await getJacketUrl(chart, fallback, signal);
-                if (signal.aborted || !original) return;
-                image.alt = `${chart.title || "Song"} jacket`;
-                image.src = original;
-                await image.decode();
-                if (signal.aborted) return;
-                dialog.setAttribute("aria-label", image.alt);
-                showPanel(dialog);
-                getComputedStyle(dialog).opacity;
-                dialog.classList.add("is-visible");
-                dialog.focus({ preventScroll: true });
+                const url = await getJacketUrl(chart, fallback, signal);
+                if (signal.aborted || !url) return;
+                const original = new Image();
+                original.src = url;
+                await original.decode();
+                if (!signal.aborted && dialog.open) {
+                    image.src = url;
+                    image.hidden = false;
+                }
             } catch {
-                // Leave the dashboard visible when the jacket cannot load
+                if (!signal.aborted && dialog.open && fallback) {
+                    image.src = fallback;
+                    image.hidden = false;
+                }
+            } finally {
+                if (!signal.aborted) loading.hidden = true;
             }
         },
     };

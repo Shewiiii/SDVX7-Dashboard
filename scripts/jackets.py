@@ -5,8 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import sys
-import tempfile
 import time
 from io import BytesIO
 from pathlib import Path
@@ -16,9 +14,12 @@ from typing import Any
 from scripts.audio import configuration as audio_configuration
 from scripts.audio import r2_client, read_json, write_json
 from scripts.companion import ROOT
+from scripts.local_config import config_path as local_config_path
+from scripts.local_config import metadata_path
+from scripts.media_cache import asset_available, remove_staged, write_media
 from scripts.music import JACKET_INDICES
 
-CONFIG = ROOT / ".local/jacket-config.json"
+CONFIG = local_config_path("jacket-config.json", ROOT)
 CACHE = ROOT / ".local/jackets"
 JPEG_ENCODING = {"quality": 90, "subsampling": 0, "optimize": True}
 
@@ -32,6 +33,17 @@ def encode_jacket(source: Path) -> bytes:
         return output.getvalue()
 
 
+def prepare_jacket(record: dict[str, Any]) -> None:
+    target = record["path"]
+    if not target.is_file():
+        write_media(target, encode_jacket(record["source"]))
+        print(
+            f"Prepared jacket: {record['source'].stem} ({target.stat().st_size // 1024} KB)",
+            flush=True,
+        )
+    record["size"] = target.stat().st_size
+
+
 def configuration() -> dict[str, Any]:
     config = read_json(CONFIG, {"mode": "off"})
     if config.get("mode") not in ("off", "local", "r2"):
@@ -40,11 +52,12 @@ def configuration() -> dict[str, Any]:
 
 
 class JacketLibrary:
-    def __init__(self, game: Path) -> None:
+    def __init__(self, game: Path, *, upload_only: bool = False) -> None:
         self.game = game
+        self.directory = ROOT / ".local/jacket-upload" if upload_only else CACHE
         self.index: dict[tuple[int, int], list[Path]] = {}
         self.scanned_at = 0.0
-        self.fingerprints = read_json(ROOT / ".local/jacket-map.json", {})
+        self.fingerprints = read_json(metadata_path("jacket-map.json", ROOT), {})
 
     def refresh(self) -> None:
         if time.monotonic() - self.scanned_at < 60:
@@ -65,7 +78,14 @@ class JacketLibrary:
         self.index = index
         self.scanned_at = time.monotonic()
 
-    def get(self, mid: int, diff: int) -> dict[str, Any] | None:
+    def get(
+        self,
+        mid: int,
+        diff: int,
+        *,
+        remote: dict[str, int] | None = None,
+        prepare: bool = True,
+    ) -> dict[str, Any] | None:
         self.refresh()
         candidates = [
             path
@@ -86,48 +106,43 @@ class JacketLibrary:
                 previous = self.fingerprints.get(str(source), {})
                 unchanged = previous.get("stamp", [])[:2] == stamp
                 digest = previous.get("id") if unchanged else None
-                target = CACHE / f"{digest}.jpg"
-                if not digest or not target.is_file():
-                    data = encode_jacket(source)
-                    # Base new keys on the source so encoding changes keep the same URL
-                    digest = digest or hashlib.sha256(source.read_bytes()).hexdigest()
-                    target = CACHE / f"{digest}.jpg"
-                    target.parent.mkdir(parents=True, exist_ok=True)
-                    if not target.is_file():
-                        with tempfile.NamedTemporaryFile(
-                            dir=target.parent, suffix=".tmp", delete=False
-                        ) as stream:
-                            temporary = Path(stream.name)
-                            stream.write(data)
-                        try:
-                            temporary.replace(target)
-                        finally:
-                            temporary.unlink(missing_ok=True)
-                    self.fingerprints[str(source)] = {"stamp": stamp, "id": digest}
-                return {"id": digest, "path": target, "size": target.stat().st_size}
+                # Source identities stay stable when JPEG quality changes
+                digest = digest or hashlib.sha256(source.read_bytes()).hexdigest()
+                target = self.directory / f"{digest}.jpg"
+                shared = CACHE / f"{digest}.jpg"
+                if shared.is_file():
+                    target = shared
+                self.fingerprints[str(source)] = {"stamp": stamp, "id": digest}
+                size = (
+                    remote.get(f"jackets/{digest}.jpg") if remote is not None else None
+                )
+                record = {
+                    "id": digest,
+                    "path": target,
+                    "source": source,
+                    "size": size
+                    if size is not None
+                    else target.stat().st_size
+                    if target.is_file()
+                    else 0,
+                }
+                if prepare and not asset_available(
+                    target, f"jackets/{digest}.jpg", remote
+                ):
+                    prepare_jacket(record)
+                return record
             except FileNotFoundError:
                 continue
         return None
 
     def save(self) -> None:
-        write_json(ROOT / ".local/jacket-map.json", self.fingerprints)
+        write_json(metadata_path("jacket-map.json", ROOT), self.fingerprints)
 
 
 def sync_jackets(catalog: Any) -> None:
     config = configuration()
     if config["mode"] != "r2":
         return
-    library = JacketLibrary(catalog.game)
-    records = {}
-    objects = {}
-    for mid, song in list(catalog.songs.items()):
-        for chart in song["difficulties"]:
-            diff = chart["diff_idx"]
-            record = library.get(mid, diff)
-            if record:
-                records[f"{mid}:{diff}"] = record["id"]
-                objects[record["id"]] = record
-    library.save()
     client = r2_client(config)
     inventory = {}
     for page in client.get_paginator("list_objects_v2").paginate(
@@ -136,6 +151,17 @@ def sync_jackets(catalog: Any) -> None:
         inventory.update(
             {item["Key"]: item["Size"] for item in page.get("Contents", [])}
         )
+    library = JacketLibrary(catalog.game, upload_only=True)
+    records = {}
+    objects = {}
+    for mid, song in list(catalog.songs.items()):
+        for chart in song["difficulties"]:
+            diff = chart["diff_idx"]
+            record = library.get(mid, diff, remote=inventory, prepare=False)
+            if record:
+                records[f"{mid}:{diff}"] = record["id"]
+                objects[record["id"]] = record
+    library.save()
     audio = audio_configuration()
     limit = int(float(audio.get("storage_limit_gb", 9.5)) * 1e9)
     used = sum(inventory.values())
@@ -167,8 +193,10 @@ def sync_jackets(catalog: Any) -> None:
     try:
         for digest, record in objects.items():
             if digest in ready:
+                remove_staged(record["path"], ROOT / ".local/jacket-upload")
                 continue
             check_settings()
+            prepare_jacket(record)
             projected = (
                 used - inventory.get(f"jackets/{digest}.jpg", 0) + record["size"]
             )
@@ -187,6 +215,7 @@ def sync_jackets(catalog: Any) -> None:
             )
             used = projected
             ready.add(digest)
+            remove_staged(record["path"], ROOT / ".local/jacket-upload")
             uploaded += 1
             if uploaded % 32 == 0:
                 publish()

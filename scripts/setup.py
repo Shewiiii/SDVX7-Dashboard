@@ -24,6 +24,7 @@ from scripts.companion import (
     save_config,
     with_https,
 )
+from scripts.local_config import config_path as local_config_path
 
 VERCEL_VERSION = "63.1.2"
 
@@ -105,7 +106,16 @@ def check_proxy(proxy: Path) -> Path:
         raise ValueError(
             "Game music database missing. Put the proxy folder inside your SDVX game folder."
         )
-    run([str(python), "-m", "pip", "install", "-r", str(ROOT / "requirements/requirements.txt")])
+    run(
+        [
+            str(python),
+            "-m",
+            "pip",
+            "install",
+            "-r",
+            str(ROOT / "requirements/requirements.txt"),
+        ]
+    )
     subprocess.run(
         [
             str(python),
@@ -253,7 +263,7 @@ def deploy(
     except subprocess.CalledProcessError:
         vercel(npm, "login")
     project = linked_project(npm, config, proxy)
-    stages_path = ROOT / ".local/setup-state.json"
+    stages_path = local_config_path("setup-state.json", ROOT)
     try:
         stages = (
             json.loads(stages_path.read_text(encoding="utf-8"))
@@ -291,7 +301,7 @@ def deploy(
         stages["database_connected"] = True
         stages_path.parent.mkdir(parents=True, exist_ok=True)
         stages_path.write_text(json.dumps(stages, indent=2), encoding="utf-8")
-    crew_config_path = ROOT / ".local/crew-config.json"
+    crew_config_path = local_config_path("crew-config.json", ROOT)
     crew_config = (
         json.loads(crew_config_path.read_text(encoding="utf-8"))
         if crew_config_path.exists()
@@ -316,7 +326,7 @@ def deploy(
             "production",
             input=crew_url + "\n",
         )
-    jacket_path = ROOT / ".local/jacket-config.json"
+    jacket_path = local_config_path("jacket-config.json", ROOT)
     jacket_config = (
         json.loads(jacket_path.read_text(encoding="utf-8"))
         if jacket_path.exists()

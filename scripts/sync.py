@@ -28,6 +28,14 @@ from scripts.companion import (
     load_config,
     resolve_proxy,
 )
+from scripts.local_config import config_path as local_config_path
+from scripts.local_config import metadata_path, sync_path
+from scripts.media_cache import (
+    PreparationBudget,
+    asset_available,
+    encode_cover,
+    remove_staged,
+)
 from scripts.music import MusicCatalog
 from scripts.playtime import playtime_snapshot
 from scripts.profile_radar import calculate_profile_radar
@@ -99,7 +107,7 @@ class Catalog:
         game = proxy.parent
         self.music = MusicCatalog(game / "data/others/music_db.xml")
         self.details = ChartDetails(
-            self.music, ROOT / ".local/chart-details-cache.json"
+            self.music, metadata_path("chart-details-cache.json", ROOT)
         )
         self.paths = self.music.paths
         self.signature = None
@@ -109,7 +117,6 @@ class Catalog:
         self.proxy = proxy
         self.cover_ids = {}
         self.cover_index = None
-        self.cover_signature = None
         self.appeal_card = None
         self.appeal_cards: list[dict[str, Any]] = []
         self.appeal_signature = None
@@ -181,7 +188,7 @@ class Catalog:
             f"{mid}:{diff}", {"title": f"Chart {mid}", "artist": "", "level": None}
         )
 
-    def prepare_appeal_card(self) -> None:
+    def prepare_appeal_card(self, uploaded: set[str] | None = None) -> None:
         """Read only the selected artwork, never publish the player record."""
         try:
             raw = json.loads(
@@ -222,9 +229,13 @@ class Catalog:
             source = self.game / "data/graphics/ap_card" / f"{texture}.png"
             stat = source.stat()
             signature = (appeal_id, str(source), stat.st_mtime_ns, stat.st_size)
-            if signature == self.appeal_signature:
+            if signature == self.appeal_signature and asset_available(
+                ROOT / ".local/covers" / f"{self.appeal_card}.webp",
+                self.appeal_card or "",
+                uploaded,
+            ):
                 return
-            cache_path = ROOT / ".local/appeal-card-cache.json"
+            cache_path = metadata_path("appeal-card-cache.json", ROOT)
             cached = (
                 json.loads(cache_path.read_text(encoding="utf-8"))
                 if cache_path.exists()
@@ -235,20 +246,13 @@ class Catalog:
                 cached.get("signature") == list(signature)
                 and isinstance(cached_id, str)
                 and re.fullmatch(r"[a-f0-9]{64}", cached_id)
-                and (ROOT / ".local/covers" / f"{cached_id}.webp").exists()
+                and asset_available(
+                    ROOT / ".local/covers" / f"{cached_id}.webp", cached_id, uploaded
+                )
             ):
                 self.appeal_card, self.appeal_signature = cached_id, signature
                 return
-            from io import BytesIO
-
-            from PIL import Image
-
-            with Image.open(source) as image:
-                image = image.convert("RGBA")
-                image.thumbnail((256, 256))
-                buffer = BytesIO()
-                image.save(buffer, "WEBP", lossless=True, method=4)
-            content = buffer.getvalue()
+            content = encode_cover(source, lossless=True)
             image_id = hashlib.sha256(content).hexdigest()
             target = ROOT / ".local/covers" / f"{image_id}.webp"
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -259,14 +263,7 @@ class Catalog:
             self.appeal_card = None
             self.appeal_signature = None
 
-    def prepare_covers(self) -> None:
-        """Prepare cached web covers for every song in the library."""
-        self.prepare_appeal_card()
-        self.appeal_cards = prepare_appeal_cards(self.game, ROOT / ".local")
-        music_ids = set(self.songs)
-        signature = (tuple(sorted(music_ids)), self.signature)
-        if signature == self.cover_signature:
-            return
+    def index_covers(self) -> None:
         if self.cover_index is None:
             self.cover_index = {}
             for priority, root in enumerate(
@@ -294,28 +291,43 @@ class Catalog:
                         self.cover_index.setdefault(key, []).append((order, path))
             for values in self.cover_index.values():
                 values.sort(key=lambda p: p[0])
-        map_path = ROOT / ".local/cover-map.json"
+
+    def jacket_paths(self, mid: int, diff: int) -> list[Path]:
+        from scripts.music import JACKET_INDICES
+
+        self.index_covers()
+        paths = [
+            path
+            for index in JACKET_INDICES[diff]
+            for _, path in self.cover_index.get((mid, index), [])
+        ]
+        return paths or [
+            path
+            for (song_id, _), choices in self.cover_index.items()
+            if song_id == mid
+            for _, path in choices
+        ]
+
+    def prepare_covers(self, uploaded: set[str] | None = None) -> None:
+        """Prepare cached web covers for every song in the library."""
+        self.prepare_appeal_card(uploaded)
+        budget = PreparationBudget(240 if uploaded is not None else None)
+        self.appeal_cards = prepare_appeal_cards(
+            self.game, ROOT / ".local", uploaded=uploaded, budget=budget
+        )
+        music_ids = set(self.songs)
+        self.cover_index = None
+        self.index_covers()
+        map_path = metadata_path("cover-map.json", ROOT)
         cached = (
             json.loads(map_path.read_text(encoding="utf-8"))
             if map_path.exists()
             else {}
         )
-        indices = ((1,), (2, 1), (3, 2, 1), (4, 3, 1), (5, 4, 3, 1), (5, 4, 3, 1))
         for mid in sorted(music_ids):
             for d in self.songs.get(mid, {}).get("difficulties", []):
                 diff = d["diff_idx"]
-                paths = [
-                    path
-                    for index in indices[diff]
-                    for _, path in self.cover_index.get((mid, index), [])
-                ]
-                if not paths:
-                    paths = [
-                        p
-                        for (song_id, _), choices in self.cover_index.items()
-                        if song_id == mid
-                        for _, p in choices
-                    ]
+                paths = self.jacket_paths(mid, diff)
                 if not paths:
                     continue
                 source = paths[0]
@@ -324,18 +336,14 @@ class Catalog:
                 signature_key = [stat.st_mtime_ns, stat.st_size]
                 known = cached.get(source_key, {})
                 target = ROOT / ".local/covers" / (known.get("id", "missing") + ".webp")
-                if known.get("signature") != signature_key or not target.exists():
+                if known.get("signature") != signature_key or not asset_available(
+                    target, known.get("id", ""), uploaded
+                ):
+                    if not budget.take():
+                        self.cover_ids.pop(f"{mid}:{diff}", None)
+                        continue
                     try:
-                        from io import BytesIO
-
-                        from PIL import Image
-
-                        with Image.open(source) as image:
-                            image = image.convert("RGB")
-                            image.thumbnail((256, 256))
-                            buffer = BytesIO()
-                            image.save(buffer, "WEBP", quality=85, method=4)
-                        content = buffer.getvalue()
+                        content = encode_cover(source)
                     except ImportError:
                         continue
                     cover_id = hashlib.sha256(content).hexdigest()
@@ -346,7 +354,7 @@ class Catalog:
                     cached[source_key] = known
                 self.cover_ids[f"{mid}:{diff}"] = known["id"]
         write_json(map_path, cached)
-        self.cover_signature = signature
+        self.cover_preparation_pending = budget.remaining == 0
 
     def public_catalog(self) -> list[dict[str, Any]]:
         return [
@@ -777,7 +785,8 @@ def upload(
                     "Deploy the updated dashboard API before syncing the profile radar"
                 )
             if (
-                "without_custom" in (payload.get("state", {}).get("profile_radar") or {})
+                "without_custom"
+                in (payload.get("state", {}).get("profile_radar") or {})
                 and result.get("profile_radar_schema", 0) < 2
             ):
                 raise RuntimeError(
@@ -838,7 +847,7 @@ def source_paths(proxy: Path) -> tuple[Path, ...]:
         proxy / "player-data/server_data.json",
         proxy / "player-data/playtime.json",
         proxy / ".env",
-        ROOT / ".local/sync-config.json",
+        local_config_path("sync-config.json", ROOT),
     )
 
 
@@ -864,10 +873,10 @@ def sync_once(
     source_changed: Callable[[], bool] | None = None,
 ) -> None:
     print(
-        f"Sync cycle started (background assets: {'yes' if background_audio else 'no'}).",
+        f"Sync cycle started (background_audio={background_audio}).",
         flush=True,
     )
-    state_path = ROOT / ".local/sync-state.json"
+    state_path = sync_path("sync-state.json", ROOT)
     saved = read_checkpoint(state_path)
     # The public URL can stay unchanged when Vercel/Neon is replaced. Bind all
     # database acknowledgements to the persistent identity returned by /api/sync.
@@ -891,12 +900,12 @@ def sync_once(
         flush=True,
     )
     if hasattr(catalog, "prepare_covers"):
-        catalog.prepare_covers()
-        cover_state_path = ROOT / ".local/cover-sync-state.json"
+        cover_state_path = sync_path("cover-sync-state.json", ROOT)
         acknowledged = read_checkpoint(cover_state_path)
         if acknowledged.get("endpoint") != endpoint_id:
             acknowledged = {"endpoint": endpoint_id, "ids": []}
         known_ids = set(acknowledged["ids"])
+        catalog.prepare_covers(uploaded=known_ids)
         image_ids = set(catalog.cover_ids.values())
         image_ids.update(card["image"] for card in getattr(catalog, "appeal_cards", []))
         if catalog.appeal_card:
@@ -988,7 +997,9 @@ def sync_once(
     if source_changed and source_changed():
         return
     if hasattr(catalog, "prepare_covers"):
-        catalog.covers_pending = len(pending_ids) > 240
+        catalog.covers_pending = len(pending_ids) > 240 or getattr(
+            catalog, "cover_preparation_pending", False
+        )
         for start in range(0, min(len(pending_ids), 240), 30):
             if source_changed and source_changed():
                 return
@@ -1012,6 +1023,11 @@ def sync_once(
             known_ids.update(batch)
             acknowledged["ids"] = sorted(known_ids)
             write_json(cover_state_path, acknowledged)
+            for cover_id in batch:
+                remove_staged(
+                    ROOT / ".local/covers" / (cover_id + ".webp"),
+                    ROOT / ".local/covers",
+                )
         if pending_ids:
             print(
                 f"Synced {min(len(pending_ids), 240)} artwork images "
@@ -1078,7 +1094,7 @@ def sync_details(
 ) -> None:
     if not hasattr(catalog, "details"):
         return
-    checkpoint = ROOT / ".local/chart-details-sync.json"
+    checkpoint = sync_path("chart-details-sync.json", ROOT)
     saved = read_checkpoint(checkpoint)
     if saved.get("endpoint") != endpoint_id:
         saved = {"endpoint": endpoint_id, "hashes": {}}
@@ -1161,7 +1177,9 @@ def sync_details(
 def export_preview(catalog: Catalog | None = None) -> None:
     proxy = resolve_proxy()
     if catalog is None:
-        catalog = Catalog(proxy)
+        from scripts.preview_assets import PreviewCatalog
+
+        catalog = PreviewCatalog(proxy)
     catalog.refresh()
     catalog.prepare_covers()
     state, profile = snapshot(proxy, catalog)
@@ -1310,7 +1328,7 @@ def run(once: bool = False) -> None:
         or len(config.get("token", "")) < 32
     ):
         raise SystemExit("Run Setup-dashboard.bat first to connect the dashboard.")
-    lock_path = ROOT / ".local/sync.lock"
+    lock_path = sync_path("sync.lock", ROOT)
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     with lock_path.open("a+b") as lock:
         if lock_path.stat().st_size == 0:

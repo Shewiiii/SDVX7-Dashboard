@@ -1,3 +1,4 @@
+import { localConfigPath } from "./local-config.mjs";
 import { randomBytes } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { spawn } from "node:child_process";
@@ -5,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const configPath = path.join(root, ".local/sync-config.json");
+const configPath = localConfigPath(root, "sync-config.json");
 await mkdir(path.dirname(configPath), { recursive: true });
 let config = {};
 try {

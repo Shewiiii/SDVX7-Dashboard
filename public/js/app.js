@@ -2245,10 +2245,13 @@ document.addEventListener("keydown", (event) => {
 document.addEventListener("click", (event) => {
     const jacket = event.target.closest("[data-view-jacket]");
     if (jacket && selected) {
-        void jacketViewer.open({
-            ...selected,
-            title: songs.get(selected.music_id)?.title,
-        });
+        void jacketViewer.open(
+            {
+                ...selected,
+                title: songs.get(selected.music_id)?.title,
+            },
+            jacket.querySelector("img")?.src,
+        );
         return;
     }
     if (!event.target.closest('.song-search, [data-view="search"]'))

@@ -17,6 +17,7 @@ from scripts.audio_setup import configure_r2, origin, prompt, reuse_r2
 from scripts.companion import ROOT
 from scripts.crew_voices import voices_enabled
 from scripts.crews import CONFIG, prepare_catalog
+from scripts.local_config import protected_path
 
 RUNTIMES = {
     "pixi.min.js": "https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js",
@@ -49,7 +50,7 @@ def install_tools() -> None:
             )
             tools(audio_config)
             write_json(AUDIO_CONFIG, audio_config)
-    directory = ROOT / ".local/crew-tools"
+    directory = protected_path("crew-tools", ROOT)
     directory.mkdir(parents=True, exist_ok=True)
     sys.path.insert(0, str(directory))
     if any(importlib.util.find_spec(name) is None for name in ("ifstools", "PIL")):
@@ -171,7 +172,7 @@ def main() -> None:
     print("Saved locally. Restart the dashboard or preview to apply.")
     if choice == "2":
         print(
-            "Deploy the updated dashboard with update-dashboard.bat. Progress appears in the console and .local/sync.log."
+            "Deploy the updated dashboard with update-dashboard.bat. Progress appears in the console and .local/do-not-delete/sync/sync.log."
         )
 
 

@@ -20,14 +20,18 @@ from scripts.audio import (
     write_json,
 )
 from scripts.companion import ROOT, resolve_proxy
+from scripts.local_config import config_path as local_config_path
+from scripts.local_config import protected_path
 
-CACHE = ROOT / ".local/crews/voices"
+CACHE = protected_path("crews", ROOT) / "voices"
 MAPPING = ROOT / "public/game-data/crew-voices.json"
 
 
 def voices_enabled() -> bool:
     return (
-        read_json(ROOT / ".local/crew-config.json", {}).get("voices_enabled", True)
+        read_json(local_config_path("crew-config.json", ROOT), {}).get(
+            "voices_enabled", True
+        )
         is True
     )
 

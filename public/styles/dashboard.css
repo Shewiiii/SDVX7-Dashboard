@@ -2775,7 +2775,7 @@ footer > :last-child {
 }
 .jacket-viewer img {
     display: block;
-    width: 676px;
+    width: auto;
     height: auto;
     max-width: calc(100vw - 36px);
     max-height: calc(100dvh - 36px);

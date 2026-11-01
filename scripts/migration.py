@@ -16,6 +16,7 @@ from dotenv import dotenv_values, set_key, unset_key
 
 from scripts.companion import load_config, normalize_currency, proxy_module, save_config
 from scripts.layout import PROXY_FOLDER, game_root
+from scripts.local_config import config_path as local_config_path
 
 LEGACY_FOLDER = "SDVX7-VolForce-Tracker-main"
 PLAYTIME_KEYS = (
@@ -257,7 +258,7 @@ def migrate_preferences(
     proxy: Path,
     legacy_values: dict[str, str | None] | None = None,
 ) -> dict[str, Any]:
-    config_path = dashboard / ".local/sync-config.json"
+    config_path = local_config_path("sync-config.json", dashboard)
     config = load_config(config_path)
     env_path = proxy / ".env"
     original_env = env_path.read_bytes() if env_path.exists() else None

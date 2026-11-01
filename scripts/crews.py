@@ -9,11 +9,13 @@ from typing import Any
 
 from scripts.audio import read_json, write_json
 from scripts.companion import ROOT, resolve_proxy
+from scripts.local_config import config_path as local_config_path
+from scripts.local_config import protected_path
 
-CACHE = ROOT / ".local/crews"
-CONFIG = ROOT / ".local/crew-config.json"
+CACHE = protected_path("crews", ROOT)
+CONFIG = local_config_path("crew-config.json", ROOT)
 CATALOG = ROOT / "public/game-data/crew-catalog.json"
-sys.path.insert(0, str(ROOT / ".local/crew-tools"))
+sys.path.insert(0, str(protected_path("crew-tools", ROOT)))
 
 
 def graphics() -> Path:
@@ -30,7 +32,7 @@ def selected_crew() -> int | None:
     return None
 
 
-def prepare_catalog() -> dict[str, Any]:
+def prepare_catalog(*, prepare_assets: bool = True) -> dict[str, Any]:
     from ifstools import IFS
 
     from scripts.crew_voices import prepare_manifest, voice_for, voices_enabled
@@ -50,8 +52,8 @@ def prepare_catalog() -> dict[str, Any]:
             if icon not in images:
                 continue
             target = icon_root / icon
-            if not target.exists():
-                target.write_bytes(images[icon].load())  # Writes to .local/crews/icons/
+            if prepare_assets and not target.exists():
+                target.write_bytes(images[icon].load())
             entry["icon"] = f"icons/{icon}"
             voice = voice_for(entry) if enable_voices else None
             entry["voice"] = f"voices/{voice}.json" if voice else None
@@ -69,7 +71,9 @@ def prepare_catalog() -> dict[str, Any]:
         archive.close()
     result = {"version": 1, "crews": crews, "voices_enabled": enable_voices}
     for voice in (
-        ({voice_for(entry) for entry in crews} - {None}) if enable_voices else []
+        ({voice_for(entry) for entry in crews} - {None})
+        if enable_voices and prepare_assets
+        else []
     ):
         prepare_manifest(voice)
     write_json(CACHE / "catalog.json", result)
@@ -89,7 +93,7 @@ def prepare_afp(key: str) -> dict[str, Any]:
     previous = read_json(cached, {})
     if previous.get("signature") == signature:
         return previous
-    tools = ROOT / ".local/crew-tools"
+    tools = protected_path("crew-tools", ROOT)
     sys.path.insert(0, str(tools))
     try:
         from scripts.crew_afp import CrewMovie, CrewShape, geometry_data
@@ -155,6 +159,19 @@ def crew_assets(entry: dict[str, Any]) -> dict[str, Path]:
 
     source = graphics()
     objects: dict[str, Path] = {entry["icon"]: CACHE / entry["icon"]}
+    icon = CACHE / entry["icon"]
+    if not icon.is_file():
+        from ifstools import IFS
+
+        archive = IFS(str(source / "chara/chara_icon.ifs"))
+        try:
+            image = next(
+                file for file in archive.tree.all_files if file.name == icon.name
+            )
+            icon.parent.mkdir(parents=True, exist_ok=True)
+            icon.write_bytes(image.load())
+        finally:
+            archive.close()
     if entry["type"] == "afp":
         prepare_afp(entry["key"])
         folder = CACHE / "afp" / entry["key"]

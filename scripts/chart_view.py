@@ -13,11 +13,18 @@ if TYPE_CHECKING:
 
 from scripts.chart_details import parse_chart
 from scripts.companion import ROOT, resolve_proxy
+from scripts.media_cache import asset_available
 
 SCHEMA = 5  # Preserve extended laser ranges.
 
 
-def prepare(details: "ChartDetails", mid: int, diff: int) -> tuple[str, Path] | None:
+def prepare(
+    details: "ChartDetails",
+    mid: int,
+    diff: int,
+    *,
+    remote: dict[str, int] | None = None,
+) -> tuple[str, Path] | None:
     path = getattr(details, "files", {}).get(f"{mid}:{diff}")
     if path is None:
         return None
@@ -27,14 +34,16 @@ def prepare(details: "ChartDetails", mid: int, diff: int) -> tuple[str, Path] | 
         return None
     from scripts.chart_effects import prepare_bank
 
-    bank = prepare_bank(details.music.base_root)
+    bank = prepare_bank(details.music.base_root, remote=remote)
     inputs = [SCHEMA, str(path), stat.st_size, stat.st_mtime_ns, mid, diff, bank]
     if "SDVX_PREVIEW_REVISION" in os.environ:
         inputs.append(os.environ["SDVX_PREVIEW_REVISION"])
     signature = json.dumps(inputs)
     digest = hashlib.sha256(signature.encode()).hexdigest()
     target = ROOT / ".local/chart-view" / (digest + ".json.gz")
-    if not target.exists():
+    if remote is not None and not target.is_file():
+        target = ROOT / ".local/chart-upload" / (digest + ".json.gz")
+    if not asset_available(target, f"charts/{digest}.json", remote):
         try:
             record = {**parse_chart(path, full=True), "music_id": mid, "diff_idx": diff}
             if bank:

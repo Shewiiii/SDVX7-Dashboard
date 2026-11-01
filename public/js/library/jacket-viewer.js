@@ -45,13 +45,13 @@ export function createJacketViewer() {
 
     return {
         close,
-        async open(chart) {
+        async open(chart, fallback) {
             if (dialog.open || closing) return;
             request?.abort();
             request = new AbortController();
             const { signal } = request;
             try {
-                const original = await getJacketUrl(chart, undefined, signal);
+                const original = await getJacketUrl(chart, fallback, signal);
                 if (signal.aborted || !original) return;
                 image.alt = `${chart.title || "Song"} jacket`;
                 image.src = original;
@@ -63,7 +63,7 @@ export function createJacketViewer() {
                 dialog.classList.add("is-visible");
                 dialog.focus({ preventScroll: true });
             } catch {
-                // Leave the dashboard visible when the large jacket is unavailable
+                // Leave the dashboard visible when the jacket cannot load
             }
         },
     };

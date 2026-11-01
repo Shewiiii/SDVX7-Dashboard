@@ -1,3 +1,4 @@
+import { localConfigPath, protectedPath } from "./local-config.mjs";
 import { readFile, stat } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
@@ -9,7 +10,7 @@ import { sendAudioFile } from "./audio-http.mjs";
 const execute = promisify(execFile);
 
 export function createCrewPreview(root, python) {
-    const cache = path.join(root, ".local/crews");
+    const cache = protectedPath(root, "crews");
     const graphics = path.resolve(root, "../data/graphics");
     let preparing;
     const afpTasks = new Map();
@@ -34,7 +35,7 @@ export function createCrewPreview(root, python) {
             try {
                 config = JSON.parse(
                     await readFile(
-                        path.join(root, ".local/crew-config.json"),
+                        localConfigPath(root, "crew-config.json"),
                         "utf8",
                     ),
                 );
@@ -116,7 +117,7 @@ export function createCrewPreview(root, python) {
                 : relative.startsWith("portraits/")
                   ? path.join(graphics, "crew_icon")
                   : relative.startsWith("runtime/")
-                    ? path.join(root, ".local/crew-tools")
+                    ? protectedPath(root, "crew-tools")
                     : cache;
         const name =
             relative.startsWith("portraits/") || relative.startsWith("runtime/")

@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 from scripts.audio import CONFIG, configuration, r2_client, read_json, tools, write_json
 from scripts.companion import ROOT, load_config, with_https
+from scripts.local_config import config_path as local_config_path
 
 R2_FIELDS = ("endpoint", "bucket", "access_key", "secret_key", "public_url")
 R2_CONFIG_FILES = ("audio-config.json", "crew-config.json", "jacket-config.json")
@@ -15,7 +16,9 @@ R2_CONFIG_FILES = ("audio-config.json", "crew-config.json", "jacket-config.json"
 
 def saved_r2(config: dict[str, Any] | None = None) -> dict[str, Any] | None:
     candidates = [config] if config is not None else []
-    candidates.extend(read_json(ROOT / ".local" / name, {}) for name in R2_CONFIG_FILES)
+    candidates.extend(
+        read_json(local_config_path(name, ROOT), {}) for name in R2_CONFIG_FILES
+    )
     for candidate in candidates:
         if all(candidate.get(field) for field in R2_FIELDS):
             return {field: candidate[field] for field in R2_FIELDS}
@@ -38,13 +41,13 @@ def edit_r2() -> None:
     configure_r2(config)
     features = {}
     for name in R2_CONFIG_FILES:
-        path = ROOT / ".local" / name
+        path = local_config_path(name, ROOT)
         if path.exists():
             feature = read_json(path, {})
             feature.update({field: config[field] for field in R2_FIELDS})
             features[name] = feature
     for name, feature in features.items():
-        write_json(ROOT / ".local" / name, feature)
+        write_json(local_config_path(name, ROOT), feature)
 
     from scripts.crew_setup import apply_hosted_settings as apply_crew_settings
     from scripts.jacket_setup import apply_hosted_settings as apply_jacket_settings
@@ -82,7 +85,7 @@ def apply_media_policy(config: dict[str, Any]) -> None:
     asset_origins = {
         origin(saved["public_url"])
         for file in ("crew-config.json", "jacket-config.json")
-        for saved in [read_json(ROOT / ".local" / file, {})]
+        for saved in [read_json(local_config_path(file, ROOT), {})]
         if saved.get("mode") == "r2" and saved.get("public_url")
     }
     if config.get("mode") == "r2":
@@ -327,7 +330,7 @@ def main() -> None:
     print("Saved locally. Restart the dashboard or preview to apply.")
     if mode == "2":
         print(
-            "Deploy the updated dashboard with update-dashboard.bat. Upload progress appears in the console and .local/sync.log."
+            "Deploy the updated dashboard with update-dashboard.bat. Upload progress appears in the console and .local/do-not-delete/sync/sync.log."
         )
 
 

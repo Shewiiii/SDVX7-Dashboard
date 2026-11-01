@@ -8,11 +8,12 @@ import time
 
 from scripts.companion import ROOT, load_config, proxy_python, resolve_proxy
 from scripts.console_logs import forward_log, forward_pipe, log
+from scripts.local_config import sync_path
 from scripts.process_lifetime import contain_process_tree, stop_orphaned_sync
 
 
 def sync_running() -> bool:
-    path = ROOT / ".local/sync.lock"
+    path = sync_path("sync.lock", ROOT)
     if not path.exists():
         return False
     with path.open("r+b") as lock:
@@ -60,7 +61,8 @@ def main() -> int:
     if connected and sync_running():
         # Also recover workers launched before the scripts/ reorganization.
         stop_orphaned_sync(python, ROOT / "sync.py")
-    local = ROOT / ".local"
+    local = sync_path("sync.log", ROOT).parent
+    sync_path("sync-errors.log", ROOT)
     local.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
     sync_process = proxy_process = None
@@ -164,7 +166,10 @@ def main() -> int:
                         final_sync.wait(timeout=15)
                     except (subprocess.TimeoutExpired, KeyboardInterrupt):
                         stop_owned(final_sync)
-                        log("Remaining records will sync next session.", stream=sys.stdout)
+                        log(
+                            "Remaining records will sync next session.",
+                            stream=sys.stdout,
+                        )
                 except OSError:
                     log(
                         "Final sync could not start. Remaining records will sync next session.",

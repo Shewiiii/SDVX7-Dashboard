@@ -1,3 +1,4 @@
+import { localConfigPath } from "./local-config.mjs";
 import {
     createPreviewCache,
     previewSourceSignature,
@@ -44,7 +45,7 @@ const previewSources = [
     path.join(proxy, "player-data/server_data.json"),
     path.join(proxy, "player-data/playtime.json"),
     path.join(proxy, ".env"),
-    path.join(root, ".local/sync-config.json"),
+    localConfigPath(root, "sync-config.json"),
     path.join(game, "data/others/music_db.xml"),
     path.join(game, "data/others/appeal_card.xml"),
     path.join(game, "data/music"),
@@ -58,9 +59,9 @@ const requestSignature = async () => {
         .map((name) => path.join(root, "scripts", name));
     return previewSourceSignature([
         ...scripts,
-        path.join(root, ".local/audio-config.json"),
-        path.join(root, ".local/jacket-config.json"),
-        path.join(root, ".local/sync-config.json"),
+        localConfigPath(root, "audio-config.json"),
+        localConfigPath(root, "jacket-config.json"),
+        localConfigPath(root, "sync-config.json"),
         path.join(proxy, ".env"),
     ]);
 };
@@ -74,6 +75,11 @@ const previewWorker = createPreviewWorker(python, root, {
 const chartWorker = createPreviewWorker(python, root, requestOptions);
 const audioWorker = createPreviewWorker(python, root, requestOptions);
 const searchWorker = createPreviewWorker(python, root, requestOptions);
+const imageWorker = createPreviewWorker(python, root, {
+    module: "scripts.preview_assets",
+    signature: requestSignature,
+});
+const images = new Map();
 const previewCache = createPreviewCache({
     signature: async () =>
         JSON.stringify(
@@ -87,7 +93,7 @@ const previewCache = createPreviewCache({
         ),
     async build() {
         const started = performance.now();
-        console.log("[preview] Building archive and cache, this may take a long time...");
+        console.log("[preview] Reading dashboard metadata...");
         await previewWorker.export();
         console.log(
             `[preview] Archive ready in ${Math.round(performance.now() - started)} ms`,
@@ -249,7 +255,10 @@ const server = createServer(async (req, res) => {
                 let config = {};
                 try {
                     config = JSON.parse(
-                        await readFile(path.join(root, ".local/jacket-config.json"), "utf8"),
+                        await readFile(
+                            localConfigPath(root, "jacket-config.json"),
+                            "utf8",
+                        ),
                     );
                 } catch (error) {
                     if (error.code !== "ENOENT") throw error;
@@ -282,14 +291,19 @@ const server = createServer(async (req, res) => {
                 return;
             }
             const config = JSON.parse(
-                await readFile(path.join(root, ".local/jacket-config.json"), "utf8"),
+                await readFile(
+                    localConfigPath(root, "jacket-config.json"),
+                    "utf8",
+                ),
             );
             if (!["local", "r2"].includes(config.mode)) {
                 res.writeHead(404);
                 res.end();
                 return;
             }
-            const body = await readFile(path.join(root, ".local/jackets", `${id}.jpg`));
+            const body = await readFile(
+                path.join(root, ".local/jackets", `${id}.jpg`),
+            );
             res.writeHead(200, {
                 "Content-Type": "image/jpeg",
                 "Cache-Control": "public, max-age=31536000, immutable",
@@ -304,10 +318,27 @@ const server = createServer(async (req, res) => {
                 res.end();
                 return;
             }
-            res.writeHead(200, { "Content-Type": "image/webp" });
-            res.end(
-                await readFile(path.join(root, ".local/covers", `${id}.webp`)),
-            );
+            if (!images.has(id)) {
+                const task = imageWorker
+                    .request({ id })
+                    .then((value) =>
+                        value ? Buffer.from(value, "base64") : null,
+                    );
+                images.set(id, task);
+                if (images.size > 128)
+                    images.delete(images.keys().next().value);
+                task.then((value) => {
+                    if (!value && images.get(id) === task) images.delete(id);
+                }).catch(() => {
+                    if (images.get(id) === task) images.delete(id);
+                });
+            }
+            const image = await images.get(id);
+            res.writeHead(image ? 200 : 404, {
+                "Content-Type": "image/webp",
+                "Cache-Control": "public, max-age=60",
+            });
+            res.end(image || undefined);
             return;
         }
         if (url.pathname === "/api/data") {
@@ -379,4 +410,5 @@ server.on("close", () => {
     chartWorker.close();
     audioWorker.close();
     searchWorker.close();
+    imageWorker.close();
 });

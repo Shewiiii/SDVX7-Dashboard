@@ -5,16 +5,22 @@ import json
 import re
 import tempfile
 import xml.etree.ElementTree as ET
-from io import BytesIO
 from pathlib import Path
 from typing import Any
 
+from scripts.local_config import metadata_path
+from scripts.media_cache import PreparationBudget, asset_available, encode_cover
 
-def prepare_appeal_cards(game: Path, cache: Path) -> list[dict[str, Any]]:
+
+def prepare_appeal_cards(
+    game: Path,
+    cache: Path,
+    *,
+    uploaded: set[str] | None = None,
+    budget: PreparationBudget | None = None,
+) -> list[dict[str, Any]]:
     """Match the game's public card IDs/titles to cached web artwork."""
     try:
-        from PIL import Image
-
         mapping = game / "data/others/appeal_card.xml"
         text = re.sub(
             r"<\?xml[^>]*\?>",
@@ -26,7 +32,7 @@ def prepare_appeal_cards(game: Path, cache: Path) -> list[dict[str, Any]]:
     except (OSError, ET.ParseError, ImportError):
         return []
 
-    manifest_path = cache / "appeal-cards-cache.json"
+    manifest_path = metadata_path("appeal-cards-cache.json", cache.parent)
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if not isinstance(manifest, dict):
@@ -56,14 +62,13 @@ def prepare_appeal_cards(game: Path, cache: Path) -> list[dict[str, Any]]:
                 known.get("signature") == signature
                 and isinstance(image_id, str)
                 and re.fullmatch(r"[a-f0-9]{64}", image_id)
-                and (cache / "covers" / f"{image_id}.webp").is_file()
+                and asset_available(
+                    cache / "covers" / f"{image_id}.webp", image_id, uploaded
+                )
             ):
-                with Image.open(source) as image:
-                    image = image.convert("RGBA")
-                    image.thumbnail((256, 256))
-                    buffer = BytesIO()
-                    image.save(buffer, "WEBP", lossless=True, method=4)
-                content = buffer.getvalue()
+                if budget is not None and not budget.take():
+                    continue
+                content = encode_cover(source, lossless=True)
                 image_id = hashlib.sha256(content).hexdigest()
                 target = cache / "covers" / f"{image_id}.webp"
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -80,11 +85,11 @@ def prepare_appeal_cards(game: Path, cache: Path) -> list[dict[str, Any]]:
             continue
 
     if updated != manifest:
-        cache.mkdir(parents=True, exist_ok=True)
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile(
             mode="w",
             encoding="utf-8",
-            dir=cache,
+            dir=manifest_path.parent,
             suffix=".tmp",
             delete=False,
         ) as output:

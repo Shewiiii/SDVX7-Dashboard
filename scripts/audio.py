@@ -13,12 +13,16 @@ import time
 from array import array
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import redirect_stdout
 from pathlib import Path
 from threading import Thread
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, urlparse
 
 from scripts.companion import ROOT, resolve_proxy
+from scripts.local_config import audio_metadata_path, metadata_path, sync_path
+from scripts.local_config import config_path as local_config_path
+from scripts.media_cache import asset_available, remove_staged
 
 if TYPE_CHECKING:
     from scripts.chart_details import ChartDetails
@@ -27,7 +31,7 @@ if TYPE_CHECKING:
 SCHEMA = 5
 PEAKS = 128
 BUDGET_BYTES = 9_000_000_000
-CONFIG = ROOT / ".local/audio-config.json"
+CONFIG = local_config_path("audio-config.json", ROOT)
 
 
 def read_json(path: Path, default: Any) -> Any:
@@ -153,12 +157,19 @@ def extract_2dx(raw: bytes) -> bytes:
 
 class AudioLibrary:
     def __init__(
-        self, details: ChartDetails, config: dict[str, Any] | None = None
+        self,
+        details: ChartDetails,
+        config: dict[str, Any] | None = None,
+        *,
+        upload_only: bool = False,
     ) -> None:
         self.details = details
         self.config = config if config is not None else configuration()
-        self.directory = ROOT / ".local/audio"
-        self.cache_path = ROOT / ".local/audio-cache.json"
+        self.metadata_directory = audio_metadata_path(ROOT)
+        self.directory = (
+            ROOT / ".local/audio-upload" if upload_only else ROOT / ".local/audio"
+        )
+        self.cache_path = metadata_path("audio-cache.json", ROOT)
         self.cache = read_json(self.cache_path, {})
         self.sources = {}
         self.folders = None
@@ -241,7 +252,19 @@ class AudioLibrary:
         self.sources[key] = None
         return None
 
-    def get(self, mid: int, diff: int, prepare: bool = True) -> dict[str, Any] | None:
+    def audio_file(self, digest: str) -> Path:
+        name = digest + "." + self.config.get("format", "opus")
+        staged = self.directory / name
+        return staged if staged.is_file() else ROOT / ".local/audio" / name
+
+    def get(
+        self,
+        mid: int,
+        diff: int,
+        prepare: bool = True,
+        *,
+        remote: dict[str, int] | None = None,
+    ) -> dict[str, Any] | None:
         if self.config.get("mode") == "off":
             return None
         source = self.source(mid, diff)
@@ -262,13 +285,12 @@ class AudioLibrary:
         key = hashlib.sha256(json.dumps(signature).encode()).hexdigest()
         # Individual atomic sidecars avoid losing cache entries when preview
         # requests and the background uploader prepare different tracks together.
-        entry_path = self.directory / (key + ".json")
+        entry_path = self.metadata_directory / (key + ".json")
         saved = self.cache.get(key) or read_json(entry_path, None)
-        if (
-            not saved
-            or not (
-                self.directory / (saved["id"] + "." + self.config.get("format", "opus"))
-            ).is_file()
+        if not saved or not asset_available(
+            self.audio_file(saved["id"]),
+            f"audio/{saved['id']}.{self.config.get('format', 'opus')}",
+            remote,
         ):
             if not prepare:
                 return None
@@ -376,7 +398,6 @@ class AudioLibrary:
                 output.replace(target)
             print(
                 f"Prepared {variant} audio: {source.stem} ({duration:.1f}s, {target.stat().st_size // 1024} KB)",
-                file=sys.stderr,
                 flush=True,
             )
             return {
@@ -395,8 +416,9 @@ class AudioLibrary:
 def preview(mid: int, diff: int) -> None:
     from scripts.sync import Catalog
 
-    library = AudioLibrary(Catalog(resolve_proxy()).details)
-    record = library.get(mid, diff)
+    with redirect_stdout(sys.stderr):
+        library = AudioLibrary(Catalog(resolve_proxy()).details)
+        record = library.get(mid, diff)
     if record:
         record["url"] = (
             "/api/audio-file?id=" + record["id"] + "&format=" + record["format"]
@@ -412,7 +434,7 @@ def plan_audio(library: AudioLibrary) -> dict[str, Any]:
         library.source(*map(int, key.split(":"))) for key in library.details.metadata
     }
     sources.discard(None)
-    path = ROOT / ".local/audio-plan.json"
+    path = metadata_path("audio-plan.json", ROOT)
     saved = read_json(path, {})
     previous = {row["path"]: row for row in saved.get("sources", [])}
     probe = tools(library.config)[1]
@@ -472,7 +494,6 @@ def plan_audio(library: AudioLibrary) -> dict[str, Any]:
         write_json(path, plan)
         print(
             f"Audio plan: {len(rows)} tracks, {bitrate} kbps Opus, estimated {seconds * bitrate * 1000 / 8 / 1e9:.2f} GB before overhead.",
-            file=sys.stderr,
             flush=True,
         )
     return plan
@@ -555,7 +576,9 @@ def sync_audio(
         raise ValueError("Set a public HTTPS audio URL in optional-setup.bat")
     library = getattr(catalog, "audio_library", None)
     if library is None or library.config != audio:
-        library = catalog.audio_library = AudioLibrary(catalog.details, audio)
+        library = catalog.audio_library = AudioLibrary(
+            catalog.details, audio, upload_only=True
+        )
     library.details.refresh()
     if audio.get("format", "opus") == "opus":
         plan = plan_audio(library)
@@ -572,7 +595,7 @@ def sync_audio(
     if client is None or getattr(catalog, "audio_client_config", None) != audio:
         client = catalog.audio_client = r2_client(audio)
         catalog.audio_client_config = dict(audio)
-    checkpoint = ROOT / ".local/audio-sync.json"
+    checkpoint = sync_path("audio-sync.json", ROOT)
     state = read_json(checkpoint, {})
     destination = hashlib.sha256(
         json.dumps([endpoint_id, audio["endpoint"], audio["bucket"], public]).encode()
@@ -593,7 +616,7 @@ def sync_audio(
     if audio.get("variant", "full") == "full":
         from scripts.chart_effects import prepare_bank
 
-        bank = prepare_bank(catalog.details.music.base_root)
+        bank = prepare_bank(catalog.details.music.base_root, remote=inventory)
         if bank:
             bank_key = f"effects/{bank['id']}.wav"
             bank_file = ROOT / ".local" / bank_key
@@ -646,7 +669,7 @@ def sync_audio(
         if source is None or library.failures.get(str(source), 0) > time.monotonic():
             continue
         try:
-            record = library.get(mid, diff, prepare=False)
+            record = library.get(mid, diff, prepare=False, remote=inventory)
             if record is None:
                 if prepared >= 2:
                     catalog.audio_pending = True
@@ -654,7 +677,7 @@ def sync_audio(
                     # Publish those mappings without waiting for more conversion.
                     continue
                 prepared += 1
-                record = library.get(mid, diff)
+                record = library.get(mid, diff, remote=inventory)
         except (OSError, ValueError, RuntimeError) as error:
             # One unsupported custom container must not stall the whole library.
             library.failures[str(source)] = time.monotonic() + 3600
@@ -666,15 +689,23 @@ def sync_audio(
         if not record:
             continue
         object_key = f"audio/{record['id']}.{codec}"
+        if object_key in inventory:
+            remove_staged(
+                library.audio_file(record["id"]), ROOT / ".local/audio-upload"
+            )
         record["url"] = public + "/" + quote(object_key, safe="/")
         if record["variant"] == "full":
             from scripts.chart_view import prepare
 
-            timeline = prepare(catalog.details, mid, diff)
+            timeline = prepare(catalog.details, mid, diff, remote=inventory)
             if timeline:
                 chart_id, chart_file = timeline
                 chart_key = f"charts/{chart_id}.json"
-                size = chart_file.stat().st_size
+                size = (
+                    inventory[chart_key]
+                    if chart_key in inventory
+                    else chart_file.stat().st_size
+                )
                 if (
                     chart_key in inventory
                     or not limit_bytes
@@ -694,11 +725,13 @@ def sync_audio(
                         inventory[chart_key] = size
                         used_bytes += size
                     record["chart_url"] = public + "/" + chart_key
+                    remove_staged(chart_file, ROOT / ".local/chart-upload")
         digest = hashlib.sha256(json.dumps(record, sort_keys=True).encode()).hexdigest()
         if state["charts"].get(key) == digest and record["id"] in known:
             continue
         if record["id"] not in known:
-            size = (library.directory / (record["id"] + "." + codec)).stat().st_size
+            audio_file = library.audio_file(record["id"])
+            size = audio_file.stat().st_size
             if (
                 limit_bytes
                 and used_bytes - inventory.get(object_key, 0) + size > limit_bytes
@@ -711,7 +744,7 @@ def sync_audio(
                     catalog.audio_budget_message = used_bytes
                 break
             client.upload_file(
-                str(library.directory / (record["id"] + "." + codec)),
+                str(audio_file),
                 audio["bucket"],
                 object_key,
                 ExtraArgs={
@@ -724,6 +757,7 @@ def sync_audio(
             known.add(record["id"])
             state["objects"] = sorted(known)
             write_json(checkpoint, state)
+            remove_staged(audio_file, ROOT / ".local/audio-upload")
             print(f"Uploaded audio {mid} ({record['duration']:.1f}s)", flush=True)
         batch.append(record)
         hashes[key] = digest

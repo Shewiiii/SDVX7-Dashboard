@@ -5,7 +5,8 @@ import sys
 from contextlib import redirect_stdout
 
 from scripts.companion import resolve_proxy
-from scripts.sync import Catalog, export_preview
+from scripts.preview_assets import PreviewCatalog as Catalog
+from scripts.sync import export_preview
 
 
 def main() -> None:
@@ -20,9 +21,21 @@ def main() -> None:
                     catalog = Catalog(resolve_proxy())
                 export_preview(catalog)
             print(json.dumps({"ok": True}), flush=True)
-        except Exception as error:
-            print(f"Preview export failed: {type(error).__name__}: {error}", file=sys.stderr, flush=True)
-            print(json.dumps({"ok": False, "error": f"Preview export failed ({type(error).__name__})"}), flush=True)
+        except Exception as error:  # noqa: BLE001
+            print(
+                f"Preview export failed: {type(error).__name__}: {error}",
+                file=sys.stderr,
+                flush=True,
+            )
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "error": f"Preview export failed ({type(error).__name__})",
+                    }
+                ),
+                flush=True,
+            )
             catalog = None
 
 

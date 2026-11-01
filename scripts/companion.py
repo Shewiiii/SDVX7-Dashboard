@@ -9,9 +9,10 @@ from types import ModuleType
 from typing import Any
 
 from scripts.layout import proxy_root, validate_proxy
+from scripts.local_config import config_path as local_config_path
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG_PATH = ROOT / ".local/sync-config.json"
+CONFIG_PATH = local_config_path("sync-config.json", ROOT)
 
 
 def with_https(value: str) -> str:

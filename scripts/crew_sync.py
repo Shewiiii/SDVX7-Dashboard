@@ -21,6 +21,7 @@ from scripts.crews import (
     prepare_catalog,
     selected_crew,
 )
+from scripts.local_config import protected_path, sync_path
 
 
 def source_signature(config: dict[str, Any]) -> str:
@@ -41,7 +42,6 @@ def source_signature(config: dict[str, Any]) -> str:
             for file in (source.parent / "sound/voice").rglob("*")
             if file.is_file()
         )
-    files.extend(file for file in (ROOT / ".local/crew-tools").glob("*.js"))
     stats = [
         (str(file), file.stat().st_size, file.stat().st_mtime_ns)
         for file in sorted(files)
@@ -103,13 +103,18 @@ def entry_signature(entry: dict[str, Any], config: dict[str, Any]) -> str:
 
 
 def prepared_assets(
-    entry: dict[str, Any], config: dict[str, Any], state: dict[str, Any]
+    entry: dict[str, Any],
+    config: dict[str, Any],
+    state: dict[str, Any],
+    remote: dict[str, int] | None = None,
 ) -> dict[str, Path]:
     signature = entry_signature(entry, config)
     prepared = state.setdefault("prepared", {})
     previous = prepared.get(entry["key"], {})
     files = previous.get("files", {})
     if previous.get("signature") == signature and files:
+        if remote is not None and remote_assets(files, state, remote):
+            return {name: Path(record[0]) for name, record in files.items()}
         for path, size, modified in files.values():
             file = Path(path)
             if not file.is_file():
@@ -130,11 +135,22 @@ def prepared_assets(
     return objects
 
 
+def remote_assets(
+    files: dict[str, Any], state: dict[str, Any], remote: dict[str, int]
+) -> bool:
+    return bool(files) and all(
+        name in state.get("objects", {}) and remote.get("crews/" + name) == size
+        for name, (_, size, _) in files.items()
+    )
+
+
 def sync_crews(catalog: Any) -> None:
     config = read_json(CONFIG, {})
     catalog.crew_pending = False
     if config.get("mode") != "r2":
         return
+    from scripts.crew_setup import RUNTIMES, download
+
     # Scan the game folders once per short batch instead of once per crew.
     audio = configuration()
     settings = [config.get("voices_enabled", True), audio["format"], audio["bitrate"]]
@@ -146,7 +162,7 @@ def sync_crews(catalog: Any) -> None:
         catalog.crew_source_settings = settings
         catalog.crew_source_checked_at = time.monotonic()
     signature = catalog.crew_source_signature
-    checkpoint = ROOT / ".local/crew-sync.json"
+    checkpoint = sync_path("crew-sync.json", ROOT)
     state = read_json(checkpoint, {})
     destination = [config["endpoint"], config["bucket"], config["public_url"]]
     if state.get("destination") != destination:
@@ -166,14 +182,18 @@ def sync_crews(catalog: Any) -> None:
         not hasattr(catalog, "crew_assets_catalog")
         or getattr(catalog, "crew_signature", None) != signature
     ):
-        catalog.crew_assets_catalog = prepare_catalog()
+        assets = (
+            state.get("catalog")
+            if state.get("catalog_signature") == signature
+            else None
+        )
+        catalog.crew_assets_catalog = assets or prepare_catalog(prepare_assets=False)
+        state["catalog"] = catalog.crew_assets_catalog
+        state["catalog_signature"] = signature
         catalog.crew_signature = signature
     assets = catalog.crew_assets_catalog
     entries = assets["crews"]
     if not entries:
-        return
-    if state.get("complete"):
-        catalog.crew_pending = False
         return
     if changed:
         # Retain completed crews whose own inputs are unchanged.
@@ -220,6 +240,50 @@ def sync_crews(catalog: Any) -> None:
         catalog.crew_inventory = inventory
         catalog.crew_inventory_destination = destination
         catalog.crew_inventory_at = time.monotonic()
+    ready = set(state.get("ready", []))
+    previously_ready = set(ready)
+    prepared = state.get("prepared", {})
+    for entry in entries:
+        if entry["key"] not in ready:
+            continue
+        previous = prepared.get(entry["key"], {})
+        if previous.get("signature") != entry_signature(
+            entry, config
+        ) or not remote_assets(previous.get("files", {}), state, inventory):
+            ready.discard(entry["key"])
+    state["ready"] = [row["key"] for row in entries if row["key"] in ready]
+
+    def runtime_ready(name: str) -> bool:
+        if "crews/runtime/" + name not in inventory:
+            return False
+        path = protected_path("crew-tools", ROOT) / name
+        if not path.is_file():
+            return True
+        info = path.stat()
+        stamp = [str(path), info.st_size, info.st_mtime_ns]
+        return (
+            state.get("fingerprints", {}).get("runtime/" + name, {}).get("stamp")
+            == stamp
+        )
+
+    if len(ready) != len(entries):
+        state["complete"] = False
+        if previously_ready != ready:
+            cursor = next(
+                (
+                    index
+                    for index, entry in enumerate(entries)
+                    if entry["key"] not in ready
+                ),
+                0,
+            )
+    elif (
+        state.get("complete")
+        and "crews/catalog.json" in inventory
+        and all(runtime_ready(name) for name in RUNTIMES)
+    ):
+        write_json(checkpoint, state)
+        return
     used = sum(inventory.values())
     limit = int(
         (9 if audio["format"] == "opus" else float(audio.get("storage_limit_gb", 9.5)))
@@ -262,9 +326,15 @@ def sync_crews(catalog: Any) -> None:
         fingerprints = state.setdefault("fingerprints", {})
         for name, file in objects.items():
             key = "crews/" + name
+            previous = fingerprints.get(name, {})
+            if (
+                not file.is_file()
+                and state["objects"].get(name) == previous.get("digest")
+                and key in inventory
+            ):
+                continue
             info = file.stat()
             stamp = [str(file), info.st_size, info.st_mtime_ns]
-            previous = fingerprints.get(name, {})
             if previous.get("stamp") == stamp:
                 digest = previous["digest"]
             else:
@@ -336,13 +406,13 @@ def sync_crews(catalog: Any) -> None:
         upload({"catalog.json": path})
         state["ready"] = [row["key"] for row in entries if row["key"] in ready]
 
-    from scripts.crew_setup import RUNTIMES, download
-
-    runtime_dir = ROOT / ".local/crew-tools"
+    runtime_dir = protected_path("crew-tools", ROOT)
     runtime_dir.mkdir(parents=True, exist_ok=True)
     runtimes = {}
     for name, url in RUNTIMES.items():
         target = runtime_dir / name
+        if not target.is_file() and "crews/runtime/" + name in inventory:
+            continue
         if not target.is_file():
             print(f"Downloading missing crew runtime {name}...", flush=True)
             download(url, target)
@@ -356,7 +426,7 @@ def sync_crews(catalog: Any) -> None:
     entry = entries[cursor]
     crew_label = f"{entry.get('name', 'Unknown crew')} (#{entry['id']})"
     try:
-        objects = prepared_assets(entry, config, state)
+        objects = prepared_assets(entry, config, state, inventory)
     except (OSError, ValueError, RuntimeError) as error:
         state.setdefault("failed", []).append(entry["key"])
         print(

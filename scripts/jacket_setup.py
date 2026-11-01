@@ -56,5 +56,5 @@ def main() -> None:
     print("Saved locally. Restart the dashboard or preview to apply.")
     if choice == "2":
         print(
-            "Deploy the updated dashboard with update-dashboard.bat. Progress appears in the console and .local/sync.log."
+            "Deploy the updated dashboard with update-dashboard.bat. Progress appears in the console and .local/do-not-delete/sync/sync.log."
         )

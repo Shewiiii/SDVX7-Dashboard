@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.companion import ROOT
+from scripts.local_config import metadata_path
 
 logger = logging.getLogger(__name__)
 
@@ -63,13 +64,36 @@ def schedule(
     }
 
 
-def prepare_bank(base_root: Path) -> dict[str, Any] | None:
+def prepare_bank(
+    base_root: Path, *, remote: dict[str, int] | None = None
+) -> dict[str, Any] | None:
     path = Path(base_root) / "sound/ver5/general_sampler.s3p"
     try:
         stat = path.stat()
     except FileNotFoundError:
         return None
-    return _bank_result(str(path), stat.st_size, stat.st_mtime_ns)
+    from scripts.audio import read_json, write_json
+
+    index_path = metadata_path("effects/source-index.json", ROOT)
+    signature = [str(path), stat.st_size, stat.st_mtime_ns, 1]
+    saved = read_json(index_path, {})
+    if saved.get("signature") == signature:
+        record = saved.get("record")
+        if record and remote is not None and f"effects/{record['id']}.wav" in remote:
+            return record
+    if remote is not None:
+        digest = hashlib.sha256(b"chart-samples-v1\0" + path.read_bytes()).hexdigest()
+        record = read_json(metadata_path(f"effects/{digest}.json", ROOT), None)
+        if record and f"effects/{digest}.wav" in remote:
+            write_json(index_path, {"signature": signature, "record": record})
+            return record
+    result = _bank_result(str(path), stat.st_size, stat.st_mtime_ns)
+    if result and not (ROOT / ".local/effects" / f"{result['id']}.wav").is_file():
+        _bank_result.cache_clear()
+        result = _bank_result(str(path), stat.st_size, stat.st_mtime_ns)
+    if result:
+        write_json(index_path, {"signature": signature, "record": result})
+    return result
 
 
 @lru_cache(maxsize=4)
@@ -97,7 +121,7 @@ def _prepare_bank(path: str, size: int, modified: int) -> dict[str, Any]:
     digest = hashlib.sha256(b"chart-samples-v1\0" + raw).hexdigest()
     directory = ROOT / ".local/effects"
     target = directory / (digest + ".wav")
-    manifest = directory / (digest + ".json")
+    manifest = metadata_path(f"effects/{digest}.json", ROOT)
     if target.is_file() and manifest.is_file():
         return json.loads(manifest.read_text(encoding="utf-8"))
     ffmpeg, _ = tools(configuration())

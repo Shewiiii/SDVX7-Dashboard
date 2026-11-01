@@ -88,7 +88,7 @@ export function createFrameLimiter(getLimit) {
 }
 
 // Choose the BPM with the longest cumulative duration, then keep
-// HiSpeed = ModSpeed / that BPM fixed, with a fixed distance per beat
+// HiSpeed = ModSpeed / that BPM fixed, with beat spacing proportional to lane width
 export function chartTiming(chart) {
     if (timingCache.has(chart)) return timingCache.get(chart);
     let beat = 0;
@@ -416,7 +416,7 @@ export function drawChart(
     ctx.beginPath();
     ctx.rect(viewLeft, top, viewWidth, Math.max(0, viewBottom - top));
     ctx.clip();
-    const speed = BASE_PIXELS_PER_BEAT * hiSpeed;
+    const speed = BASE_PIXELS_PER_BEAT * (track / BASE_TRACK_WIDTH) * hiSpeed;
     const now = timing.beatAt(time),
         lastBeat = now + (bottom - top) / speed;
     const y = (at) => bottom - (at - now) * speed;

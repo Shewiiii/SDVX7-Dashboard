@@ -492,7 +492,7 @@ export function mountAudioPlayer(host, chart, plots, options = {}) {
             if (disposed) return;
             status.textContent =
                 options.unavailableLabel ||
-                "Audio isn’t available for this chart yet.";
+                "Audio isn’t available for this chart yet";
             options.onUnavailable?.();
             retry.hidden = false;
         }

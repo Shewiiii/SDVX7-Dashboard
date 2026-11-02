@@ -23,8 +23,8 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
 
 ## Requirements
 
-- Python 3.10+
-- NodeJS 22.5+
+- [Python 3.10+](https://www.python.org/downloads/)
+- [NodeJS 22.5+](https://nodejs.org/en/download)
 - A [Vercel account](https://vercel.com/signup)
 
 ## Setup

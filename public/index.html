@@ -633,23 +633,38 @@
                                 aria-label="Page number"
                                 hidden
                             />
-                            / <span id="records-total-pages">1</span></span
+                            /
+                            <span id="records-total-pages" data-pagination-total
+                                >1</span
+                            ></span
                         >
                         <div>
                             <button
                                 type="button"
                                 id="first-page"
+                                data-pagination-action="first"
                                 aria-label="First page"
                             >
                                 ⇇
                             </button>
-                            <button id="previous" aria-label="Previous page">
+                            <button
+                                id="previous"
+                                data-pagination-action="previous"
+                                aria-label="Previous page"
+                            >
                                 ←
                             </button>
-                            <button id="next" aria-label="Next page">→</button>
+                            <button
+                                id="next"
+                                data-pagination-action="next"
+                                aria-label="Next page"
+                            >
+                                →
+                            </button>
                             <button
                                 type="button"
                                 id="last-page"
+                                data-pagination-action="last"
                                 aria-label="Last page"
                             >
                                 ⇉
@@ -761,19 +776,60 @@
                             </table>
                         </div>
                         <div class="pagination">
-                            <span id="song-search-page-info"></span>
+                            <span id="song-search-page-info"
+                                >Page
+                                <button
+                                    type="button"
+                                    id="song-search-page-number"
+                                    class="pagination-page-number"
+                                    aria-label="Enter page number"
+                                >
+                                    1</button
+                                ><input
+                                    type="number"
+                                    id="song-search-page-input"
+                                    class="pagination-page-input"
+                                    min="1"
+                                    step="1"
+                                    inputmode="numeric"
+                                    aria-label="Page number"
+                                    hidden
+                                />
+                                /
+                                <span id="song-search-total-pages" data-pagination-total
+                                    >1</span
+                                ></span
+                            >
                             <div>
                                 <button
+                                    type="button"
+                                    id="song-search-first-page"
+                                    data-pagination-action="first"
+                                    aria-label="First song scores page"
+                                >
+                                    ⇇
+                                </button>
+                                <button
                                     id="song-search-previous"
+                                    data-pagination-action="previous"
                                     aria-label="Previous song scores page"
                                 >
                                     ←
                                 </button>
                                 <button
                                     id="song-search-next"
+                                    data-pagination-action="next"
                                     aria-label="Next song scores page"
                                 >
                                     →
+                                </button>
+                                <button
+                                    type="button"
+                                    id="song-search-last-page"
+                                    data-pagination-action="last"
+                                    aria-label="Last song scores page"
+                                >
+                                    ⇉
                                 </button>
                             </div>
                         </div>

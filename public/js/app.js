@@ -504,7 +504,17 @@ function chartSummaryMarkup(
             )
             .map((play) => play.timing),
     );
-    return `<div class="selected-summary"><span>Clear mark: ${mark === null ? "—" : CLEARS[mark]}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span><button type="button" class="chart-vf-trigger" aria-describedby="chart-vf-popup" data-chart-vf-description="${escape(popupText)}">Chart VF: <span class="chart-vf-value">${vf(chartVf)}</span></button><span>Timing: ${timingText(averageTiming)}</span></div>`;
+    const clearLabel =
+        mark === null
+            ? "—"
+            : mark >= 2 && mark <= 4
+              ? `${CLEARS[mark]} Clear`
+              : CLEARS[mark];
+    const clearIcon =
+        mark === null
+            ? ""
+            : `<img class="clear-mark-icon" src="/assets/clear-marks/${CLEARS[mark].toLowerCase().replaceAll(" ", "-")}.png" alt="" aria-hidden="true" width="26" height="20">`;
+    return `<div class="selected-summary"><span class="selected-clear">${clearIcon}${clearLabel}</span><button type="button" class="chart-vf-trigger" aria-describedby="chart-vf-popup" data-chart-vf-description="${escape(popupText)}">Chart VF: <span class="chart-vf-value">${vf(chartVf)}</span></button><span>Timing: ${timingText(averageTiming)}</span><span>${plays.length} ${plays.length === 1 ? "play" : "plays"}</span></div>`;
 }
 
 function playAttributes(play) {

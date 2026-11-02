@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 SCHEMA = 5
 PEAKS = 128
-BUDGET_BYTES = 9_000_000_000
+BUDGET_BYTES = 9_500_000_000
 CONFIG = local_config_path("audio-config.json", ROOT)
 
 
@@ -483,7 +483,7 @@ def plan_audio(library: AudioLibrary) -> dict[str, Any]:
     # Opus supports up to 510 kbps, reserve 3% for container overhead/variation.
     bitrate = min(510, int(BUDGET_BYTES * 0.97 * 8 / max(1, seconds) / 1000))
     if bitrate < 6:
-        raise ValueError("The audio library is too large for the 9 GB budget")
+        raise ValueError("The audio library is too large for the 9.5 GB budget")
     plan = {
         "sources": rows,
         "seconds": seconds,
@@ -587,7 +587,7 @@ def sync_audio(
             library.config = dict(audio)
             write_json(CONFIG, audio)
     codec = audio.get("format", "opus")
-    limit_gb = 9 if codec == "opus" else float(audio.get("storage_limit_gb", 9.5))
+    limit_gb = float(audio.get("storage_limit_gb", 9.5))
     if not math.isfinite(limit_gb) or limit_gb < 0:
         raise ValueError("Invalid audio storage limit")
     limit_bytes = int(limit_gb * 1e9)

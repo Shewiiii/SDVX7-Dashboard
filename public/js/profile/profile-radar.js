@@ -20,10 +20,10 @@ export function createProfileRadar(root, note) {
             motion.stop(root);
             if (!validRadar(radar?.values)) {
                 const message = pending
-                    ? "Sync your saved scores to load the radar without custom charts."
+                    ? "Sync your saved scores to load the radar without custom charts"
                     : source
-                      ? "No eligible saved scores for the profile radar."
-                      : "Profile radar will appear after your saved scores sync.";
+                      ? "No eligible saved scores"
+                      : "No data available";
                 root.innerHTML = `<p class="profile-radar-empty">${message}</p>`;
                 note.hidden = true;
                 return;

@@ -277,8 +277,8 @@ export function createAppealCardHelper(getState) {
             const empty = document.createElement("p");
             empty.className = "appeal-helper-empty";
             empty.textContent = cards.length
-                ? "No matching appeal cards."
-                : "No appeal cards available yet.";
+                ? "No matching appeal cards"
+                : "No appeal cards available yet";
             fragment.append(empty);
         }
         grid.replaceChildren(fragment);

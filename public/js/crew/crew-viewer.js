@@ -545,7 +545,7 @@ export function createCrewViewer(dialog, getState) {
         if (!crews.length) {
             const empty = document.createElement("p");
             empty.className = "settings-hint";
-            empty.textContent = "No matching crew members.";
+            empty.textContent = "No matching crew members";
             strip.append(empty);
         }
         strip.scrollTop = scrollTop;

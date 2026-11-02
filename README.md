@@ -36,13 +36,15 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
 
 \*Note: If you do this, then score a play that makes your top 50 change, the performance history will consider that play to have been played before the beginning of the tracking, making the Total VF graph slightly inaccurate.
 
-## Updates
+## Update
 
-Replace the application files while retaining `.local/` and `.vercel/`, run `update-dashboard.bat`, then restart `run-proxy-with-dashboard.bat`.
+- Keep `.local/` and `.vercel/` but delete everything else in `SDVX7-Dashboard-main/`.
+- Download the ZIP of this repository under Code, unzip it, and move everything in the folder you just emptied.
+- Run `update-dashboard.bat`, then restart `run-proxy-with-dashboard.bat`.
 
-Do the same with [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy) and keep `cache/` and `player-data/`.
+Do the same with [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy) while keeping `cache/` and `player-data/` if new commits have been made to it.
 
-Connection settings and sync logs are in `.local/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
+Connection settings and sync logs are under `.local/do-not-delete/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
 
 ## Migration from SDVX ∇ VolForce Tracker
 
@@ -58,11 +60,11 @@ To migrate:
 
 You can enable the following features, but they require a lot of storage. You will either need to use them locally, or use [R2](https://www.cloudflare.com/products/r2/).
 
+> [!IMPORTANT]
+> To create an R2 API token, you need an R2 subscription. 10GB is included in the free plan, but **you cannot hard cap storage on R2, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** However, Opus songs or FLAC previews should fit within 10GB, and the dashboard should limit uploads exceeding 9.5GB.
 
 > [!IMPORTANT]
-> To create an R2 API token, you need an R2 subscription. 10GB is included in the free plan, but **you cannot hard cap storage on R2, so if it exceeds 10GB, you will be billed $0.015 per GB per month.** Full Opus songs or FLAC previews should fit within 10GB (with all in-game charts+default custom charts), but **I do not recommend setting it up** nonetheless to avoid any accident.
->
-> Instead, [use my dashboard](https://sdvx.shewi.app/).
+> If the dashboard is active on 2 PCs or more, enable the following features on only one PCs !
 
 ## Audio setup
 

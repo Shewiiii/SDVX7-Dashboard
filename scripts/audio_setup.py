@@ -310,15 +310,15 @@ def main() -> None:
                 "I recommend deleting your old bucket if you want "
                 "to change audio format or length."
             )
-            keep_limit = prompt("Keep the 9 GB upload limit? (Y/n)", "n").lower()
+            keep_limit = prompt("Keep the 9.5 GB upload limit? (Y/n)", "n").lower()
             if keep_limit not in ("y", "yes", "n", "no"):
                 raise ValueError("Choose Y or n.")
-            config["storage_limit_gb"] = 9 if keep_limit in ("y", "yes") else 0
+            config["storage_limit_gb"] = 9.5 if keep_limit in ("y", "yes") else 0
             if not config["storage_limit_gb"]:
                 print("Storage limit disabled.")
         else:
-            config["storage_limit_gb"] = 9
-            print("Measuring unique tracks for the 9 GB Opus budget...")
+            config["storage_limit_gb"] = 9.5
+            print("Calculating bitrate...")
             config["bitrate"] = plan_audio(
                 AudioLibrary(Catalog(resolve_proxy()).details, config)
             )["bitrate"]

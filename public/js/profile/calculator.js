@@ -277,7 +277,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             : "";
         $("matches").innerHTML = matches.length
             ? matches.map((chart) => renderChartRow(chart, chart.rank)).join("")
-            : `<div class="empty-list">${chartFilter ? "No recorded plays for this chart yet." : "No matching Top 50 charts."}</div>`;
+            : `<div class="empty-list">${chartFilter ? "No recorded plays for this chart yet" : "No matching charts"}</div>`;
 
         for (const chart of charts) {
             const value = state.mode === "score" ? chart.score : chart.level;

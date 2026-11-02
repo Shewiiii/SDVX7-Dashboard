@@ -92,7 +92,7 @@ export function initSearchTools(onReady) {
                 message(
                     data.rows.length
                         ? ""
-                        : "Additional search metadata hasn’t synced yet.",
+                        : "Additional search metadata hasn’t synced yet",
                 );
                 onReady();
             } catch {
@@ -100,8 +100,8 @@ export function initSearchTools(onReady) {
                 checkedAt = Date.now() - 240000;
                 message(
                     installed
-                        ? "Using saved search metadata; could not check for updates."
-                        : "Additional search metadata unavailable. Refocus search in a minute to retry.",
+                        ? "Using saved search metadata, could not check for updates"
+                        : "Additional search metadata unavailable",
                 );
             } finally {
                 task = null;

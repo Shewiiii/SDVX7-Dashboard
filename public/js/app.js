@@ -639,7 +639,7 @@ function renderSummary({ animate = true } = {}) {
         link.textContent = label;
         link.title = label;
         $("best-title").replaceChildren(link);
-    } else setText("best-title", "No saved charts yet");
+    } else setText("best-title", "No data available");
     setText("play-count", number(data.plays.length));
     setText(
         "play-detail",
@@ -667,7 +667,7 @@ function renderSummary({ animate = true } = {}) {
         "session-meta",
         latest.length
             ? `${date(latest[0].received_at)} · ${clock(latest[0].received_at)}–${clock(latest.at(-1).received_at)} · ${latest.length} plays`
-            : "No sessions recorded yet",
+            : "No data available",
     );
     $("recent-plays").innerHTML = latest.length
         ? [...latest]
@@ -675,18 +675,16 @@ function renderSummary({ animate = true } = {}) {
               .slice(0, 5)
               .map((p) => row(p))
               .join("")
-        : '<div class="empty-list">No plays yet.</div>';
+        : '<div class="empty-list">No data available</div>';
     $("top-plays").innerHTML = stats.top.length
         ? stats.top
               .slice(0, 5)
               .map((p, i) => row(p, i + 1))
               .join("")
-        : '<div class="empty-list">No saved charts.</div>';
+        : '<div class="empty-list">No data available</div>';
     setText(
         "top-foot",
-        stats.top.length
-            ? `Top ${stats.top.length} average: ${vf(average(stats.top.map((p) => p.vf)))} VF`
-            : "Your strongest saved charts",
+        `Top ${stats.top.length} average: ${vf(average(stats.top.map((p) => p.vf)) ?? 0)} VF`,
     );
     renderSpark();
     if (animate) {
@@ -758,7 +756,7 @@ function renderTimingHistogram({ animate = true } = {}) {
     svg.toggleAttribute("hidden", !stats.hits);
     $("timing-empty").hidden = !!stats.hits;
     if (!stats.hits) {
-        setText("timing-summary", "No recorded timing in this range.");
+        setText("timing-summary", "No data available");
         return;
     }
     const mobile = window.matchMedia("(max-width: 900px)").matches;
@@ -1030,7 +1028,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     if (!plays.length) {
         setText(
             "chart-summary",
-            "No cleared plays in this range. Try another range or difficulty.",
+            "No data available",
         );
         return;
     }
@@ -1751,7 +1749,7 @@ function renderTable({ animate = true } = {}) {
         ? chunk
               .map((record) => recordRow(record, { top, grouped, playCounts }))
               .join("")
-        : `<tr><td colspan="6">${escape(parseSearch($("search").value).errors[0] || "No matching charts.")}</td></tr>`;
+        : `<tr><td class="empty-state" colspan="6">${escape(parseSearch($("search").value).errors[0] || "No matching charts")}</td></tr>`;
     setText("records-page-number", page + 1);
     setText("records-total-pages", pages);
     $("records-page-number").disabled = false;
@@ -1840,7 +1838,7 @@ function renderMatches() {
                       `<button type="button" role="option" id="song-option-${index}" aria-selected="false" tabindex="-1" class="song-option" data-option="${index}">${coverMarkup(p)}<span class="option-song"><span>${escape(chartTitle(p))}</span><small>${escape(p.artist)}</small></span>${difficultyRange(p)}</button>`,
               )
               .join("")
-        : `<div class="search-empty">${escape(parseSearch($("song-query").value).errors[0] || "No matching song.")}</div>`;
+        : `<div class="search-empty">${escape(parseSearch($("song-query").value).errors[0] || "No matching song")}</div>`;
     list.scrollTop = 0;
     list.hidden = false;
     $("song-query").setAttribute("aria-expanded", "true");
@@ -2080,7 +2078,7 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
                   return `<tr id="song-score-${index}" class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
               })
               .join("")
-        : '<tr><td colspan="5">No recorded nonzero plays for this chart yet.</td></tr>';
+        : '<tr><td class="empty-state" colspan="5">No data available</td></tr>';
     setText(
         "song-search-page-info",
         `${plays.length} plays · Page ${songSearchPage + 1} / ${pages}`,
@@ -2411,21 +2409,21 @@ async function load({ fresh = false, check = false, live = false } = {}) {
             error.code === "DATABASE_QUOTA_EXCEEDED"
                 ? "Database quota exceeded. Check Neon usage to restore access. Your local records are still saved."
                 : data
-                  ? "Could not update. Showing the last loaded records. Retrying automatically."
-                  : "No data available. Try again after syncing.",
+                  ? "Could not update. Showing the last loaded records. Retrying automatically"
+                  : "No data available. Try again after syncing",
         );
         $("notice").hidden = false;
         if (!data) {
-            setText("chart-summary", "Waiting for your archive.");
+            setText("chart-summary", "No data available");
             for (const id of ["recent-plays", "top-plays"])
                 $(id).innerHTML =
-                    '<div class="empty-list">No data available yet.</div>';
+                    '<div class="empty-list">No data available</div>';
             $("records").innerHTML =
-                '<tr><td colspan="6">No data available yet.</td></tr>';
+                '<tr><td class="empty-state" colspan="6">No data available</td></tr>';
             $("song-search-records").innerHTML =
-                '<tr><td colspan="5">No data available yet.</td></tr>';
+                '<tr><td class="empty-state" colspan="5">No data available</td></tr>';
             $("selected-chart").hidden = true;
-            setText("timing-summary", "Waiting for timing data.");
+            setText("timing-summary", "No data available");
             for (const id of ["chart", "timing-chart"]) $(id).replaceChildren();
         }
     } finally {

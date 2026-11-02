@@ -176,7 +176,7 @@ export function createSimilarCharts(
         disposePlayers();
         list.replaceChildren();
         if (!matches.length) {
-            showMessage("No similar charts match these filters.");
+            showMessage("No similar charts match these filters");
             return;
         }
         const rows = [];

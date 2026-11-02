@@ -285,10 +285,7 @@ def sync_crews(catalog: Any) -> None:
         write_json(checkpoint, state)
         return
     used = sum(inventory.values())
-    limit = int(
-        (9 if audio["format"] == "opus" else float(audio.get("storage_limit_gb", 9.5)))
-        * 1e9
-    )
+    limit = int(float(audio.get("storage_limit_gb", 9.5)) * 1e9)
 
     uploaded = 0
 

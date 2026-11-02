@@ -354,9 +354,6 @@ def deploy(
     )
     config["url"] = prompt_origin("Aliased URL", config.get("url", ""))
     save_config(config)
-    print(
-        "For a public dashboard, production Deployment Protection must allow public access."
-    )
     return config
 
 

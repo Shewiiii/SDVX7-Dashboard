@@ -1120,10 +1120,16 @@ td.row-index + td {
     border-top: 0;
     padding: 12px var(--list-padding-inline);
 }
+.empty-state,
 .empty-list {
     color: var(--muted);
+}
+.empty-list {
     padding: 25px 0;
     font-size: 12px;
+}
+.play-list > .empty-list {
+    padding-inline: var(--list-padding-inline);
 }
 .top-list {
     padding-top: 0;

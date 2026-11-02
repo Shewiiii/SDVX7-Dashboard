@@ -473,7 +473,7 @@ export function createLibrary(
                 if (!items.length) {
                     const empty = document.createElement("p");
                     empty.className = "library-count";
-                    empty.textContent = "No matching charts.";
+                    empty.textContent = "No matching charts";
                     content.append(empty);
                 }
                 const pager = document.createElement("div");
@@ -601,7 +601,7 @@ export function createLibrary(
         }
         if (!visibleGroups)
             results.textContent =
-                parseSearch(query.value).errors[0] || "No matching songs.";
+                parseSearch(query.value).errors[0] || "No matching songs";
         document.getElementById("library-count").textContent = chartFolderMode(
             mode.value,
         )

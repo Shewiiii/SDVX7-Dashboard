@@ -1,5 +1,6 @@
 import { paintRadar, radarMarkup, validRadar } from "../profile/radar.js";
 import { showPanel } from "../core/panels.js";
+import { afterPanelHistory } from "../core/panel-history.js";
 import { dismissSearchKeyboard } from "../search/search-tools.js";
 import { mountAudioPlayer } from "../audio/audio-player.js";
 import { nextDifficulty } from "../library/difficulty.js";
@@ -325,7 +326,7 @@ export function createSimilarCharts(
         const musicId = Number(link.dataset.music);
         const diff = Number(link.dataset.diff);
         await close();
-        selectChart(musicId, diff);
+        afterPanelHistory(() => selectChart(musicId, diff));
     });
 
     return {

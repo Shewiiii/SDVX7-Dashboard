@@ -982,7 +982,7 @@ function renderTimingHistogram({ animate = true } = {}) {
         ),
     );
     $("timing-summary").innerHTML =
-        `<strong>${number(stats.plays)}</strong> plays · <strong>${number(stats.hits)}</strong> notes · Average <strong>${timingText(stats.average)}</strong>`;
+        `<span><strong>${number(stats.plays)}</strong> plays</span><span><strong>${number(stats.hits)}</strong> notes</span><span>Average <strong>${timingText(stats.average)}</strong></span>`;
     motion.histogram(svg, animate);
     if (animate) motion.data($("timing-summary"));
 }
@@ -1288,7 +1288,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     svg.append(crosshair, markers);
     hover = { series, x, start, end, left, right, crosshair, markers, width };
     $("chart-summary").innerHTML =
-        `<strong>${number(plays.length)}</strong> plays · Best <strong>${vf(bestPoints.length ? best : null)}</strong> · Average <strong>${vf(average(values))}</strong>`;
+        `<span><strong>${number(plays.length)}</strong> plays</span><span>Best <strong>${vf(bestPoints.length ? best : null)}</strong></span><span>Average <strong>${vf(average(values))}</strong></span>`;
     motion.history(svg, animate);
     if (animate) motion.data($("chart-summary"));
 }

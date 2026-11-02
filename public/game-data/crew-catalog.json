@@ -66,7 +66,7 @@
         {
             "id": 7,
             "key": "7-0",
-            "name": "Nianoa",
+            "name": "Nia & Noa",
             "type": "afp",
             "icon": "icon_nianoa_i_eab",
             "archive": "chara/chara_06a_nianoa.ifs",
@@ -194,7 +194,7 @@
         {
             "id": 24,
             "key": "24-0",
-            "name": "Th Reimu",
+            "name": "Touhou Reimu",
             "type": "afp",
             "icon": "icon_th_reimu_i_eab",
             "archive": "chara/chara_12a_reimu.ifs",
@@ -206,21 +206,21 @@
             "icon": "icon_th_cirno_i_eab",
             "portrait": "psd_crew_o_0038",
             "archive": "chara/chara_12b_reimu.ifs",
-            "name": "Th Cirno",
+            "name": "Touhou Cirno",
             "key": "25-0"
         },
         {
             "id": 26,
             "type": "image",
             "icon": "icon_th_sakuya_i_eab",
-            "name": "Th Sakuya",
+            "name": "Touhou Sakuya",
             "key": "26-0"
         },
         {
             "id": 27,
             "type": "image",
             "icon": "icon_th_flandre_i_eab",
-            "name": "Th Flandre",
+            "name": "Touhou Flandre",
             "key": "27-0"
         },
         {
@@ -233,7 +233,7 @@
         {
             "id": 29,
             "key": "29-0",
-            "name": "Nianoa Santa",
+            "name": "Nia & Noa Santa",
             "type": "afp",
             "icon": "icon_nianoa_santa_i_eab",
             "archive": "chara/chara_14a_nianoa_santa.ifs",
@@ -313,14 +313,14 @@
             "icon": "icon_flooranthem1_i_eab",
             "portrait": "psd_crew_o_0044",
             "archive": "chara/chara_18a_cocona.ifs",
-            "name": "Flooranthem1",
+            "name": "Flooranthem 1",
             "key": "37-0"
         },
         {
             "id": 38,
             "type": "image",
             "icon": "icon_flooranthem2_i_eab",
-            "name": "Flooranthem2",
+            "name": "Flooranthem 2",
             "key": "38-0"
         },
         {
@@ -475,7 +475,7 @@
             "icon": "icon_yukitokun_i_eab",
             "portrait": "psd_crew_o_0027",
             "archive": "chara/chara_24a_hiyuki.ifs",
-            "name": "Yukitokun",
+            "name": "Yukito-kun",
             "key": "57-0"
         },
         {
@@ -528,7 +528,7 @@
             "id": 64,
             "type": "image",
             "icon": "icon_grace2_i_eab",
-            "name": "Grace2",
+            "name": "Grace 2",
             "key": "64-0"
         },
         {
@@ -537,7 +537,7 @@
             "icon": "icon_30reigure_i_eab",
             "portrait": "psd_crew_o_0008",
             "archive": "chara/chara_30a_reigure.ifs",
-            "name": "30Reigure",
+            "name": "30 Rasis & Grace",
             "key": "65-0"
         },
         {
@@ -555,7 +555,7 @@
             "icon": "icon_36nianoa_kac_i_eab",
             "portrait": "psd_crew_o_0019",
             "archive": "chara/chara_32a_kac_nianoa.ifs",
-            "name": "36Nianoa Kac",
+            "name": "36 Nia & Noa KAC",
             "key": "67-0"
         },
         {
@@ -564,7 +564,7 @@
             "icon": "icon_35sakiko_i_eab",
             "portrait": "psd_crew_o_0040",
             "archive": "chara/chara_33a_sakiki.ifs",
-            "name": "35Sakiko",
+            "name": "35 Sakiko",
             "key": "68-0"
         },
         {
@@ -582,7 +582,7 @@
             "icon": "icon_37reigure_kac_i_eab",
             "portrait": "psd_crew_o_0009",
             "archive": "chara/chara_34a_kac_reigre.ifs",
-            "name": "37Reigure Kac",
+            "name": "37 Rasis & Grace KAC",
             "key": "70-0"
         },
         {
@@ -600,7 +600,7 @@
             "icon": "icon_35marisa_i_eab",
             "portrait": "psd_crew_o_0037",
             "archive": "chara/chara_35a_marisa.ifs",
-            "name": "35Marisa",
+            "name": "35 Marisa",
             "key": "72-0"
         },
         {
@@ -609,35 +609,35 @@
             "icon": "icon_th_reimuUR_i_eab",
             "portrait": "psd_crew_o_0037",
             "archive": "chara/chara_35a_marisa.ifs",
-            "name": "Th Reimuur",
+            "name": "Touhou Reimu UR",
             "key": "73-0"
         },
         {
             "id": 74,
             "type": "image",
             "icon": "icon_th_alice_i_eab",
-            "name": "Th Alice",
+            "name": "Touhou Alice",
             "key": "74-0"
         },
         {
             "id": 75,
             "type": "image",
             "icon": "icon_th_yuyuko_i_eab",
-            "name": "Th Yuyuko",
+            "name": "Touhou Yuyuko",
             "key": "75-0"
         },
         {
             "id": 76,
             "type": "image",
             "icon": "icon_th_yukari_i_eab",
-            "name": "Th Yukari",
+            "name": "Touhou Yukari",
             "key": "76-0"
         },
         {
             "id": 77,
             "type": "image",
             "icon": "icon_th_youmu_i_eab",
-            "name": "Th Youmu",
+            "name": "Touhou Youmu",
             "key": "77-0"
         },
         {
@@ -745,28 +745,28 @@
             "icon": "icon_th_merin_i_eab",
             "portrait": "psd_crew_o_0010",
             "archive": "chara/chara_44a_rasis_inaba.ifs",
-            "name": "Th Merin",
+            "name": "Touhou Merin",
             "key": "89-0"
         },
         {
             "id": 90,
             "type": "image",
             "icon": "icon_th_pachu_i_eab",
-            "name": "Th Pachu",
+            "name": "Touhou Pachu",
             "key": "90-0"
         },
         {
             "id": 91,
             "type": "image",
             "icon": "icon_th_chen_i_eab",
-            "name": "Th Chen",
+            "name": "Touhou Chen",
             "key": "91-0"
         },
         {
             "id": 92,
             "type": "image",
             "icon": "icon_th_ran_i_eab",
-            "name": "Th Ran",
+            "name": "Touhou Ran",
             "key": "92-0"
         },
         {
@@ -784,7 +784,7 @@
             "icon": "icon_rasis_qma_i_eab",
             "portrait": "psd_crew_o_0029",
             "archive": "chara/chara_45a_ortlinde_yukata.ifs",
-            "name": "Rasis Qma",
+            "name": "Rasis QMA",
             "key": "94-0"
         },
         {
@@ -810,14 +810,14 @@
             "type": "image",
             "icon": "icon_itsukiri01_i_eab",
             "portrait": "psd_crew_0003",
-            "name": "Itsukiri01",
+            "name": "Itsukiri 01",
             "key": "97-0"
         },
         {
             "id": 98,
             "type": "image",
             "icon": "icon_itsukiri02_i_eab",
-            "name": "Itsukiri02",
+            "name": "Itsukiri 02",
             "key": "98-0"
         },
         {
@@ -860,7 +860,7 @@
             "icon": "icon_nianoa_ver5_i_eab",
             "portrait": "psd_crew_0007",
             "model": "live2d/nianoa_ver5/nianoa_ver5_0101.model3.json",
-            "name": "Nianoa V",
+            "name": "Nia & Noa V",
             "key": "103-0"
         },
         {
@@ -913,14 +913,14 @@
             "type": "image",
             "icon": "icon_maru9th_i_eab",
             "portrait": "psd_crew_0012",
-            "name": "Maru9Th",
+            "name": "Maru 9th",
             "key": "110-0"
         },
         {
             "id": 111,
             "type": "image",
             "icon": "icon_nogito9th_i_eab",
-            "name": "Nogito9Th",
+            "name": "Nogito 9th",
             "key": "111-0"
         },
         {
@@ -938,7 +938,7 @@
             "icon": "icon_rasis_ver6_i_eab",
             "portrait": "psd_crew_0014",
             "model": "live2d/rasis_ver6/rasis_ver6_0101.model3.json",
-            "name": "Rasis Vi",
+            "name": "Rasis VI",
             "key": "113-0"
         },
         {
@@ -965,7 +965,7 @@
             "icon": "icon_rasis_ver4_i_eab",
             "portrait": "psd_crew_o_0005",
             "archive": "chara/chara_27a_4rasis.ifs",
-            "name": "Rasis Ver4",
+            "name": "Rasis IV",
             "key": "115-0"
         },
         {
@@ -974,7 +974,7 @@
             "icon": "icon_29rasis_change_i_eab",
             "portrait": "psd_crew_o_0006",
             "archive": "chara/chara_29a_4rasis_change.ifs",
-            "name": "29Rasis Change",
+            "name": "29 Rasis Change",
             "key": "115-1"
         },
         {
@@ -992,7 +992,7 @@
             "icon": "icon_grace_ver6_i_eab",
             "portrait": "psd_crew_0015",
             "model": "live2d/grace_ver6/grace_ver6_0101.model3.json",
-            "name": "Grace Vi",
+            "name": "Grace VI",
             "key": "117-0"
         },
         {
@@ -1001,7 +1001,7 @@
             "icon": "icon_grace_ver6april_i_eab",
             "portrait": "psd_crew_0016",
             "model": "live2d/grace_ver6april/grace_ver6april_0101.model3.json",
-            "name": "Grace Viapril",
+            "name": "Grace VI April (EXCEED Kamen)",
             "key": "118-0"
         },
         {
@@ -1010,7 +1010,7 @@
             "icon": "icon_tsumabuki_ver6_i_eab",
             "portrait": "psd_crew_0017",
             "model": "live2d/tsumabuki_ver6/tsumabuki_ver6_0101.model3.json",
-            "name": "Tsumabuki Vi",
+            "name": "Tsumabuki VI",
             "key": "119-0"
         },
         {
@@ -1019,7 +1019,7 @@
             "icon": "icon_nianoa_ver6mizugi_i_eab",
             "portrait": "psd_crew_0018",
             "model": "live2d/nianoa_ver6/nianoa_ver6_0101.model3.json",
-            "name": "Nianoa Vi",
+            "name": "Nia & Noa VI",
             "key": "120-0"
         },
         {
@@ -1028,7 +1028,7 @@
             "icon": "icon_kawoashi_ver6_halloween_i_eab",
             "portrait": "psd_crew_0019",
             "model": "live2d/kawoashi_ver6/kawoashi_ver6_0101.model3.json",
-            "name": "Kawoashi Vi",
+            "name": "Kawoashi VI",
             "key": "121-0"
         },
         {
@@ -1037,7 +1037,7 @@
             "icon": "icon_tanakahime_ver6_i_eab",
             "portrait": "psd_crew_0020",
             "model": "live2d/tanakahime_ver6/tanakahime_ver6_0101.model3.json",
-            "name": "Tanakahime Vi",
+            "name": "Tanakahime VI",
             "key": "122-0"
         },
         {
@@ -1046,7 +1046,7 @@
             "icon": "icon_suzukihina_ver6_i_eab",
             "portrait": "psd_crew_0021",
             "model": "live2d/suzukihina_ver6/suzukihina_ver6_0101.model3.json",
-            "name": "Suzukihina Vi",
+            "name": "Suzukihina VI",
             "key": "123-0"
         },
         {
@@ -1109,7 +1109,7 @@
             "icon": "icon_kureha_ver6_i_eab",
             "portrait": "psd_crew_0028",
             "model": "live2d/kureha_ver6/kureha_ver6_0101.model3.json",
-            "name": "Kureha Vi",
+            "name": "Kureha VI",
             "key": "134-0"
         },
         {
@@ -1235,7 +1235,7 @@
             "icon": "icon_rasis_hexathlon_i_eab",
             "portrait": "psd_crew_0042",
             "model": "live2d/rasis_hexathlon_bpl/rasis_hexathlon.model3.json",
-            "name": "Rasis Hexathlon Bpl",
+            "name": "Rasis Hexathlon BPL",
             "key": "150-0"
         },
         {
@@ -1244,7 +1244,7 @@
             "icon": "icon_right_hexathlon_i_eab",
             "portrait": "psd_crew_0043",
             "model": "live2d/left_right_hexathlon_bpl/right_hexathlon.model3.json",
-            "name": "Left Right Hexathlon Bpl",
+            "name": "Left Right Hexathlon BPL",
             "key": "151-0"
         },
         {
@@ -1253,7 +1253,7 @@
             "icon": "icon_left_hexathlon_i_eab",
             "portrait": "psd_crew_0044",
             "model": "live2d/left_right_hexathlon_bpl/left_hexathlon.model3.json",
-            "name": "Left Right Hexathlon Bpl",
+            "name": "Left Right Hexathlon BPL",
             "key": "152-0"
         },
         {
@@ -1280,7 +1280,7 @@
             "icon": "icon_nianoa_egbpl1_i_eab",
             "portrait": "psd_crew_0047",
             "model": "live2d/nianoa_egbpl/nianoa_egbpl_0101.model3.json",
-            "name": "Nianoa Egbpl",
+            "name": "Nia & Noa Egbpl",
             "key": "161-0"
         },
         {
@@ -1289,7 +1289,7 @@
             "icon": "icon_nianoa_egbpl2_i_eab",
             "portrait": "psd_crew_0048",
             "model": "live2d/nianoa_egbpl/nianoa_egbpl_0201.model3.json",
-            "name": "Nianoa Egbpl",
+            "name": "Nia & Noa Egbpl",
             "key": "161-1"
         },
         {
@@ -1388,7 +1388,7 @@
             "icon": "icon_kurumi_noah_i_eab",
             "portrait": "psd_crew_0057",
             "model": "live2d/kurumi_noah/noah_00_t08.model3.json",
-            "name": "Kurumi Noah",
+            "name": "胡桃のあ / Kurumi Noah",
             "key": "170-0"
         },
         {
@@ -1514,7 +1514,7 @@
             "icon": "icon_rasis_BPLS5_i_eab",
             "portrait": "psd_crew_0073",
             "model": "live2d/rasis_bpls5/rasis_bpls5.model3.json",
-            "name": "Rasis Bpls5",
+            "name": "Rasis BPL s5",
             "key": "180-0"
         },
         {
@@ -1523,7 +1523,7 @@
             "icon": "icon_grace_BPLS5_i_eab",
             "portrait": "psd_crew_0072",
             "model": "live2d/grace_bpls5/grace_bpls5.model3.json",
-            "name": "Grace Bpls5",
+            "name": "Grace BPL s5",
             "key": "181-0"
         },
         {

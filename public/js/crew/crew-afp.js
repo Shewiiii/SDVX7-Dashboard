@@ -114,6 +114,38 @@ export async function createAfpPlayer(canvas, url, base, signal) {
             main.labels[`${group}_end`] ??
             labels[index + 1]?.[1] ??
             main.frames.length;
+        if (loop) {
+            // AFP loops can jump back before cleanup frames preceding the next label
+            for (let frame = start; frame < end; frame++) {
+                const record = main.frames[frame];
+                const tags = main.tags.slice(
+                    record.start_tag_offset,
+                    record.start_tag_offset + record.num_tags,
+                );
+                const jumpsToStart = tags.some((tag) => {
+                    if (tag.type !== "AP2DoActionTag") return false;
+                    const actions = tag.bytecode?.actions || [];
+                    const objects = actions
+                        .filter((action) => action.action === "PUSH")
+                        .flatMap((action) => action.objects || []);
+                    return (
+                        objects.some((value) =>
+                            [group, `'${group}'`, `"${group}"`].includes(value),
+                        ) &&
+                        objects.some((value) =>
+                            /^(?:StringConstant\(0x[\da-f]+: )?deepGotoAndPlay\)?$/i.test(
+                                value,
+                            ),
+                        ) &&
+                        actions.some((action) => action.action === "CALL_METHOD")
+                    );
+                });
+                if (jumpsToStart) {
+                    end = frame + 1;
+                    break;
+                }
+            }
+        }
         frameTime = 0;
         seek(start);
     }

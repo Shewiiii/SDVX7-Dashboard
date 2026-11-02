@@ -148,7 +148,7 @@
     --radar-grid-color: #e4e9e0a6;
     --radar-transition-duration: 220ms;
 
-    /* Increase brightness a bit to make the text more readable */
+    /* Increased brightness a bit to make the text more readable */
     --radar-label-notes: #2ee8e4;
     --radar-label-peak: #ff4d71;
     --radar-label-tsumami: #ff56e0;
@@ -166,7 +166,7 @@
     --profile-radar-grid-bg: color-mix(in srgb, var(--panel) 20%, transparent);
 
     --performance-background-dim: 0.6;
-    --performance-panel-dim: 0.75;
+    --performance-panel-dim: 0.85;
     --performance-background-blur: 9px;
     --performance-background-blur-mobile: 4.5px;
 }

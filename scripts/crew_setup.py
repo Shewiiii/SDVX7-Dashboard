@@ -6,7 +6,6 @@ import hashlib
 import importlib.util
 import subprocess
 import sys
-import urllib.request
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -15,27 +14,10 @@ from scripts.audio import CONFIG as AUDIO_CONFIG
 from scripts.audio import configuration, read_json, tools, write_json
 from scripts.audio_setup import configure_r2, origin, prompt, reuse_r2
 from scripts.companion import ROOT
+from scripts.crew_runtime import RUNTIMES, download
 from scripts.crew_voices import voices_enabled
 from scripts.crews import CONFIG, prepare_catalog
 from scripts.local_config import protected_path
-
-RUNTIMES = {
-    "pixi.min.js": "https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js",
-    "unsafe-eval.js": "https://cdn.jsdelivr.net/npm/@pixi/unsafe-eval@6.5.10/dist/browser/unsafe-eval.js",
-    "cubism4.min.js": "https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js",
-    "live2dcubismcore.min.js": "https://cubism.live2d.com/sdk-web/core/06/live2dcubismcore.min.js",
-}
-
-
-def download(url: str, target: Path) -> None:
-    if target.is_file():
-        return
-    request = urllib.request.Request(url, headers={"User-Agent": "SDVX-Dashboard"})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        content = response.read()
-    temporary = target.with_suffix(target.suffix + ".tmp")
-    temporary.write_bytes(content)
-    temporary.replace(target)
 
 
 def install_tools() -> None:

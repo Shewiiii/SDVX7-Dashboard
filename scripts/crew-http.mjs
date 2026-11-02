@@ -15,6 +15,7 @@ export function createCrewPreview(root, python) {
     let preparing;
     const afpTasks = new Map();
     const voiceTasks = new Map();
+    const runtimeTasks = new Map();
     const run = (args) =>
         execute(python, ["-m", "scripts.crews", ...args], {
             cwd: root,
@@ -136,7 +137,27 @@ export function createCrewPreview(root, python) {
             await sendAudioFile(req, res, file);
             return true;
         }
-        const size = (await stat(file)).size;
+        let info;
+        try {
+            info = await stat(file);
+        } catch (error) {
+            if (error.code !== "ENOENT" || !relative.startsWith("runtime/"))
+                throw error;
+            if (!runtimeTasks.has(name))
+                runtimeTasks.set(
+                    name,
+                    execute(python, ["-m", "scripts.crew_runtime", name], {
+                        cwd: root,
+                        windowsHide: true,
+                        maxBuffer: 1024 * 1024,
+                    }).finally(() => {
+                        runtimeTasks.delete(name);
+                    }),
+                );
+            await runtimeTasks.get(name);
+            info = await stat(file);
+        }
+        const size = info.size;
         const type =
             {
                 ".json": "application/json",

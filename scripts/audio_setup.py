@@ -322,15 +322,19 @@ def main() -> None:
         else:
             config["storage_limit_gb"] = 9.5
             bitrate = prompt(
-                "Opus bitrate. Anything above 80kbps with full song length will not fit if you enable all the features on R2",
+                "Opus bitrate. Anything above 80kbps with full song length will not fit "
+                "if you enable all the features on R2."
+                " If it is the only content on R2, I recommend 192kbps",
                 str(config.get("bitrate", DEFAULT_OPUS_BITRATE)),
             )
             try:
                 selected_bitrate = int(bitrate)
             except ValueError:
-                raise ValueError("Choose an integer bitrate from 6 to 509 kbps") from None
+                raise ValueError(
+                    "Choose an integer bitrate from 6 to 510 kbps"
+                ) from None
             if not 6 <= selected_bitrate <= 510:
-                raise ValueError("Choose an integer bitrate from 6 to 509 kbps")
+                raise ValueError("Choose an integer bitrate from 6 to 510 kbps")
             config["bitrate"] = selected_bitrate
 
     if mode == "2" and not reuse_r2(config):

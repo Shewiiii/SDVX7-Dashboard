@@ -6,7 +6,15 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from scripts.audio import CONFIG, configuration, r2_client, read_json, tools, write_json
+from scripts.audio import (
+    CONFIG,
+    DEFAULT_OPUS_BITRATE,
+    configuration,
+    r2_client,
+    read_json,
+    tools,
+    write_json,
+)
 from scripts.companion import ROOT, load_config, with_https
 from scripts.local_config import config_path as local_config_path
 
@@ -291,10 +299,6 @@ def main() -> None:
         if variant not in ("full", "preview"):
             raise ValueError("Choose full or preview.")
         config.update(variant=variant)
-        from scripts.audio import AudioLibrary, plan_audio
-        from scripts.companion import resolve_proxy
-        from scripts.sync import Catalog
-
         codec = prompt(
             "File format: opus or flac", config.get("format", "opus")
         ).lower()
@@ -307,8 +311,7 @@ def main() -> None:
             )
             print(
                 "Existing uploads also consume storage. "
-                "I recommend deleting your old bucket if you want "
-                "to change audio format or length."
+                "Make sure to delete the old format from R2 before proceeding."
             )
             keep_limit = prompt("Keep the 9.5 GB upload limit? (Y/n)", "n").lower()
             if keep_limit not in ("y", "yes", "n", "no"):
@@ -318,10 +321,17 @@ def main() -> None:
                 print("Storage limit disabled.")
         else:
             config["storage_limit_gb"] = 9.5
-            print("Calculating bitrate...")
-            config["bitrate"] = plan_audio(
-                AudioLibrary(Catalog(resolve_proxy()).details, config)
-            )["bitrate"]
+            bitrate = prompt(
+                "Opus bitrate. Anything above 80kbps with full song length will not fit if you enable all the features on R2",
+                str(config.get("bitrate", DEFAULT_OPUS_BITRATE)),
+            )
+            try:
+                selected_bitrate = int(bitrate)
+            except ValueError:
+                raise ValueError("Choose an integer bitrate from 6 to 509 kbps") from None
+            if not 6 <= selected_bitrate <= 510:
+                raise ValueError("Choose an integer bitrate from 6 to 509 kbps")
+            config["bitrate"] = selected_bitrate
 
     if mode == "2" and not reuse_r2(config):
         configure_r2(config)

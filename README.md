@@ -91,11 +91,19 @@ You can enable the following features, but they require a lot of storage. You wi
 5. Go back to R2 Object Storage, copy your account ID and paste it in the setup.
 6. Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
+#### Full song on Vercel:
+
+Songs upload will occur during the first sync, which may take a long time.
+
+Follow the R2 setup above and choose Audio playback [1].
+
+If you want to change the audio format or length, run `optional-audio.bat` and select Delete data from Cloudflare R2 [5] on the first menu.
+
 ### Crew setup
 
 You can preview NemSys Crews directly on the dashboard by clicking the appeal card locally without extra setup.
 
-If you want to enable crews preview on Vercel, follow the instructions above, but choose Nemsys Crew [2] on the first menu of `optional-audio.bat` instead. If you want to customize audio bitrate, choose Audio playback [1].
+If you want to enable crews preview on Vercel, follow the instructions above, but choose Nemsys Crew [2] on the first menu of `optional-audio.bat` instead.
 
 ### High quality jackets setup
 
@@ -111,14 +119,6 @@ By default, the dashboard cannot play any song. To solve this, additional setup 
 
 - Install [FFmpeg](https://ffmpeg.org/download.html) and add its `bin` folder to PATH.
 - Run `preview-dashboard.bat` to run the website locally.
-
-#### Full song on Vercel:
-
-Songs upload will occur during the first sync, which may take a long time. You should enable this after enabling the other features, to avoid exceeding the 10GB quota if you choose to use Opus.
-
-Follow the R2 setup above and choose Audio playback [1].
-
-If you want to change the audio format or length, run `optional-audio.bat` and select Delete data from Cloudflare R2 [5] on the first menu.
 
 ## Credits
 

@@ -12,7 +12,6 @@ import tempfile
 import time
 from array import array
 from collections.abc import Sequence
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import redirect_stdout
 from pathlib import Path
 from threading import Thread
@@ -30,7 +29,7 @@ if TYPE_CHECKING:
 
 SCHEMA = 5
 PEAKS = 128
-BUDGET_BYTES = 9_500_000_000
+DEFAULT_OPUS_BITRATE = 192
 CONFIG = local_config_path("audio-config.json", ROOT)
 
 
@@ -54,6 +53,13 @@ def write_json(path: Path, value: Any) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def opus_bitrate(config: dict[str, Any]) -> int:
+    bitrate = config.get("bitrate", DEFAULT_OPUS_BITRATE)
+    if type(bitrate) is int and 6 <= bitrate < 510:
+        return bitrate
+    return DEFAULT_OPUS_BITRATE
+
+
 def configuration() -> dict[str, Any]:
     config = read_json(CONFIG, {"mode": "local", "variant": "full"})
     if config.get("mode") not in ("off", "local", "r2") or config.get(
@@ -63,7 +69,8 @@ def configuration() -> dict[str, Any]:
     config.setdefault("format", "opus")
     if config["format"] not in ("opus", "flac"):
         raise ValueError("Audio format must be opus or flac")
-    config.setdefault("bitrate", 256)
+    if config["format"] == "opus":
+        config["bitrate"] = opus_bitrate(config)
     return config
 
 
@@ -74,9 +81,9 @@ def encoding_args(config: dict[str, Any]) -> list[str]:
         "-c:a",
         "libopus",
         "-b:a",
-        f"{int(config.get('bitrate', 256))}k",
+        f"{opus_bitrate(config)}k",
         "-vbr",
-        "constrained",
+        "on",
         "-compression_level",
         "10",
         "-application",
@@ -177,8 +184,6 @@ class AudioLibrary:
         self.failures = {}
         self.details.refresh()
         self.signatures = self.details.signatures
-        if config is None and self.config.get("format", "opus") == "opus":
-            self.config["bitrate"] = plan_audio(self)["bitrate"]
 
     def source(self, mid: int, diff: int) -> Path | None:
         chart = self.details.files.get(f"{mid}:{diff}")
@@ -278,10 +283,12 @@ class AudioLibrary:
             stat.st_mtime_ns,
             self.config.get("variant", "full"),
             self.config.get("format", "opus"),
-            int(self.config.get("bitrate", 256))
+            opus_bitrate(self.config)
             if self.config.get("format", "opus") == "opus"
             else None,
         ]
+        if self.config.get("format", "opus") == "opus":
+            signature.append("vbr")
         key = hashlib.sha256(json.dumps(signature).encode()).hexdigest()
         # Individual atomic sidecars avoid losing cache entries when preview
         # requests and the background uploader prepare different tracks together.
@@ -403,9 +410,7 @@ class AudioLibrary:
             return {
                 "id": digest,
                 "format": codec,
-                "bitrate": int(self.config.get("bitrate", 256))
-                if codec == "opus"
-                else None,
+                "bitrate": opus_bitrate(self.config) if codec == "opus" else None,
                 "duration": round(duration, 3),
                 "start": 0.0,
                 "variant": variant,
@@ -426,77 +431,6 @@ def preview(mid: int, diff: int) -> None:
         if record["variant"] == "full":
             record["chart_url"] = f"/api/chart-view?music={mid}&diff={diff}&effects=1"
     print(json.dumps(record))
-
-
-def plan_audio(library: AudioLibrary) -> dict[str, Any]:
-    """Budget unique tracks, caching probes by source size and modification time."""
-    sources = {
-        library.source(*map(int, key.split(":"))) for key in library.details.metadata
-    }
-    sources.discard(None)
-    path = ROOT / ".local/audio-plan.json"
-    saved = read_json(path, {})
-    previous = {row["path"]: row for row in saved.get("sources", [])}
-    probe = tools(library.config)[1]
-
-    def measure(source: Path) -> dict[str, Any]:
-        info = source.stat()
-        old = previous.get(str(source))
-        if old and old["size"] == info.st_size and old["mtime"] == info.st_mtime_ns:
-            return old
-        try:
-            with tempfile.TemporaryDirectory() as folder:
-                target = source
-                if source.suffix.lower() == ".2dx":
-                    target = Path(folder) / "source.wav"
-                    target.write_bytes(extract_2dx(source.read_bytes()))
-                seconds = float(
-                    command(
-                        [
-                            probe,
-                            "-v",
-                            "error",
-                            "-show_entries",
-                            "format=duration",
-                            "-of",
-                            "default=noprint_wrappers=1:nokey=1",
-                            str(target),
-                        ]
-                    )
-                )
-                if not math.isfinite(seconds) or not 0 < seconds <= 7200:
-                    raise ValueError("Invalid duration")
-        except (OSError, ValueError, RuntimeError):
-            # Reserve the maximum supported duration for sources we cannot probe.
-            # This keeps planning conservative and lets conversion report errors.
-            seconds = 7200
-        return {
-            "path": str(source),
-            "size": info.st_size,
-            "mtime": info.st_mtime_ns,
-            "duration": seconds,
-        }
-
-    with ThreadPoolExecutor(max_workers=8) as workers:
-        rows = list(workers.map(measure, sorted(sources)))
-    seconds = sum(row["duration"] for row in rows)
-    # Opus supports up to 510 kbps, reserve 3% for container overhead/variation.
-    bitrate = min(510, int(BUDGET_BYTES * 0.97 * 8 / max(1, seconds) / 1000))
-    if bitrate < 6:
-        raise ValueError("The audio library is too large for the 9.5 GB budget")
-    plan = {
-        "sources": rows,
-        "seconds": seconds,
-        "bitrate": bitrate,
-        "budget_bytes": BUDGET_BYTES,
-    }
-    if plan != saved:
-        write_json(path, plan)
-        print(
-            f"Audio plan: {len(rows)} tracks, {bitrate} kbps Opus, estimated {seconds * bitrate * 1000 / 8 / 1e9:.2f} GB before overhead.",
-            flush=True,
-        )
-    return plan
 
 
 def r2_client(config: dict[str, Any]) -> Any:
@@ -580,12 +514,6 @@ def sync_audio(
             catalog.details, audio, upload_only=True
         )
     library.details.refresh()
-    if audio.get("format", "opus") == "opus":
-        plan = plan_audio(library)
-        if audio.get("bitrate") != plan["bitrate"]:
-            audio["bitrate"] = plan["bitrate"]
-            library.config = dict(audio)
-            write_json(CONFIG, audio)
     codec = audio.get("format", "opus")
     limit_gb = float(audio.get("storage_limit_gb", 9.5))
     if not math.isfinite(limit_gb) or limit_gb < 0:
@@ -738,7 +666,7 @@ def sync_audio(
             ):
                 if getattr(catalog, "audio_budget_message", None) != used_bytes:
                     print(
-                        f"Audio upload stopped: bucket uses {used_bytes / 1e9:.3f} GB; next track would exceed the {limit_gb:g} GB budget. Remove obsolete objects or reduce bitrate.",
+                        f"Audio upload stopped: bucket uses {used_bytes / 1e9:.3f} GB; next track would exceed the {limit_gb:g} GB budget. Remove obsolete objects to free space.",
                         flush=True,
                     )
                     catalog.audio_budget_message = used_bytes

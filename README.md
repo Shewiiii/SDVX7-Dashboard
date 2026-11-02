@@ -91,6 +91,15 @@ You can enable the following features, but they require a lot of storage. You wi
 5. Go back to R2 Object Storage, copy your account ID and paste it in the setup.
 6. Click on Manage API tokens under it, then create an Account API Token, with Object Read & Write permissions. Leave the other options default, then finish the setup process.
 
+### Audio setup
+
+By default, the dashboard cannot play any song. To solve this, additional setup is required.
+
+#### Local preview:
+
+- Install [FFmpeg](https://ffmpeg.org/download.html) and add its `bin` folder to PATH.
+- Run `preview-dashboard.bat` to run the website locally.
+
 #### Full song on Vercel:
 
 Songs upload will occur during the first sync, which may take a long time.
@@ -110,15 +119,6 @@ If you want to enable crews preview on Vercel, follow the instructions above, bu
 "High quality" being `*_b.png` files converted to quality 90 JPEGs. Neon stores 256\*256 quality 85 with method 4 WebP images by default.
 
 Setup is the same as Crew setup. Simply choose High quality jackets [3] on the first menu.
-
-### Audio setup
-
-By default, the dashboard cannot play any song. To solve this, additional setup is required.
-
-#### Local preview:
-
-- Install [FFmpeg](https://ffmpeg.org/download.html) and add its `bin` folder to PATH.
-- Run `preview-dashboard.bat` to run the website locally.
 
 ## Credits
 

@@ -1160,7 +1160,7 @@ export function createChartViewer() {
                 },
                 { signal },
             );
-            showPanel(dialog);
+            showPanel(dialog, { linked: true });
             getComputedStyle(dialog).opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;

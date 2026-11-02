@@ -1,3 +1,5 @@
+import { closePanelHistory, openPanelHistory } from "./panel-history.js";
+
 const panels = [];
 const openings = new WeakMap();
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -82,7 +84,8 @@ function listen() {
                 ({ dialog }) => dialog === event.target,
             );
             if (index < 0 || event.target.open) return;
-            const [{ dialog, layer, trigger }] = panels.splice(index, 1);
+            const [{ dialog, layer, trigger, historyEntry }] = panels.splice(index, 1);
+            closePanelHistory(historyEntry);
             openings.get(dialog)?.();
             layer.before(dialog);
             layer.remove();
@@ -125,7 +128,7 @@ function listen() {
 }
 
 // Use this for new dashboard dialogs so extension popups can remain above them
-export function showPanel(dialog) {
+export function showPanel(dialog, { linked = false } = {}) {
     if (dialog.open) return;
     listen();
     if (!panels.length) {
@@ -153,7 +156,14 @@ export function showPanel(dialog) {
     });
     dialog.setAttribute("aria-modal", "true");
     dialog.setAttribute("tabindex", "-1");
-    panels.push({ dialog, layer, trigger });
+    const historyEntry = linked
+        ? null
+        : openPanelHistory(() => {
+              if (!dialog.open) return;
+              const cancel = new Event("cancel", { cancelable: true });
+              if (dialog.dispatchEvent(cancel)) dialog.close();
+          });
+    panels.push({ dialog, layer, trigger, historyEntry });
     void prepareOpening(dialog, layer);
     dialog.show();
     syncPanels();

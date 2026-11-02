@@ -567,7 +567,7 @@ export function createChartDetails(isPreview, renderSong) {
                     detail: "chart-details",
                 }),
             );
-            showPanel(dialog);
+            showPanel(dialog, { linked: true });
             getComputedStyle(dialog).opacity;
             dialog.classList.add("is-visible");
             dialog.scrollTop = 0;

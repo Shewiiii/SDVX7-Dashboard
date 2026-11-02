@@ -1,5 +1,5 @@
 import { showPanel } from "../core/panels.js";
-import { getJacketUrl } from "./jackets.js";
+import { getJacketUrl } from "../library/jackets.js";
 
 export function createJacketViewer() {
     const dialog = document.createElement("dialog");

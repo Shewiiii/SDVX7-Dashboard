@@ -1,3 +1,4 @@
+import { afterPanelHistory } from "./panel-history.js";
 import { DIFFS } from "../profile/metrics.js";
 
 const PANEL_PARAMS = ["panel", "card", "crew"];
@@ -74,6 +75,10 @@ export function setPanelLink(link) {
 }
 
 export function openPanelLink(link) {
+    afterPanelHistory(() => pushPanelLink(link));
+}
+
+function pushPanelLink(link) {
     if (samePanelLink(readPanelLink(), link)) return;
     const previous = readPanelLink() && history.state?.dashboardPanel;
     history.pushState(

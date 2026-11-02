@@ -44,7 +44,7 @@ import { rankingHistory } from "./profile/ranking-history.js";
 import { createSimilarCharts } from "./charts/similar-charts.js";
 import { createChartViewer } from "./charts/chart-viewer.js";
 import { createChartDetails } from "./charts/chart-details.js";
-import { createJacketViewer } from "./library/jacket-viewer.js";
+import { createJacketViewer } from "./search/jacket-viewer.js";
 import {
     preparePanelHistory,
     readPanelLink,

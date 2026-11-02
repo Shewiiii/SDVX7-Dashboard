@@ -386,7 +386,7 @@ export function createAppealCardHelper(getState) {
         tabList.hidden = false;
         browser.hidden = false;
         detail.hidden = true;
-        showPanel(dialog);
+        showPanel(dialog, { linked: true });
         void switchTab("cards");
         renderBrowser({ anchorId: current?.id ?? null });
         if (tab === "crew" || crewKey !== null) void switchTab("crew", crewKey);

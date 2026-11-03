@@ -167,7 +167,7 @@ export function createRadarContributors(root, profileRoot, renderChart) {
                 const markup = renderChart(chart, controls);
                 return `<tr class="radar-contributor-row" data-contributor="${position}">
                 <td class="row-index">${String(position + 1).padStart(2, "0")}</td>
-                <td>${markup.song}</td>
+                <td class="radar-contributor-song">${markup.song}</td>
                 <td class="radar-contributor-difficulty">${markup.difficulty}</td>
                 <td class="radar-contributor-axes">${chart.axes}</td>
                 <td class="right vf-cell">${points(chart.total)}</td>

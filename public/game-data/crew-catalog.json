@@ -1064,7 +1064,12 @@
             "icon": "icon_rasismion_xhrono_i_eab",
             "portrait": "psd_crew_0023",
             "model": "live2d/rasis_xhrono/rasis_xhrono_0101.model3.json",
-            "name": "Rasis Xhrono",
+            "companions": [
+                {
+                    "model": "live2d/mion_xhrono/mion_xhrono_0101.model3.json"
+                }
+            ],
+            "name": "Rasis & Mion Xhrono",
             "key": "128-0"
         },
         {

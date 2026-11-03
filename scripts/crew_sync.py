@@ -63,6 +63,8 @@ def entry_signature(entry: dict[str, Any], config: dict[str, Any]) -> str:
         files.append(source / entry["archive"])
     if entry.get("model"):
         files.extend((source / entry["model"]).parent.rglob("*"))
+    for companion in entry.get("companions", []):
+        files.extend((source / companion["model"]).parent.rglob("*"))
     image = entry.get("image")
     if image:
         files.append(

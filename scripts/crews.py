@@ -64,7 +64,9 @@ def prepare_catalog(*, prepare_assets: bool = True) -> dict[str, Any]:
             )
             if entry["type"] != "image" and portrait.is_file():
                 entry["image"] = f"portraits/{portrait.name}"
-            if entry.get("model") and not (source / entry["model"]).is_file():
+            models = [entry] if entry.get("model") else []
+            models.extend(entry.get("companions", []))
+            if any(not (source / model["model"]).is_file() for model in models):
                 continue
             crews.append(entry)
     finally:
@@ -179,20 +181,22 @@ def crew_assets(entry: dict[str, Any]) -> dict[str, Path]:
         objects.update(
             (file.relative_to(CACHE).as_posix(), file) for file in folder.rglob("*.png")
         )
-    if entry.get("model"):
-        model = source / entry["model"]
+    models = [entry] if entry.get("model") else []
+    models.extend(entry.get("companions", []))
+    for layer in models:
+        model = source / layer["model"]
         document = read_json(model, {})
         refs = document["FileReferences"]
         display_info = refs.get("DisplayInfo")
         if display_info and not (model.parent / display_info).is_file():
             # Editor display names are optional and are absent from some game models.
             del refs["DisplayInfo"]
-            exported = CACHE / entry["model"]
+            exported = CACHE / layer["model"]
             if read_json(exported, {}) != document:
                 write_json(exported, document)
-            objects[entry["model"]] = exported
+            objects[layer["model"]] = exported
         else:
-            objects[entry["model"]] = model
+            objects[layer["model"]] = model
         paths: list[Path] = []
         paths.extend(model.parent / name for name in refs.get("Textures", []))
         paths.extend(

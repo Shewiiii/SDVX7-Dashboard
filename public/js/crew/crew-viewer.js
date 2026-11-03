@@ -643,6 +643,7 @@ export function createCrewViewer(dialog, getState) {
                           new URL(entry.model, catalog.base).href,
                           catalog.base,
                           signal,
+                          entry.companions,
                       )
                     : await createAfpPlayer(
                           canvas,

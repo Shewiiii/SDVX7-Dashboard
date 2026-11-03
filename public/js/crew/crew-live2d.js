@@ -96,7 +96,13 @@ function findOpacityParameter(core) {
     return null;
 }
 
-export async function createLive2dPlayer(canvas, url, base, signal) {
+export async function createLive2dPlayer(
+    canvas,
+    url,
+    base,
+    signal,
+    companions = [],
+) {
     if (!runtime)
         runtime = (async () => {
             await script(new URL("runtime/pixi.min.js", base));
@@ -118,32 +124,122 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         resolution: Math.min(devicePixelRatio || 1, 3),
         autoDensity: true,
     });
-    const model = await PIXI.live2d.Live2DModel.from(url, {
-        autoInteract: false,
-        autoUpdate: false,
-    }).catch((error) => {
+    const loaded = await Promise.allSettled(
+        [url, ...companions.map((entry) => new URL(entry.model, base).href)].map(
+            (path) =>
+                PIXI.live2d.Live2DModel.from(path, {
+                    autoInteract: false,
+                    autoUpdate: false,
+                }),
+        ),
+    );
+    const models = loaded
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => result.value);
+    const failed = loaded.find((result) => result.status === "rejected");
+    if (signal.aborted || failed) {
+        for (const model of models)
+            model.destroy({ children: true, texture: true, baseTexture: true });
+        app.destroy(false);
+        throw signal.aborted
+            ? new DOMException("Aborted", "AbortError")
+            : failed.reason;
+    }
+    const layers = [];
+    try {
+        for (const model of models)
+            layers.push(
+                createModelPlayer(model, app, canvas, signal, models.length > 1),
+            );
+    } catch (error) {
+        for (const model of models)
+            model.destroy({ children: true, texture: true, baseTexture: true });
         app.destroy(false);
         throw error;
-    });
-    if (signal.aborted) {
-        model.destroy({ children: true });
-        app.destroy(false);
-        throw new DOMException("Aborted", "AbortError");
     }
+    const bounds = models[0].getLocalBounds();
+    let zoom = 1;
+    let panX = 0;
+    let panY = 0;
+
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const width = Math.max(1, rect.width);
+        const height = Math.max(1, rect.height);
+        if (app.screen.width !== width || app.screen.height !== height)
+            app.renderer.resize(width, height);
+        const scale =
+            Math.min(width / bounds.width, height / bounds.height) * 0.94 * zoom;
+        // Companion canvases share the primary model's authored origin and scale
+        for (const layer of layers)
+            layer.resize(
+                scale,
+                width * (0.5 + panX),
+                height * (0.5 + panY),
+                zoom >= 2 ? 2048 : 1024,
+            );
+    }
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas.parentElement);
+    resize();
+
+    return {
+        motions: layers[0].motions,
+        async motion(group, index, next, loop = false) {
+            await Promise.all(
+                layers.map((layer, layerIndex) =>
+                    layer.motion(
+                        group,
+                        index,
+                        next && layerIndex > 0
+                            ? { ...next, onStart() {} }
+                            : next,
+                        loop,
+                    ),
+                ),
+            );
+        },
+        render(delta) {
+            for (const layer of layers) layer.render(delta);
+            app.renderer.render(app.stage);
+        },
+        zoom(value) {
+            zoom = value;
+            resize();
+        },
+        pan(x, y) {
+            panX = x;
+            panY = y;
+            resize();
+        },
+        tracking(value) {
+            for (const layer of layers) layer.tracking(value);
+        },
+        physics(value) {
+            for (const layer of layers) layer.physics(value);
+        },
+        destroy() {
+            observer.disconnect();
+            canvas.style.opacity = "";
+            for (const layer of layers) layer.destroy();
+            app.destroy(false);
+        },
+    };
+}
+
+function createModelPlayer(model, app, canvas, signal, composite) {
+    const PIXI = window.PIXI;
     const core = model.internalModel.coreModel._model;
     // Core 5.3 shares render ordering between drawables and offscreen objects.
     if (!core.drawables.renderOrders && core.renderOrders)
         core.drawables.renderOrders = core.renderOrders;
     app.stage.addChild(model);
     model.anchor.set(0.5, 0.5);
-    const bounds = model.getLocalBounds();
     const physics = model.internalModel.physics;
     const renderer = model.internalModel.renderer;
     renderer.setClippingMaskBufferSize(1024);
-    let zoom = 1;
     let tracking = false;
-    let panX = 0;
-    let panY = 0;
     let pointer;
     const focus = model.internalModel.focusController;
     const internal = model.internalModel;
@@ -192,9 +288,12 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         core.update();
     }
     const opacityParameter = findOpacityParameter(core);
+    const opacityFilter =
+        opacityParameter && composite ? new PIXI.filters.AlphaFilter() : null;
     let restoreOpacity = false;
     if (opacityParameter) {
         let opacity = 1;
+        if (opacityFilter) model.filters = [opacityFilter];
         const opacities = core.drawables.opacities;
         const savedOpacities = new Float32Array(opacities.length);
         const draw = internal.draw.bind(internal);
@@ -215,11 +314,12 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                     (core.parameters.values[index] - hidden) / (opaque - hidden),
                 ),
             );
+            if (opacityFilter) opacityFilter.alpha = opacity;
         });
 
         internal.draw = (gl) => {
             // Apply the common fade once to the fully composed character
-            canvas.style.opacity = String(opacity);
+            if (!composite) canvas.style.opacity = String(opacity);
             if (opacity <= 0 || opacity >= 1) {
                 draw(gl);
                 return;
@@ -281,30 +381,6 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         focus.vy = 0;
     }
     resetFocus();
-    function resize() {
-        const rect = canvas.parentElement.getBoundingClientRect();
-        const width = Math.max(1, rect.width);
-        const height = Math.max(1, rect.height);
-        if (app.screen.width !== width || app.screen.height !== height)
-            app.renderer.resize(width, height);
-        model.scale.set(
-            Math.min(rect.width / bounds.width, rect.height / bounds.height) *
-                0.94 *
-                zoom,
-        );
-        model.position.set(
-            rect.width * (0.5 + panX),
-            rect.height * (0.5 + panY),
-        );
-        const maskSize = zoom >= 2 ? 2048 : 1024;
-        if (renderer.getClippingMaskBufferSize() !== maskSize) {
-            renderer.setClippingMaskBufferSize(maskSize);
-            if (renderer.gl) renderer._clippingManager.setGL(renderer.gl);
-        }
-    }
-    const observer = new ResizeObserver(resize);
-    observer.observe(canvas.parentElement);
-    resize();
     window.addEventListener(
         "pointermove",
         (event) => {
@@ -404,7 +480,6 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
             if (needsMotionUpdate && delta === 0)
                 internal.update(0, model.elapsedTime);
             needsMotionUpdate = false;
-            app.renderer.render(app.stage);
             if (finished) {
                 playback = null;
                 pending.entry.setIsFinished(true);
@@ -431,14 +506,13 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
                         });
             }
         },
-        zoom(value) {
-            zoom = value;
-            resize();
-        },
-        pan(x, y) {
-            panX = x;
-            panY = y;
-            resize();
+        resize(scale, x, y, maskSize) {
+            model.scale.set(scale);
+            model.position.set(x, y);
+            if (renderer.getClippingMaskBufferSize() !== maskSize) {
+                renderer.setClippingMaskBufferSize(maskSize);
+                if (renderer.gl) renderer._clippingManager.setGL(renderer.gl);
+            }
         },
         tracking(value) {
             tracking = value;
@@ -450,10 +524,8 @@ export async function createLive2dPlayer(canvas, url, base, signal) {
         destroy() {
             motionRevision++;
             playback = null;
-            observer.disconnect();
-            canvas.style.opacity = "";
             model.destroy({ children: true, texture: true, baseTexture: true });
-            app.destroy(false);
+            opacityFilter?.destroy();
         },
     };
 }

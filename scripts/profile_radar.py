@@ -27,7 +27,8 @@ def calculate_profile_radar(
     *,
     include_custom: bool = True,
 ) -> dict[str, Any] | None:
-    best: list[dict[int, int]] = [{} for _ in range(6)]
+    best: list[dict[int, tuple[int, str]]] = [{} for _ in range(6)]
+    charts: dict[str, dict[str, Any]] = {}
     excluded = 0
     used = 0
     custom_songs = {
@@ -78,6 +79,16 @@ def calculate_profile_radar(
         if not valid_ex:
             excluded += 1
         used += 1
+        charts[key] = {
+            "music_id": mid,
+            "diff_idx": diff,
+            "level": level,
+            "score": score,
+            "exscore": exscore if valid_ex else None,
+            "max_exscore": int(maximum) if valid_ex else None,
+            "radar": radar,
+            "contributions": [0] * 6,
+        }
         for axis, attribute in enumerate(radar):
             # Missing EX metadata leaves the normal-score contribution available.
             value = chart_contribution(
@@ -87,14 +98,36 @@ def calculate_profile_radar(
                 exscore if valid_ex else 0,
                 int(maximum) if valid_ex else 1_000_000_000,
             )
-            if value > 0:
-                best[axis][mid] = max(best[axis].get(mid, 0), value)
+            previous = best[axis].get(mid)
+            if value > 0 and (
+                previous is None
+                or value > previous[0]
+                or (value == previous[0] and diff < charts[previous[1]]["diff_idx"])
+            ):
+                best[axis][mid] = (value, key)
 
     if not used:
         return None
-    top = [sorted(songs.values(), reverse=True)[:50] for songs in best]
+    top = [
+        sorted(
+            songs.values(), key=lambda item: (-item[0], charts[item[1]]["music_id"])
+        )[:50]
+        for songs in best
+    ]
+    for axis, entries in enumerate(top):
+        for value, key in entries:
+            charts[key]["contributions"][axis] = value
+    contributors = sorted(
+        (chart for chart in charts.values() if any(chart["contributions"])),
+        key=lambda chart: (
+            -sum(chart["contributions"]),
+            chart["music_id"],
+            chart["diff_idx"],
+        ),
+    )
     return {
-        "values": [sum(values) // 40 / 100 for values in top],
+        "values": [sum(value for value, _ in entries) // 40 / 100 for entries in top],
         "song_counts": [len(values) for values in top],
         "complete": excluded == 0,
+        "contributors": contributors,
     }

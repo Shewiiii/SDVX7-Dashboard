@@ -1,5 +1,38 @@
 // Database order, clockwise from the top, matching the in-game effect radar.
-const AXES = ["Notes", "Peak", "Tsumami", "Tricky", "Hand-Trip", "One-Hand"];
+export const RADAR_AXES = [
+    "Notes",
+    "Peak",
+    "Tsumami",
+    "Tricky",
+    "Hand-Trip",
+    "One-Hand",
+];
+const AXES = RADAR_AXES;
+
+export const radarContributionPoints = (value) =>
+    (value / 4000).toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+
+export function rankRadarContributors(charts, selectedAxes = []) {
+    const axes = selectedAxes.length
+        ? selectedAxes
+        : AXES.map((_, axis) => axis);
+    return charts
+        .map((chart) => ({
+            ...chart,
+            total: axes.reduce(
+                (total, axis) => total + chart.contributions[axis],
+                0,
+            ),
+            axes: axes.filter((axis) => chart.contributions[axis] > 0).length,
+        }))
+        .filter((chart) => chart.total > 0)
+        .sort(
+            (first, second) =>
+                second.total - first.total ||
+                first.music_id - second.music_id ||
+                first.diff_idx - second.diff_idx,
+        );
+}
 
 const transitions = new WeakMap();
 const painters = new WeakMap();
@@ -60,7 +93,13 @@ export function radarMarkup(
         const anchor =
             axis === 0 || axis === 3 ? "middle" : axis < 3 ? "start" : "end";
         const value = profile ? values[axis].toFixed(2) : values[axis];
-        return `<text x="${x}" y="${y - 3}" text-anchor="${anchor}" class="song-radar-label" data-axis="${label.toLowerCase()}"><tspan class="song-radar-label-name">${label}</tspan><tspan x="${x}" dy="14" class="song-radar-value">${value}</tspan></text>`;
+        const contribution = profile
+            ? `<text class="song-radar-contribution" data-axis="${label.toLowerCase()}" y="${y + 11}" text-anchor="${axis > 3 ? "end" : "start"}"></text>`
+            : "";
+        const text = `<text x="${x}" y="${y - 3}" text-anchor="${anchor}" class="song-radar-label" data-axis="${label.toLowerCase()}"><tspan class="song-radar-label-name">${label}</tspan><tspan x="${x}" dy="14" class="song-radar-value">${value}</tspan></text>${contribution}`;
+        if (!profile) return text;
+        const hitX = x - (anchor === "middle" ? 36 : anchor === "end" ? 64 : 8);
+        return `<g class="radar-axis-filter" data-radar-axis="${axis}" data-axis="${label.toLowerCase()}" role="button" tabindex="0" aria-label="Filter contributors by ${label}" aria-pressed="false"><rect class="radar-label-hit-target" x="${hitX}" y="${y - 21}" width="72" height="44"/>${text}</g>`;
     }).join("");
     const vertices = values.map((value, axis) => point(axis, value * unit));
     const left = Math.min(0, ...vertices.map(([x]) => Math.floor(x - 10)));
@@ -74,7 +113,7 @@ export function radarMarkup(
         ? 'class="song-radar radar-trigger" type="button" data-similar-charts aria-label="Show similar charts" aria-haspopup="dialog" aria-controls="similar-charts"'
         : `class="song-radar${profile ? " profile-radar" : ""}"`;
 
-    return `<${tag} ${attributes}><svg viewBox="${left} ${top} ${right - left} ${bottom - top}" role="img" aria-label="${profile ? "Profile" : "Effect"} radar, reference hexagon at 100; higher values extend beyond it. ${description}">
+    return `<${tag} ${attributes}><svg viewBox="${left} ${top} ${right - left} ${bottom - top}" role="${profile ? "group" : "img"}" aria-label="${profile ? "Profile" : "Effect"} radar, reference hexagon at 100; higher values extend beyond it. ${description}">
         <defs><clipPath id="${clipId}"><polygon points="${polygon(values.map((value) => value * unit))}"/></clipPath></defs>
         <g class="song-radar-graphic">
         <g class="song-radar-grid"><polygon points="${outline}"/></g>
@@ -179,6 +218,72 @@ function drawRadar(svg, values, resolution) {
         "href",
         canvas.toDataURL(),
     );
+}
+
+export function radarContributionPath(values, contributions) {
+    const polygon = (radii) =>
+        radii
+            .map((value, axis) => {
+                const angle = (axis * Math.PI) / 3 - Math.PI / 2;
+                return `${150 + Math.cos(angle) * value * 0.68},${116 + Math.sin(angle) * value * 0.68}`;
+            })
+            .join(" L");
+    const remaining = values.map((value, axis) =>
+        Math.max(0, value - contributions[axis] / 4000),
+    );
+    return `M${polygon(values)} Z M${polygon(remaining)} Z`;
+}
+
+export function highlightRadarContribution(
+    container,
+    values,
+    contributions = null,
+) {
+    const svg = container.querySelector(".song-radar svg");
+    if (!svg) return;
+    const activeAxes = contributions?.map((value) => value > 0);
+    if (contributions)
+        svg.dataset.activeAxes = activeAxes.map(Number).join(",");
+    else delete svg.dataset.activeAxes;
+    svg.querySelectorAll(".song-radar-label").forEach((label, axis) => {
+        label.classList.toggle(
+            "radar-axis-muted",
+            Boolean(activeAxes && !activeAxes[axis]),
+        );
+        const bonus = svg.querySelector(
+            `.song-radar-contribution[data-axis="${label.dataset.axis}"]`,
+        );
+        if (!bonus) return;
+        bonus.toggleAttribute(
+            "data-contributing",
+            Boolean(contributions?.[axis]),
+        );
+        if (!contributions?.[axis]) return;
+        const bounds = label.querySelector(".song-radar-value").getBBox();
+        bonus.setAttribute(
+            "x",
+            axis > 3 ? bounds.x - 4 : bounds.x + bounds.width + 4,
+        );
+        bonus.textContent = `(+ ${(contributions[axis] / 4000).toFixed(2)})`;
+    });
+    paintRadar(container, values, { animate: false });
+    svg.querySelector(".radar-contribution-fill")?.remove();
+    svg.querySelector("[data-contribution-clip]")?.remove();
+    if (!contributions) return;
+    const namespace = "http://www.w3.org/2000/svg";
+    const clip = document.createElementNS(namespace, "clipPath");
+    clip.id = `${svg.querySelector("clipPath").id}-contribution`;
+    clip.dataset.contributionClip = "";
+    const band = document.createElementNS(namespace, "path");
+    band.setAttribute("d", radarContributionPath(values, contributions));
+    band.setAttribute("clip-rule", "evenodd");
+    clip.append(band);
+    svg.querySelector("defs").append(clip);
+    const fill = svg.querySelector(".song-radar-fill");
+    const overlay = fill.cloneNode();
+    overlay.classList.add("radar-contribution-fill");
+    overlay.setAttribute("clip-path", `url(#${clip.id})`);
+    fill.after(overlay);
 }
 
 export function paintRadar(

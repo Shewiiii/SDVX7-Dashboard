@@ -1261,7 +1261,7 @@ td:nth-child(2) {
     color: #c8c3d9;
 }
 @media (hover: hover) {
-    tbody tr:hover {
+    tbody > tr:hover {
         background: var(--row-hover);
     }
 }
@@ -1357,6 +1357,236 @@ footer > :last-child {
 }
 .profile-radar-note {
     padding: 0 24px;
+}
+.profile-radar-section:has(.radar-contributors:not([hidden])) {
+    padding-bottom: 0;
+}
+.radar-contributors {
+    margin-top: 12px;
+    background: var(--entry-section-bg);
+}
+.radar-contributor-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 12px var(--panel-padding-inline);
+}
+.radar-axis-tag.calculator-filter {
+    --accent: var(--radar-axis-color);
+    --accent-wash: color-mix(
+        in srgb,
+        var(--accent) calc(100% * 27 / 255),
+        transparent
+    );
+    --row-hover: color-mix(
+        in srgb,
+        var(--accent) calc(100% * 17 / 255),
+        transparent
+    );
+    max-width: 100%;
+    margin: 0;
+    color: var(--accent);
+}
+.profile-radar .radar-axis-filter {
+    cursor: pointer;
+    outline: none;
+    touch-action: manipulation;
+}
+.radar-label-hit-target {
+    fill: transparent;
+}
+.radar-axis-filter:focus-visible .song-radar-label-name {
+    text-decoration: underline;
+}
+.radar-contributors table {
+    min-width: 0;
+}
+.radar-contributors > .table-scroll > table {
+    table-layout: fixed;
+}
+.radar-contributors > .table-scroll > table > thead th:first-child {
+    width: calc(var(--list-padding-inline) + var(--entry-position-width));
+}
+.radar-contributors > .table-scroll > table > thead th:nth-last-child(-n + 3) {
+    width: 16%;
+}
+.radar-contributors > .table-scroll > table > thead th:nth-last-child(2) {
+    width: 12%;
+}
+.radar-contributor-row + .judgement-row + .radar-contributor-row {
+    border-top: 1px solid var(--row-separator);
+}
+.radar-contributor-row .entry-song-info {
+    flex: 1;
+}
+.radar-contributor-row .judgement-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+    width: fit-content;
+    font-size: var(--entry-title-size);
+    font-weight: 450;
+    line-height: 1.4;
+}
+.radar-contributor-row .judgement-toggle > span,
+.radar-contributor-row .artist {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.radar-contributor-details {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    align-items: center;
+    gap: 0px 20px;
+}
+.radar-contributor-details > .radar-contributor-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    margin: 0;
+}
+.radar-contributor-chart .song-radar,
+.radar-contributor-chart svg {
+    width: 100%;
+}
+.radar-contributor-breakdown {
+    min-width: 0;
+}
+.radar-contributor-breakdown .judgement-counts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    max-width: 560px;
+    margin: 24px auto 0;
+    text-align: center;
+}
+.radar-contributor-breakdown th,
+.radar-contributor-breakdown td {
+    padding: 4px 8px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+}
+.radar-contributor-breakdown thead th {
+    font: 10px var(--sans);
+    color: var(--muted);
+}
+.radar-contributor-breakdown thead {
+    background: transparent;
+}
+.radar-contributor-breakdown table {
+    table-layout: fixed;
+}
+.radar-contributor-breakdown th:first-child {
+    width: 34%;
+}
+.profile-radar .song-radar-fill {
+    transition: filter 240ms ease;
+}
+.profile-radar .song-radar-label,
+.profile-radar .song-radar-value {
+    transition: fill 240ms ease;
+}
+.profile-radar .song-radar-contribution {
+    fill: var(--accent);
+    font: 9px var(--sans);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 240ms ease;
+}
+.profile-radar
+    svg[data-active-axes]
+    .song-radar-contribution[data-contributing] {
+    opacity: 1;
+}
+.profile-radar .song-radar-area {
+    transition: stroke 240ms ease;
+}
+.radar-contributors .judgement-row:hover,
+.radar-contributor-breakdown tbody tr:hover {
+    background: #ffffff03;
+}
+.radar-contributor-breakdown tbody tr:hover {
+    background: transparent;
+}
+.profile-radar
+    svg[data-active-axes]
+    .song-radar-fill:not(.radar-contribution-fill) {
+    filter: grayscale(1) brightness(0.8);
+}
+.profile-radar svg[data-active-axes] .song-radar-area {
+    stroke: var(--faint);
+}
+[data-axis="notes"] {
+    --radar-axis-color: var(--radar-label-notes);
+}
+[data-axis="peak"] {
+    --radar-axis-color: var(--radar-label-peak);
+}
+[data-axis="tsumami"] {
+    --radar-axis-color: var(--radar-label-tsumami);
+}
+[data-axis="tricky"] {
+    --radar-axis-color: var(--radar-label-tricky);
+}
+[data-axis="hand-trip"] {
+    --radar-axis-color: var(--radar-label-hand-trip);
+}
+[data-axis="one-hand"] {
+    --radar-axis-color: var(--radar-label-one-hand);
+}
+.radar-contributor-breakdown [data-axis] {
+    color: var(--radar-axis-color);
+}
+.radar-axis-muted,
+.radar-axis-muted [data-axis] {
+    color: var(--faint);
+}
+.song-radar .song-radar-label.radar-axis-muted,
+.song-radar-label.radar-axis-muted .song-radar-value {
+    fill: var(--faint);
+}
+@media (max-width: 900px) {
+    .radar-contributor-details {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .radar-contributor-chart {
+        width: min(100%, 280px);
+        justify-self: center;
+    }
+}
+@media (max-width: 600px) {
+    .radar-contributors
+        > .table-scroll
+        > table
+        > thead
+        th:nth-last-child(-n + 2) {
+        width: 60px;
+    }
+    .radar-contributors > .table-scroll > table > thead th:first-child {
+        width: 44px;
+    }
+    .radar-contributors .radar-contributor-difficulty,
+    .radar-contributor-row .artist {
+        display: none;
+    }
+    .radar-contributor-row .record-details {
+        display: flex;
+    }
+    .radar-contributors > .table-scroll > table > thead th,
+    .radar-contributor-row td {
+        padding-inline: 6px;
+    }
+    .radar-contributors > .table-scroll > table > thead th:first-child,
+    .radar-contributor-row td:first-child {
+        padding-left: var(--list-padding-inline);
+    }
+    .radar-contributors > .table-scroll > table > thead th:last-child,
+    .radar-contributor-row td:last-child {
+        padding-right: var(--list-padding-inline);
+    }
 }
 @media (max-width: 600px) {
     .profile-radar-wrap {
@@ -1561,17 +1791,20 @@ footer > :last-child {
     color: var(--accent);
 }
 .chart-row,
-.song-search-entry {
+.song-search-entry,
+.radar-contributor-row {
     cursor: pointer;
     transition: background 0.16s;
 }
 .chart-row:has(:focus-visible),
-.song-search-entry:has(:focus-visible) {
+.song-search-entry:has(:focus-visible),
+.radar-contributor-row:has(:focus-visible) {
     background: var(--row-hover);
 }
 @media (hover: hover) {
     .chart-row:hover,
-    .song-search-entry:hover {
+    .song-search-entry:hover,
+    .radar-contributor-row:hover {
         background: var(--row-hover);
     }
 }
@@ -2207,7 +2440,8 @@ footer > :last-child {
         padding-left: var(--panel-padding-inline);
     }
 }
-.song-search-panel .pagination {
+.song-search-panel .pagination,
+.radar-contributors .pagination {
     border-radius: 0 0 var(--panel-radius) var(--panel-radius);
 }
 .segmented button,
@@ -2241,8 +2475,7 @@ footer > :last-child {
     gap: 10px;
     white-space: nowrap;
 }
-.judgement-toggle,
-.judgement-toggle:hover {
+.judgement-toggle {
     padding: 0;
     border: 0;
     background: none;
@@ -2258,12 +2491,17 @@ footer > :last-child {
 .judgement-toggle[aria-expanded="true"] .judgement-chevron {
     transform: rotate(180deg);
 }
-.song-search-panel .judgement-row {
+.song-search-panel .judgement-row,
+.radar-contributors .judgement-row {
     border-top: 0;
     background: #ffffff03;
 }
-.song-search-panel .judgement-row td {
+.song-search-panel .judgement-row td,
+.radar-contributors .judgement-row > td {
     padding: 12px 27px;
+}
+.radar-contributors .judgement-row > td {
+    padding-bottom: 23px;
 }
 .judgement-counts {
     display: grid;
@@ -4374,7 +4612,8 @@ footer > :last-child {
     .judgement-timing {
         grid-column: 1 / -1;
     }
-    .song-search-panel .judgement-row td {
+    .song-search-panel .judgement-row td,
+    .radar-contributors .judgement-row > td {
         padding: 4px 12px;
     }
     .profile-heading {
@@ -4517,7 +4756,8 @@ footer > :last-child {
         padding: 10px 0;
     }
     .records-panel .pagination,
-    .song-search-panel .pagination {
+    .song-search-panel .pagination,
+    .radar-contributors .pagination {
         padding: 12px;
     }
     .hero h1 {

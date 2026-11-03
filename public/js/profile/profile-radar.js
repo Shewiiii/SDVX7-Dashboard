@@ -5,9 +5,15 @@ import {
     selectProfileRadar,
 } from "./radar.js";
 import { motion } from "../core/motion.js";
+import { createRadarContributors } from "./radar-contributors.js";
 
-export function createProfileRadar(root, note) {
+export function createProfileRadar(root, note, renderChart) {
     let signature;
+    const contributors = createRadarContributors(
+        document.getElementById("radar-contributors"),
+        root,
+        renderChart,
+    );
 
     return {
         render(source, { animate = true, includeCustom = false } = {}) {
@@ -26,11 +32,13 @@ export function createProfileRadar(root, note) {
                       : "No data available";
                 root.innerHTML = `<p class="profile-radar-empty">${message}</p>`;
                 note.hidden = true;
+                contributors.update(null);
                 return;
             }
             root.innerHTML = radarMarkup(radar.values, { profile: true });
             note.hidden = radar.complete !== false;
             paintRadar(root, radar.values, { animate: animate && !first });
+            contributors.update(radar);
             if (first) {
                 motion.profileRadar(
                     root,

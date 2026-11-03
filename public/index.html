@@ -276,7 +276,9 @@
                     </div>
                     <div class="hero-meta" hidden>
                         <span id="updated"></span>
-                        <span id="ranking-status">Custom charts not ranked</span>
+                        <span id="ranking-status"
+                            >Custom charts not ranked</span
+                        >
                     </div>
                 </section>
                 <div id="notice" class="notice" role="status" hidden></div>
@@ -513,6 +515,107 @@
                             >
                                 Some saved charts have incomplete radar data.
                             </p>
+                            <section
+                                id="radar-contributors"
+                                class="radar-contributors"
+                                aria-label="Radar contributors"
+                                hidden
+                            >
+                                <div
+                                    class="radar-contributor-filters"
+                                    data-radar-filters
+                                    aria-label="Radar axis filters"
+                                    hidden
+                                ></div>
+                                <p
+                                    class="profile-radar-note"
+                                    data-radar-contributors-empty
+                                    hidden
+                                ></p>
+                                <div
+                                    class="table-scroll"
+                                    data-radar-contributors-table
+                                >
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Rank</th>
+                                                <th scope="col">Chart</th>
+                                                <th
+                                                    scope="col"
+                                                    class="radar-contributor-difficulty"
+                                                >
+                                                    Difficulty
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    class="radar-contributor-axes"
+                                                >
+                                                    Axes
+                                                </th>
+                                                <th scope="col" class="right">
+                                                    Total
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="pagination">
+                                    <span
+                                        >Page
+                                        <button
+                                            type="button"
+                                            class="pagination-page-number"
+                                            aria-label="Enter page number"
+                                        >
+                                            1</button
+                                        ><input
+                                            type="number"
+                                            class="pagination-page-input"
+                                            min="1"
+                                            step="1"
+                                            inputmode="numeric"
+                                            aria-label="Page number"
+                                            hidden
+                                        />
+                                        /
+                                        <span data-pagination-total
+                                            >1</span
+                                        ></span
+                                    >
+                                    <div>
+                                        <button
+                                            type="button"
+                                            data-pagination-action="first"
+                                            aria-label="First page"
+                                        >
+                                            ⇇
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-pagination-action="previous"
+                                            aria-label="Previous page"
+                                        >
+                                            ←
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-pagination-action="next"
+                                            aria-label="Next page"
+                                        >
+                                            →
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-pagination-action="last"
+                                            aria-label="Last page"
+                                        >
+                                            ⇉
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
                         </section>
                     </article>
                     <div class="lower-grid">
@@ -796,7 +899,9 @@
                                     hidden
                                 />
                                 /
-                                <span id="song-search-total-pages" data-pagination-total
+                                <span
+                                    id="song-search-total-pages"
+                                    data-pagination-total
                                     >1</span
                                 ></span
                             >
@@ -1225,7 +1330,8 @@
                                 <td>
                                     <code>notes</code>, <code>peak</code>,
                                     <code>tsumami</code>, <code>tricky</code>,
-                                    <code>handtrip</code>, <code>onehand</code>
+                                    <code>handtrip</code>,
+                                    <code>onehand</code>
                                 </td>
                                 <td>
                                     <code>tsumami&gt;120</code>

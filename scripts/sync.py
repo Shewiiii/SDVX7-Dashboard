@@ -792,6 +792,13 @@ def upload(
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing filtered profile radars"
                 )
+            if (
+                "contributors" in (payload.get("state", {}).get("profile_radar") or {})
+                and result.get("profile_radar_schema", 0) < 3
+            ):
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing radar contributors"
+                )
     except urllib.error.HTTPError as error:
         if compressed and error.code in (400, 415):
             error.close()

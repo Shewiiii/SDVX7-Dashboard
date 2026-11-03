@@ -1,7 +1,11 @@
 import { createPagination } from "./core/pagination.js";
+import { DETAILS_CHEVRON, setDetailsExpanded } from "./core/expandable-rows.js";
 import { createArchiveLoader } from "./core/archive.js";
 import { createPlayHighlights, subscribeArchive } from "./core/live.js";
-import { initSearchTools, dismissSearchKeyboard } from "./search/search-tools.js";
+import {
+    initSearchTools,
+    dismissSearchKeyboard,
+} from "./search/search-tools.js";
 import { setSearchData, parseSearch } from "./search/search-query.js";
 import { createLibrary } from "./library/library.js";
 import {
@@ -56,6 +60,20 @@ const $ = (id) => document.getElementById(id);
 const profileRadar = createProfileRadar(
     $("profile-radar"),
     $("profile-radar-note"),
+    (chart, controls) => {
+        const song = songs.get(chart.music_id);
+        const entry = {
+            ...song,
+            ...chart,
+            title: song?.title || `Chart ${chart.music_id}`,
+            artist: song?.artist || "",
+        };
+        const titleMarkup = `<button type="button" class="song-title judgement-toggle" aria-expanded="false" aria-controls="${controls}" aria-label="Show radar contribution details for ${escape(entry.title)}"><span>${escape(entry.title)}</span>${DETAILS_CHEVRON}</button>`;
+        return {
+            song: `<div class="table-song">${coverMarkup(entry)}${chartInfo(entry, { artist: true, titleMarkup, showClear: false, detailsClass: "record-details" })}</div>`,
+            difficulty: badge(entry),
+        };
+    },
 );
 const playHighlights = createPlayHighlights();
 let highlightCleanup,
@@ -456,8 +474,16 @@ function coverMarkup(p, size = "small") {
 const chartButton = (p) =>
     `<button class="song-title open-chart" data-music="${p.music_id}" data-diff="${p.diff_idx}">${escape(chartTitle(p))}</button>`;
 
-function chartInfo(p, { artist = false, detailsClass = "" } = {}) {
-    return `<div class="entry-song-info">${chartButton(p)}${artist ? `<div class="artist">${escape(p.artist)}</div>` : ""}<div class="song-details ${detailsClass}">${badge(p)}${clear(p)}</div></div>`;
+function chartInfo(
+    p,
+    {
+        artist = false,
+        detailsClass = "",
+        titleMarkup = chartButton(p),
+        showClear = true,
+    } = {},
+) {
+    return `<div class="entry-song-info">${titleMarkup}${artist ? `<div class="artist">${escape(p.artist)}</div>` : ""}<div class="song-details ${detailsClass}">${badge(p)}${showClear ? clear(p) : ""}</div></div>`;
 }
 
 function setText(id, value) {
@@ -693,8 +719,7 @@ function renderSummary({ animate = true } = {}) {
     if (animate) {
         motion.metrics(document.querySelector(".metrics"));
         motion.data(document.querySelector(".hero-meta"));
-        for (const id of ["session-meta", "top-foot"])
-            motion.data($(id));
+        for (const id of ["session-meta", "top-foot"]) motion.data($(id));
         motion.data($("recent-plays"), ".play-row, .empty-list");
         motion.data($("top-plays"), ".play-row, .empty-list");
     }
@@ -1029,10 +1054,7 @@ function renderChart({ animate = true, transition = false } = {}) {
     $("popup").hidden = true;
     $("chart-empty").hidden = !!plays.length;
     if (!plays.length) {
-        setText(
-            "chart-summary",
-            "No data available",
-        );
+        setText("chart-summary", "No data available");
         return;
     }
     const mobile = window.matchMedia("(max-width: 900px)").matches;
@@ -2065,7 +2087,7 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
               .map((p, index) => {
                   const key = judgementKey(p);
                   const expanded = expandedJudgements.has(key);
-                  return `<tr id="song-score-${index}" class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span><svg class="judgement-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+                  return `<tr id="song-score-${index}" class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span>${DETAILS_CHEVRON}</button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
               })
               .join("")
         : '<tr><td class="empty-state" colspan="5">No data available</td></tr>';
@@ -2086,17 +2108,16 @@ function renderSongSearch({ animate = true, restartRadar = false } = {}) {
 function setJudgementsExpanded(row, expanded) {
     const button = row.querySelector(".judgement-toggle");
     const details = $(button.getAttribute("aria-controls"));
-    if (details.hidden === !expanded) return;
-    details.hidden = !expanded;
-    if (details.hidden) expandedJudgements.delete(row.dataset.judgementKey);
-    else {
-        expandedJudgements.add(row.dataset.judgementKey);
-        motion.data(
-            details,
+    if (
+        !setDetailsExpanded(
+            row,
+            expanded,
             ".judgement-counts > div, .judgements-unavailable",
-        );
-    }
-    button.setAttribute("aria-expanded", String(!details.hidden));
+        )
+    )
+        return;
+    if (details.hidden) expandedJudgements.delete(row.dataset.judgementKey);
+    else expandedJudgements.add(row.dataset.judgementKey);
     button.setAttribute(
         "aria-label",
         `${details.hidden ? "Show" : "Hide"} judgements for score ${row.querySelector(".score-with-grade span").textContent}`,

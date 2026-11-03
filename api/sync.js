@@ -153,7 +153,7 @@ export default async function handler(req, res) {
             details_schema: 8,
             audio_schema: 2,
             catalog_schema: 3,
-            profile_radar_schema: 2,
+            profile_radar_schema: 3,
         });
     } catch (error) {
         return res

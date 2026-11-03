@@ -11,7 +11,7 @@ export function setDetailsExpanded(row, expanded, selector) {
     if (details.hidden === !expanded) return false;
     details.hidden = !expanded;
     button.setAttribute("aria-expanded", String(expanded));
-    if (expanded) motion.data(details, selector);
+    if (expanded) motion.data(details, selector, { fadeOnly: true });
     else motion.stop(details);
     return true;
 }

@@ -5,6 +5,7 @@ const owners = new WeakMap();
 const swaps = new WeakMap();
 const curveReveals = new WeakMap();
 const ease = "cubic-bezier(.22, 1, .36, 1)";
+const LIST_REVEAL_STEP_MS = 17;
 // A lighter slowdown at the end of the graph sweeps.
 const graphEase = "cubic-bezier(.25, .1, .155, 1)";
 
@@ -15,7 +16,7 @@ function cancel(root) {
 
 function play(root, element, keyframes, options = {}) {
     const animation = element.animate(keyframes, {
-        duration: 520,
+        duration: 573,
         easing: ease,
         fill: "backwards",
         ...options,
@@ -111,12 +112,13 @@ function queue(root, reveal, minimum = 0) {
     else observer?.observe(root);
 }
 
-function fade(root, element, delay = 0) {
-    const tableRow = element.tagName === "TR";
+function fade(root, element, delay = 0, fadeOnly = false) {
+    const listRow =
+        element.tagName === "TR" || element.classList.contains("play-row");
     play(
         root,
         element,
-        tableRow
+        listRow || fadeOnly
             ? [{ opacity: 0 }, { opacity: 1 }]
             : [
                   {
@@ -269,7 +271,7 @@ export const motion = {
             );
         }
     },
-    data(root, selector = null) {
+    data(root, selector = null, { fadeOnly = false } = {}) {
         queue(root, () => {
             const elements = selector
                 ? [...root.querySelectorAll(selector)].filter(
@@ -277,7 +279,7 @@ export const motion = {
                   )
                 : [root];
             elements.forEach((element, index) =>
-                fade(root, element, Math.min(index, 12) * 24),
+                fade(root, element, index * LIST_REVEAL_STEP_MS, fadeOnly),
             );
         });
     },

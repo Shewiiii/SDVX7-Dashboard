@@ -1,5 +1,8 @@
 import { createPagination } from "../core/pagination.js";
-import { setDetailsExpanded } from "../core/expandable-rows.js";
+import {
+    DETAILS_CHEVRON,
+    setDetailsExpanded,
+} from "../core/expandable-rows.js";
 import { motion } from "../core/motion.js";
 import { paginate } from "./metrics.js";
 import {
@@ -59,12 +62,21 @@ export function createRadarContributors(root, profileRoot, renderChart) {
     const table = root.querySelector("[data-radar-contributors-table]");
     const pager = root.querySelector(".pagination");
     const filters = root.querySelector("[data-radar-filters]");
+    const toggle = document.getElementById("radar-contributors-toggle");
+    toggle.innerHTML = `Details ${DETAILS_CHEVRON}`;
     const selectedAxes = new Set();
     let radar;
     let entries = [];
     let page = 0;
     let expanded = null;
     let hovered = null;
+    let visible = false;
+
+    toggle.addEventListener("click", () => {
+        visible = true;
+        expanded = null;
+        render();
+    });
 
     const pagination = createPagination(pager, {
         onChange(requested) {
@@ -107,6 +119,7 @@ export function createRadarContributors(root, profileRoot, renderChart) {
     }
 
     function toggleAxis(axis) {
+        visible = true;
         if (selectedAxes.has(axis)) selectedAxes.delete(axis);
         else selectedAxes.add(axis);
         page = 0;
@@ -138,12 +151,21 @@ export function createRadarContributors(root, profileRoot, renderChart) {
     });
 
     function render() {
+        const revealing = root.hidden && Boolean(radar && visible);
+        const focusToggle = revealing && document.activeElement === toggle;
         hovered = null;
         const source = radar?.contributors;
         entries = rankRadarContributors(source ?? [], [...selectedAxes]);
         renderFilters();
-        root.hidden = !radar;
-        if (!radar) return;
+        root.hidden = !radar || !visible;
+        toggle.hidden = !radar || visible;
+        toggle.setAttribute("aria-expanded", String(Boolean(radar && visible)));
+        if (root.hidden) {
+            motion.stop(root);
+            body.replaceChildren();
+            highlight();
+            return;
+        }
         const available = entries.length > 0;
         empty.hidden = available;
         empty.textContent = Array.isArray(source)
@@ -175,6 +197,13 @@ export function createRadarContributors(root, profileRoot, renderChart) {
             })
             .join("");
         updateHighlight();
+        if (revealing) {
+            motion.data(body, ".radar-contributor-row");
+            if (focusToggle)
+                body.querySelector(".judgement-toggle")?.focus({
+                    preventScroll: true,
+                });
+        }
     }
 
     body.addEventListener("pointerover", (event) => {

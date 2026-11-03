@@ -1358,6 +1358,12 @@ footer > :last-child {
 .profile-radar-note {
     padding: 0 24px;
 }
+.radar-contributors-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px auto 0;
+}
 .profile-radar-section:has(.radar-contributors:not([hidden])) {
     padding-bottom: 0;
 }
@@ -2533,7 +2539,8 @@ footer > :last-child {
     opacity: 0.6;
     transition: transform 0.16s;
 }
-.judgement-toggle[aria-expanded="true"] .judgement-chevron {
+.judgement-toggle[aria-expanded="true"] .judgement-chevron,
+.radar-contributors-toggle[aria-expanded="true"] .judgement-chevron {
     transform: rotate(180deg);
 }
 .song-search-panel .judgement-row,

@@ -1,5 +1,6 @@
 import { dismissSearchKeyboard } from "../search/search-tools.js";
 import { showPanel } from "../core/panels.js";
+import { afterPanelHistory } from "../core/panel-history.js";
 import { parseSearch, songVersion } from "../search/search-query.js";
 import {
     CLEARS,
@@ -465,7 +466,9 @@ export function createLibrary(
                     button.addEventListener("click", async () => {
                         dismissSearchKeyboard();
                         await close();
-                        selectSong(entry.song.music_id, entry.song.diff_idx);
+                        afterPanelHistory(() =>
+                            selectSong(entry.song.music_id, entry.song.diff_idx),
+                        );
                     });
                     list.append(button);
                 }

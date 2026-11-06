@@ -293,7 +293,13 @@ function createModelPlayer(model, app, canvas, signal, composite) {
     let restoreOpacity = false;
     if (opacityParameter) {
         let opacity = 1;
-        if (opacityFilter) model.filters = [opacityFilter];
+        if (opacityFilter) {
+            // Preserve the canvas resolution and antialiasing during fades
+            opacityFilter.resolution = app.renderer.resolution;
+            opacityFilter.multisample = app.renderer.multisample;
+            opacityFilter.enabled = false;
+            model.filters = [opacityFilter];
+        }
         const opacities = core.drawables.opacities;
         const savedOpacities = new Float32Array(opacities.length);
         const draw = internal.draw.bind(internal);
@@ -314,7 +320,11 @@ function createModelPlayer(model, app, canvas, signal, composite) {
                     (core.parameters.values[index] - hidden) / (opaque - hidden),
                 ),
             );
-            if (opacityFilter) opacityFilter.alpha = opacity;
+            if (opacityFilter) {
+                opacityFilter.alpha = opacity;
+                // Opaque characters can render directly without an extra pass
+                opacityFilter.enabled = opacity < 1;
+            }
         });
 
         internal.draw = (gl) => {

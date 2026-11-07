@@ -1,7 +1,16 @@
 import { svgElement, pathData } from "../core/svg.js";
 import { motion } from "../core/motion.js";
 import { bindChartHover, positionChartPopup } from "../core/chart-hover.js";
-import { volforceDensity, volforceTopPercent } from "./volforce-ranking.js";
+import {
+    volforceBuckets,
+    volforceDensity,
+    volforceTopPercent,
+} from "./volforce-ranking.js";
+import { VF_CLASSES, volforceClass } from "./metrics.js";
+
+const tierThresholds = VF_CLASSES.flatMap(({ minimum, step }) =>
+    Array.from({ length: 4 }, (_, rank) => minimum + rank * step),
+);
 
 export function createVolforceDistribution(root) {
     const svg = root.querySelector("svg");
@@ -11,6 +20,7 @@ export function createVolforceDistribution(root) {
     const popup = root.querySelector(".chart-popup");
     const wrap = popup.parentElement;
     let ranking = [];
+    let buckets = [];
     let points = [];
     let total = null;
     let rawTotal = null;
@@ -19,12 +29,14 @@ export function createVolforceDistribution(root) {
     let failed = false;
     let hover = null;
 
-    function densityAt(value) {
-        const index = Math.floor(value * 8);
+    function percentageAt(value) {
+        const position =
+            (value / (points.at(-1)?.[0] || 1)) * (points.length - 1);
+        const index = Math.floor(position);
         const previous = points[index];
         const following = points[index + 1] || previous;
         return previous
-            ? previous[1] + (following[1] - previous[1]) * (value * 8 - index)
+            ? previous[1] + (following[1] - previous[1]) * (position - index)
             : 0;
     }
 
@@ -50,19 +62,36 @@ export function createVolforceDistribution(root) {
             hover.maximum;
         const top = volforceTopPercent(value, ranking);
         const topLabel = top === 0 ? "0%" : `${top.toFixed(2)}%`;
-        const lower = Math.max(0, value - 0.25);
-        const upper = value + 0.25;
+        const bucket =
+            buckets[
+                Math.min(
+                    buckets.length - 1,
+                    Math.floor(Math.round(value * 1000) / 100),
+                )
+            ];
+        const bucketRange = `${bucket.lower.toFixed(1)}-${bucket.upper.toFixed(1)} VF`;
+        const tier = volforceClass(value);
+        const tierIndex = tierThresholds.findLastIndex(
+            (threshold) => threshold <= Math.round(value * 1000) / 1000,
+        );
+        const lower = tierThresholds[tierIndex];
+        const upper = tierThresholds[tierIndex + 1];
         const share =
             volforceTopPercent(lower, ranking) -
-            volforceTopPercent(upper, ranking);
+            (upper === undefined ? 0 : volforceTopPercent(upper, ranking));
         const count = Math.round((share / 100) * ranking.length);
+        const profiles = `${count.toLocaleString()} ${count === 1 ? "profile" : "profiles"}`;
+        const range =
+            upper === undefined
+                ? `${lower.toFixed(3)}+ VF`
+                : `${lower.toFixed(3)}-${(upper - 0.001).toFixed(3)} VF`;
         hover.crosshair.setAttribute("x1", position);
         hover.crosshair.setAttribute("x2", position);
         hover.crosshair.setAttribute("visibility", "visible");
         hover.point.setAttribute("cx", position);
-        hover.point.setAttribute("cy", hover.y(densityAt(value)));
+        hover.point.setAttribute("cy", hover.y(percentageAt(value)));
         hover.point.setAttribute("visibility", "visible");
-        popup.innerHTML = `<strong>${value.toFixed(3)} VF</strong><div class="popup-line"><span>Top</span><b>${topLabel}</b></div><div class="popup-line"><span>Profiles ±0.25 VF</span><b>${count.toLocaleString()}</b></div>`;
+        popup.innerHTML = `<strong>${value.toFixed(3)} VF</strong><div class="popup-line"><span>Top</span><b>${topLabel}</b></div><div class="popup-line"><span>Players</span><b>${bucket.percent.toFixed(2)}%</b></div><div class="popup-line"><span>Sample</span><b>${bucketRange}</b></div><div class="popup-line"><span>${tier.name}</span><b>${profiles}</b></div><div class="popup-line"><span>VF Level range</span><b>${range}</b></div>`;
         positionChartPopup(popup, wrap, event);
     }
 
@@ -104,7 +133,7 @@ export function createVolforceDistribution(root) {
         const bottom = height - 46;
         const maximum = points.at(-1)[0];
         const peak = Math.max(...points.map((point) => point[1]));
-        const step = Math.max(1, Math.ceil(peak / 4));
+        const step = Math.max(0.1, Math.ceil((peak / 4) * 10) / 10);
         const x = (value) => left + (value / maximum) * (right - left);
         const y = (percent) => bottom - (percent / (step * 4)) * (bottom - top);
         const text = (value, attributes) =>
@@ -147,7 +176,7 @@ export function createVolforceDistribution(root) {
                     trigger.className = "chart-vf-trigger";
                     trigger.textContent = label;
                     trigger.dataset.chartVfDescription =
-                        "SDVX ∇ has introduced a decimal part in levels above 17, and buffed levels of around 35 charts. Exceed Gear VF is thus the total VF before these adjustments.";
+                        "SDVX ∇ has introduced a decimal part in levels above 17, and buffed the level of around 35 charts. Exceed Gear VF is thus the total VF before these adjustments.";
                     trigger.setAttribute("aria-describedby", "chart-vf-popup");
                     entry.append(number, " ", trigger);
                 } else if (label === "∇ VF") {
@@ -161,7 +190,7 @@ export function createVolforceDistribution(root) {
             `VolForce distribution of ${ranking.length.toLocaleString()} SDVX6 arcade profiles, April 2025. ${description}`,
         );
         svg.append(
-            text("Profiles (% / VF)", {
+            text("Players per 0.1 VF", {
                 x: left,
                 y: 17,
                 class: "axis-caption",
@@ -169,7 +198,7 @@ export function createVolforceDistribution(root) {
         );
 
         for (let tick = 0; tick <= 4; tick++) {
-            const value = tick * step;
+            const value = Number((tick * step).toFixed(2));
             svg.append(
                 svgElement("line", {
                     x1: left,
@@ -246,7 +275,7 @@ export function createVolforceDistribution(root) {
                 continue;
 
             const position = x(value);
-            const density = densityAt(value);
+            const percent = percentageAt(value);
             const marker = svgElement("g", {
                 class: raw
                     ? "vf-distribution-raw-marker"
@@ -274,7 +303,7 @@ export function createVolforceDistribution(root) {
                 }),
                 svgElement("circle", {
                     cx: position,
-                    cy: y(density),
+                    cy: y(percent),
                     r: 4,
                     class: "calculator-point",
                 }),
@@ -310,6 +339,7 @@ export function createVolforceDistribution(root) {
         render(source, value, rawValue = null) {
             if (source !== ranking) {
                 ranking = source;
+                buckets = volforceBuckets(ranking);
                 points = volforceDensity(ranking);
                 signature = null;
             }

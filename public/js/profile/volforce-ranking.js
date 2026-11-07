@@ -61,39 +61,59 @@ export function volforceTopPercent(total, ranking) {
     return (low / ranking.length) * 100;
 }
 
-export function volforceDensity(ranking) {
+export function volforceBuckets(ranking) {
     if (!ranking.length) return [];
 
-    const buckets = new Map();
+    const counts = Array(240).fill(0);
     for (const value of ranking) {
-        const key = Math.floor(value / 100);
-        const bucket = buckets.get(key) || { count: 0, sum: 0 };
-        bucket.count++;
-        bucket.sum += value;
-        buckets.set(key, bucket);
+        const index = Math.min(counts.length - 1, Math.floor(value / 100));
+        counts[index]++;
     }
-    const samples = [...buckets.values()].map(({ count, sum }) => ({
-        value: sum / count / 1000,
+
+    return counts.map((count, index) => ({
+        lower: index / 10,
+        upper: (index + 1) / 10,
         count,
+        percent: (count / ranking.length) * 100,
     }));
-    const bandwidth = 0.4;
-    const maximum = 24;
-    const factor = 100 / (ranking.length * bandwidth * Math.sqrt(2 * Math.PI));
+}
 
-    return Array.from({ length: maximum * 8 + 1 }, (_, index) => {
-        const value = index / 8;
-        const density = samples.reduce((sum, sample) => {
-            const distance = (value - sample.value) / bandwidth;
-            const reflected = (value + sample.value) / bandwidth;
-            return (
-                sum +
-                sample.count *
-                    (Math.exp(-0.5 * distance ** 2) +
-                        Math.exp(-0.5 * reflected ** 2))
-            );
-        }, 0);
+export function volforceDensity(ranking) {
+    const buckets = volforceBuckets(ranking);
+    if (!buckets.length) return [];
 
-        return [value, density * factor];
+    const changes = buckets.slice(1).map(
+        (bucket, index) => bucket.percent - buckets[index].percent,
+    );
+    const slopes = buckets.map((_, index) => {
+        const before = changes[index - 1];
+        const after = changes[index];
+        return before * after > 0
+            ? (2 * before * after) / (before + after)
+            : 0;
+    });
+
+    // Interpolate between bucket centres without changing their percentages
+    return Array.from({ length: 24 * 80 + 1 }, (_, sample) => {
+        const value = sample / 80;
+        const position = value * 10 - 0.5;
+        const index = Math.max(
+            0,
+            Math.min(buckets.length - 2, Math.floor(position)),
+        );
+        const t = Math.max(0, Math.min(1, position - index));
+        const start = buckets[index].percent;
+        const end = buckets[index + 1].percent;
+        const percent =
+            (2 * t ** 3 - 3 * t ** 2 + 1) * start +
+            (t ** 3 - 2 * t ** 2 + t) * slopes[index] +
+            (-2 * t ** 3 + 3 * t ** 2) * end +
+            (t ** 3 - t ** 2) * slopes[index + 1];
+
+        return [
+            value,
+            Math.max(Math.min(start, end), Math.min(Math.max(start, end), percent)),
+        ];
     });
 }
 

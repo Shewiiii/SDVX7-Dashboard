@@ -429,7 +429,7 @@ export function createLibrary(
                         const range = document.createElement("span");
                         range.className =
                             "song-option-range library-folder-range";
-                        range.setAttribute("aria-label", "Difficulty range");
+                        range.setAttribute("aria-label", "Level range");
                         range.innerHTML = charts
                             .map(renderBadge)
                             .join("<span>~</span>");

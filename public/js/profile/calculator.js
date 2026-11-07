@@ -390,8 +390,8 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         svg.setAttribute(
             "aria-label",
             variableScore
-                ? `Chart VolForce by score on a reversed logarithmic scale at difficulty ${state.level}, for available clear types`
-                : `Chart VolForce by difficulty on a reversed logarithmic scale at score ${formatScore(state.score)}, for available clear types`,
+                ? `Chart VolForce by score on a reversed logarithmic scale at level ${state.level}, for available clear types`
+                : `Chart VolForce by level on a reversed logarithmic scale at score ${formatScore(state.score)}, for available clear types`,
         );
 
         for (let tick = 0; tick <= 10; tick++) {
@@ -500,7 +500,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
                     "text-anchor": "middle",
                     class: "axis-caption",
                 },
-                variableScore ? "Score" : "Difficulty",
+                variableScore ? "Score" : "Level",
             ),
         );
 
@@ -589,7 +589,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         target.step = 0.000001;
         $("target-label").textContent = variableScore
             ? "Target score"
-            : "Target difficulty";
+            : "Target level";
         if (transitionCurves)
             motion.calculatorCurves(svg, previous.showPuc, false);
         updateTarget(value);
@@ -621,7 +621,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             $("validation").hidden = valid;
             $("validation").textContent =
                 key === "level"
-                    ? "Enter a difficulty from 1 to 20.9, in steps of 0.1."
+                    ? "Enter a level from 1 to 20.9, in steps of 0.1."
                     : "Enter a whole score from 0 to 10,000,000.";
             if (!valid) return;
             const changed = state[key] !== value;

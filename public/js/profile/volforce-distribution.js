@@ -150,7 +150,7 @@ export function createVolforceDistribution(root) {
                     trigger.className = "chart-vf-trigger";
                     trigger.textContent = label;
                     trigger.dataset.chartVfDescription =
-                        "Chart difficulties with a decimal part in top 50 are truncated, so their chart VF are closer to EXCEED GEAR's. This is not perfect however, as some chart diffs have been adjusted, like SuddeИDeath.";
+                        "Chart levels with a decimal part in top 50 are truncated, so their chart VF are closer to EXCEED GEAR's. This is not perfect however, as some chart levels have been adjusted, like SuddeИDeath.";
                     trigger.setAttribute("aria-describedby", "chart-vf-popup");
                     entry.append(number, " ", trigger);
                 } else if (label === "∇ VF") {

@@ -38,7 +38,7 @@ export function createCrewVoices(panel) {
                 fetch(new URL(entry.voice, base), { signal }),
                 fetch(
                     new URL(
-                        "../../game-data/voice_label_overrides.json",
+                        "../../game-data/voice-label-overrides.json",
                         import.meta.url,
                     ),
                     { signal },

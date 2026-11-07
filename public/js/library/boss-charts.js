@@ -28,7 +28,7 @@ export function isBossChart(chart) {
 export async function loadBossCharts() {
     if (charts) return;
     if (!task) {
-        task = fetch("/game-data/boss_charts.json")
+        task = fetch("/game-data/boss-charts.json")
             .then(async (response) => {
                 if (!response.ok) throw Error("Boss charts unavailable");
                 installBossCharts(await response.json());

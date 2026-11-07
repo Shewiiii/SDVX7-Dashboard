@@ -33,7 +33,7 @@ def main() -> None:
 if __name__ == "__main__":
     print(
         "This script will attempt to scrap data from known sources and Asphyxia, but will be incomplete. "
-        "Missing entries can be completed in public/game-data/unlock_overrides.json."
+        "Missing entries can be completed in public/game-data/unlock-overrides.json."
     )
     print("Requires asphyxia-core-win-x64 folder in your game's root folder")
     main()

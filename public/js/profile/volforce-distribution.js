@@ -197,7 +197,7 @@ export function createVolforceDistribution(root) {
         svg.append(
             text("Players per 0.1 VF", {
                 x: left,
-                y: 17,
+                y: 35,
                 class: "axis-caption",
             }),
         );

@@ -117,7 +117,7 @@ export function createVolforceDistribution(root) {
 
         const mobile = window.matchMedia("(max-width: 900px)").matches;
         const width = mobile ? Math.max(260, availableWidth - 18) : 1100;
-        const height = mobile ? 296 : 316;
+        const height = mobile ? 278 : 298;
         const next = `${width}:${total}:${rawTotal}:${ranking.length}`;
         if (signature === next) return;
         signature = next;
@@ -133,8 +133,8 @@ export function createVolforceDistribution(root) {
         svg.replaceChildren();
 
         const left = mobile ? 39 : 69;
-        const right = width - (mobile ? 18 : 72);
-        const top = 66;
+        const right = width - (mobile ? 46 : 72);
+        const top = 48;
         const bottom = height - (mobile ? 50 : 46);
         const maximum = points.at(-1)[0];
         const peak = Math.max(...points.map((point) => point[1]));
@@ -196,8 +196,9 @@ export function createVolforceDistribution(root) {
         );
         svg.append(
             text("Players per 0.1 VF", {
-                x: left,
-                y: 35,
+                x: right,
+                y: 17,
+                "text-anchor": "end",
                 class: "axis-caption",
             }),
         );
@@ -213,9 +214,9 @@ export function createVolforceDistribution(root) {
                     class: "grid",
                 }),
                 text(`${value}%`, {
-                    x: left - 10,
+                    x: right + (mobile ? 7 : 13),
                     y: y(value) + 3,
-                    "text-anchor": "end",
+                    "text-anchor": "start",
                 }),
             );
         }
@@ -337,8 +338,6 @@ export function createVolforceDistribution(root) {
                     ? `${value.toFixed(3)} ∇ VF`
                     : `${value.toFixed(3)} Exceed Gear VF, ${topLabel}`,
             });
-            const caption = `${value.toFixed(3)} ${raw ? "∇" : "EG"} VF`;
-            const captionY = raw ? 19 : 35;
             marker.append(
                 svgElement("line", {
                     x1: position,
@@ -351,11 +350,6 @@ export function createVolforceDistribution(root) {
                     cy: y(percent),
                     r: 4,
                     class: "calculator-point",
-                }),
-                text(caption, {
-                    x: position,
-                    y: captionY,
-                    "text-anchor": "middle",
                 }),
             );
             markers.append(marker);

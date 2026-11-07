@@ -449,10 +449,11 @@
     display: flex;
     gap: 18px;
     justify-content: flex-end;
-    padding: 21px 30px 2px;
+    padding: 2px 30px 2px;
     flex-wrap: wrap;
 }
-.chart-legend button {
+.chart-legend button,
+.chart-legend-item {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1359,8 +1360,8 @@ footer > :last-child {
     stroke: var(--panel);
     stroke-width: 2;
 }
-.chart-svg .vf-distribution-marker text {
-    fill: var(--accent);
+.vf-distribution-eg-dot {
+    background: var(--accent);
 }
 .vf-distribution-raw-marker {
     color: var(--vf-distribution-raw-color);
@@ -1375,8 +1376,8 @@ footer > :last-child {
     stroke: var(--panel);
     stroke-width: 2;
 }
-.chart-svg .vf-distribution-raw-marker text {
-    fill: currentColor;
+.vf-distribution-raw-dot {
+    background: var(--vf-distribution-raw-color);
 }
 .profile-radar-wrap {
     display: grid;
@@ -1713,7 +1714,7 @@ footer > :last-child {
 }
 .timing-heading p {
     margin: 4px 0 0;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
 }
 .timing-chart-wrap {
@@ -4685,10 +4686,11 @@ footer > :last-child {
     }
     .chart-legend {
         justify-content: flex-start;
-        padding: 16px 18px 5px;
+        padding: 5px 18px 5px;
         gap: 8px 14px;
     }
-    .chart-legend button {
+    .chart-legend button,
+    .chart-legend-item {
         font-size: 8px;
     }
     .chart-wrap {

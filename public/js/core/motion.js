@@ -390,20 +390,29 @@ export const motion = {
             0.5,
         );
     },
-    calculator(svg, animate = true) {
+    calculator(svg, animate = true, { guidesAfterCurve = false } = {}) {
         if (!animate && !pending.has(svg)) return;
         queue(
             svg,
             () => {
+                let curveEnd = 0;
                 svg.querySelectorAll(
                     ".calculator-curve:not([hidden]), .calculator-chart-points, .calculator-reference",
-                ).forEach((curve, index) => sweep(svg, curve, index * 65));
-                const markers = svg.querySelector(".calculator-markers");
-                if (markers)
+                ).forEach((curve, index) => {
+                    const animation = sweep(svg, curve, index * 65);
+                    curveEnd = Math.max(
+                        curveEnd,
+                        animation.effect.getComputedTiming().endTime,
+                    );
+                });
+                svg.querySelectorAll(
+                    ".calculator-markers, .calculator-guides",
+                ).forEach((markers) =>
                     play(svg, markers, [{ opacity: 0 }, { opacity: 1 }], {
                         duration: 300,
-                        delay: 900,
-                    });
+                        delay: guidesAfterCurve ? curveEnd : 900,
+                    }),
+                );
             },
             0.5,
         );

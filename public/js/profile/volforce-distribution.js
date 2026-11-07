@@ -71,6 +71,13 @@ export function createVolforceDistribution(root) {
             ];
         const sampleRange = `${sample.lower.toFixed(1)}-${sample.upper.toFixed(1)} VF`;
         const tier = volforceClass(value);
+        const currentClass = VF_CLASSES[tier.number - 1];
+        const classUpper = VF_CLASSES[tier.number]?.minimum;
+        const classShare =
+            volforceTopPercent(currentClass.minimum, ranking) -
+            (classUpper === undefined
+                ? 0
+                : volforceTopPercent(classUpper, ranking));
         const tierIndex = tierThresholds.findLastIndex(
             (threshold) => threshold <= Math.round(value * 1000) / 1000,
         );
@@ -79,8 +86,6 @@ export function createVolforceDistribution(root) {
         const share =
             volforceTopPercent(lower, ranking) -
             (upper === undefined ? 0 : volforceTopPercent(upper, ranking));
-        const count = Math.round((share / 100) * ranking.length);
-        const profiles = `${count.toLocaleString()} ${count === 1 ? "profile" : "profiles"}`;
         const range =
             upper === undefined
                 ? `${lower.toFixed(3)}+ VF`
@@ -91,7 +96,7 @@ export function createVolforceDistribution(root) {
         hover.point.setAttribute("cx", position);
         hover.point.setAttribute("cy", hover.y(percentageAt(value)));
         hover.point.setAttribute("visibility", "visible");
-        popup.innerHTML = `<strong>${value.toFixed(3)} VF</strong><div class="popup-line"><span>Top</span><b>${topLabel}</b></div><div class="popup-line"><span>Players</span><b>${sample.percent.toFixed(2)}%</b></div><div class="popup-line"><span>Sample</span><b>${sampleRange}</b></div><div class="popup-line"><span>${tier.name}</span><b>${profiles}</b></div><div class="popup-line"><span>VF Level range</span><b>${range}</b></div>`;
+        popup.innerHTML = `<strong>${value.toFixed(3)} VF</strong><div class="popup-line"><span>Top</span><b>${topLabel}</b></div><div class="popup-line"><span>Players (${sampleRange})</span><b>${sample.percent.toFixed(2)}%</b></div><div class="popup-line"><span><img class="vf-distribution-class-icon" src="/assets/vf-classes/${tier.number}.png" width="22" height="22" alt="">${currentClass.name}</span><b>${classShare.toFixed(2)}%</b></div><div class="popup-line"><span>${tier.name}</span><b>${share.toFixed(2)}%</b></div><div class="popup-line"><span>VF Level range</span><b>${range}</b></div>`;
         positionChartPopup(popup, wrap, event);
     }
 
@@ -112,7 +117,7 @@ export function createVolforceDistribution(root) {
 
         const mobile = window.matchMedia("(max-width: 900px)").matches;
         const width = mobile ? Math.max(260, availableWidth - 18) : 1100;
-        const height = 300;
+        const height = mobile ? 296 : 316;
         const next = `${width}:${total}:${rawTotal}:${ranking.length}`;
         if (signature === next) return;
         signature = next;
@@ -129,8 +134,8 @@ export function createVolforceDistribution(root) {
 
         const left = mobile ? 39 : 69;
         const right = width - (mobile ? 18 : 72);
-        const top = mobile ? 70 : 54;
-        const bottom = height - (mobile ? 62 : 46);
+        const top = 66;
+        const bottom = height - (mobile ? 50 : 46);
         const maximum = points.at(-1)[0];
         const peak = Math.max(...points.map((point) => point[1]));
         const step = Math.max(0.1, Math.ceil((peak / 4) * 10) / 10);
@@ -246,6 +251,41 @@ export function createVolforceDistribution(root) {
             }),
         );
 
+        const guides = svgElement("g", {
+            class: "calculator-guides vf-distribution-class-guides",
+        });
+        const iconSize = Math.min(18, (right - left) / maximum + 2);
+        svg.append(guides);
+        VF_CLASSES.forEach(({ name, minimum }, index) => {
+            const position = x(minimum);
+            const guide = svgElement("g", {
+                class: "vf-distribution-class-guide",
+                "data-vf-class": index + 1,
+                "data-vf": minimum,
+                style: `--vf-class-color: var(--vf-class-${name.toLowerCase()})`,
+            });
+            guide.append(
+                svgElement("title", {}, `${name}, ${minimum.toFixed(3)} VF`),
+                svgElement("line", {
+                    x1: position,
+                    x2: position,
+                    y1: top,
+                    y2: bottom,
+                    class: "vf-distribution-class-line",
+                }),
+                svgElement("image", {
+                    href: `/assets/vf-classes/${index + 1}.png`,
+                    x: position - iconSize / 2,
+                    y: top - iconSize - 5,
+                    width: iconSize,
+                    height: iconSize,
+                    preserveAspectRatio: "xMidYMid meet",
+                    "aria-hidden": "true",
+                }),
+            );
+            guides.append(guide);
+        });
+
         const gradientId = "vf-distribution-gradient";
         const defs = svgElement("defs");
         const gradient = svgElement("linearGradient", {
@@ -298,20 +338,13 @@ export function createVolforceDistribution(root) {
                     ? `${value.toFixed(3)} ∇ VF`
                     : `${value.toFixed(3)} Exceed Gear VF, ${topLabel}`,
             });
-            const anchor =
-                position > right - 90
-                    ? "end"
-                    : position < left + 90
-                      ? "start"
-                      : "middle";
-            const caption = raw
-                ? `${value.toFixed(3)} ∇ VF`
-                : `${value.toFixed(3)} EG VF`;
+            const caption = `${value.toFixed(3)} ${raw ? "∇" : "EG"} VF`;
+            const captionY = raw ? 19 : 35;
             marker.append(
                 svgElement("line", {
                     x1: position,
                     x2: position,
-                    y1: top - (raw ? 26 : 10),
+                    y1: top,
                     y2: bottom,
                 }),
                 svgElement("circle", {
@@ -322,8 +355,8 @@ export function createVolforceDistribution(root) {
                 }),
                 text(caption, {
                     x: position,
-                    y: top - (raw ? 35 : 19),
-                    "text-anchor": anchor,
+                    y: captionY,
+                    "text-anchor": "middle",
                 }),
             );
             markers.append(marker);
@@ -342,7 +375,7 @@ export function createVolforceDistribution(root) {
         });
         svg.append(crosshair, point);
         hover = { width, left, right, maximum, y, crosshair, point };
-        motion.calculator(svg, animate);
+        motion.calculator(svg, animate, { guidesAfterCurve: true });
         if (summary && animate) motion.data(summary);
     }
 

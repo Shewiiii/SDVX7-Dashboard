@@ -138,6 +138,18 @@
     --chart-caption-color: #c0b7d0;
     --chart-grid-color: var(--row-separator);
 
+    --vf-class-sienna: #b1814b;
+    --vf-class-cobalt: #496dcc;
+    --vf-class-dandelion: #f2c029;
+    --vf-class-cyan: #56c7c4;
+    --vf-class-scarlet: #dc3b4b;
+    --vf-class-coral: #ef9fb7;
+    --vf-class-argento: #b9c0ce;
+    --vf-class-eldora: #e5c35a;
+    --vf-class-crimson: #b52f45;
+    --vf-class-imperial: #a277cf;
+    --vf-distribution-raw-color: #999;
+
     /* Should not be changed (by much) to match in-game radar */
     --radar-center-color: #4948ff;
     --radar-gradient-start: #365ab8;

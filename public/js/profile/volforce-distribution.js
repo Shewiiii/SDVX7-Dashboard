@@ -2,7 +2,7 @@ import { svgElement, pathData } from "../core/svg.js";
 import { motion } from "../core/motion.js";
 import { bindChartHover, positionChartPopup } from "../core/chart-hover.js";
 import {
-    volforceBuckets,
+    volforceSamples,
     volforceDensity,
     volforceTopPercent,
 } from "./volforce-ranking.js";
@@ -20,7 +20,7 @@ export function createVolforceDistribution(root) {
     const popup = root.querySelector(".chart-popup");
     const wrap = popup.parentElement;
     let ranking = [];
-    let buckets = [];
+    let samples = [];
     let points = [];
     let total = null;
     let rawTotal = null;
@@ -62,14 +62,14 @@ export function createVolforceDistribution(root) {
             hover.maximum;
         const top = volforceTopPercent(value, ranking);
         const topLabel = top === 0 ? "0%" : `${top.toFixed(2)}%`;
-        const bucket =
-            buckets[
+        const sample =
+            samples[
                 Math.min(
-                    buckets.length - 1,
+                    samples.length - 1,
                     Math.floor(Math.round(value * 1000) / 100),
                 )
             ];
-        const bucketRange = `${bucket.lower.toFixed(1)}-${bucket.upper.toFixed(1)} VF`;
+        const sampleRange = `${sample.lower.toFixed(1)}-${sample.upper.toFixed(1)} VF`;
         const tier = volforceClass(value);
         const tierIndex = tierThresholds.findLastIndex(
             (threshold) => threshold <= Math.round(value * 1000) / 1000,
@@ -91,7 +91,7 @@ export function createVolforceDistribution(root) {
         hover.point.setAttribute("cx", position);
         hover.point.setAttribute("cy", hover.y(percentageAt(value)));
         hover.point.setAttribute("visibility", "visible");
-        popup.innerHTML = `<strong>${value.toFixed(3)} VF</strong><div class="popup-line"><span>Top</span><b>${topLabel}</b></div><div class="popup-line"><span>Players</span><b>${bucket.percent.toFixed(2)}%</b></div><div class="popup-line"><span>Sample</span><b>${bucketRange}</b></div><div class="popup-line"><span>${tier.name}</span><b>${profiles}</b></div><div class="popup-line"><span>VF Level range</span><b>${range}</b></div>`;
+        popup.innerHTML = `<strong>${value.toFixed(3)} VF</strong><div class="popup-line"><span>Top</span><b>${topLabel}</b></div><div class="popup-line"><span>Players</span><b>${sample.percent.toFixed(2)}%</b></div><div class="popup-line"><span>Sample</span><b>${sampleRange}</b></div><div class="popup-line"><span>${tier.name}</span><b>${profiles}</b></div><div class="popup-line"><span>VF Level range</span><b>${range}</b></div>`;
         positionChartPopup(popup, wrap, event);
     }
 
@@ -112,7 +112,7 @@ export function createVolforceDistribution(root) {
 
         const mobile = window.matchMedia("(max-width: 900px)").matches;
         const width = mobile ? Math.max(260, availableWidth - 18) : 1100;
-        const height = mobile ? 270 : 300;
+        const height = 300;
         const next = `${width}:${total}:${rawTotal}:${ranking.length}`;
         if (signature === next) return;
         signature = next;
@@ -129,8 +129,8 @@ export function createVolforceDistribution(root) {
 
         const left = mobile ? 39 : 69;
         const right = width - (mobile ? 18 : 72);
-        const top = 54;
-        const bottom = height - 46;
+        const top = mobile ? 70 : 54;
+        const bottom = height - (mobile ? 62 : 46);
         const maximum = points.at(-1)[0];
         const peak = Math.max(...points.map((point) => point[1]));
         const step = Math.max(0.1, Math.ceil((peak / 4) * 10) / 10);
@@ -217,10 +217,20 @@ export function createVolforceDistribution(root) {
 
         for (let tick = 0; tick <= maximum; tick++) {
             svg.append(
+                svgElement("line", {
+                    x1: x(tick),
+                    x2: x(tick),
+                    y1: top,
+                    y2: bottom,
+                    class: "grid",
+                    "stroke-opacity": 0.5,
+                    "aria-hidden": "true",
+                }),
                 text(String(tick), {
                     x: x(tick),
-                    y: bottom + 21,
+                    y: bottom + 21 + (mobile && tick % 2 ? 15 : 0),
                     "text-anchor": "middle",
+                    class: "vf-distribution-tick",
                 }),
             );
         }
@@ -339,7 +349,7 @@ export function createVolforceDistribution(root) {
         render(source, value, rawValue = null) {
             if (source !== ranking) {
                 ranking = source;
-                buckets = volforceBuckets(ranking);
+                samples = volforceSamples(ranking);
                 points = volforceDensity(ranking);
                 signature = null;
             }

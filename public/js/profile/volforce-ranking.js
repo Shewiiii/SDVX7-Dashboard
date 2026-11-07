@@ -61,7 +61,7 @@ export function volforceTopPercent(total, ranking) {
     return (low / ranking.length) * 100;
 }
 
-export function volforceBuckets(ranking) {
+export function volforceSamples(ranking) {
     if (!ranking.length) return [];
 
     const counts = Array(240).fill(0);
@@ -79,13 +79,13 @@ export function volforceBuckets(ranking) {
 }
 
 export function volforceDensity(ranking) {
-    const buckets = volforceBuckets(ranking);
-    if (!buckets.length) return [];
+    const samples = volforceSamples(ranking);
+    if (!samples.length) return [];
 
-    const changes = buckets.slice(1).map(
-        (bucket, index) => bucket.percent - buckets[index].percent,
+    const changes = samples.slice(1).map(
+        (sample, index) => sample.percent - samples[index].percent,
     );
-    const slopes = buckets.map((_, index) => {
+    const slopes = samples.map((_, index) => {
         const before = changes[index - 1];
         const after = changes[index];
         return before * after > 0
@@ -93,17 +93,17 @@ export function volforceDensity(ranking) {
             : 0;
     });
 
-    // Interpolate between bucket centres without changing their percentages
-    return Array.from({ length: 24 * 80 + 1 }, (_, sample) => {
-        const value = sample / 80;
+    // Interpolate between sample centres without changing their percentages
+    return Array.from({ length: 24 * 80 + 1 }, (_, pointIndex) => {
+        const value = pointIndex / 80;
         const position = value * 10 - 0.5;
         const index = Math.max(
             0,
-            Math.min(buckets.length - 2, Math.floor(position)),
+            Math.min(samples.length - 2, Math.floor(position)),
         );
         const t = Math.max(0, Math.min(1, position - index));
-        const start = buckets[index].percent;
-        const end = buckets[index + 1].percent;
+        const start = samples[index].percent;
+        const end = samples[index + 1].percent;
         const percent =
             (2 * t ** 3 - 3 * t ** 2 + 1) * start +
             (t ** 3 - 2 * t ** 2 + t) * slopes[index] +

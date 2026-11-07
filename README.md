@@ -124,6 +124,7 @@ Setup is the same as Crew setup. Simply choose High quality jackets [3] on the f
 
 - E-Amusement decoding utils from [RyuNET-core](https://github.com/Ryu7w7/RyuNET-core).
 - Chart view and scroll speed logic from [Unnamed SDVC Clone](https://github.com/Drewol/unnamed-sdvx-clone).
-- Audio DSP documentation from [vox2ksh](https://github.com/whiteou7/vox2ksh/blob/main/specs/audio_engine.md)
+- Audio DSP documentation from [vox2ksh](https://github.com/whiteou7/vox2ksh/blob/main/specs/audio_engine.md).
 - Profile radar calculation from [that very random note](https://note.com/logthm/n/n59dca7461be8), thank you !
-- Top % based on [M0N0's datasheet](https://gall.dcinside.com/board/view/?id=sdvx&no=3204443) ! Though it was made before during the EXCEED GEAR era: difficulties with decimal numbers were not a thing yet, and some chart diffs have been adjusted (eg. SuddeИDeath), so the VF data is not exactly comparable.
+- Top % based on [M0N0's datasheet](https://gall.dcinside.com/board/view/?id=sdvx&no=3204443) !
+- Data for `nabla-to-eg-vf.json` from [sdvx-vf-tool](https://github.com/yuuya1202/sdvx-vf-tool)'s json file.

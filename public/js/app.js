@@ -47,6 +47,7 @@ import { createVolforceHelper } from "./profile/volforce-helper.js";
 import {
     comparisonVolforce,
     loadVolforceRanking,
+    loadVolforceOverrides,
     volforceTopPercent,
 } from "./profile/volforce-ranking.js";
 import { radarMarkup, paintRadar } from "./profile/radar.js";
@@ -621,10 +622,15 @@ function revealOnce(key, animate) {
 }
 
 let volforceRanking = [];
+let volforceOverrides = {};
 
 function renderVolforcePercentile() {
     const label = $("vf-percentile");
-    const total = comparisonVolforce(data?.state, rankingOptions());
+    const total = comparisonVolforce(
+        data?.state,
+        rankingOptions(),
+        volforceOverrides,
+    );
     const percent = volforceTopPercent(total, volforceRanking);
     label.hidden = percent === null;
     label.textContent =
@@ -2671,9 +2677,10 @@ initSegmentedControls();
 preparePanelHistory();
 restoreUrl();
 updateUrl(true);
-loadVolforceRanking()
-    .then((ranking) => {
+Promise.all([loadVolforceRanking(), loadVolforceOverrides()])
+    .then(([ranking, overrides]) => {
         volforceRanking = ranking;
+        volforceOverrides = overrides;
         renderVolforcePercentile();
     })
     .catch((error) => {

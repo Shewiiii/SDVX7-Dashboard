@@ -1,6 +1,6 @@
 import { topCharts } from "./top-charts.js";
 
-export function comparisonVolforce(state, options = {}) {
+export function comparisonVolforce(state, options = {}, overrides = {}) {
     if (!state?.charts?.length) return null;
 
     const songs = new Map(
@@ -14,10 +14,20 @@ export function comparisonVolforce(state, options = {}) {
                 ?.difficulties?.find(
                     (difficulty) => difficulty.diff_idx === chart.diff_idx,
                 )?.level;
+        const override = overrides[`${chart.music_id}:${chart.diff_idx}`];
+        const useOverride =
+            override &&
+            chart.is_custom !== true &&
+            songs.get(chart.music_id)?.is_custom !== true &&
+            override.nabla_level === level;
 
         return {
             ...chart,
-            level: Number.isFinite(level) ? Math.trunc(level) : level,
+            level: useOverride
+                ? override.eg_level
+                : Number.isFinite(level)
+                  ? Math.trunc(level)
+                  : level,
         };
     });
     const top = topCharts({ ...state, charts }, options);
@@ -95,4 +105,29 @@ export async function loadVolforceRanking() {
     if (!ranking.length) throw new Error("Empty VolForce reference ranking");
 
     return ranking;
+}
+
+export async function loadVolforceOverrides() {
+    const response = await fetch("/game-data/nabla-to-eg-vf.json");
+    if (!response.ok) throw new Error("VolForce level overrides unavailable");
+
+    const charts = (await response.json())?.charts;
+    if (
+        !charts ||
+        typeof charts !== "object" ||
+        Array.isArray(charts) ||
+        Object.entries(charts).some(
+            ([key, chart]) =>
+                !/^[1-9]\d{0,7}:[0-5]$/.test(key) ||
+                !Number.isInteger(chart?.eg_level) ||
+                chart.eg_level < 1 ||
+                chart.eg_level > 20 ||
+                !Number.isFinite(chart.nabla_level) ||
+                chart.nabla_level < 1 ||
+                chart.nabla_level > 20.9,
+        )
+    )
+        throw new Error("Invalid VolForce level overrides");
+
+    return charts;
 }

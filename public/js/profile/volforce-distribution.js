@@ -134,10 +134,7 @@ export function createVolforceDistribution(root) {
                     "Exceed Gear VF",
                     Number.isFinite(total) ? total.toFixed(3) : "—",
                 ],
-                [
-                    "∇ VF",
-                    Number.isFinite(rawTotal) ? rawTotal.toFixed(3) : "—",
-                ],
+                ["∇ VF", Number.isFinite(rawTotal) ? rawTotal.toFixed(3) : "—"],
                 ["Top", topValue],
                 ["Raw Top", rawTopValue],
             ].map(([label, value]) => {
@@ -150,7 +147,7 @@ export function createVolforceDistribution(root) {
                     trigger.className = "chart-vf-trigger";
                     trigger.textContent = label;
                     trigger.dataset.chartVfDescription =
-                        "Chart levels with a decimal part in top 50 are truncated, so their chart VF are closer to EXCEED GEAR's. This is not perfect however, as some chart levels have been adjusted, like SuddeИDeath.";
+                        "SDVX ∇ has introduced a decimal part in levels above 17, and buffed levels of around 35 charts. Exceed Gear VF is thus the total VF before these adjustments.";
                     trigger.setAttribute("aria-describedby", "chart-vf-popup");
                     entry.append(number, " ", trigger);
                 } else if (label === "∇ VF") {

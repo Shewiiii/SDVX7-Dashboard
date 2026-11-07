@@ -303,7 +303,7 @@ export const motion = {
             root.querySelectorAll(".metric").forEach((metric, index) => {
                 metric
                     .querySelectorAll(
-                        ".metric-value, .metric-detail, .vf-class",
+                        ".metric-value, .metric-detail, .vf-standing",
                     )
                     .forEach((element) => {
                         if (!element.hidden) fade(root, element, index * 55);

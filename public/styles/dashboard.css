@@ -1788,6 +1788,7 @@ footer > :last-child {
     object-fit: contain;
 }
 .metric-detail,
+.vf-standing,
 .vf-class {
     grid-row: 3;
     display: flex;
@@ -4187,6 +4188,18 @@ footer > :last-child {
 .appeal-helper-detail p a {
     color: var(--accent);
 }
+.vf-standing {
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    min-width: 0;
+    font-size: 10px;
+    color: var(--muted);
+}
+#vf-percentile {
+    white-space: nowrap;
+}
 .vf-class {
     display: flex;
     align-items: center;
@@ -4821,6 +4834,7 @@ footer > :last-child {
         border-left: 0;
     }
     .metric-detail,
+    .vf-standing,
     .vf-class {
         min-height: 23px;
     }

@@ -43,6 +43,11 @@ import { svgElement, pathData } from "./core/svg.js";
 import { createCalculator } from "./profile/calculator.js";
 import { createAppealCardHelper } from "./crew/appeal-cards.js";
 import { createVolforceHelper } from "./profile/volforce-helper.js";
+import {
+    comparisonVolforce,
+    loadVolforceRanking,
+    volforceTopPercent,
+} from "./profile/volforce-ranking.js";
 import { radarMarkup, paintRadar } from "./profile/radar.js";
 import { createProfileRadar } from "./profile/profile-radar.js";
 import { rankingHistory } from "./profile/ranking-history.js";
@@ -603,6 +608,21 @@ function revealOnce(key, animate) {
     return animate && firstVisit;
 }
 
+let volforceRanking = [];
+
+function renderVolforcePercentile() {
+    const label = $("vf-percentile");
+    const total = comparisonVolforce(data?.state, rankingOptions());
+    const percent = volforceTopPercent(total, volforceRanking);
+    label.hidden = percent === null;
+    label.textContent =
+        percent === null
+            ? ""
+            : percent < 0.01
+              ? "Top <0.01%"
+              : `Top ${percent.toFixed(2)}%`;
+}
+
 function renderSummary({ animate = true } = {}) {
     stats = summary(data, rankingOptions());
     setText(
@@ -629,10 +649,6 @@ function renderSummary({ animate = true } = {}) {
         danBanner.alt = "";
     }
     setText("total-vf", vf(stats.total));
-    $("total-vf").setAttribute(
-        "aria-label",
-        `${vf(stats.total)} VolForce · View classes`,
-    );
     const appeal = data.state.appeal_card;
     const card = $("appeal-card");
     card.hidden = !(
@@ -651,6 +667,7 @@ function renderSummary({ animate = true } = {}) {
         );
         $("vf-class-icon").src = `/assets/vf-classes/${vfClass.number}.png`;
     }
+    renderVolforcePercentile();
     setText("best-vf", vf(stats.best));
     const bestChart = stats.bestChart;
     if (bestChart) {
@@ -2552,6 +2569,8 @@ let rankingUpdateVersion = 0;
 document.addEventListener("dashboard:ranking-change", async () => {
     const version = ++rankingUpdateVersion;
     if (!data) return;
+    renderSummary({ animate: false });
+
     await new Promise((resolve) =>
         requestAnimationFrame(() => requestAnimationFrame(resolve)),
     );
@@ -2566,7 +2585,6 @@ document.addEventListener("dashboard:ranking-change", async () => {
     if (version !== rankingUpdateVersion) return;
 
     setSearchData(data, rankingOptions());
-    renderSummary({ animate: false });
     renderChart({ animate: false });
     songLibrary.update();
     if (view === "calculator") calculator.updateData({ animate: false });
@@ -2674,6 +2692,12 @@ initSegmentedControls();
 preparePanelHistory();
 restoreUrl();
 updateUrl(true);
+loadVolforceRanking()
+    .then((ranking) => {
+        volforceRanking = ranking;
+        renderVolforcePercentile();
+    })
+    .catch((error) => console.warn(error.message));
 // Show the saved cloud archive before waiting for the local sync worker.
 load().then(() => {
     if (data) void load({ fresh: true });

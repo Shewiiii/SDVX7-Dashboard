@@ -287,33 +287,27 @@
                         <div class="metric-label" id="total-vf-label">
                             Total VolForce
                         </div>
-                        <button
-                            type="button"
-                            class="metric-value vf-helper-trigger"
-                            id="total-vf"
-                            aria-label="View VolForce classes"
-                            aria-haspopup="dialog"
-                            aria-controls="vf-helper"
-                        >
-                            —
-                        </button>
-                        <button
-                            type="button"
-                            class="vf-class vf-helper-trigger"
-                            id="vf-class"
-                            aria-label="View VolForce classes"
-                            aria-haspopup="dialog"
-                            aria-controls="vf-helper"
-                            hidden
-                        >
-                            <img
-                                id="vf-class-icon"
-                                alt=""
-                                width="28"
-                                height="28"
-                            />
-                            <span id="vf-class-name"></span>
-                        </button>
+                        <div class="metric-value" id="total-vf">—</div>
+                        <div class="vf-standing">
+                            <button
+                                type="button"
+                                class="vf-class vf-helper-trigger"
+                                id="vf-class"
+                                aria-label="View VolForce classes"
+                                aria-haspopup="dialog"
+                                aria-controls="vf-helper"
+                                hidden
+                            >
+                                <img
+                                    id="vf-class-icon"
+                                    alt=""
+                                    width="28"
+                                    height="28"
+                                />
+                                <span id="vf-class-name"></span>
+                            </button>
+                            <span id="vf-percentile" hidden></span>
+                        </div>
                         <div
                             class="metric-spark"
                             id="spark"

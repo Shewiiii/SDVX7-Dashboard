@@ -126,3 +126,4 @@ Setup is the same as Crew setup. Simply choose High quality jackets [3] on the f
 - Chart view and scroll speed logic from [Unnamed SDVC Clone](https://github.com/Drewol/unnamed-sdvx-clone).
 - Audio DSP documentation from [vox2ksh](https://github.com/whiteou7/vox2ksh/blob/main/specs/audio_engine.md)
 - Profile radar calculation from [that very random note](https://note.com/logthm/n/n59dca7461be8), thank you !
+- Top % based on [M0N0's datasheet](https://gall.dcinside.com/board/view/?id=sdvx&no=3204443) ! Though it was made before during the EXCEED GEAR era: difficulties with decimal numbers were not a thing yet, and some chart diffs have been adjusted (eg. SuddeИDeath), so the VF data is not exactly comparable.

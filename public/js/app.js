@@ -40,6 +40,7 @@ import {
     initSegmentedControls,
 } from "./core/motion.js";
 import { svgElement, pathData } from "./core/svg.js";
+import { bindChartHover, positionChartPopup } from "./core/chart-hover.js";
 import { createCalculator } from "./profile/calculator.js";
 import { createAppealCardHelper } from "./crew/appeal-cards.js";
 import { createVolforceHelper } from "./profile/volforce-helper.js";
@@ -50,6 +51,7 @@ import {
 } from "./profile/volforce-ranking.js";
 import { radarMarkup, paintRadar } from "./profile/radar.js";
 import { createProfileRadar } from "./profile/profile-radar.js";
+import { createVolforceDistribution } from "./profile/volforce-distribution.js";
 import { rankingHistory } from "./profile/ranking-history.js";
 import { createSimilarCharts } from "./charts/similar-charts.js";
 import { createChartViewer } from "./charts/chart-viewer.js";
@@ -62,6 +64,7 @@ import {
 } from "./core/panel-links.js";
 
 const $ = (id) => document.getElementById(id);
+const volforceDistribution = createVolforceDistribution($("vf-distribution"));
 const profileRadar = createProfileRadar(
     $("profile-radar"),
     $("profile-radar-note"),
@@ -132,6 +135,12 @@ const yen = new Intl.NumberFormat("ja-JP", {
     style: "currency",
     currency: "JPY",
 });
+const formatMoney = (formatter, value) =>
+    formatter
+        .formatToParts(value)
+        .map((part) => (part.type === "group" ? "\u202f" : part.value))
+        .join("");
+
 let conversionCurrency = "EUR"; // Older deployed snapshots did not include currency.
 let convertedMoney = new Intl.NumberFormat("en-IE", {
     style: "currency",
@@ -148,11 +157,11 @@ function renderSpending() {
     const price = document.createElement("button");
     price.type = "button";
     price.className = "spending-price";
-    price.textContent = yen.format(spending);
+    price.textContent = formatMoney(yen, spending);
     price.setAttribute("aria-describedby", "spending-popup");
     price.setAttribute(
         "aria-label",
-        `${yen.format(spending)} · View arcade spending estimates`,
+        `${formatMoney(yen, spending)} · View arcade spending estimates`,
     );
     price.addEventListener("pointerenter", (event) => {
         if (event.pointerType === "mouse") showSpendingPopup();
@@ -164,7 +173,7 @@ function renderSpending() {
     $("spending-total").replaceChildren(price);
     setText(
         "spending-detail",
-        `${exchangeRate === null ? "" : `≈ ${convertedMoney.format(spending * exchangeRate)} · `}Standard Start`,
+        `${exchangeRate === null ? "" : `≈ ${formatMoney(convertedMoney, spending * exchangeRate)} · `}Standard Start`,
     );
     $("spending-description").textContent =
         `${number(data.plays.length)} plays on an arcade cabinet corresponds to:`;
@@ -172,7 +181,7 @@ function renderSpending() {
         ...START_PRICES.map(([label, songs, cost]) => {
             const amount = (data.plays.length / songs) * cost;
             const item = document.createElement("li");
-            item.textContent = `${label}: ${popupYen.format(amount)}${exchangeRate === null ? "" : ` (≈ ${convertedMoney.format(amount * exchangeRate)})`}`;
+            item.textContent = `${label}: ${formatMoney(popupYen, amount)}${exchangeRate === null ? "" : ` (≈ ${formatMoney(convertedMoney, amount * exchangeRate)})`}`;
             return item;
         }),
     );
@@ -220,10 +229,11 @@ function hideSpendingPopup() {
     clearTimeout(spendingHideTimer);
     hideAnimatedPopup($("spending-popup"));
 }
-function scheduleSpendingHide() {
+function scheduleSpendingHide(event) {
+    const pointerLeft = event?.pointerType === "mouse";
     clearTimeout(spendingHideTimer);
     spendingHideTimer = setTimeout(() => {
-        if (!document.activeElement?.matches(".spending-price"))
+        if (pointerLeft || !document.activeElement?.matches(".spending-price"))
             hideSpendingPopup();
     }, 150);
 }
@@ -251,10 +261,11 @@ function hideSongReadingPopup() {
     clearTimeout(songReadingHideTimer);
     hideAnimatedPopup($("song-reading-popup"));
 }
-function scheduleSongReadingHide() {
+function scheduleSongReadingHide(event) {
+    const pointerLeft = event?.pointerType === "mouse";
     clearTimeout(songReadingHideTimer);
     songReadingHideTimer = setTimeout(() => {
-        if (!document.activeElement?.matches(".song-reading-title"))
+        if (pointerLeft || !document.activeElement?.matches(".song-reading-title"))
             hideSongReadingPopup();
     }, 150);
 }
@@ -282,10 +293,11 @@ function hideChartVfPopup() {
     hideAnimatedPopup($("chart-vf-popup"));
 }
 
-function scheduleChartVfHide() {
+function scheduleChartVfHide(event) {
+    const pointerLeft = event?.pointerType === "mouse";
     clearTimeout(chartVfHideTimer);
     chartVfHideTimer = setTimeout(() => {
-        if (!document.activeElement?.matches(".chart-vf-trigger"))
+        if (pointerLeft || !document.activeElement?.matches(".chart-vf-trigger"))
             hideChartVfPopup();
     }, 150);
 }
@@ -621,6 +633,7 @@ function renderVolforcePercentile() {
             : percent < 0.01
               ? "Top <0.01%"
               : `Top ${percent.toFixed(2)}%`;
+    volforceDistribution.render(volforceRanking, total, stats?.total);
 }
 
 function renderSummary({ animate = true } = {}) {
@@ -1376,33 +1389,8 @@ function showChartPopup(event) {
     }
     const popup = $("popup");
     popup.innerHTML = `<strong>${date(time)} · ${clock(time)}</strong>${lines.join("")}`;
-    popup.classList.remove("compact");
-    popup.style.maxWidth = "";
-    popup.hidden = false;
-    const wrap = $("chart-wrap").getBoundingClientRect();
-    const cursorX = event.clientX - wrap.left,
-        cursorY = event.clientY - wrap.top;
-    const gap = 12,
-        inset = 8;
-    const rightSpace = wrap.width - cursorX - gap - inset;
-    const leftSpace = cursorX - gap - inset;
-    const useRight =
-        rightSpace >= popup.offsetWidth ||
-        (leftSpace < popup.offsetWidth && rightSpace >= leftSpace);
-    const available = useRight ? rightSpace : leftSpace;
-    if (available < popup.offsetWidth) {
-        popup.classList.add("compact");
-        popup.style.maxWidth = `${available}px`;
-    }
-    popup.style.left = `${useRight ? cursorX + gap : cursorX - gap - popup.offsetWidth}px`;
-    popup.style.top = `${Math.max(inset, Math.min(cursorY - popup.offsetHeight - gap, wrap.height - popup.offsetHeight - inset))}px`;
+    positionChartPopup(popup, $("chart-wrap"), event);
 }
-$("chart").addEventListener("pointerdown", (event) => {
-    if (event.pointerType !== "mouse")
-        $("chart").setPointerCapture(event.pointerId);
-    showChartPopup(event);
-});
-$("chart").addEventListener("pointermove", showChartPopup);
 function hidePopup() {
     $("popup").hidden = true;
     if (hover) {
@@ -1410,20 +1398,10 @@ function hidePopup() {
         hover.markers.replaceChildren();
     }
 }
-$("chart").addEventListener("pointerleave", (event) => {
-    if (event.pointerType !== "touch") hidePopup();
+bindChartHover($("chart"), $("chart-wrap"), {
+    show: showChartPopup,
+    hide: hidePopup,
 });
-$("chart").addEventListener("pointerup", (event) => {
-    if (event.pointerType !== "mouse") hidePopup();
-});
-$("chart").addEventListener("pointercancel", hidePopup);
-$("chart").addEventListener("lostpointercapture", (event) => {
-    if (event.pointerType !== "mouse") hidePopup();
-});
-document.addEventListener("pointerdown", (event) => {
-    if (!event.target.closest("#chart-wrap")) hidePopup();
-});
-window.addEventListener("scroll", hidePopup, { passive: true });
 
 function rememberScroll() {
     clearTimeout(scrollSaveTimer);
@@ -2477,6 +2455,22 @@ $("dan-library-open").addEventListener("click", () => {
     songLibrary.open("skill");
 });
 
+$("vf-percentile").addEventListener("click", (event) => {
+    if (
+        event.button !== 0 ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.altKey
+    )
+        return;
+
+    event.preventDefault();
+    if (view !== "overview") switchView("overview");
+    renderVolforcePercentile();
+    restoreScroll({ card: "vf-distribution", center: true });
+});
+
 document.querySelectorAll("[data-view]").forEach((button) =>
     button.addEventListener("click", () => {
         const next = button.dataset.view;
@@ -2624,21 +2618,6 @@ window.addEventListener(
     },
     { passive: true },
 );
-$("spending-popup").addEventListener("pointerenter", () =>
-    clearTimeout(spendingHideTimer),
-);
-$("spending-popup").addEventListener("pointerleave", scheduleSpendingHide);
-$("song-reading-popup").addEventListener("pointerenter", () =>
-    clearTimeout(songReadingHideTimer),
-);
-$("song-reading-popup").addEventListener(
-    "pointerleave",
-    scheduleSongReadingHide,
-);
-$("chart-vf-popup").addEventListener("pointerenter", () =>
-    clearTimeout(chartVfHideTimer),
-);
-$("chart-vf-popup").addEventListener("pointerleave", scheduleChartVfHide);
 document.addEventListener("pointerover", (event) => {
     const trigger = event.target.closest(".chart-vf-trigger");
     if (
@@ -2651,7 +2630,7 @@ document.addEventListener("pointerover", (event) => {
 document.addEventListener("pointerout", (event) => {
     const trigger = event.target.closest(".chart-vf-trigger");
     if (trigger && !trigger.contains(event.relatedTarget))
-        scheduleChartVfHide();
+        scheduleChartVfHide(event);
 });
 document.addEventListener("focusin", (event) => {
     if (event.target.matches(".chart-vf-trigger"))
@@ -2697,7 +2676,10 @@ loadVolforceRanking()
         volforceRanking = ranking;
         renderVolforcePercentile();
     })
-    .catch((error) => console.warn(error.message));
+    .catch((error) => {
+        volforceDistribution.unavailable();
+        console.warn(error.message);
+    });
 // Show the saved cloud archive before waiting for the local sync worker.
 load().then(() => {
     if (data) void load({ fresh: true });

@@ -51,12 +51,48 @@ export function volforceTopPercent(total, ranking) {
     return (low / ranking.length) * 100;
 }
 
+export function volforceDensity(ranking) {
+    if (!ranking.length) return [];
+
+    const buckets = new Map();
+    for (const value of ranking) {
+        const key = Math.floor(value / 100);
+        const bucket = buckets.get(key) || { count: 0, sum: 0 };
+        bucket.count++;
+        bucket.sum += value;
+        buckets.set(key, bucket);
+    }
+    const samples = [...buckets.values()].map(({ count, sum }) => ({
+        value: sum / count / 1000,
+        count,
+    }));
+    const bandwidth = 0.4;
+    const maximum = 24;
+    const factor = 100 / (ranking.length * bandwidth * Math.sqrt(2 * Math.PI));
+
+    return Array.from({ length: maximum * 8 + 1 }, (_, index) => {
+        const value = index / 8;
+        const density = samples.reduce((sum, sample) => {
+            const distance = (value - sample.value) / bandwidth;
+            const reflected = (value + sample.value) / bandwidth;
+            return (
+                sum +
+                sample.count *
+                    (Math.exp(-0.5 * distance ** 2) +
+                        Math.exp(-0.5 * reflected ** 2))
+            );
+        }, 0);
+
+        return [value, density * factor];
+    });
+}
+
 export async function loadVolforceRanking() {
     const response = await fetch("/game-data/SDVX_VI_Ranking_M0N0.csv");
-    if (!response.ok) throw new Error("VOLFORCE reference ranking unavailable");
+    if (!response.ok) throw new Error("VolForce reference ranking unavailable");
 
     const ranking = parseVolforceRanking(await response.text());
-    if (!ranking.length) throw new Error("Empty VOLFORCE reference ranking");
+    if (!ranking.length) throw new Error("Empty VolForce reference ranking");
 
     return ranking;
 }

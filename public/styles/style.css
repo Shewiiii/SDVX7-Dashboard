@@ -96,14 +96,15 @@
 
     --control-bg: #12121b7a; /* Shared translucent background for inputs */
     --item-radius: 7px;
+
+    /* Popup settings */
     --popup-radius: 12px;
-    --popup-bg: #1d1d23f5;
+    --popup-bg: #17181bec;
     --popup-color: var(--muted);
     --popup-shadow: 0 8px 30px #0005;
     --popup-padding: 12px 14px;
     --popup-font-size: 11px;
-
-    /* Popup animation */
+    /* Animations */
     --popup-enter-duration: 240ms;
     --popup-exit-duration: 240ms;
     --popup-offset: 2px;

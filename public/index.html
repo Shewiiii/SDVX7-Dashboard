@@ -306,7 +306,13 @@
                                 />
                                 <span id="vf-class-name"></span>
                             </button>
-                            <span id="vf-percentile" hidden></span>
+                            <a
+                                id="vf-percentile"
+                                class="vf-distribution-link"
+                                href="#overview"
+                                aria-controls="vf-distribution"
+                                hidden
+                            ></a>
                         </div>
                         <div
                             class="metric-spark"
@@ -479,6 +485,48 @@
                             </div>
                             <div class="chart-summary">
                                 <span id="timing-summary">Loading...</span>
+                            </div>
+                        </section>
+                        <section
+                            id="vf-distribution"
+                            class="vf-distribution-section"
+                            aria-labelledby="vf-distribution-title"
+                        >
+                            <div class="timing-heading">
+                                <h2 id="vf-distribution-title">
+                                    VolForce distribution
+                                </h2>
+                                <p>
+                                    <a
+                                        href="https://gall.dcinside.com/board/view/?id=sdvx&amp;no=3204443#container"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        data-distribution-subtitle
+                                        >VolForce across public arcade profiles</a
+                                    >
+                                </p>
+                            </div>
+                            <div
+                                class="timing-chart-wrap vf-distribution-chart-wrap"
+                            >
+                                <svg
+                                    id="vf-distribution-chart"
+                                    class="chart-svg"
+                                    role="img"
+                                    aria-label="VolForce distribution"
+                                    hidden
+                                ></svg>
+                                <div
+                                    class="chart-popup"
+                                    id="vf-distribution-popup"
+                                    hidden
+                                ></div>
+                                <p class="timing-empty" data-distribution-empty>
+                                    Loading VF distribution...
+                                </p>
+                            </div>
+                            <div class="chart-summary">
+                                <span id="vf-distribution-summary"></span>
                             </div>
                         </section>
                         <section

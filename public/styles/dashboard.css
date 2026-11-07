@@ -513,12 +513,14 @@
     stroke: var(--chart-grid-color);
     stroke-width: 1;
 }
-#chart {
+#chart,
+#vf-distribution-chart {
     overflow: visible;
     touch-action: pan-y pinch-zoom;
     user-select: none;
 }
-#chart .crosshair {
+#chart .crosshair,
+#vf-distribution-chart .crosshair {
     stroke: color-mix(
         in srgb,
         var(--accent) calc(100% * 90 / 255),
@@ -527,7 +529,8 @@
     stroke-dasharray: 3 4;
     pointer-events: none;
 }
-#chart .hover-point {
+#chart .hover-point,
+#vf-distribution-chart .hover-point {
     fill: var(--accent);
     stroke: var(--panel);
     stroke-width: 2;
@@ -552,6 +555,10 @@
     color: var(--popup-color);
     box-shadow: var(--popup-shadow);
     font: var(--popup-font-size) / 1.5 var(--sans);
+    opacity: 1;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
 }
 .chart-popup,
 .spending-popup,
@@ -593,13 +600,15 @@
     gap: 14px;
 }
 #chart-summary,
-#timing-summary {
+#timing-summary,
+#vf-distribution-summary {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 24px;
 }
 #chart-summary > span,
-#timing-summary > span {
+#timing-summary > span,
+#vf-distribution-summary > span {
     white-space: nowrap;
 }
 .history-summary {
@@ -1312,12 +1321,52 @@ footer > :last-child {
 .footer-github:hover {
     color: var(--accent);
 }
-.timing-section {
+.timing-section,
+.vf-distribution-section,
+.profile-radar-section {
     margin-top: 8px;
 }
 .profile-radar-section {
-    margin-top: 24px;
     padding-bottom: 24px;
+}
+.vf-distribution-section {
+    --clear-color: var(--accent);
+}
+.vf-distribution-chart-wrap {
+    position: relative;
+}
+.vf-distribution-section stop {
+    stop-color: var(--accent);
+}
+.vf-distribution-marker line {
+    stroke: var(--accent);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+}
+.vf-distribution-marker circle {
+    fill: var(--accent);
+    stroke: var(--panel);
+    stroke-width: 2;
+}
+.chart-svg .vf-distribution-marker text {
+    fill: var(--accent);
+}
+.vf-distribution-raw-marker {
+    color: #999;
+}
+.vf-distribution-raw-marker line {
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-dasharray: 1 4;
+    stroke-linecap: round;
+}
+.vf-distribution-raw-marker circle {
+    fill: currentColor;
+    stroke: var(--panel);
+    stroke-width: 2;
+}
+.chart-svg .vf-distribution-raw-marker text {
+    fill: currentColor;
 }
 .profile-radar-wrap {
     display: grid;
@@ -1718,6 +1767,9 @@ footer > :last-child {
     border: 0;
     padding: 0;
     font: inherit;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
 }
 .spending-popup {
     position: fixed;
@@ -3696,7 +3748,9 @@ footer > :last-child {
     overflow-wrap: anywhere;
 }
 .details-unlock-meta a,
-.profile-radar-section .timing-heading a {
+.profile-radar-section .timing-heading a,
+.vf-distribution-section .timing-heading a,
+.vf-distribution-link {
     color: inherit;
     text-decoration: none;
     transition: color var(--popup-enter-duration) var(--popup-easing);
@@ -3704,7 +3758,11 @@ footer > :last-child {
 .details-unlock-meta a:hover,
 .details-unlock-meta a:focus-visible,
 .profile-radar-section .timing-heading a:hover,
-.profile-radar-section .timing-heading a:focus-visible {
+.profile-radar-section .timing-heading a:focus-visible,
+.vf-distribution-section .timing-heading a:hover,
+.vf-distribution-section .timing-heading a:focus-visible,
+.vf-distribution-link:hover,
+.vf-distribution-link:focus-visible {
     color: var(--accent);
 }
 .details-unlock p {

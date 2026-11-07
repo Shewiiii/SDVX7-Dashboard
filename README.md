@@ -46,7 +46,8 @@ Do the same with [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy) while ke
 
 Connection settings and sync logs are under `.local/do-not-delete/`. Keep this folder private: it contains the `SYNC_TOKEN` in `sync-config.json` to upload to your domain. The `SYNC_TOKEN` can be useful if you are playing on two machines: choose option 2 during setup, and paste the token value. If you later delete the Vercel project, you will need to run the proxy again on both PCs to sync the data.
 
-## Migration from SDVX ∇ VolForce Tracker
+<details>
+<summary>Migration from SDVX ∇ VolForce Tracker</summary>
 
 I have discontinued [SDVX ∇ VolForce Tracker](https://github.com/Shewiiii/SDVX7-VolForce-Tracker), in favor of a cleaner and more general purpose repository [SDVX7 Proxy](https://github.com/Shewiiii/SDVX7-Proxy).
 
@@ -55,6 +56,8 @@ To migrate:
 - Follow step 1 of the Setup.
 - Move `.local/` and `.vercel/` located in `/SDVX7-VolForce-Tracker-main/SDVX7-Tracker-Dashboard-main` into `SDVX7-Dashboard-main/`.
 - Run `update-dashboard.bat`. It will delete the legacy `/SDVX7-VolForce-Tracker-main`, but you can choose to create a backup.
+
+</details>
 
 ## Optional setup
 

@@ -234,6 +234,10 @@ function createModelPlayer(model, app, canvas, signal, composite) {
     // Core 5.3 shares render ordering between drawables and offscreen objects.
     if (!core.drawables.renderOrders && core.renderOrders)
         core.drawables.renderOrders = core.renderOrders;
+    // Disable mipmaps to prevent texture colors from leaking (eg. mouth of miku)
+    for (const texture of model.textures)
+        texture.baseTexture.mipmap = PIXI.MIPMAP_MODES.OFF;
+
     app.stage.addChild(model);
     model.anchor.set(0.5, 0.5);
     const physics = model.internalModel.physics;

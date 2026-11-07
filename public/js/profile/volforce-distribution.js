@@ -262,7 +262,6 @@ export function createVolforceDistribution(root) {
                 class: "vf-distribution-class-guide",
                 "data-vf-class": index + 1,
                 "data-vf": minimum,
-                style: `--vf-class-color: var(--vf-class-${name.toLowerCase()})`,
             });
             guide.append(
                 svgElement("title", {}, `${name}, ${minimum.toFixed(3)} VF`),

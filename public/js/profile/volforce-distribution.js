@@ -226,9 +226,12 @@ export function createVolforceDistribution(root) {
                     "stroke-opacity": 0.5,
                     "aria-hidden": "true",
                 }),
+            );
+            if (mobile && tick % 2) continue;
+            svg.append(
                 text(String(tick), {
                     x: x(tick),
-                    y: bottom + 21 + (mobile && tick % 2 ? 15 : 0),
+                    y: bottom + 21,
                     "text-anchor": "middle",
                     class: "vf-distribution-tick",
                 }),

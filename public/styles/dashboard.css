@@ -1768,8 +1768,8 @@ footer > :last-child {
     padding: 0;
     font: inherit;
     cursor: default;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: text;
+    -webkit-user-select: text;
 }
 .spending-popup {
     position: fixed;
@@ -2483,6 +2483,8 @@ footer > :last-child {
     color: inherit;
     font: inherit;
     cursor: default;
+    user-select: text;
+    -webkit-user-select: text;
 }
 .chart-vf-value {
     color: var(--accent);

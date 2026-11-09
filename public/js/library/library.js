@@ -122,8 +122,10 @@ export function libraryEntries(
         });
     }
     const entries = [];
+    const favorites = new Set(data.state.favorite_song_ids || []);
     const searchQuery = mode === "boss" ? `${query} boss=true` : query;
     for (const song of searchSongs(catalog, searchQuery, data.plays, Infinity)) {
+        if (mode === "favorites" && !favorites.has(song.music_id)) continue;
         if (mode === "skill") {
             for (const course of skillCourses) {
                 for (const [position, track] of course.tracks.entries()) {
@@ -186,8 +188,8 @@ export function libraryEntries(
             }
         } else {
             const groups =
-                mode === "all" || mode === "boss"
-                    ? ["All"]
+                ["all", "boss", "favorites"].includes(mode)
+                    ? [mode === "favorites" ? "Favorites" : "All"]
                     : mode === "version"
                       ? [SONG_VERSIONS[songVersion(song)] || "Unknown version"]
                       : mode === "year"
@@ -398,7 +400,7 @@ export function createLibrary(
             content.className = "library-folder-content";
             let folder,
                 heading = content;
-            if (["all", "boss"].includes(mode.value)) {
+            if (["all", "boss", "favorites"].includes(mode.value)) {
                 parent.append(content);
             } else {
                 folder = document.createElement("details");

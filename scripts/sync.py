@@ -509,6 +509,7 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
             "playtime": playtime,
             "skill_level": None,
             "crew_id": None,
+            "favorite_song_ids": [],
             "profile_radar": None,
         }
         if hasattr(catalog, "public_catalog"):
@@ -528,6 +529,19 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
     )
     if raw.get("source") != "sv7_load_m":
         raise ValueError("Unsupported snapshot")
+    favorites = next(
+        (
+            entry.get("param", [])
+            for entry in raw.get("profile_parameters", [])
+            if entry.get("type") == 0 and entry.get("id") == 1
+        ),
+        [],
+    )
+    favorite_song_ids = list(
+        dict.fromkeys(
+            mid for mid in favorites if type(mid) is int and 1 <= mid <= 10000000
+        )
+    )
     records = raw.get("chart_records") or {}
     skill_level = (raw.get("player") or {}).get("skill_level")
     if type(skill_level) is not int or not 1 <= skill_level <= 12:
@@ -571,6 +585,7 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
         "playtime": playtime,
         "skill_level": skill_level,
         "crew_id": crew_id,
+        "favorite_song_ids": favorite_song_ids,
         "profile_radar": profile_radar,
     }
     if hasattr(catalog, "public_catalog"):

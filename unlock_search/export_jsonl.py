@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlsplit
 
+from .atwiki_tables import SOURCE as ATWIKI_SOURCE
 from .client_data import ROOT, read_mdb
 from .paths import LOCAL_DATA, PUBLIC_CATALOG, UNLOCK_OVERRIDES
 
@@ -88,6 +89,8 @@ def unlock_description(arcade: dict[str, Any]) -> str:
     if method == "blaster_gate":
         return "Clear this chart in BLASTER GATE."
     if method == "variant_gate":
+        if evidence and all(rule["source"] == ATWIKI_SOURCE for rule in evidence):
+            return "Collect the required seals, then clear this chart in VARIANT GATE."
         gate = event.removeprefix("VARIANT GATE").strip()
         folder = f"VARIANT GATE {gate}" if gate else "VARIANT GATE"
         attributes = fields.get("VARIANT POWER属性", "")
@@ -125,7 +128,11 @@ def unlock_description(arcade: dict[str, Any]) -> str:
             return "April Fools' chart. Returns for a limited time around April 1."
         return "This chart has been removed from arcade cabinets."
     if method == "conditional_input":
+        if evidence and all(rule["source"] == ATWIKI_SOURCE for rule in evidence):
+            return "Requires special unlock conditions. Check the source for details."
         return "Requires prerequisite song clears. Verify the exact conditions."
+    if method == "crossover_event":
+        return "Unlock through the associated cross-game or joint event."
     return "Unknown, may be unlocked by default"
 
 
@@ -285,6 +292,24 @@ def apply_overrides(
     return applied
 
 
+def preserve_known_unlocks(
+    rows: list[dict[str, Any]], previous: dict[str, dict[str, Any]]
+) -> list[str]:
+    preserved = []
+    for row in rows:
+        if row["method"] != "unknown":
+            continue
+        mid = row["chart_id"].split(":")[0]
+        existing = previous.get(row["chart_id"]) or previous.get(f"{mid}:*")
+        if not existing or existing.get("method") not in METHODS - {"unknown"}:
+            continue
+        row.update(
+            {key: existing[key] for key in ("method", "description", "as_of", "source")}
+        )
+        preserved.append(row["chart_id"])
+    return preserved
+
+
 def export_catalog(
     audit: dict[str, Any],
     custom_mdb: Path = CUSTOM_MDB,
@@ -301,7 +326,23 @@ def export_catalog(
         else set()
     )
     rows = list(records(audit, custom_ids))
+    previous = {}
+    if output_path.exists():
+        with output_path.open(encoding="utf-8") as previous_catalog:
+            for line in previous_catalog:
+                if line.strip():
+                    row = json.loads(line)
+                    previous[row["chart_id"]] = row
+    preserved = preserve_known_unlocks(rows, previous)
     applied_overrides = apply_overrides(rows, overrides)
+    preserved = [chart_id for chart_id in preserved if chart_id not in applied_overrides]
+    known_chart_ids = set(overrides) | set(previous)
+    new_charts = [
+        row
+        for row in rows
+        if row["chart_id"] not in known_chart_ids
+        and f"{row['chart_id'].split(':')[0]}:*" not in known_chart_ids
+    ]
     compact = compact_records(rows)
     write_jsonl(output_path, compact)
     manifest = {
@@ -313,6 +354,7 @@ def export_catalog(
         "songs": len({row["chart_id"].split(":")[0] for row in rows}),
         "entries": len(compact),
         "description_overrides": applied_overrides,
+        "preserved_known_unlocks": preserved,
         "known_custom_ids_excluded": len(custom_ids),
         "sources": {
             "client_mdb": {"sha256": audit["input_sha256"]},
@@ -323,5 +365,13 @@ def export_catalog(
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
+    if preserved:
+        print(
+            f"Warning: preserved previous unlock data for {len(preserved)} charts "
+            "that resolved to unknown. Source parsing may need review. "
+            "See preserved_known_unlocks in the manifest"
+        )
+    for chart in new_charts:
+        print(f'New chart found: {chart["chart_id"]}, "{chart["description"]}"')
     print(f"Exported {len(rows)} charts in {len(compact)} entries: {output_path}")
     return manifest

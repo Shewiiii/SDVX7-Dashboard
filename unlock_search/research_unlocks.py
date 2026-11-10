@@ -9,6 +9,9 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
+from .atwiki_tables import SOURCE as ATWIKI_SOURCE
+from .atwiki_tables import URL as ATWIKI_URL
+from .atwiki_tables import match_song, song_rules
 from .client_data import ROOT, read_mdb
 from .fetch_sources import CACHE, OFFICIAL, fetch
 from .ts_literals import LiteralReader
@@ -28,6 +31,7 @@ SOURCE_URLS = {
     for name, page in WIKI_PAGES.items()
 }
 SOURCE_URLS.update(
+    atwiki_songs_current=ATWIKI_URL,
     official_news=OFFICIAL + "news/index.html",
     official_variant=OFFICIAL + "event/variant_gate.html",
 )
@@ -291,10 +295,15 @@ def build_audit(
         for name in WIKI_PAGES
         for rule in named_rules(CACHE / (name + ".html"), name, SOURCE_URLS[name])
     ]
+    rules.extend(song_rules(CACHE / (ATWIKI_SOURCE + ".html")))
     matches: dict[tuple[int, int], list[dict[str, Any]]] = collections.defaultdict(list)
     unmatched = []
     for rule in rules:
-        music_id, match_kind = index.match(rule["title"], rule["artist"])
+        music_id, match_kind = (
+            match_song(index, rule["title"], rule["artist"])
+            if rule["source"] == ATWIKI_SOURCE
+            else index.match(rule["title"], rule["artist"])
+        )
         rule["match_kind"] = match_kind
         if music_id is None:
             unmatched.append(rule)
@@ -321,6 +330,8 @@ def build_audit(
                 song, chart, local_data, local_matches[key], as_of_int
             )
             evidence = matches[key]
+            detailed = [rule for rule in evidence if rule["source"] != ATWIKI_SOURCE]
+            evidence = detailed or evidence
             methods = {rule["method"] for rule in evidence}
             method = (
                 next(iter(methods))

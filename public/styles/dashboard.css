@@ -309,6 +309,7 @@
     margin-top: 25px;
 }
 .tabs {
+    position: relative;
     display: flex;
     flex-wrap: nowrap;
     max-width: 100%;
@@ -328,7 +329,7 @@
 .tab.active {
     color: var(--ink);
 }
-.tab.active:after {
+.tabs:not(.segmented-animated) .tab.active::after {
     content: "";
     height: 2px;
     background: var(--accent);
@@ -336,6 +337,13 @@
     left: 0;
     right: 0;
     bottom: -1px;
+}
+.tabs.segmented-animated::before {
+    top: auto;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 0;
+    background: var(--accent);
 }
 .tab-caption {
     font-size: 9px;
@@ -4480,6 +4488,7 @@ footer > :last-child {
         scroll-behavior: auto !important;
     }
     .segmented-animated::before,
+    .tabs.segmented-animated::before,
     .timing-bar {
         transition: none;
     }

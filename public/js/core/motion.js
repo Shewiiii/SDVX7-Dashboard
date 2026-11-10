@@ -167,11 +167,11 @@ function sweep(
     );
 }
 
-export function initSegmentedControl(group) {
+export function initSegmentedControl(group, { selectedClass = "selected" } = {}) {
     const buttons = [...group.querySelectorAll("button")];
     const update = () => {
         const button = buttons.find((item) =>
-            item.classList.contains("selected"),
+            item.classList.contains(selectedClass),
         );
         if (!button) return;
         const bounds = group.getBoundingClientRect();
@@ -219,6 +219,8 @@ export function initSegmentedControl(group) {
 export function initSegmentedControls() {
     for (const group of document.querySelectorAll(".segmented"))
         initSegmentedControl(group);
+    for (const group of document.querySelectorAll(".tabs"))
+        initSegmentedControl(group, { selectedClass: "active" });
 }
 
 export const motion = {

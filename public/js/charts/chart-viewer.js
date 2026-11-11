@@ -6,11 +6,7 @@ import { getAudioMetadata, mountAudioPlayer } from "../audio/audio-player.js";
 import { createChartPlayback } from "./chart-playback.js";
 import { createChartAudio } from "../audio/chart-audio.js";
 import { DIFFS } from "../profile/metrics.js";
-import {
-    closePanelLink,
-    createPanelShareButton,
-    openPanelLink,
-} from "../core/panel-links.js";
+import { closePanelLink, openPanelLink } from "../core/panel-links.js";
 
 // Single-note thickness in CSS pixels. Adjust BT and FX independently here.
 export const SINGLE_NOTE_HEIGHT = { bt: 10, fx: 10 };
@@ -677,10 +673,6 @@ export function createChartViewer() {
             song: current.music_id,
             diff: current.diff_idx,
         };
-    const actions = document.createElement("div");
-    actions.className = "panel-heading-actions";
-    closeButton.before(actions);
-    actions.append(createPanelShareButton(panelLink, "chart viewer"), closeButton);
 
     async function close() {
         if (!dialog.open || closing) return;

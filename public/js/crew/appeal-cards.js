@@ -5,7 +5,6 @@ import { createCrewViewer } from "./crew-viewer.js";
 import {
     backToCardBrowser,
     closePanelLink,
-    createPanelShareButton,
     openPanelLink,
     readPanelLink,
     setPanelLink,
@@ -38,14 +37,6 @@ export function createAppealCardHelper(getState) {
             : { panel: "cards" };
     }
 
-    const share = createPanelShareButton(panelLink, "this selection");
-    share.hidden = true;
-    const closeButton = document.getElementById("appeal-helper-close");
-    const actions = document.createElement("div");
-    actions.className = "panel-heading-actions";
-    closeButton.before(actions);
-    actions.append(share, closeButton);
-
     async function switchTab(next, crewKey = null) {
         if (returningToBrowser || closing) return;
         if (next === view) {
@@ -65,7 +56,6 @@ export function createAppealCardHelper(getState) {
             tab.tabIndex = selected ? 0 : -1;
         }
         if (view === "crew") {
-            share.hidden = false;
             browser.hidden = true;
             detail.hidden = true;
             void crewViewer.show(crewKey);
@@ -228,7 +218,6 @@ export function createAppealCardHelper(getState) {
     }
 
     function renderBrowser({ anchorId = null } = {}) {
-        share.hidden = true;
         dialog.setAttribute("closedby", "none");
         browser.hidden = false;
         detail.hidden = true;
@@ -287,7 +276,6 @@ export function createAppealCardHelper(getState) {
     function showDetail(card) {
         dialog.setAttribute("closedby", "none");
         selectedId = card.id;
-        share.hidden = false;
         setPanelLink({ panel: "card", card: card.id });
         browser.hidden = true;
         detail.hidden = false;

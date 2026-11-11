@@ -3,11 +3,7 @@ import { showPanel } from "../core/panels.js";
 import { mountAudioPlayer } from "../audio/audio-player.js";
 import { mountUnlockMethod } from "../library/unlock-method.js";
 import { isBossChart, loadBossCharts } from "../library/boss-charts.js";
-import {
-    closePanelLink,
-    createPanelShareButton,
-    openPanelLink,
-} from "../core/panel-links.js";
+import { closePanelLink, openPanelLink } from "../core/panel-links.js";
 
 const LANES = [
     "VOL-L",
@@ -299,10 +295,6 @@ export function createChartDetails(isPreview, renderSong) {
             song: current.music_id,
             diff: current.diff_idx,
         };
-    const actions = document.createElement("div");
-    actions.className = "panel-heading-actions";
-    closeButton.before(actions);
-    actions.append(createPanelShareButton(panelLink, "chart details"), closeButton);
 
     function showDetails(record) {
         disposeAudio?.();

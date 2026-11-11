@@ -213,7 +213,7 @@ export function createSongSearch({
                 key === "timing"
                     ? `<div class="judgement-timing"><dt>${label}</dt>${timingText(play.timing)}</div>`
                     : key === "near"
-                      ? `<div><dt>${label}</dt><dd title="Early · Late" aria-label="Early Near ${count("early_near")}, Late Near ${count("late_near")}">${count("early_near")} · ${count("late_near")}</dd></div>`
+                      ? `<div><dt>${label}</dt><dd title="Early - Late" aria-label="Early Near ${count("early_near")}, Late Near ${count("late_near")}">${count("early_near")} - ${count("late_near")}</dd></div>`
                       : `<div><dt>${label}</dt><dd>${count(key)}</dd></div>`,
             )
             .join("")}</dl>`;

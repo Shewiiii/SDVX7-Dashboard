@@ -2,7 +2,7 @@
 export const SKILL_ANALYZER_COURSES = [
     {
         "id": "7:1:1",
-        "folder": "Level 01 · 第1回 Aコース",
+        "folder": "Level 01 - 第1回 Aコース",
         "level": 1,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.01",
@@ -23,7 +23,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:2",
-        "folder": "Level 02 · 第1回 Aコース",
+        "folder": "Level 02 - 第1回 Aコース",
         "level": 2,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.02",
@@ -44,7 +44,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:3",
-        "folder": "Level 03 · 第1回 Aコース",
+        "folder": "Level 03 - 第1回 Aコース",
         "level": 3,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.03",
@@ -65,7 +65,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:4",
-        "folder": "Level 04 · 第1回 Aコース",
+        "folder": "Level 04 - 第1回 Aコース",
         "level": 4,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.04",
@@ -86,7 +86,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:5",
-        "folder": "Level 05 · 第1回 Aコース",
+        "folder": "Level 05 - 第1回 Aコース",
         "level": 5,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.05",
@@ -107,7 +107,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:6",
-        "folder": "Level 06 · 第1回 Aコース",
+        "folder": "Level 06 - 第1回 Aコース",
         "level": 6,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.06",
@@ -128,7 +128,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:7",
-        "folder": "Level 07 · 第1回 Aコース",
+        "folder": "Level 07 - 第1回 Aコース",
         "level": 7,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.07",
@@ -149,7 +149,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:8",
-        "folder": "Level 08 · 第1回 Aコース",
+        "folder": "Level 08 - 第1回 Aコース",
         "level": 8,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.08",
@@ -170,7 +170,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:9",
-        "folder": "Level 09 · 第1回 Aコース",
+        "folder": "Level 09 - 第1回 Aコース",
         "level": 9,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.09",
@@ -191,7 +191,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:10",
-        "folder": "Level 10 · 第1回 Aコース",
+        "folder": "Level 10 - 第1回 Aコース",
         "level": 10,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.10",
@@ -212,7 +212,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:11",
-        "folder": "Level 11 · 第1回 Aコース",
+        "folder": "Level 11 - 第1回 Aコース",
         "level": 11,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.11",
@@ -233,7 +233,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:1:12",
-        "folder": "Level ∞ · 第1回 Aコース",
+        "folder": "Level ∞ - 第1回 Aコース",
         "level": 12,
         "season": "SKILL ANALYZER 第1回 Aコース",
         "name": "SKILL ANALYZER Level.∞",
@@ -254,7 +254,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:1",
-        "folder": "Level 01 · 第1回 Bコース",
+        "folder": "Level 01 - 第1回 Bコース",
         "level": 1,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.01",
@@ -275,7 +275,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:2",
-        "folder": "Level 02 · 第1回 Bコース",
+        "folder": "Level 02 - 第1回 Bコース",
         "level": 2,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.02",
@@ -296,7 +296,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:3",
-        "folder": "Level 03 · 第1回 Bコース",
+        "folder": "Level 03 - 第1回 Bコース",
         "level": 3,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.03",
@@ -317,7 +317,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:4",
-        "folder": "Level 04 · 第1回 Bコース",
+        "folder": "Level 04 - 第1回 Bコース",
         "level": 4,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.04",
@@ -338,7 +338,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:5",
-        "folder": "Level 05 · 第1回 Bコース",
+        "folder": "Level 05 - 第1回 Bコース",
         "level": 5,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.05",
@@ -359,7 +359,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:6",
-        "folder": "Level 06 · 第1回 Bコース",
+        "folder": "Level 06 - 第1回 Bコース",
         "level": 6,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.06",
@@ -380,7 +380,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:7",
-        "folder": "Level 07 · 第1回 Bコース",
+        "folder": "Level 07 - 第1回 Bコース",
         "level": 7,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.07",
@@ -401,7 +401,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:8",
-        "folder": "Level 08 · 第1回 Bコース",
+        "folder": "Level 08 - 第1回 Bコース",
         "level": 8,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.08",
@@ -422,7 +422,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:9",
-        "folder": "Level 09 · 第1回 Bコース",
+        "folder": "Level 09 - 第1回 Bコース",
         "level": 9,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.09",
@@ -443,7 +443,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:10",
-        "folder": "Level 10 · 第1回 Bコース",
+        "folder": "Level 10 - 第1回 Bコース",
         "level": 10,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.10",
@@ -464,7 +464,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:11",
-        "folder": "Level 11 · 第1回 Bコース",
+        "folder": "Level 11 - 第1回 Bコース",
         "level": 11,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.11",
@@ -485,7 +485,7 @@ export const SKILL_ANALYZER_COURSES = [
     },
     {
         "id": "7:2:12",
-        "folder": "Level ∞ · 第1回 Bコース",
+        "folder": "Level ∞ - 第1回 Bコース",
         "level": 12,
         "season": "SKILL ANALYZER 第1回 Bコース",
         "name": "SKILL ANALYZER Level.∞",

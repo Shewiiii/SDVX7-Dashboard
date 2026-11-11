@@ -68,7 +68,7 @@ function timeline(chart) {
                     `<text x="44" y="${y + 3}" text-anchor="end">${Number(value.toFixed(1)).toLocaleString()}</text>`,
             )
             .join("");
-    return `<section class="details-chart" data-plot="density"><h3>Note density <span>Actions per second</span></h3><div class="details-density-legend"><span><i class="dot details-btfx-dot" aria-hidden="true"></i>BT/FX</span><span><i class="dot details-laser-dot" aria-hidden="true"></i>Laser${lasers ? "" : " · awaiting sync"}</span></div><svg viewBox="0 0 520 96" role="img" aria-label="BT/FX and laser action density across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
+    return `<section class="details-chart" data-plot="density"><h3>Note density <span>Actions per second</span></h3><div class="details-density-legend"><span><i class="dot details-btfx-dot" aria-hidden="true"></i>BT/FX</span><span><i class="dot details-laser-dot" aria-hidden="true"></i>Laser${lasers ? "" : ": awaiting sync"}</span></div><svg viewBox="0 0 520 96" role="img" aria-label="BT/FX and laser action density across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
         [
             [18, peak],
             [47, peak / 2],
@@ -84,7 +84,7 @@ function timeline(chart) {
                       [76, low],
                   ],
         )}<path class="details-tempo" d="${bpmPath}"/><text x="52" y="93">0:00</text><text x="508" y="93" text-anchor="end">${time(chart.duration)}</text></svg></section>
-        <section class="details-chart" data-plot="lanes"><h3>Lane activity <span>Chart overview · time →</span></h3><svg viewBox="0 0 520 132" role="img" aria-label="Activity for each button and laser lane across the chart">${LANES.map((label, i) => `<text x="0" y="${i * 14 + 10}">${label}</text>`).join("")}${cells}<text x="52" y="129">0:00</text><text x="508" y="129" text-anchor="end">${time(chart.duration)}</text></svg></section>`;
+        <section class="details-chart" data-plot="lanes"><h3>Lane activity <span>Chart overview</span></h3><svg viewBox="0 0 520 132" role="img" aria-label="Activity for each button and laser lane across the chart">${LANES.map((label, i) => `<text x="0" y="${i * 14 + 10}">${label}</text>`).join("")}${cells}<text x="52" y="129">0:00</text><text x="508" y="129" text-anchor="end">${time(chart.duration)}</text></svg></section>`;
 }
 
 function inspectPlots(plots, chart) {
@@ -342,7 +342,7 @@ export function createChartDetails(isPreview, renderSong) {
             ],
             [
                 "Genre",
-                record.is_custom ? "Custom chart" : genres.join(" · ") || "Other",
+                record.is_custom ? "Custom chart" : genres.join(", ") || "Other",
             ],
             ["Maximum EX score", count(record.max_exscore)],
             [

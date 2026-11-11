@@ -158,7 +158,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
                 : difficultyPosition(level);
         $("point").textContent =
             state.mode === "score"
-                ? `${formatScore(score)} · ${scoreGrade}`
+                ? `${formatScore(score)} ${scoreGrade}`
                 : String(level);
         target.setAttribute("aria-valuetext", $("point").textContent);
         $("grade-name").textContent = scoreGrade;
@@ -240,7 +240,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
                 class: "calculator-reference",
                 "data-reference": key,
                 "data-vf": value,
-                "aria-label": `${label} · ${vf(value)}`,
+                "aria-label": `${label}: ${vf(value)}`,
             });
             guide.append(
                 svgElement("line", {
@@ -291,7 +291,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             )
                 continue;
             const matching = matchesChart(chart);
-            const caption = `${chart.title || `Chart ${chart.music_id}`} · ${DIFFS[chart.diff_idx]} ${chart.level ?? ""} · ${Number.isFinite(chart.score) ? formatScoreInput(chart.score) : "—"} · VF ${vf(chart.vf)}`;
+            const caption = `${chart.title || `Chart ${chart.music_id}`} - ${DIFFS[chart.diff_idx]} ${chart.level ?? ""} - ${Number.isFinite(chart.score) ? formatScoreInput(chart.score) : "—"} - VF ${vf(chart.vf)}`;
             const dot = svgElement("g", {
                 class: `calculator-chart-dot chart-row${matching ? " is-matching" : ""}`,
                 "data-music": chart.music_id,
@@ -299,7 +299,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
                 "data-rank": chart.rank,
                 tabindex: 0,
                 role: "button",
-                "aria-label": `${chartFilter ? "Play" : "Top"} ${chart.rank} · ${caption} · ${CLEARS[chart.clear_type]}. View plays`,
+                "aria-label": `${chartFilter ? "Play" : "Top"} ${chart.rank} - ${caption} - ${CLEARS[chart.clear_type]}. View plays`,
             });
             dot.append(
                 svgElement("circle", {

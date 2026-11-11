@@ -28,7 +28,7 @@ def build_courses(plugin: Path) -> list[dict[str, Any]]:
             if level:
                 rank = "∞" if level == 12 else f"{level:02d}"
                 season_name = re.sub(r"^SKILL ANALYZER\s*", "", season["name"])
-                folder = f"Level {rank} · {season_name}"
+                folder = f"Level {rank} - {season_name}"
             else:
                 folder = course["name"]
 

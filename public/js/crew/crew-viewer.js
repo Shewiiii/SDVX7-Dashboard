@@ -535,7 +535,7 @@ export function createCrewViewer(dialog, getState) {
             const name = document.createElement("span");
             name.textContent = entry.name;
             const detail = document.createElement("small");
-            detail.textContent = `#${entry.id}${entry.id === currentId ? " · Current" : ""}`;
+            detail.textContent = `#${entry.id}`;
             button.append(icon, name, detail);
             button.addEventListener("click", () => void select(entry));
             strip.append(button);
@@ -602,7 +602,7 @@ export function createCrewViewer(dialog, getState) {
         request = new AbortController();
         const { signal } = request;
         $("crew-name").textContent = entry.name;
-        $("crew-subtitle").textContent = `Nemsys Crew · #${entry.id}`;
+        $("crew-subtitle").textContent = `Nemsys Crew #${entry.id}`;
         renderCurrentLabel();
         $("crew-renderer-note").hidden = entry.type !== "afp";
         for (const row of settings.querySelectorAll("[data-live2d-control]"))

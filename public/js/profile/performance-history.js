@@ -363,7 +363,7 @@ export function createPerformanceHistory({
             return;
         }
         const popup = $("popup");
-        popup.innerHTML = `<strong>${date(time)} · ${clock(time)}</strong>${lines.join("")}`;
+        popup.innerHTML = `<strong>${date(time)} ${clock(time)}</strong>${lines.join("")}`;
         positionChartPopup(popup, $("chart-wrap"), event);
     }
     function hidePopup() {

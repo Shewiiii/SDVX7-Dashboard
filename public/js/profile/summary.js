@@ -76,7 +76,7 @@ export function createProfileSummary({
         );
         const name = data.state.name || "Player";
         setText("player-name", name);
-        document.title = `${name} · SOUND VOLTEX`;
+        document.title = `${name} - SOUND VOLTEX ∇`;
         const dan = data.state.skill_level;
         const danBanner = $("dan-banner");
         danBanner.hidden = !(Number.isInteger(dan) && dan >= 1 && dan <= 12);
@@ -106,7 +106,7 @@ export function createProfileSummary({
             setText("vf-class-name", vfClass.name);
             $("vf-class").setAttribute(
                 "aria-label",
-                `${vfClass.name} · View VolForce classes`,
+                `${vfClass.name} - View VolForce classes`,
             );
             $("vf-class-icon").src = `/assets/vf-classes/${vfClass.number}.png`;
         }
@@ -155,7 +155,7 @@ export function createProfileSummary({
         setText(
             "session-meta",
             latest.length
-                ? `${date(latest[0].received_at)} · ${clock(latest[0].received_at)}–${clock(latest.at(-1).received_at)} · ${latest.length} plays`
+                ? `${date(latest[0].received_at)} - ${clock(latest[0].received_at)}–${clock(latest.at(-1).received_at)} - ${latest.length} plays`
                 : "No data available",
         );
         $("recent-plays").innerHTML = latest.length

@@ -104,10 +104,10 @@ export function createChartAudio({ getChart, signal }) {
         return {
             url: blobUrl,
             label: incompleteEffects(chart)
-                ? "Full song · FX (partial)"
+                ? "Full song - FX (partial)"
                 : samples || !needsSamples
-                  ? "Full song · FX"
-                  : "Full song · FX (no hit sounds)",
+                  ? "Full song - FX"
+                  : "Full song - FX (no hit sounds)",
         };
     }
 
@@ -120,7 +120,7 @@ export function createChartAudio({ getChart, signal }) {
             const chart = await getChart();
             signal.throwIfAborted();
             if (record.variant !== "full" || !validEffects(chart))
-                return { url: record.url, label: "Full song · FX not synced" };
+                return { url: record.url, label: "Full song - FX not synced" };
             if (
                 !chart.lasers.length &&
                 !chart.effects.fx.length &&
@@ -146,7 +146,7 @@ export function createChartAudio({ getChart, signal }) {
                     "[chart-audio] Playing original audio; effect rendering failed",
                     error,
                 );
-                return { url: record.url, label: "Full song · FX unavailable" };
+                return { url: record.url, label: "Full song - FX unavailable" };
             }
         },
     };

@@ -12,7 +12,7 @@ export function audioTags(chart) {
             ? {
                   GENRE: chart.is_custom
                       ? "Custom chart"
-                      : genres.join(" · ") || "Other",
+                      : genres.join(", ") || "Other",
                   DATE: chart.distribution_date || chart.release_date || "",
                   GAME: SONG_VERSIONS[chart.version] || "",
               }

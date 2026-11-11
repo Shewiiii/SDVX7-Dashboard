@@ -100,7 +100,7 @@ export function createChartPlayback({ signal }) {
             Math.floor(fraction * density.buttons.length),
         );
         popup.querySelector("strong").textContent =
-            `${clock(at)} · Measure ${info.measure}`;
+            `${clock(at)} - Measure ${info.measure}`;
         const values = popup.querySelectorAll("b");
         values[0].textContent = `${rate(density.buttons[index])}/s`;
         values[1].textContent = `${rate(density.lasers[index])}/s`;

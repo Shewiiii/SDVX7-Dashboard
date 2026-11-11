@@ -80,7 +80,7 @@ export function createCrewVoices(panel) {
                             item.classList.toggle("selected", selected);
                             item.setAttribute("aria-pressed", String(selected));
                         }
-                        label.textContent = `${bank.label} · ${displayLabel}`;
+                        label.textContent = `${bank.label} - ${displayLabel}`;
                         label.hidden = false;
                         playerHost.hidden = false;
                         disposePlayer = mountAudioPlayer(

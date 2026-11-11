@@ -610,7 +610,7 @@ export function createLibrary(
         document.getElementById("library-count").textContent = chartFolderMode(
             mode.value,
         )
-            ? `${shown.length.toLocaleString()} charts · ${new Set(shown.map((entry) => entry.song.music_id)).size.toLocaleString()} songs`
+            ? `${shown.length.toLocaleString()} charts - ${new Set(shown.map((entry) => entry.song.music_id)).size.toLocaleString()} songs`
             : `${new Set(shown.map((entry) => entry.song.music_id)).size.toLocaleString()} songs`;
     }
     async function close() {

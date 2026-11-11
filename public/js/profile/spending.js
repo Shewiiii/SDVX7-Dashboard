@@ -44,7 +44,7 @@ export function createSpending(getData) {
         price.setAttribute("aria-describedby", "spending-popup");
         price.setAttribute(
             "aria-label",
-            `${formatMoney(yen, spending)} · View arcade spending estimates`,
+            `${formatMoney(yen, spending)} - View arcade spending estimates`,
         );
         price.addEventListener("pointerenter", (event) => {
             if (event.pointerType === "mouse") showSpendingPopup();
@@ -56,7 +56,9 @@ export function createSpending(getData) {
         $("spending-total").replaceChildren(price);
         setText(
             "spending-detail",
-            `${exchangeRate === null ? "" : `≈ ${formatMoney(convertedMoney, spending * exchangeRate)} · `}Standard Start`,
+            exchangeRate === null
+                ? "Standard Start"
+                : `≈ ${formatMoney(convertedMoney, spending * exchangeRate)} (Standard Start)`,
         );
         $("spending-description").textContent =
             `${number(data.plays.length)} plays on an arcade cabinet corresponds to:`;

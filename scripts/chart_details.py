@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from scripts.music import MusicCatalog
 
 BINS = 64
-SCHEMA = 7
+SCHEMA = 8
 logger = logging.getLogger(__name__)
 
 
@@ -109,6 +109,7 @@ def parse_chart(
     if not 0 < duration <= 7200:
         raise ValueError("Invalid chart duration")
     lanes = [[0] * BINS for _ in range(8)]
+    lane_actions = [[0] * BINS for _ in range(8)]
     density = [0] * BINS
     laser_density = [0] * BINS
     buttons, lasers = [], []
@@ -146,6 +147,7 @@ def parse_chart(
                 if not active or flag == 1:
                     counts["laser_sections"] += 1
                     laser_density[index] += 1
+                    lane_actions[lane][index] += 1
                     active = True
                     previous_direction = None
                     if full:
@@ -172,6 +174,7 @@ def parse_chart(
                             and direction != previous_direction
                         ):
                             laser_density[bin_at(previous_time)] += 1
+                            lane_actions[lane][bin_at(previous_time)] += 1
                         previous_direction = direction
                 lanes[lane][index] = 1
                 previous_time = time
@@ -193,6 +196,7 @@ def parse_chart(
                 kind = "fx" if lane in (1, 6) else "bt"
                 counts[f"{kind}_{'holds' if hold_ticks else 'taps'}"] += 1
                 density[index] += 1
+                lane_actions[lane][index] += 1
                 end = seconds(beat(row[0]) + hold_ticks / resolution)
                 play_end = max(play_end, end if hold_ticks else time + 1e-6)
                 if full:
@@ -247,6 +251,8 @@ def parse_chart(
         "laser_density": laser_density,
         "laser_density_version": 2,
         "lanes": lanes,
+        "lane_actions": lane_actions,
+        "lane_actions_version": 1,
         "bpm_changes": changes,
         "bpm_change_count": max(0, len(tempos) - 1),
         "max_chain": chain,

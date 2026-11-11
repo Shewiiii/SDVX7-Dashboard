@@ -4,6 +4,7 @@ import { mountAudioPlayer } from "../audio/audio-player.js";
 import { mountUnlockMethod } from "../library/unlock-method.js";
 import { isBossChart, loadBossCharts } from "../library/boss-charts.js";
 import { closePanelLink, openPanelLink } from "../core/panel-links.js";
+import { hasLaneActions, laneOpacity } from "./lane-activity.js";
 
 const LANES = [
     "VOL-L",
@@ -51,10 +52,12 @@ function timeline(chart) {
     if (tempos.length) bpmPath += "H508";
     let cells = "";
     const maximum = Math.max(1, ...chart.lanes.flat());
+    const actionsReady = hasLaneActions(chart);
     chart.lanes.forEach((lane, row) =>
         lane.forEach((value, column) => {
-            if (value > 0)
-                cells += `<rect class="${row === 0 || row === 7 ? "details-laser" : "details-note"}" x="${52 + column * 7.125}" y="${row * 14 + 2}" width="6.5" height="10" opacity="${0.25 + Math.sqrt(value / maximum) * 0.75}"/>`;
+            const actions = actionsReady ? chart.lane_actions[row][column] : 0;
+            if (value > 0 || actions > 0)
+                cells += `<rect class="${row === 0 || row === 7 ? "details-laser" : "details-note"}" x="${52 + column * 7.125}" y="${row * 14 + 2}" width="6.5" height="10" opacity="${actionsReady ? laneOpacity(actions, chart.duration / 64) : 0.25 + Math.sqrt(value / maximum) * 0.75}"/>`;
         }),
     );
     const ticks = (values) =>
@@ -80,7 +83,7 @@ function timeline(chart) {
                       [76, low],
                   ],
         )}<path class="details-tempo" d="${bpmPath}"/><text x="52" y="93">0:00</text><text x="508" y="93" text-anchor="end">${time(chart.duration)}</text></svg></section>
-        <section class="details-chart" data-plot="lanes"><h3>Lane activity <span>Chart overview</span></h3><svg viewBox="0 0 520 132" role="img" aria-label="Activity for each button and laser lane across the chart">${LANES.map((label, i) => `<text x="0" y="${i * 14 + 10}">${label}</text>`).join("")}${cells}<text x="52" y="129">0:00</text><text x="508" y="129" text-anchor="end">${time(chart.duration)}</text></svg></section>`;
+        <section class="details-chart" data-plot="lanes"${actionsReady ? ' data-lane-actions="true"' : ""}><h3>Lane activity <span>${actionsReady ? "Actions per second per lane" : "Action brightness awaiting sync"}</span></h3><svg viewBox="0 0 520 132" role="img" aria-label="Activity for each button and laser lane across the chart">${LANES.map((label, i) => `<text x="0" y="${i * 14 + 10}">${label}</text>`).join("")}${cells}<text x="52" y="129">0:00</text><text x="508" y="129" text-anchor="end">${time(chart.duration)}</text></svg></section>`;
 }
 
 function inspectPlots(plots, chart) {
@@ -175,6 +178,11 @@ function inspectPlots(plots, chart) {
                 popup.textContent = `${preciseTime(start)}–${preciseTime(end)}\n${LANES.map(
                     (label, lane) => {
                         const value = chart.lanes[lane][index];
+                        if (section.dataset.laneActions) {
+                            const actions = chart.lane_actions[lane][index];
+                            const unit = lane === 0 || lane === 7 ? "actions" : "starts";
+                            return `${label}: ${actions} ${unit}, ${(actions / (end - start)).toFixed(2)}/s`;
+                        }
                         return `${label}: ${lane === 0 || lane === 7 ? (value ? "Laser active" : "No laser activity") : `${value} tap/hold overlaps`}`;
                     },
                 ).join("\n")}`;
@@ -267,7 +275,7 @@ export function createChartDetails(isPreview, renderSong) {
     const closeButton = document.getElementById("chart-details-close");
     dialog.setAttribute("closedby", "none");
     const cache = new Map();
-    const cacheKey = "chart-details-cache-v6";
+    const cacheKey = "chart-details-cache-v7";
     try {
         for (const [key, entry] of JSON.parse(
             localStorage.getItem(cacheKey) || "[]",
@@ -437,7 +445,8 @@ export function createChartDetails(isPreview, renderSong) {
                 !saved ||
                 Date.now() - saved.at > 3600000 ||
                 (saved.record.chart &&
-                    (saved.record.chart.laser_density_version !== 2 ||
+                    (!hasLaneActions(saved.record.chart) ||
+                        saved.record.chart.laser_density_version !== 2 ||
                         !Number.isInteger(saved.record.chart.max_chain) ||
                         typeof saved.record.chart.max_chain_estimated !==
                             "boolean" ||
@@ -445,7 +454,7 @@ export function createChartDetails(isPreview, renderSong) {
                         saved.record.chart.visual_gimmicks_version !== 2))
             ) {
                 const response = await fetch(
-                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=6`,
+                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=7`,
                     { signal: request.signal },
                 );
                 if (!response.ok)

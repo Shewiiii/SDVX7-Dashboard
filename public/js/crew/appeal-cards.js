@@ -2,6 +2,7 @@ import { dismissSearchKeyboard } from "../search/search-tools.js";
 import { showPanel } from "../core/panels.js";
 import { normalizeSearch } from "../profile/metrics.js";
 import { createCrewViewer } from "./crew-viewer.js";
+import { cardPath, isPlainClick } from "../core/song-links.js";
 import {
     backToCardBrowser,
     closePanelLink,
@@ -66,9 +67,11 @@ export function createAppealCardHelper(getState) {
         }
     }
     for (const [index, tab] of tabs.entries()) {
-        tab.addEventListener("click", () =>
-            switchTab(tab.dataset.customizeTab),
-        );
+        tab.addEventListener("click", (event) => {
+            if (!isPlainClick(event)) return;
+            event.preventDefault();
+            void switchTab(tab.dataset.customizeTab);
+        });
         tab.addEventListener("keydown", (event) => {
             if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
                 return;
@@ -97,7 +100,8 @@ export function createAppealCardHelper(getState) {
     let returningToBrowser = false;
 
     function image(card, lazy = true) {
-        const frame = document.createElement("span");
+        const frame = document.createElement(lazy ? "span" : "a");
+        if (!lazy) frame.href = `/api/cover?id=${card.image}`;
         frame.className = "appeal-helper-image is-loading";
         frame.setAttribute("aria-busy", "true");
         const skeleton = document.createElement("span");
@@ -248,8 +252,8 @@ export function createAppealCardHelper(getState) {
             (page - 1) * pageSize,
             page * pageSize,
         )) {
-            const button = document.createElement("button");
-            button.type = "button";
+            const button = document.createElement("a");
+            button.href = cardPath(card.id);
             button.className = "appeal-helper-card";
             button.dataset.appealId = card.id;
             const label = document.createElement("span");
@@ -398,7 +402,11 @@ export function createAppealCardHelper(getState) {
     }
     document
         .getElementById("appeal-helper-open")
-        .addEventListener("click", () => open());
+        .addEventListener("click", (event) => {
+            if (!isPlainClick(event)) return;
+            event.preventDefault();
+            open();
+        });
 
     async function closeDialog() {
         if (!dialog.open || closing) return;
@@ -450,6 +458,7 @@ export function createAppealCardHelper(getState) {
         }
     });
     grid.addEventListener("click", (event) => {
+        if (!isPlainClick(event)) return;
         if (returningToBrowser || closing) return;
         const button = event.target.closest("[data-appeal-id]");
         if (!button) return;
@@ -457,13 +466,18 @@ export function createAppealCardHelper(getState) {
             (item) => item.id === Number(button.dataset.appealId),
         );
         if (!card) return;
+        event.preventDefault();
         dismissSearchKeyboard();
         scrollPosition = dialog.scrollTop;
         openPanelLink({ panel: "card", card: card.id });
         showDetail(card);
         back.focus({ preventScroll: true });
     });
-    back.addEventListener("click", returnToBrowser);
+    back.addEventListener("click", (event) => {
+        if (!isPlainClick(event)) return;
+        event.preventDefault();
+        void returnToBrowser();
+    });
     search.addEventListener("input", () => {
         page = 1;
         renderBrowser();

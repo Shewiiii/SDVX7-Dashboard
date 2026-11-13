@@ -1,4 +1,5 @@
 import { createScrollRestoration } from "./core/scroll-restoration.js";
+import { isPlainClick } from "./core/song-links.js";
 import { createRecords } from "./profile/records.js";
 import { initChartActions } from "./charts/chart-actions.js";
 import { createSongSearch } from "./search/song-search.js";
@@ -174,7 +175,7 @@ const songLibrary = createLibrary(
     () => data,
     () => catalog,
     (song) =>
-        `${coverMarkup(song)}<span class="option-song"><span>${escape(song.title)}</span><small>${escape(song.artist)}</small></span>${difficultyRange(song)}`,
+        `${coverMarkup(song, "small", false)}<span class="option-song"><span>${escape(song.title)}</span><small>${escape(song.artist)}</small></span>${difficultyRange(song)}`,
     (mid, diff) => songSearch.selectChart(mid, diff),
     badge,
 );
@@ -382,6 +383,7 @@ function restoreUrl() {
     $("difficulty").value = String(difficulty);
     const musicId = Number(params.get("song")),
         diff = Number(params.get("diff"));
+    if (next === "calculator") restoreCalculatorLink(params);
     if (next === "search") {
         songSearch.selected =
             params.has("diff") &&
@@ -428,6 +430,15 @@ function restoreUrl() {
     }
     restoreScroll(savedScroll);
     void restorePanelLink();
+}
+
+function restoreCalculatorLink(params) {
+    if (!data || !params.has("song") || !params.has("diff")) return;
+    const song = songs.get(Number(params.get("song")));
+    const chart = song?.difficulties.find(
+        (item) => item.diff_idx === Number(params.get("diff")),
+    );
+    if (chart) calculator.openChart({ ...song, ...chart });
 }
 
 async function restorePanelLink() {
@@ -591,7 +602,8 @@ async function load({ fresh = false, check = false, live = false } = {}) {
             $("notice").hidden = true;
             return;
         }
-        const animate = !data || (!live && fingerprint !== dataFingerprint);
+        const initial = !data;
+        const animate = initial || (!live && fingerprint !== dataFingerprint);
         dataFingerprint = fingerprint;
         playHighlights.update(next.plays);
         data = next;
@@ -599,6 +611,10 @@ async function load({ fresh = false, check = false, live = false } = {}) {
         appealHelper.update();
         catalog = songCatalog(data);
         songs = new Map(catalog.map((song) => [song.music_id, song]));
+        if (initial && view === "calculator")
+            restoreCalculatorLink(
+                new URLSearchParams(location.hash.split("?")[1] || ""),
+            );
         songLibrary.update();
         if ($("song-query").value.trim() || $("search").value.trim())
             void searchTools.ensure();
@@ -689,7 +705,9 @@ $("vf-percentile").addEventListener("click", (event) => {
 });
 
 document.querySelectorAll("[data-view]").forEach((button) =>
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+        if (!isPlainClick(event)) return;
+        event.preventDefault();
         const next = button.dataset.view;
         if (next === view) {
             if (next in recordStates) {

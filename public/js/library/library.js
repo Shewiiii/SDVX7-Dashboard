@@ -1,4 +1,5 @@
 import { dismissSearchKeyboard } from "../search/search-tools.js";
+import { isPlainClick, songPath } from "../core/song-links.js";
 import { showPanel } from "../core/panels.js";
 import { afterPanelHistory } from "../core/panel-history.js";
 import { parseSearch, songVersion } from "../search/search-query.js";
@@ -54,7 +55,10 @@ export function folderDifficultyRange(items) {
         : [first, last];
 }
 
-export function skillAnalyzerFolders(entries, courses = SKILL_ANALYZER_COURSES) {
+export function skillAnalyzerFolders(
+    entries,
+    courses = SKILL_ANALYZER_COURSES,
+) {
     const grouped = new Map();
     for (const entry of entries) {
         if (!grouped.has(entry.group)) grouped.set(entry.group, []);
@@ -124,7 +128,12 @@ export function libraryEntries(
     const entries = [];
     const favorites = new Set(data.state.favorite_song_ids || []);
     const searchQuery = mode === "boss" ? `${query} boss=true` : query;
-    for (const song of searchSongs(catalog, searchQuery, data.plays, Infinity)) {
+    for (const song of searchSongs(
+        catalog,
+        searchQuery,
+        data.plays,
+        Infinity,
+    )) {
         if (mode === "favorites" && !favorites.has(song.music_id)) continue;
         if (mode === "skill") {
             for (const course of skillCourses) {
@@ -148,7 +157,10 @@ export function libraryEntries(
         } else if (mode === "unlock") {
             const grouped = new Map();
             for (const difficulty of song.difficulties) {
-                const key = chartKey({ music_id: song.music_id, ...difficulty });
+                const key = chartKey({
+                    music_id: song.music_id,
+                    ...difficulty,
+                });
                 const group =
                     song.is_custom || difficulty.is_custom
                         ? "Custom chart"
@@ -187,22 +199,21 @@ export function libraryEntries(
                 });
             }
         } else {
-            const groups =
-                ["all", "boss", "favorites"].includes(mode)
-                    ? [mode === "favorites" ? "Favorites" : "All"]
-                    : mode === "version"
-                      ? [SONG_VERSIONS[songVersion(song)] || "Unknown version"]
-                      : mode === "year"
-                        ? [
-                              song.release_year
-                                  ? String(song.release_year)
-                                  : "Unknown year",
-                          ]
-                        : song.is_custom
-                          ? ["Custom chart"]
-                          : SONG_GENRES.filter(
-                                ([bit]) => (song.genre || 0) & bit,
-                            ).map(([, label]) => label);
+            const groups = ["all", "boss", "favorites"].includes(mode)
+                ? [mode === "favorites" ? "Favorites" : "All"]
+                : mode === "version"
+                  ? [SONG_VERSIONS[songVersion(song)] || "Unknown version"]
+                  : mode === "year"
+                    ? [
+                          song.release_year
+                              ? String(song.release_year)
+                              : "Unknown year",
+                      ]
+                    : song.is_custom
+                      ? ["Custom chart"]
+                      : SONG_GENRES.filter(
+                            ([bit]) => (song.genre || 0) & bit,
+                        ).map(([, label]) => label);
             for (const group of new Set(groups.length ? groups : ["Other"]))
                 entries.push({ group, song });
         }
@@ -212,9 +223,12 @@ export function libraryEntries(
             (mode === "version"
                 ? versionOrder(a.group) - versionOrder(b.group)
                 : mode === "skill"
-                  ? skillFolderOrder.get(a.group) - skillFolderOrder.get(b.group)
+                  ? skillFolderOrder.get(a.group) -
+                    skillFolderOrder.get(b.group)
                   : mode === "year"
-                    ? b.group.localeCompare(a.group, undefined, { numeric: true })
+                    ? b.group.localeCompare(a.group, undefined, {
+                          numeric: true,
+                      })
                     : a.group.localeCompare(b.group, undefined, {
                           numeric: true,
                       })) ||
@@ -316,7 +330,10 @@ export function createLibrary(
             ])
                 names.add(label);
         if (mode.value === "unlock")
-            for (const label of [...Object.values(UNLOCK_METHODS), "Custom chart"])
+            for (const label of [
+                ...Object.values(UNLOCK_METHODS),
+                "Custom chart",
+            ])
                 names.add(label);
         if (mode.value === "version")
             for (const label of versionNames) names.add(label);
@@ -461,15 +478,23 @@ export function createLibrary(
                     state.page * 48,
                     (state.page + 1) * 48,
                 )) {
-                    const button = document.createElement("button");
-                    button.type = "button";
+                    const button = document.createElement("a");
+                    button.href = songPath(
+                        entry.song.music_id,
+                        entry.song.diff_idx,
+                    );
                     button.className = "song-option library-song";
                     button.innerHTML = renderSong(entry.song);
-                    button.addEventListener("click", async () => {
+                    button.addEventListener("click", async (event) => {
+                        if (!isPlainClick(event)) return;
+                        event.preventDefault();
                         dismissSearchKeyboard();
                         await close();
                         afterPanelHistory(() =>
-                            selectSong(entry.song.music_id, entry.song.diff_idx),
+                            selectSong(
+                                entry.song.music_id,
+                                entry.song.diff_idx,
+                            ),
                         );
                     });
                     list.append(button);
@@ -586,8 +611,7 @@ export function createLibrary(
                     if (!folder.isConnected || folder.open === observedOpen)
                         return;
                     observedOpen = folder.open;
-                    if (autoOpen)
-                        searchFolderState.set(key, folder.open);
+                    if (autoOpen) searchFolderState.set(key, folder.open);
                     else state.open = folder.open;
                     if (folder.open && !populated) populate();
                 });

@@ -167,8 +167,11 @@ function sweep(
     );
 }
 
-export function initSegmentedControl(group, { selectedClass = "selected" } = {}) {
-    const buttons = [...group.querySelectorAll("button")];
+export function initSegmentedControl(
+    group,
+    { selectedClass = "selected" } = {},
+) {
+    const buttons = [...group.querySelectorAll("button, a[href]")];
     const update = () => {
         const button = buttons.find((item) =>
             item.classList.contains(selectedClass),

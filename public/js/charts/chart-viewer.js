@@ -253,7 +253,13 @@ export function chartHitEffects(chart, at) {
 }
 
 // Geometry changes on layout/scroll events, not as the song advances.
-function chartSurface(canvas, chart, extendedLasers, viewport, visualScale = 1) {
+function chartSurface(
+    canvas,
+    chart,
+    extendedLasers,
+    viewport,
+    visualScale = 1,
+) {
     const width = viewport.clientWidth,
         height = viewport.clientHeight;
     if (!width || !height) return;
@@ -280,7 +286,8 @@ function chartSurface(canvas, chart, extendedLasers, viewport, visualScale = 1) 
             timing[boundsKey] = [min, max];
         }
         const [min, max] = timing[boundsKey];
-        const scaledX = x => width / 2 + (laserX(x) - width / 2) * visualScale;
+        const scaledX = (x) =>
+            width / 2 + (laserX(x) - width / 2) * visualScale;
         const half = (lane / 2 + 2) * visualScale;
         padding = Math.ceil(
             Math.max(0, half - scaledX(min), scaledX(max) + half - width),
@@ -347,7 +354,13 @@ export function createChartRenderer(canvas, viewport = canvas) {
                 extendedLasers !== previousExtended ||
                 visualScale !== previousScale
             ) {
-                surface = chartSurface(canvas, chart, extendedLasers, viewport, visualScale);
+                surface = chartSurface(
+                    canvas,
+                    chart,
+                    extendedLasers,
+                    viewport,
+                    visualScale,
+                );
                 previousChart = chart;
                 previousExtended = extendedLasers;
                 previousScale = visualScale;
@@ -377,7 +390,13 @@ export function drawChart(
     surface,
     visualScale = 1,
 ) {
-    surface ??= chartSurface(canvas, chart, extendedLasers, viewport, visualScale);
+    surface ??= chartSurface(
+        canvas,
+        chart,
+        extendedLasers,
+        viewport,
+        visualScale,
+    );
     if (!surface) return;
     const {
         ctx,
@@ -800,7 +819,17 @@ export function createChartViewer() {
                     { signal, once: true },
                 );
                 image.src = `/api/cover?id=${chart.cover}`;
-                jacket.replaceChildren(image);
+                const link = document.createElement("a");
+                link.href = image.src;
+                link.dataset.viewJacket = "";
+                link.dataset.music = chart.music_id;
+                link.dataset.diff = chart.diff_idx;
+                link.setAttribute(
+                    "aria-label",
+                    `View ${chart.title || "song"} jacket`,
+                );
+                link.append(image);
+                jacket.replaceChildren(link);
             }
             const message = body.querySelector(".details-message"),
                 stage = body.querySelector(".chart-viewer-stage");
@@ -903,13 +932,19 @@ export function createChartViewer() {
             setEffects(effectsEnabled);
             // This control is created after the page's initial motion setup.
             // Reuse its sliding highlight and release the observers on close.
-            void import("../core/motion.js").then(({ initSegmentedControl }) => {
-                if (signal.aborted) return;
-                for (const control of settings.querySelectorAll(".segmented")) {
-                    const cleanup = initSegmentedControl(control);
-                    signal.addEventListener("abort", cleanup, { once: true });
-                }
-            });
+            void import("../core/motion.js").then(
+                ({ initSegmentedControl }) => {
+                    if (signal.aborted) return;
+                    for (const control of settings.querySelectorAll(
+                        ".segmented",
+                    )) {
+                        const cleanup = initSegmentedControl(control);
+                        signal.addEventListener("abort", cleanup, {
+                            once: true,
+                        });
+                    }
+                },
+            );
             for (const button of dialog.querySelectorAll(
                 "[data-chart-effects]",
             ))
@@ -923,7 +958,11 @@ export function createChartViewer() {
                 const saved = Number(localStorage.getItem(SPEED_KEY));
                 if (Number.isFinite(saved) && saved > 0) modSpeed = saved;
                 const savedScale = Number(localStorage.getItem(SCALE_KEY));
-                if (Number.isFinite(savedScale) && savedScale >= 0.25 && savedScale <= 1.5)
+                if (
+                    Number.isFinite(savedScale) &&
+                    savedScale >= 0.25 &&
+                    savedScale <= 1.5
+                )
                     visualScale = savedScale;
                 const savedFps = Number(localStorage.getItem(FPS_KEY));
                 const savedOffset = Number(localStorage.getItem(OFFSET_KEY));
@@ -957,7 +996,8 @@ export function createChartViewer() {
                 const percent = Math.round(visualScale * 100);
                 scaleSlider.value = percent;
                 scaleSlider.setAttribute("aria-valuetext", `${percent}%`);
-                settings.querySelector('output[for="chart-scale"]').value = `${percent}%`;
+                settings.querySelector('output[for="chart-scale"]').value =
+                    `${percent}%`;
                 if (persist) {
                     try {
                         localStorage.setItem(SCALE_KEY, String(visualScale));
@@ -968,7 +1008,11 @@ export function createChartViewer() {
                 draw();
             };
             setScale(visualScale);
-            scaleSlider.addEventListener("input", () => setScale(Number(scaleSlider.value) / 100, true), { signal });
+            scaleSlider.addEventListener(
+                "input",
+                () => setScale(Number(scaleSlider.value) / 100, true),
+                { signal },
+            );
             const setExtendedLasers = (enabled, persist = false) => {
                 extendedLasers = enabled;
                 selectToggle("data-extended-lasers", enabled);

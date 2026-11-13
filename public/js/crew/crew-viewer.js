@@ -3,6 +3,7 @@ import { createAfpPlayer } from "./crew-afp.js";
 import { initSegmentedControl } from "../core/motion.js";
 import { createCrewVoices } from "./crew-voices.js";
 import { clearPanelLink, setPanelLink } from "../core/panel-links.js";
+import { crewPath, isPlainClick } from "../core/song-links.js";
 
 const labels = {
     In: "Entrance",
@@ -517,15 +518,13 @@ export function createCrewViewer(dialog, getState) {
         const scrollTop = strip.scrollTop;
         strip.replaceChildren();
         for (const entry of crews) {
-            const button = document.createElement("button");
-            button.type = "button";
+            const button = document.createElement("a");
+            button.href = crewPath(entry.key);
             button.className = "crew-option";
             button.dataset.crewKey = entry.key;
             button.classList.toggle("selected", selected?.key === entry.key);
-            button.setAttribute(
-                "aria-pressed",
-                String(selected?.key === entry.key),
-            );
+            if (selected?.key === entry.key)
+                button.setAttribute("aria-current", "true");
             const icon = document.createElement("img");
             icon.src = new URL(entry.icon, catalog.base);
             icon.alt = "";
@@ -537,7 +536,11 @@ export function createCrewViewer(dialog, getState) {
             const detail = document.createElement("small");
             detail.textContent = `#${entry.id}`;
             button.append(icon, name, detail);
-            button.addEventListener("click", () => void select(entry));
+            button.addEventListener("click", (event) => {
+                if (!isPlainClick(event)) return;
+                event.preventDefault();
+                void select(entry);
+            });
             strip.append(button);
         }
         $("crew-count").textContent =

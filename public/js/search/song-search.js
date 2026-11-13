@@ -1,5 +1,11 @@
 import { $ } from "../core/dom.js";
 import {
+    calculatorPath,
+    chartPath,
+    isPlainClick,
+    songPath,
+} from "../core/song-links.js";
+import {
     escape,
     number,
     date,
@@ -116,7 +122,7 @@ export function createSongSearch({
             ? matches
                   .map(
                       (p, index) =>
-                          `<button type="button" role="option" id="song-option-${index}" aria-selected="false" tabindex="-1" class="song-option" data-option="${index}">${coverMarkup(p)}<span class="option-song"><span>${escape(chartTitle(p))}</span><small>${escape(p.artist)}</small></span>${difficultyRange(p)}</button>`,
+                          `<a href="${songPath(p.music_id, p.diff_idx)}" role="option" id="song-option-${index}" aria-selected="false" tabindex="-1" class="song-option" data-option="${index}">${coverMarkup(p, "small", false)}<span class="option-song"><span>${escape(chartTitle(p))}</span><small>${escape(p.artist)}</small></span>${difficultyRange(p)}</a>`,
                   )
                   .join("")
             : `<div class="search-empty">${escape(parseSearch($("song-query").value).errors[0] || "No matching song")}</div>`;
@@ -284,10 +290,12 @@ export function createSongSearch({
         const difficulty = song.difficulties.find(
             (d) => d.diff_idx === selected.diff_idx,
         );
-        const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<button class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}" aria-pressed="${d.diff_idx === selected.diff_idx}">${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></button>`).join("")}</div>${chartSummaryMarkup(selected, plays)}</div><div class="selected-song-actions"><button type="button" class="calculator-link" data-chart-details><span class="action-info-icon" aria-hidden="true">i</span> Details</button><button type="button" class="calculator-link" data-view-chart hidden>View chart</button><button type="button" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></button></div></div>${radarMarkup(difficulty.radar, { interactive: true })}</div>`;
+        const songMarkup = `<div class="selected-song">${coverMarkup(selected, "large")}<div class="selected-song-info"><div class="selected-song-heading">${songTitle}</div><p>${escape(song.artist)}</p><div class="selected-chart-details"><div class="difficulty-tabs" role="group" aria-label="Song difficulty">${song.difficulties.map((d) => `<a href="${songPath(selected.music_id, d.diff_idx)}" class="${d.diff_idx === selected.diff_idx ? "selected" : ""}" data-chart-diff="${d.diff_idx}"${d.diff_idx === selected.diff_idx ? ' aria-current="page"' : ""}>${DIFFS[d.diff_idx]} <span>${d.level ?? "—"}</span></a>`).join("")}</div>${chartSummaryMarkup(selected, plays)}</div><div class="selected-song-actions"><a href="${chartPath(selected.music_id, selected.diff_idx, "details")}" class="calculator-link" data-chart-details><span class="action-info-icon" aria-hidden="true">i</span> Details</a><a href="${chartPath(selected.music_id, selected.diff_idx, "chart")}" class="calculator-link" data-view-chart hidden>View chart</a><a href="${calculatorPath(selected.music_id, selected.diff_idx)}" class="calculator-link" data-view-calculator>View in VF Calculator <span aria-hidden="true">→</span></a></div></div>${radarMarkup(difficulty.radar, { interactive: true })}</div>`;
         const chart = $("selected-chart");
         const tabs = chart.querySelector(".difficulty-tabs");
-        const buttons = [...(tabs?.querySelectorAll("button") || [])];
+        const buttons = [
+            ...(tabs?.querySelectorAll("[data-chart-diff]") || []),
+        ];
         const reuseTabs =
             chart.dataset.musicId === String(selected.music_id) &&
             buttons.length === song.difficulties.length &&
@@ -305,6 +313,7 @@ export function createSongSearch({
                 ".cover-tile.large",
                 ".selected-song-heading",
                 ".selected-song-info > p",
+                ".selected-song-actions",
                 ".selected-summary",
                 ".song-radar",
             ])
@@ -315,7 +324,8 @@ export function createSongSearch({
                 const active =
                     Number(button.dataset.chartDiff) === selected.diff_idx;
                 button.classList.toggle("selected", active);
-                button.setAttribute("aria-pressed", String(active));
+                if (active) button.setAttribute("aria-current", "page");
+                else button.removeAttribute("aria-current");
                 button.querySelector("span").textContent =
                     song.difficulties[i].level ?? "—";
             }
@@ -326,8 +336,7 @@ export function createSongSearch({
         }
         const jacket = chart.querySelector(".cover-tile.large");
         if (jacket?.querySelector("img")) {
-            jacket.setAttribute("role", "button");
-            jacket.tabIndex = 0;
+            jacket.href = jacket.querySelector("img").src;
             jacket.setAttribute("aria-label", `View ${song.title} jacket`);
             jacket.setAttribute("aria-haspopup", "dialog");
             jacket.dataset.viewJacket = "";
@@ -482,12 +491,14 @@ export function createSongSearch({
             }
         } else if (event.key === "Tab") closeMatches();
     });
-    $("song-options").addEventListener("mousedown", (event) =>
-        event.preventDefault(),
-    );
+    $("song-options").addEventListener("mousedown", (event) => {
+        if (isPlainClick(event)) event.preventDefault();
+    });
     $("song-options").addEventListener("click", (event) => {
+        if (!isPlainClick(event)) return;
         const button = event.target.closest("[data-option]");
         if (button) {
+            event.preventDefault();
             const match = matches[Number(button.dataset.option)];
             selectChart(match.music_id, match.diff_idx);
         }

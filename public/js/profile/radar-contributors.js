@@ -1,4 +1,5 @@
 import { createPagination } from "../core/pagination.js";
+import { songPath } from "../core/song-links.js";
 import {
     DETAILS_CHEVRON,
     setDetailsExpanded,
@@ -39,7 +40,7 @@ function contributorDetails(chart) {
 
     return `<div class="radar-contributor-details">
         <div class="selected-song-actions radar-contributor-actions">
-            <button type="button" class="calculator-link open-chart" data-music="${chart.music_id}" data-diff="${chart.diff_idx}">View in Search <span aria-hidden="true">→</span></button>
+            <a href="${songPath(chart.music_id, chart.diff_idx)}" class="calculator-link open-chart" data-music="${chart.music_id}" data-diff="${chart.diff_idx}">View in Search <span aria-hidden="true">→</span></a>
         </div>
         <div class="radar-contributor-breakdown">
             <div class="table-scroll"><table aria-label="Radar contribution by axis">

@@ -15,6 +15,7 @@ import {
     chartTitle,
     formatRank,
 } from "../core/format.js";
+import { songPath } from "../core/song-links.js";
 
 export const badge = (p) =>
     `<span class="difficulty-badge d${p.diff_idx}">${DIFFS[p.diff_idx]}${p.level ? " " + escape(p.level) : ""}</span>`;
@@ -28,15 +29,21 @@ export const gradeMarkup = (score) => {
 };
 
 export function createChartMarkup({ getData, getSongs, newPlayAttributes }) {
-    function coverMarkup(p, size = "small") {
+    function coverMarkup(p, size = "small", linked = true) {
         const song = getSongs().get(p.music_id);
         const id = song?.difficulties.find(
             (d) => d.diff_idx === p.diff_idx,
         )?.cover;
-        return `<span class="cover-tile ${size}">${id && /^[a-f0-9]{64}$/.test(id) ? `<img src="/api/cover?id=${id}" alt="${escape(song.title)} cover" loading="lazy" decoding="async">` : '<span class="cover-missing" aria-label="Cover unavailable">—</span>'}</span>`;
+        const image =
+            id && /^[a-f0-9]{64}$/.test(id)
+                ? `<img src="/api/cover?id=${id}" alt="${escape(song.title)} cover" loading="lazy" decoding="async">`
+                : '<span class="cover-missing" aria-label="Cover unavailable">—</span>';
+        return linked
+            ? `<a class="cover-tile ${size} open-chart" href="${songPath(p.music_id, p.diff_idx)}" data-music="${p.music_id}" data-diff="${p.diff_idx}">${image}</a>`
+            : `<span class="cover-tile ${size}">${image}</span>`;
     }
     const chartButton = (p) =>
-        `<button class="song-title open-chart" data-music="${p.music_id}" data-diff="${p.diff_idx}">${escape(chartTitle(p))}</button>`;
+        `<a class="song-title open-chart" href="${songPath(p.music_id, p.diff_idx)}" data-music="${p.music_id}" data-diff="${p.diff_idx}">${escape(chartTitle(p))}</a>`;
 
     function chartInfo(
         p,
@@ -119,7 +126,7 @@ export function createChartMarkup({ getData, getSongs, newPlayAttributes }) {
     }
 
     function row(p, rank = null) {
-        return `<div class="play-row chart-row" ${rank === null ? newPlayAttributes(p) : ""} ${playAttributes(p)} data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p)}${chartInfo(p)}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></div>`;
+        return `<a class="play-row chart-row" href="${songPath(p.music_id, p.diff_idx)}" ${rank === null ? newPlayAttributes(p) : ""} ${playAttributes(p)} data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p, "small", false)}${chartInfo(p, { titleMarkup: `<span class="song-title">${escape(chartTitle(p))}</span>` })}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></a>`;
     }
 
     function chartSongMarkup(chart) {

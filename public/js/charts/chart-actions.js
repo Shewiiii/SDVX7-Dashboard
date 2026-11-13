@@ -1,3 +1,5 @@
+import { isPlainClick } from "../core/song-links.js";
+
 export function initChartActions({
     getSelection,
     getSongs,
@@ -11,24 +13,29 @@ export function initChartActions({
     closeMatches,
 }) {
     document.addEventListener("keydown", (event) => {
-        if (
-            event.target.matches("[data-view-jacket]") &&
-            (event.key === "Enter" || event.key === " ")
-        ) {
+        if (event.target.matches("[data-view-jacket]") && event.key === " ") {
             event.preventDefault();
             event.target.click();
         }
     });
 
     document.addEventListener("click", (event) => {
+        if (!isPlainClick(event) || event.defaultPrevented) return;
         const selected = getSelection();
         const songs = getSongs();
         const jacket = event.target.closest("[data-view-jacket]");
-        if (jacket && selected) {
+        const jacketChart = jacket?.dataset.music
+            ? {
+                  music_id: Number(jacket.dataset.music),
+                  diff_idx: Number(jacket.dataset.diff),
+              }
+            : selected;
+        if (jacket && jacketChart) {
+            event.preventDefault();
             void jacketViewer.open(
                 {
-                    ...selected,
-                    title: songs.get(selected.music_id)?.title,
+                    ...jacketChart,
+                    title: songs.get(jacketChart.music_id)?.title,
                 },
                 jacket.querySelector("img")?.src,
             );
@@ -43,6 +50,7 @@ export function initChartActions({
         }
         const viewerButton = event.target.closest("[data-view-chart]");
         if (viewerButton && selected) {
+            event.preventDefault();
             const song = songs.get(selected.music_id);
             const diff = song?.difficulties.find(
                 (d) => d.diff_idx === selected.diff_idx,
@@ -61,10 +69,12 @@ export function initChartActions({
         }
         const detailsButton = event.target.closest("[data-chart-details]");
         if (detailsButton && selected) {
+            event.preventDefault();
             chartDetails.open(selected, detailsButton);
             return;
         }
         if (event.target.closest("[data-view-calculator]") && selected) {
+            event.preventDefault();
             const song = songs.get(selected.music_id);
             const difficulty = song?.difficulties.find(
                 (chart) => chart.diff_idx === selected.diff_idx,
@@ -82,6 +92,7 @@ export function initChartActions({
         }
         const button = event.target.closest(".open-chart, .chart-row");
         if (button) {
+            event.preventDefault();
             const play = button.closest(".chart-row")?.dataset.play;
             selectChart(
                 Number(button.dataset.music),
@@ -96,10 +107,12 @@ export function initChartActions({
             diff &&
             selected &&
             Number(diff.dataset.chartDiff) !== selected.diff_idx
-        )
+        ) {
+            event.preventDefault();
             selectChart(selected.music_id, Number(diff.dataset.chartDiff), {
                 animate: false,
                 scroll: false,
             });
+        } else if (diff) event.preventDefault();
     });
 }

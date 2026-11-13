@@ -1,18 +1,24 @@
 import { showPanel } from "../core/panels.js";
 import { getJacketUrl } from "../library/jackets.js";
+import { isPlainClick } from "../core/song-links.js";
 
 export function createJacketViewer() {
     const dialog = document.createElement("dialog");
     dialog.className = "jacket-viewer";
     dialog.setAttribute("closedby", "none");
     const image = document.createElement("img");
+    const link = document.createElement("a");
+    link.append(image);
+    link.addEventListener("click", (event) => {
+        if (isPlainClick(event)) event.preventDefault();
+    });
     image.draggable = true;
     const loading = document.createElement("span");
     loading.className = "jacket-viewer-loading";
     loading.setAttribute("role", "status");
     loading.textContent = "Loading...";
     loading.hidden = true;
-    dialog.append(image, loading);
+    dialog.append(link, loading);
     document.body.append(dialog);
     let request;
     let closing = false;
@@ -41,6 +47,7 @@ export function createJacketViewer() {
     dialog.addEventListener("close", () => {
         request?.abort();
         image.removeAttribute("src");
+        link.removeAttribute("href");
         loading.hidden = true;
         closing = false;
     });
@@ -73,11 +80,13 @@ export function createJacketViewer() {
                 await original.decode();
                 if (!signal.aborted && dialog.open) {
                     image.src = url;
+                    link.href = url;
                     image.hidden = false;
                 }
             } catch {
                 if (!signal.aborted && dialog.open && fallback) {
                     image.src = fallback;
+                    link.href = fallback;
                     image.hidden = false;
                 }
             } finally {

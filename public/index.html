@@ -229,10 +229,10 @@
                                 class="appeal-card skeleton-shape profile-card-placeholder"
                                 aria-hidden="true"
                             ></span>
-                            <button
+                            <a
+                                href="#overview?panel=cards"
                                 id="appeal-helper-open"
                                 class="appeal-card-trigger"
-                                type="button"
                                 aria-label="Customize"
                                 aria-haspopup="dialog"
                                 aria-controls="appeal-helper"
@@ -247,7 +247,7 @@
                                     hidden
                                 />
                                 <span>Customize</span>
-                            </button>
+                            </a>
                             <div>
                                 <h1 id="player-name">Player</h1>
                                 <p class="hero-subtitle">
@@ -356,21 +356,28 @@
                 </section>
                 <div class="navigation-row">
                     <nav class="tabs" aria-label="Dashboard views">
-                        <button
+                        <a
+                            href="#overview"
                             class="tab active"
                             data-view="overview"
                             aria-current="page"
                         >
                             Overview
-                        </button>
-                        <button class="tab" data-view="top">Top 50</button>
-                        <button class="tab" data-view="history">
+                        </a>
+                        <a href="#top" class="tab" data-view="top">Top 50</a>
+                        <a href="#history" class="tab" data-view="history">
                             Play history
-                        </button>
-                        <button class="tab" data-view="search">Search</button>
-                        <button class="tab" data-view="calculator">
+                        </a>
+                        <a href="#search" class="tab" data-view="search"
+                            >Search</a
+                        >
+                        <a
+                            href="#calculator"
+                            class="tab"
+                            data-view="calculator"
+                        >
                             VF Calculator
-                        </button>
+                        </a>
                     </nav>
                 </div>
                 <section id="overview-view">
@@ -1719,8 +1726,8 @@
                     aria-label="Customization"
                     hidden
                 >
-                    <button
-                        type="button"
+                    <a
+                        href="#overview?panel=cards"
                         role="tab"
                         id="customize-cards-tab"
                         class="selected"
@@ -1729,9 +1736,9 @@
                         aria-controls="appeal-helper-browser"
                     >
                         Card helper
-                    </button>
-                    <button
-                        type="button"
+                    </a>
+                    <a
+                        href="#overview?panel=crew"
                         role="tab"
                         id="customize-crew-tab"
                         data-customize-tab="crew"
@@ -1740,7 +1747,7 @@
                         tabindex="-1"
                     >
                         Nemsys Crew
-                    </button>
+                    </a>
                 </div>
                 <div id="appeal-helper-browser">
                     <div class="table-tools appeal-helper-tools">
@@ -1847,13 +1854,13 @@
                     id="appeal-helper-detail"
                     hidden
                 >
-                    <button
-                        type="button"
+                    <a
+                        href="#overview?panel=cards"
                         class="text-button"
                         id="appeal-helper-back"
                     >
                         ← All appeal cards
-                    </button>
+                    </a>
                     <div id="appeal-helper-artwork"></div>
                     <h3 id="appeal-helper-card-title"></h3>
                     <p>

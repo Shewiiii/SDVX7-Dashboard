@@ -1,3 +1,5 @@
+import { crewRenderResolution } from "./crew-resolution.js";
+
 const identity = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
 
 export async function createAfpPlayer(canvas, url, base, signal) {
@@ -137,7 +139,9 @@ export async function createAfpPlayer(canvas, url, base, signal) {
                                 value,
                             ),
                         ) &&
-                        actions.some((action) => action.action === "CALL_METHOD")
+                        actions.some(
+                            (action) => action.action === "CALL_METHOD",
+                        )
                     );
                 });
                 if (jumpsToStart) {
@@ -268,7 +272,7 @@ export async function createAfpPlayer(canvas, url, base, signal) {
                 } else step(root);
             }
             const rect = canvas.parentElement.getBoundingClientRect();
-            const ratio = Math.min(devicePixelRatio || 1, 2);
+            const ratio = crewRenderResolution(rect.width, rect.height);
             if (
                 canvas.width !== Math.round(rect.width * ratio) ||
                 canvas.height !== Math.round(rect.height * ratio)
@@ -276,6 +280,8 @@ export async function createAfpPlayer(canvas, url, base, signal) {
                 canvas.width = Math.max(1, Math.round(rect.width * ratio));
                 canvas.height = Math.max(1, Math.round(rect.height * ratio));
             }
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = "high";
             const width = main.location.right - main.location.left;
             const height = main.location.bottom - main.location.top;
             const scale =

@@ -2728,7 +2728,7 @@ footer > :last-child {
     height: min(1040px, calc(100dvh - 36px));
     max-height: calc(100dvh - 36px);
     min-height: 0;
-    padding: 0 0 16px;
+    padding: 0;
     border-radius: var(--panel-radius);
     background: color-mix(
         in srgb,
@@ -2745,13 +2745,13 @@ footer > :last-child {
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    padding-inline: var(--panel-padding-inline);
 }
 .crew-heading {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    padding-inline: var(--panel-padding-inline);
 }
 .crew-heading h3 {
     margin: 0;
@@ -2769,21 +2769,30 @@ footer > :last-child {
 .crew-current.is-preview {
     color: var(--muted);
 }
-.crew-stage {
+.crew-preview {
     position: relative;
-    display: grid;
-    place-items: center;
+    isolation: isolate;
     flex: 1;
     min-height: 150px;
     overflow: hidden;
+    border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+}
+.crew-preview:has(.crew-stage.is-ready) {
+    cursor: grab;
     touch-action: none;
     user-select: none;
 }
-.crew-stage.is-ready {
-    cursor: grab;
-}
-.crew-stage.is-dragging {
+.crew-preview:has(.crew-stage.is-dragging) {
     cursor: grabbing;
+}
+.crew-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    pointer-events: none;
 }
 .crew-stage canvas,
 .crew-stage > img {
@@ -2794,7 +2803,7 @@ footer > :last-child {
 }
 .crew-stage > img {
     object-fit: contain;
-    padding: 20px;
+    padding: 0;
     pointer-events: none;
 }
 .crew-stage .details-message {
@@ -2804,13 +2813,19 @@ footer > :last-child {
     text-align: center;
 }
 .crew-playback {
-    position: relative;
+    position: absolute;
+    bottom: 16px;
+    left: var(--panel-padding-inline);
+    right: var(--panel-padding-inline);
     display: flex;
     align-items: center;
     gap: 18px;
     min-height: 38px;
     font-size: 11px;
-    flex: none;
+    pointer-events: none;
+}
+.crew-playback button {
+    pointer-events: auto;
 }
 .crew-playback > span {
     margin-left: auto;

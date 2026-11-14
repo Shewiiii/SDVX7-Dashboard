@@ -1,3 +1,5 @@
+import { crewRenderResolution } from "./crew-resolution.js";
+
 let runtime;
 
 function script(url) {
@@ -116,21 +118,24 @@ export async function createLive2dPlayer(
     await runtime;
     if (signal.aborted) throw new DOMException("Aborted", "AbortError");
     const PIXI = window.PIXI;
+    const rect = canvas.parentElement.getBoundingClientRect();
     const app = new PIXI.Application({
         view: canvas,
         autoStart: false,
         backgroundAlpha: 0,
         antialias: true,
-        resolution: Math.min(devicePixelRatio || 1, 3),
+        resolution: crewRenderResolution(rect.width, rect.height),
         autoDensity: true,
     });
     const loaded = await Promise.allSettled(
-        [url, ...companions.map((entry) => new URL(entry.model, base).href)].map(
-            (path) =>
-                PIXI.live2d.Live2DModel.from(path, {
-                    autoInteract: false,
-                    autoUpdate: false,
-                }),
+        [
+            url,
+            ...companions.map((entry) => new URL(entry.model, base).href),
+        ].map((path) =>
+            PIXI.live2d.Live2DModel.from(path, {
+                autoInteract: false,
+                autoUpdate: false,
+            }),
         ),
     );
     const models = loaded
@@ -149,7 +154,13 @@ export async function createLive2dPlayer(
     try {
         for (const model of models)
             layers.push(
-                createModelPlayer(model, app, canvas, signal, models.length > 1),
+                createModelPlayer(
+                    model,
+                    app,
+                    canvas,
+                    signal,
+                    models.length > 1,
+                ),
             );
     } catch (error) {
         for (const model of models)
@@ -166,22 +177,34 @@ export async function createLive2dPlayer(
         const rect = canvas.parentElement.getBoundingClientRect();
         const width = Math.max(1, rect.width);
         const height = Math.max(1, rect.height);
-        if (app.screen.width !== width || app.screen.height !== height)
+        const resolution = crewRenderResolution(width, height);
+        if (
+            app.renderer.resolution !== resolution ||
+            canvas.width !== Math.round(width * resolution) ||
+            canvas.height !== Math.round(height * resolution)
+        ) {
+            app.renderer.resolution = resolution;
             app.renderer.resize(width, height);
+        }
         const scale =
-            Math.min(width / bounds.width, height / bounds.height) * 0.94 * zoom;
+            Math.min(width / bounds.width, height / bounds.height) *
+            0.94 *
+            zoom;
         // Companion canvases share the primary model's authored origin and scale
         for (const layer of layers)
             layer.resize(
                 scale,
                 width * (0.5 + panX),
                 height * (0.5 + panY),
-                zoom >= 2 ? 2048 : 1024,
+                zoom >= 2 || Math.max(width, height) * resolution > 1024
+                    ? 2048
+                    : 1024,
             );
     }
 
     const observer = new ResizeObserver(resize);
     observer.observe(canvas.parentElement);
+    window.addEventListener("resize", resize);
     resize();
 
     return {
@@ -221,6 +244,7 @@ export async function createLive2dPlayer(
         },
         destroy() {
             observer.disconnect();
+            window.removeEventListener("resize", resize);
             canvas.style.opacity = "";
             for (const layer of layers) layer.destroy();
             app.destroy(false);
@@ -321,7 +345,8 @@ function createModelPlayer(model, app, canvas, signal, composite) {
                 0,
                 Math.min(
                     1,
-                    (core.parameters.values[index] - hidden) / (opaque - hidden),
+                    (core.parameters.values[index] - hidden) /
+                        (opaque - hidden),
                 ),
             );
             if (opacityFilter) {
@@ -523,6 +548,8 @@ function createModelPlayer(model, app, canvas, signal, composite) {
         resize(scale, x, y, maskSize) {
             model.scale.set(scale);
             model.position.set(x, y);
+            if (opacityFilter)
+                opacityFilter.resolution = app.renderer.resolution;
             if (renderer.getClippingMaskBufferSize() !== maskSize) {
                 renderer.setClippingMaskBufferSize(maskSize);
                 if (renderer.gl) renderer._clippingManager.setGL(renderer.gl);

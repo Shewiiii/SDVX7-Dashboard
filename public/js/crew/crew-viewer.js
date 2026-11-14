@@ -53,8 +53,10 @@ export function createCrewViewer(dialog, getState) {
     const host = document.getElementById("nemsys-crew-view");
     host.innerHTML = `
         <div class="crew-heading"><div><h3 id="crew-name">Nemsys Crew</h3><p id="crew-subtitle" class="panel-subtitle"></p></div><span id="crew-current" class="crew-current" hidden>Current crew in-game</span></div>
+        <div class="crew-preview">
         <div class="crew-stage"><p class="details-message" id="crew-status" role="status">Loading crew members...</p><img id="crew-artwork" alt="" draggable="false" hidden><canvas id="crew-canvas" aria-label="Animated character preview" hidden></canvas></div>
         <div class="crew-playback"><button type="button" id="crew-play" class="text-button" disabled>Pause</button><button type="button" id="crew-replay" class="text-button" disabled>Replay</button><button type="button" id="crew-jump" class="text-button crew-jump" aria-label="Scroll to crew members" aria-controls="crew-browser" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>
+        </div>
         <section id="crew-browser" class="crew-browser" aria-labelledby="crew-browser-title" hidden><h2 id="crew-browser-title" tabindex="-1">Crew members</h2><div class="crew-browser-tools"><label class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="crew-search" placeholder="Type anything..." aria-label="Find a Nemsys Crew by name or ID"></label><div class="select-wrap"><select id="crew-sort" aria-label="Sort crew members"><option value="newest">Newest</option><option value="oldest">Oldest</option></select></div></div><p id="crew-count"></p><div class="crew-strip" id="crew-strip" aria-label="Crew members"></div></section>`;
     const browser = host.querySelector(".crew-browser");
     const settings = document.createElement("section");
@@ -86,6 +88,7 @@ export function createCrewViewer(dialog, getState) {
     const strip = $("crew-strip");
     const image = $("crew-artwork");
     const stage = host.querySelector(".crew-stage");
+    const interactionSurface = host.querySelector(".crew-preview");
     const motion = $("crew-motion");
     const jump = $("crew-jump");
     dialog.append(jump);
@@ -409,8 +412,8 @@ export function createCrewViewer(dialog, getState) {
         gesture = null;
         stage.classList.remove("is-dragging");
         for (const pointerId of pointerIds)
-            if (stage.hasPointerCapture(pointerId))
-                stage.releasePointerCapture(pointerId);
+            if (interactionSurface.hasPointerCapture(pointerId))
+                interactionSurface.releasePointerCapture(pointerId);
         player?.tracking(options.tracking);
     }
 
@@ -426,10 +429,11 @@ export function createCrewViewer(dialog, getState) {
         };
     }
 
-    stage.addEventListener(
+    interactionSurface.addEventListener(
         "wheel",
         (event) => {
             if (
+                event.target.closest("button, a, input, select, textarea") ||
                 event.ctrlKey ||
                 !event.deltaY ||
                 !stage.classList.contains("is-ready")
@@ -452,8 +456,9 @@ export function createCrewViewer(dialog, getState) {
         { passive: false },
     );
 
-    stage.addEventListener("pointerdown", (event) => {
+    interactionSurface.addEventListener("pointerdown", (event) => {
         if (
+            event.target.closest("button, a, input, select, textarea") ||
             event.button !== 0 ||
             pointers.size >= 2 ||
             !stage.classList.contains("is-ready")
@@ -464,12 +469,12 @@ export function createCrewViewer(dialog, getState) {
             y: event.clientY,
         });
         gesture = pointerGesture();
-        stage.setPointerCapture(event.pointerId);
+        interactionSurface.setPointerCapture(event.pointerId);
         stage.classList.add("is-dragging");
         player?.tracking(false);
         event.preventDefault();
     });
-    stage.addEventListener("pointermove", (event) => {
+    interactionSurface.addEventListener("pointermove", (event) => {
         if (!pointers.has(event.pointerId)) return;
         pointers.set(event.pointerId, {
             x: event.clientX,
@@ -492,10 +497,10 @@ export function createCrewViewer(dialog, getState) {
         applyView();
     });
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
-        stage.addEventListener(type, (event) => {
+        interactionSurface.addEventListener(type, (event) => {
             if (!pointers.delete(event.pointerId)) return;
-            if (stage.hasPointerCapture(event.pointerId))
-                stage.releasePointerCapture(event.pointerId);
+            if (interactionSurface.hasPointerCapture(event.pointerId))
+                interactionSurface.releasePointerCapture(event.pointerId);
             if (pointers.size) gesture = pointerGesture();
             else endDrag();
         });

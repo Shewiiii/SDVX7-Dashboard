@@ -6,8 +6,8 @@
 }
 :root {
     color-scheme: dark;
-    --bg: #12121d;
-    --panel: #18181c;
+    --bg: #080c14;
+    --panel: #111214;
     --ink: #eeedf8;
     --muted: #aaa8bd;
     --faint: #77748d;
@@ -177,10 +177,29 @@
     --profile-radar-stroke-color: #ef6b0a;
     --profile-radar-grid-bg: color-mix(in srgb, var(--panel) 20%, transparent);
 
-    --performance-background-dim: 0.6;
-    --performance-panel-dim: 0.85;
-    --performance-background-blur: 9px;
-    --performance-background-blur-mobile: 4.5px;
+    /* Background lens controls*/
+    --background-tint: #260d25;
+    --background-edge: #02050c;
+    --background-focus-x: 50%;
+    --background-focus-y: 50%;
+    --background-vignette-radius: 12%;
+    --performance-background-dim: 0.4;
+    --performance-background-black-lift: 0.05;
+    --performance-background-vignette: 0.66;
+    --performance-background-iris-radius: 0.4;
+    --performance-background-aberration: 3px;
+    --performance-background-iris-feather: 557px;
+    --performance-background-iris-feather-mobile: 189px;
+    --performance-background-blur-strength: 6px;
+
+    /* Shared panel material */
+    --performance-panel-dim: 0.9;
+    --performance-panel-blur: 7px;
+    --panel-surface: color-mix(
+        in srgb,
+        var(--panel) calc(100% * var(--performance-panel-dim)),
+        transparent
+    );
 }
 :root[data-theme="nabla"] {
     --accent: var(--nabla-accent);

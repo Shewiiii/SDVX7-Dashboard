@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#12121d" />
+        <meta name="theme-color" content="#080c14" />
         <meta name="description" content="SDVX ∇ Dashboard" />
         <title>SDVX ∇ Dashboard</title>
         <link rel="icon" type="image/webp" href="/assets/rasis.webp" />
@@ -15,7 +15,59 @@
     </head>
     <body data-loading="initial">
         <a class="skip-link" href="#main">Skip to content</a>
-        <div class="ambient" aria-hidden="true"></div>
+        <svg
+            class="ambient-filters"
+            width="0"
+            height="0"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <defs>
+                <filter
+                    id="ambient-iris-blur"
+                    x="0"
+                    y="0"
+                    width="100%"
+                    height="100%"
+                    color-interpolation-filters="sRGB"
+                >
+                    <feGaussianBlur stdDeviation="6" edgeMode="duplicate" />
+                    <feComponentTransfer>
+                        <feFuncA type="linear" slope="0" intercept="1" />
+                    </feComponentTransfer>
+                </filter>
+                <filter
+                    id="ambient-black-curve"
+                    x="0"
+                    y="0"
+                    width="100%"
+                    height="100%"
+                    color-interpolation-filters="sRGB"
+                >
+                    <feComponentTransfer>
+                        <feFuncR type="table" tableValues="0 1" />
+                        <feFuncG type="table" tableValues="0 1" />
+                        <feFuncB type="table" tableValues="0 1" />
+                    </feComponentTransfer>
+                </filter>
+            </defs>
+        </svg>
+        <div class="ambient" aria-hidden="true">
+            <div class="ambient-scene">
+                <div class="ambient-blur">
+                    <div class="ambient-blur-image">
+                        <div class="ambient-fringe"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ambient-scene ambient-scene--exceed">
+                <div class="ambient-blur">
+                    <div class="ambient-blur-image">
+                        <div class="ambient-fringe"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div
             class="settings-backdrop"
             id="settings-backdrop"
@@ -78,145 +130,367 @@
                         aria-labelledby="settings-title"
                         hidden
                     >
-                        <h2 id="settings-title">Settings</h2>
-                        <div class="settings-row">
-                            <span id="settings-theme-label">Theme</span>
-                            <div
-                                class="segmented"
-                                role="group"
-                                aria-labelledby="settings-theme-label"
-                            >
+                        <div class="settings-pages" id="settings-pages">
+                            <div class="settings-page" id="settings-main">
+                                <h2 id="settings-title">Settings</h2>
+                                <div class="settings-row">
+                                    <span id="settings-theme-label">Theme</span>
+                                    <div
+                                        class="segmented"
+                                        role="group"
+                                        aria-labelledby="settings-theme-label"
+                                    >
+                                        <button
+                                            type="button"
+                                            data-theme-option="exceed"
+                                            class="selected"
+                                            aria-pressed="true"
+                                        >
+                                            Exceed
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-theme-option="nabla"
+                                            aria-pressed="false"
+                                        >
+                                            Nabla
+                                        </button>
+                                    </div>
+                                </div>
                                 <button
+                                    class="settings-navigation"
+                                    id="settings-advanced-open"
                                     type="button"
-                                    data-theme-option="exceed"
-                                    class="selected"
-                                    aria-pressed="true"
+                                    aria-controls="settings-advanced"
+                                    aria-expanded="false"
                                 >
-                                    Exceed
+                                    <span>Advanced theme settings</span>
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="m9 5 7 7-7 7" />
+                                    </svg>
                                 </button>
-                                <button
-                                    type="button"
-                                    data-theme-option="nabla"
-                                    aria-pressed="false"
-                                >
-                                    Nabla
-                                </button>
+                                <div class="settings-row ranking-settings">
+                                    <span id="ranking-custom-label">
+                                        Rank custom charts
+                                    </span>
+                                    <div
+                                        class="segmented"
+                                        role="group"
+                                        aria-labelledby="ranking-custom-label"
+                                    >
+                                        <button
+                                            type="button"
+                                            data-custom-option="true"
+                                            aria-pressed="false"
+                                        >
+                                            On
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-custom-option="false"
+                                            class="selected"
+                                            aria-pressed="true"
+                                        >
+                                            Off
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <label
-                            class="settings-control"
-                            for="settings-background-dim"
-                        >
-                            <span>Background dimming</span>
-                            <output
-                                id="settings-background-dim-value"
-                                for="settings-background-dim"
-                            >
-                                60%
-                            </output>
-                            <input
-                                id="settings-background-dim"
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.01"
-                                value="0.6"
-                            />
-                        </label>
-                        <label
-                            class="settings-control"
-                            for="settings-panel-dim"
-                        >
-                            <span>Panel opacity</span>
-                            <output
-                                id="settings-panel-dim-value"
-                                for="settings-panel-dim"
-                            >
-                                60%
-                            </output>
-                            <input
-                                id="settings-panel-dim"
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.01"
-                                value="0.6"
-                            />
-                        </label>
-                        <label
-                            class="settings-control"
-                            for="settings-background-blur"
-                        >
-                            <span>Background blur</span>
-                            <output
-                                id="settings-background-blur-value"
-                                for="settings-background-blur"
-                            >
-                                6px
-                            </output>
-                            <input
-                                id="settings-background-blur"
-                                type="range"
-                                min="0"
-                                max="30"
-                                step="0.5"
-                                value="6"
-                            />
-                        </label>
-                        <label
-                            class="settings-control"
-                            for="settings-background-blur-mobile"
-                        >
-                            <span>Mobile background blur</span>
-                            <output
-                                id="settings-background-blur-mobile-value"
-                                for="settings-background-blur-mobile"
-                            >
-                                3px
-                            </output>
-                            <input
-                                id="settings-background-blur-mobile"
-                                type="range"
-                                min="0"
-                                max="30"
-                                step="0.5"
-                                value="3"
-                            />
-                        </label>
-                        <div class="settings-row ranking-settings">
-                            <span id="ranking-custom-label">
-                                Rank custom charts
-                            </span>
                             <div
-                                class="segmented"
-                                role="group"
-                                aria-labelledby="ranking-custom-label"
+                                class="settings-page"
+                                id="settings-advanced"
+                                aria-labelledby="settings-advanced-title"
+                                hidden
+                                inert
                             >
                                 <button
+                                    class="settings-back"
+                                    id="settings-advanced-back"
                                     type="button"
-                                    data-custom-option="true"
-                                    aria-pressed="false"
                                 >
-                                    On
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="m15 5-7 7 7 7" />
+                                    </svg>
+                                    Back
                                 </button>
-                                <button
-                                    type="button"
-                                    data-custom-option="false"
-                                    class="selected"
-                                    aria-pressed="true"
+                                <h2 id="settings-advanced-title">
+                                    Advanced theme settings
+                                </h2>
+                                <div
+                                    class="settings-advanced-controls"
+                                    id="settings-advanced-controls"
                                 >
-                                    Off
-                                </button>
+                                    <label
+                                        class="settings-control settings-color"
+                                        for="settings-background-tint"
+                                    >
+                                        <span>Background tint</span>
+                                        <output
+                                            id="settings-background-tint-value"
+                                            for="settings-background-tint"
+                                            >#1b131a</output
+                                        >
+                                        <span
+                                            class="settings-color-swatch settings-color-swatch--tint"
+                                        >
+                                            <input
+                                                id="settings-background-tint"
+                                                type="color"
+                                                value="#1b131a"
+                                            />
+                                        </span>
+                                    </label>
+                                    <label
+                                        class="settings-control settings-color"
+                                        for="settings-background-edge"
+                                    >
+                                        <span>Vignette color</span>
+                                        <output
+                                            id="settings-background-edge-value"
+                                            for="settings-background-edge"
+                                            >#02050c</output
+                                        >
+                                        <span
+                                            class="settings-color-swatch settings-color-swatch--edge"
+                                        >
+                                            <input
+                                                id="settings-background-edge"
+                                                type="color"
+                                                value="#02050c"
+                                            />
+                                        </span>
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-dim"
+                                    >
+                                        <span>Background dimming</span>
+                                        <output
+                                            id="settings-background-dim-value"
+                                            for="settings-background-dim"
+                                        >
+                                            33%
+                                        </output>
+                                        <input
+                                            id="settings-background-dim"
+                                            type="range"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value="0.33"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-panel-dim"
+                                    >
+                                        <span>Panel opacity</span>
+                                        <output
+                                            id="settings-panel-dim-value"
+                                            for="settings-panel-dim"
+                                        >
+                                            90%
+                                        </output>
+                                        <input
+                                            id="settings-panel-dim"
+                                            type="range"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value="0.9"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-panel-blur"
+                                    >
+                                        <span>Panel blur</span>
+                                        <output
+                                            id="settings-panel-blur-value"
+                                            for="settings-panel-blur"
+                                        >
+                                            7px
+                                        </output>
+                                        <input
+                                            id="settings-panel-blur"
+                                            type="range"
+                                            min="0"
+                                            max="100"
+                                            step="0.5"
+                                            value="7"
+                                            aria-description="Blur the background behind panels, visible at lower panel opacity"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-iris-feather"
+                                    >
+                                        <span>Iris feather</span>
+                                        <output
+                                            id="settings-background-iris-feather-value"
+                                            for="settings-background-iris-feather"
+                                        >
+                                            557px
+                                        </output>
+                                        <input
+                                            id="settings-background-iris-feather"
+                                            type="range"
+                                            min="0"
+                                            max="1000"
+                                            step="0.5"
+                                            value="557"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-iris-feather-mobile"
+                                    >
+                                        <span>Mobile iris feather</span>
+                                        <output
+                                            id="settings-background-iris-feather-mobile-value"
+                                            for="settings-background-iris-feather-mobile"
+                                        >
+                                            189px
+                                        </output>
+                                        <input
+                                            id="settings-background-iris-feather-mobile"
+                                            type="range"
+                                            min="0"
+                                            max="1000"
+                                            step="0.5"
+                                            value="189"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-blur-strength"
+                                    >
+                                        <span>Blur strength</span>
+                                        <output
+                                            id="settings-background-blur-strength-value"
+                                            for="settings-background-blur-strength"
+                                        >
+                                            6px
+                                        </output>
+                                        <input
+                                            id="settings-background-blur-strength"
+                                            type="range"
+                                            min="0"
+                                            max="60"
+                                            step="0.5"
+                                            value="6"
+                                            aria-description="Blur amount outside the sharp iris, shared by desktop and mobile"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-iris-radius"
+                                    >
+                                        <span>Iris radius</span>
+                                        <output
+                                            id="settings-background-iris-radius-value"
+                                            for="settings-background-iris-radius"
+                                        >
+                                            40%
+                                        </output>
+                                        <input
+                                            id="settings-background-iris-radius"
+                                            type="range"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value="0.4"
+                                            aria-description="Size of the centered sharp area, with 100% keeping the entire background sharp"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-aberration"
+                                    >
+                                        <span>Chromatic aberration</span>
+                                        <output
+                                            id="settings-background-aberration-value"
+                                            for="settings-background-aberration"
+                                        >
+                                            1.5px
+                                        </output>
+                                        <input
+                                            id="settings-background-aberration"
+                                            type="range"
+                                            min="0"
+                                            max="12"
+                                            step="0.5"
+                                            value="1.5"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-vignette"
+                                    >
+                                        <span>Vignette strength</span>
+                                        <output
+                                            id="settings-background-vignette-value"
+                                            for="settings-background-vignette"
+                                        >
+                                            66%
+                                        </output>
+                                        <input
+                                            id="settings-background-vignette"
+                                            type="range"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value="0.66"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-background-black-lift"
+                                    >
+                                        <span>Raised blacks</span>
+                                        <output
+                                            id="settings-background-black-lift-value"
+                                            for="settings-background-black-lift"
+                                        >
+                                            5%
+                                        </output>
+                                        <input
+                                            id="settings-background-black-lift"
+                                            type="range"
+                                            min="0"
+                                            max="0.3"
+                                            step="0.01"
+                                            value="0.05"
+                                            aria-description="Lift the background's deepest shadows for a faded film look"
+                                        />
+                                    </label>
+                                    <div class="settings-footer">
+                                        <button
+                                            class="text-button"
+                                            id="settings-reset"
+                                            type="button"
+                                        >
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="settings-footer">
-                            <button
-                                class="text-button"
-                                id="settings-reset"
-                                type="button"
-                            >
-                                Reset
-                            </button>
                         </div>
                     </section>
                 </div>

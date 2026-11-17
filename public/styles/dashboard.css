@@ -1,43 +1,124 @@
+.ambient-filters {
+    position: absolute;
+    pointer-events: none;
+}
 .ambient {
     position: fixed;
     z-index: -1;
     pointer-events: none;
-    inset: -25px;
-    background:
-        linear-gradient(
-            rgb(30 30 46 / var(--performance-background-dim)),
-            rgb(30 30 46 / var(--performance-background-dim))
-        ),
-        var(--nabla-background) center/cover no-repeat;
-    filter: blur(var(--performance-background-blur));
+    inset: 0;
+    overflow: hidden;
+    background: var(--bg);
+    --ambient-feather: var(--performance-background-iris-feather);
+    --ambient-iris: radial-gradient(
+        ellipse farthest-corner at var(--background-focus-x)
+            var(--background-focus-y),
+        transparent calc(var(--performance-background-iris-radius) * 100%),
+        #000
+            calc(
+                var(--performance-background-iris-radius) * 100% +
+                    var(--ambient-feather)
+            )
+    );
+}
+:root[data-raised-blacks] .ambient {
+    filter: url("#ambient-black-curve");
+}
+.ambient-scene {
+    --ambient-artwork: var(--nabla-background);
+    --ambient-position: center;
+    position: absolute;
+    inset: 0;
+    background: var(--ambient-artwork) var(--ambient-position) / cover no-repeat;
+    opacity: 0;
+    transition: opacity var(--theme-transition-duration)
+        var(--theme-transition-easing);
+}
+.ambient-scene--exceed {
+    --ambient-artwork: var(--exceed-background);
+}
+:root[data-theme="nabla"]
+    .ambient-scene[data-artwork-ready]:not(.ambient-scene--exceed),
+:root[data-theme="exceed"] .ambient-scene--exceed[data-artwork-ready] {
     opacity: 1;
+}
+.ambient-fringe {
+    position: absolute;
+    inset: 0;
+    isolation: isolate;
+    background: #000;
+}
+.ambient-fringe::before,
+.ambient-fringe::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--ambient-artwork) var(--ambient-position) / cover no-repeat;
+    background-blend-mode: multiply;
+    mix-blend-mode: screen;
+}
+.ambient-fringe::before {
+    background-color: #f00;
+    transform: translateX(var(--performance-background-aberration));
+}
+.ambient-fringe::after {
+    background-color: #0ff;
+    transform: translateX(calc(-1 * var(--performance-background-aberration)));
+}
+.ambient-blur {
+    position: absolute;
+    inset: 0;
+    -webkit-mask-image: var(--ambient-iris);
+    mask-image: var(--ambient-iris);
+}
+.ambient-blur-image {
+    position: absolute;
+    inset: 0;
+    background: var(--ambient-artwork) var(--ambient-position) / cover no-repeat;
+}
+:root[data-iris-blur] .ambient-blur-image {
+    filter: url("#ambient-iris-blur");
 }
 .ambient::after {
     content: "";
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(
-            rgb(30 30 46 / var(--performance-background-dim)),
-            rgb(30 30 46 / var(--performance-background-dim))
+        radial-gradient(
+            ellipse at var(--background-focus-x) var(--background-focus-y),
+            transparent var(--background-vignette-radius),
+            color-mix(
+                    in srgb,
+                    var(--background-edge)
+                        calc(var(--performance-background-vignette) * 100%),
+                    transparent
+                )
+                100%
         ),
-        var(--exceed-background) center/cover no-repeat;
-    opacity: 0;
-    transition: opacity var(--theme-transition-duration)
-        var(--theme-transition-easing);
-}
-:root[data-theme="exceed"] .ambient::after {
-    opacity: 1;
+        linear-gradient(
+            color-mix(
+                in srgb,
+                var(--background-tint)
+                    calc(var(--performance-background-dim) * 100%),
+                transparent
+            ),
+            color-mix(
+                in srgb,
+                var(--background-tint)
+                    calc(var(--performance-background-dim) * 100%),
+                transparent
+            )
+        );
 }
 @media (max-width: 900px), (hover: none) {
     .ambient {
         /* Use a stable height to prevent rescaling on scroll */
         bottom: auto;
-        height: calc(100lvh + 50px);
+        height: 100lvh;
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    .ambient::after {
+    .ambient-scene {
         transition: none;
     }
 }
@@ -105,8 +186,70 @@
     z-index: 6;
     width: min(300px, calc(100vw - 36px));
     max-height: calc(100dvh - 88px);
-    overflow-y: auto;
+    overflow: hidden;
     padding: 23px var(--panel-padding-inline);
+}
+.settings-pages {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: hidden;
+    margin: -6px;
+}
+.settings-page {
+    grid-area: 1 / 1;
+    align-self: start;
+    min-width: 0;
+    max-height: calc(100dvh - 122px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px;
+}
+#settings-advanced {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#settings-advanced > :is(.settings-back, h2) {
+    flex: none;
+}
+.settings-advanced-controls {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: -6px;
+    padding: 6px;
+}
+.settings-navigation,
+.settings-back {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 0;
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    text-align: left;
+}
+.settings-navigation {
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 22px;
+}
+.settings-navigation svg {
+    flex: none;
+    color: var(--muted);
+}
+.settings-back {
+    gap: 6px;
+    width: fit-content;
+    margin-bottom: 10px;
+    border-radius: var(--control-radius);
+    color: var(--muted);
+}
+#settings-main .ranking-settings {
+    margin-bottom: 0;
 }
 .settings-panel h2,
 .chart-viewer-settings h2 {
@@ -140,6 +283,43 @@
     margin: 0;
     accent-color: var(--accent);
     cursor: pointer;
+}
+.settings-color {
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+}
+.settings-color-swatch {
+    position: relative;
+    display: block;
+    width: 44px;
+    height: 36px;
+    border-radius: var(--item-radius);
+}
+.settings-color-swatch::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: var(--item-radius);
+    background: var(--swatch-color);
+}
+.settings-color-swatch--tint {
+    --swatch-color: var(--background-tint);
+}
+.settings-color-swatch--edge {
+    --swatch-color: var(--background-edge);
+}
+.settings-color-swatch input[type="color"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+}
+.settings-color-swatch:has(input:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
 }
 .settings-group {
     margin-bottom: 18px;
@@ -205,11 +385,7 @@
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0;
     border-block: 0;
-    background: color-mix(
-        in srgb,
-        var(--panel) calc(100% * var(--performance-panel-dim)),
-        transparent
-    );
+    background: var(--panel-surface);
     border: 0;
     border-radius: var(--panel-radius);
     overflow: hidden;
@@ -354,12 +530,27 @@
     border: 0;
     overflow: hidden;
     box-shadow: none;
-    background: color-mix(
-        in srgb,
-        var(--panel) calc(100% * var(--performance-panel-dim)),
-        transparent
-    );
+    background: var(--panel-surface);
     border-radius: var(--panel-radius);
+}
+:root[data-panel-blur]
+    :where(
+        .metrics,
+        .panel:not(.jacket-viewer, .chart-viewer, [data-customize-view="crew"]),
+        #appeal-helper[data-customize-view="crew"] .customize-content,
+        .crew-browser,
+        .crew-sidebar .crew-settings.chart-viewer-settings,
+        .crew-voices,
+        .chart-viewer-content
+    ) {
+    -webkit-backdrop-filter: blur(var(--performance-panel-blur));
+    backdrop-filter: blur(var(--performance-panel-blur));
+}
+@media (min-width: 960px) {
+    :root[data-panel-blur] .chart-viewer-settings {
+        -webkit-backdrop-filter: blur(var(--performance-panel-blur));
+        backdrop-filter: blur(var(--performance-panel-blur));
+    }
 }
 .panel-head {
     display: flex;
@@ -2730,11 +2921,7 @@ footer > :last-child {
     min-height: 0;
     padding: 0;
     border-radius: var(--panel-radius);
-    background: color-mix(
-        in srgb,
-        var(--panel) calc(100% * var(--performance-panel-dim)),
-        transparent
-    );
+    background: var(--panel-surface);
     overflow: hidden;
 }
 #appeal-helper[data-customize-view="crew"] .appeal-helper-heading {
@@ -2848,11 +3035,7 @@ footer > :last-child {
     min-height: 0;
     padding: 20px;
     border-radius: var(--panel-radius);
-    background: color-mix(
-        in srgb,
-        var(--panel) calc(100% * var(--performance-panel-dim)),
-        transparent
-    );
+    background: var(--panel-surface);
 }
 .crew-browser h2 {
     margin: 0 0 20px;
@@ -2956,11 +3139,7 @@ footer > :last-child {
     margin-top: 0;
     padding: 20px;
     border-radius: var(--panel-radius);
-    background: color-mix(
-        in srgb,
-        var(--panel) calc(100% * var(--performance-panel-dim)),
-        transparent
-    );
+    background: var(--panel-surface);
 }
 .crew-voices h2 {
     margin: 0 0 20px;
@@ -3510,11 +3689,7 @@ tr.chart-row .cover-tile {
     overflow-y: auto;
     scrollbar-gutter: stable;
     border-radius: var(--panel-radius);
-    background: color-mix(
-        in srgb,
-        var(--panel) calc(100% * var(--performance-panel-dim)),
-        transparent
-    );
+    background: var(--panel-surface);
 }
 #chart-viewer-body {
     padding: 0 16px 16px;
@@ -3680,11 +3855,7 @@ tr.chart-row .cover-tile {
         overflow-y: auto;
         box-sizing: border-box;
         border-radius: var(--panel-radius);
-        background: color-mix(
-            in srgb,
-            var(--panel) calc(100% * var(--performance-panel-dim)),
-            transparent
-        );
+        background: var(--panel-surface);
     }
     .chart-viewer-settings-grid {
         grid-template-columns: minmax(0, 1fr);
@@ -4605,15 +4776,15 @@ tr.chart-row .cover-tile {
         display: none;
     }
     .ambient {
-        filter: blur(var(--performance-background-blur-mobile));
-        background-position:
-            center,
-            calc(50% + var(--nabla-background-offset-x-mobile)) center;
+        --ambient-feather: var(--performance-background-iris-feather-mobile);
     }
-    .ambient::after {
-        background-position:
-            center,
-            calc(50% + var(--exceed-background-offset-x-mobile)) center;
+    .ambient-scene {
+        --ambient-position: calc(50% + var(--nabla-background-offset-x-mobile))
+            center;
+    }
+    .ambient-scene--exceed {
+        --ambient-position: calc(50% + var(--exceed-background-offset-x-mobile))
+            center;
     }
     .calculator-target output {
         flex-basis: 100%;

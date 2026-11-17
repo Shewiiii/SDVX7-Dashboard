@@ -4,17 +4,37 @@
     const root = document.documentElement;
     const styles = getComputedStyle(root);
     const controls = [
+        {
+            name: "background-tint",
+            type: "color",
+            unit: "",
+            property: "--background-tint",
+        },
+        {
+            name: "background-edge",
+            type: "color",
+            unit: "",
+            property: "--background-edge",
+        },
         { name: "background-dim", unit: "", max: 1 },
+        { name: "background-black-lift", unit: "", max: 0.3 },
         { name: "panel-dim", unit: "", max: 1 },
-        { name: "background-blur", unit: "px", max: 30 },
-        { name: "background-blur-mobile", unit: "px", max: 30 },
-    ].map((control) => ({
-        ...control,
-        property: `--performance-${control.name}`,
-        defaultValue: parseFloat(
-            styles.getPropertyValue(`--performance-${control.name}`),
-        ),
-    }));
+        { name: "panel-blur", unit: "px", max: 100 },
+        { name: "background-iris-feather", unit: "px", max: 1000 },
+        { name: "background-iris-feather-mobile", unit: "px", max: 1000 },
+        { name: "background-blur-strength", unit: "px", max: 60 },
+        { name: "background-vignette", unit: "", max: 1 },
+        { name: "background-iris-radius", unit: "", max: 1 },
+        { name: "background-aberration", unit: "px", max: 12 },
+    ].map((control) => {
+        const property = control.property ?? `--performance-${control.name}`;
+        const value = styles.getPropertyValue(property).trim();
+        return {
+            ...control,
+            property,
+            defaultValue: control.type === "color" ? value : parseFloat(value),
+        };
+    });
     let saved = {};
     let storageAvailable = true;
     try {
@@ -77,7 +97,43 @@
                 name,
                 Object.fromEntries(
                     controls.map((control) => {
-                        const value = stored[control.name];
+                        let value = stored[control.name];
+                        if (control.type === "color") {
+                            return [
+                                control.name,
+                                typeof value === "string" &&
+                                /^#[0-9a-f]{6}$/i.test(value)
+                                    ? value.toLowerCase()
+                                    : control.defaultValue,
+                            ];
+                        }
+                        if (
+                            control.name === "background-blur-strength" &&
+                            saved.appearanceVersion !== 2
+                        ) {
+                            const legacyBlur = Math.max(
+                                ...[
+                                    "background-blur",
+                                    "background-blur-mobile",
+                                ].map((key) =>
+                                    Number.isFinite(stored[key])
+                                        ? Math.max(
+                                              0,
+                                              Math.min(200, stored[key]),
+                                          )
+                                        : 0,
+                                ),
+                            );
+                            const blend = Number.isFinite(value)
+                                ? Math.max(0, Math.min(1, value))
+                                : 1;
+                            value =
+                                blend === 0
+                                    ? 0
+                                    : legacyBlur > 0
+                                      ? legacyBlur * blend
+                                      : control.defaultValue;
+                        }
                         return [
                             control.name,
                             typeof value === "number" && Number.isFinite(value)
@@ -101,7 +157,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        const { createSettingsPanel } = await import("/js/core/settings-panel.js");
+        const { createSettingsPanel } =
+            await import("/js/core/settings-panel.js");
         const toggle = document.getElementById("settings-toggle");
         const panel = document.getElementById("settings-panel");
         const backdrop = document.getElementById("settings-backdrop");
@@ -113,6 +170,108 @@
             nabla: { artist: "ルト", url: "https://x.com/ruto_desu" },
         };
         const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+        const settingsPages = document.getElementById("settings-pages");
+        const mainPage = document.getElementById("settings-main");
+        const advancedPage = document.getElementById("settings-advanced");
+        const advancedControls = document.getElementById(
+            "settings-advanced-controls",
+        );
+        const advancedOpen = document.getElementById("settings-advanced-open");
+        const advancedBack = document.getElementById("settings-advanced-back");
+        let activePage = mainPage;
+        let pageVersion = 0;
+        let pageAnimations = [];
+
+        function showSettingsPage(advanced, animate = true, moveFocus = true) {
+            backdrop.classList.toggle("is-preview", advanced);
+            const next = advanced ? advancedPage : mainPage;
+            const previous = activePage;
+            const version = ++pageVersion;
+
+            for (const animation of pageAnimations) animation.cancel();
+            pageAnimations = [];
+            settingsPages.style.height = "";
+            for (const page of [mainPage, advancedPage]) {
+                page.hidden = page !== previous;
+                page.inert = page !== previous;
+            }
+
+            const previousHeight = previous.offsetHeight;
+            next.hidden = false;
+            next.inert = false;
+            next.scrollTop = 0;
+            if (advanced) advancedControls.scrollTop = 0;
+            activePage = next;
+            advancedOpen.setAttribute("aria-expanded", String(advanced));
+            if (moveFocus) {
+                (advanced ? advancedBack : advancedOpen).focus({
+                    preventScroll: true,
+                });
+            }
+            previous.inert = previous !== next;
+
+            const finish = () => {
+                if (version !== pageVersion) return;
+                previous.hidden = previous !== next;
+                for (const animation of pageAnimations) animation.cancel();
+                pageAnimations = [];
+                settingsPages.style.height = "";
+            };
+
+            if (
+                previous === next ||
+                !animate ||
+                reducedMotion.matches ||
+                !panel.classList.contains("is-visible")
+            ) {
+                finish();
+                return;
+            }
+
+            const nextHeight = next.offsetHeight;
+            const direction = advanced ? 1 : -1;
+            const options = {
+                duration: 260,
+                easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+                fill: "both",
+            };
+            settingsPages.style.height = `${previousHeight}px`;
+            pageAnimations = [
+                previous.animate(
+                    [
+                        { transform: "translateX(0)", opacity: 1 },
+                        {
+                            transform: `translateX(${-direction * 100}%)`,
+                            opacity: 0,
+                        },
+                    ],
+                    options,
+                ),
+                next.animate(
+                    [
+                        {
+                            transform: `translateX(${direction * 100}%)`,
+                            opacity: 0,
+                        },
+                        { transform: "translateX(0)", opacity: 1 },
+                    ],
+                    options,
+                ),
+                settingsPages.animate(
+                    [
+                        { height: `${previousHeight}px` },
+                        { height: `${nextHeight}px` },
+                    ],
+                    options,
+                ),
+            ];
+            Promise.allSettled(
+                pageAnimations.map((animation) => animation.finished),
+            ).then(finish);
+        }
+
+        advancedOpen.addEventListener("click", () => showSettingsPage(true));
+        advancedBack.addEventListener("click", () => showSettingsPage(false));
 
         function updateThemeMotion() {
             root.style.transition =
@@ -153,6 +312,7 @@
                 localStorage.setItem(
                     storageKey,
                     JSON.stringify({
+                        appearanceVersion: 2,
                         theme,
                         themes: themeSettings,
                         includeCustom,
@@ -167,37 +327,79 @@
         function update(control) {
             control.input.value = control.value;
             // Range inputs normalize values to their supported step.
-            control.value = Number(control.input.value);
-            const display = control.unit
-                ? `${control.value}px`
-                : `${Math.round(control.value * 100)}%`;
+            control.value =
+                control.type === "color"
+                    ? control.input.value
+                    : Number(control.input.value);
+            const display =
+                control.type === "color"
+                    ? control.value
+                    : control.unit
+                      ? `${control.value}px`
+                      : `${Math.round(control.value * 100)}%`;
             control.output.value = display;
             control.input.setAttribute("aria-valuetext", display);
             root.style.setProperty(
                 control.property,
                 `${control.value}${control.unit}`,
             );
+            if (control.name === "panel-blur") {
+                root.toggleAttribute("data-panel-blur", control.value > 0);
+            }
+            if (control.name === "background-blur-strength") {
+                document
+                    .querySelector("#ambient-iris-blur feGaussianBlur")
+                    .setAttribute("stdDeviation", String(control.value));
+                root.toggleAttribute("data-iris-blur", control.value > 0);
+            }
+            if (control.name === "background-black-lift") {
+                // Lift shadows with a smooth curve that leaves white unchanged
+                const table = Array.from({ length: 33 }, (_, index) => {
+                    const tone = index / 32;
+                    return (tone + control.value * (1 - tone) ** 3).toFixed(5);
+                }).join(" ");
+                for (const channel of document.querySelectorAll(
+                    "#ambient-black-curve feComponentTransfer > *",
+                )) {
+                    channel.setAttribute("tableValues", table);
+                }
+                root.toggleAttribute("data-raised-blacks", control.value > 0);
+            }
         }
 
         for (const control of controls) {
-            control.input = document.getElementById(
-                `settings-${control.name}`,
-            );
+            control.input = document.getElementById(`settings-${control.name}`);
             control.output = document.getElementById(
                 `settings-${control.name}-value`,
             );
             control.input.addEventListener("input", () => {
-                control.value = Number(control.input.value);
+                control.value =
+                    control.type === "color"
+                        ? control.input.value
+                        : Number(control.input.value);
                 update(control);
                 persist();
             });
         }
         setTheme(theme);
+        for (const scene of document.querySelectorAll(".ambient-scene")) {
+            const background = getComputedStyle(scene).backgroundImage;
+            if (!background.startsWith("url(")) continue;
+            const artwork = new Image();
+            artwork.src = background.slice(4, -1).replace(/^["']|["']$/g, "");
+            artwork.decode().then(
+                () => scene.setAttribute("data-artwork-ready", ""),
+                () => {
+                    // Keep the plain background when artwork cannot load
+                },
+            );
+        }
         const customButtons = document.querySelectorAll("[data-custom-option]");
         function updateCustomButtons() {
-            document.getElementById("ranking-status").textContent = includeCustom
-                ? "Custom charts ranked"
-                : "Custom charts not ranked";
+            document.getElementById("ranking-status").textContent =
+                includeCustom
+                    ? "Custom charts ranked"
+                    : "Custom charts not ranked";
             for (const button of customButtons) {
                 const selected =
                     (button.dataset.customOption === "true") === includeCustom;
@@ -234,8 +436,14 @@
             container,
             canOpen: () => !document.querySelector("dialog[open]"),
             focus: "[data-theme-option].selected",
-            onOpen: () => root.classList.add("settings-open"),
-            onClosed: () => root.classList.remove("settings-open"),
+            onOpen: () => {
+                showSettingsPage(false, false, false);
+                root.classList.add("settings-open");
+            },
+            onClosed: () => {
+                showSettingsPage(false, false, false);
+                root.classList.remove("settings-open");
+            },
         });
         document.addEventListener("dashboard:panel-open", (event) => {
             if (event.detail !== "settings") setOpen(false, true);

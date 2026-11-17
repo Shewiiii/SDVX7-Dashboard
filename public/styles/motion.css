@@ -264,7 +264,7 @@ body[data-loading="initial"] .panel-foot {
     opacity: 0;
     transition: opacity var(--panel-backdrop-duration) ease-out;
 }
-.settings-backdrop.is-visible,
+.settings-backdrop.is-visible:not(.is-preview),
 .panel-layer:has(> dialog.is-visible)::before {
     opacity: 1;
 }

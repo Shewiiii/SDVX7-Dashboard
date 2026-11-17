@@ -368,7 +368,7 @@ export function createVolforceDistribution(root) {
         });
         svg.append(crosshair, point);
         hover = { width, left, right, maximum, y, crosshair, point };
-        motion.calculator(svg, animate, { guidesAfterCurve: true });
+        motion.calculator(svg, animate, { guidesAlongCurve: true });
         if (summary && animate) motion.data(summary);
     }
 

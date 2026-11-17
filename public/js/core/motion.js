@@ -395,16 +395,22 @@ export const motion = {
             0.5,
         );
     },
-    calculator(svg, animate = true, { guidesAfterCurve = false } = {}) {
+    calculator(svg, animate = true, { guidesAlongCurve = false } = {}) {
         if (!animate && !pending.has(svg)) return;
         queue(
             svg,
             () => {
                 let curveEnd = 0;
+                let curveReveal;
                 svg.querySelectorAll(
                     ".calculator-curve:not([hidden]), .calculator-chart-points, .calculator-reference",
                 ).forEach((curve, index) => {
                     const animation = sweep(svg, curve, index * 65);
+                    if (guidesAlongCurve && !curveReveal)
+                        curveReveal = {
+                            bounds: curve.getBBox(),
+                            timing: animation.effect.getTiming(),
+                        };
                     curveEnd = Math.max(
                         curveEnd,
                         animation.effect.getComputedTiming().endTime,
@@ -412,12 +418,36 @@ export const motion = {
                 });
                 svg.querySelectorAll(
                     ".calculator-markers, .calculator-guides",
-                ).forEach((markers) =>
+                ).forEach((markers) => {
+                    if (curveReveal && markers.matches(".calculator-guides")) {
+                        const { bounds, timing } = curveReveal;
+                        for (const guide of markers.children) {
+                            const position =
+                                guide.querySelector("line").x1.baseVal.value;
+                            const progress = Math.max(
+                                0,
+                                Math.min(1, (position - bounds.x) / bounds.width),
+                            );
+                            play(
+                                svg,
+                                guide,
+                                [
+                                    { opacity: 0, offset: 0 },
+                                    { opacity: 0, offset: progress },
+                                    { opacity: 1, offset: progress },
+                                    { opacity: 1, offset: 1 },
+                                ],
+                                timing,
+                            );
+                        }
+                        return;
+                    }
+
                     play(svg, markers, [{ opacity: 0 }, { opacity: 1 }], {
                         duration: 300,
-                        delay: guidesAfterCurve ? curveEnd : 900,
-                    }),
-                );
+                        delay: guidesAlongCurve ? curveEnd : 900,
+                    });
+                });
             },
             0.5,
         );

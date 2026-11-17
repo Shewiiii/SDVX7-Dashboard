@@ -561,7 +561,7 @@
                         <div class="metric-label" id="total-vf-label">
                             Total VolForce
                         </div>
-                        <div class="metric-value" id="total-vf">—</div>
+                        <div class="metric-value" id="total-vf">-</div>
                         <div class="vf-standing">
                             <button
                                 type="button"
@@ -596,33 +596,33 @@
                     </article>
                     <article class="metric">
                         <div class="metric-label">Best Chart VF</div>
-                        <div class="metric-value" id="best-vf">—</div>
+                        <div class="metric-value" id="best-vf">-</div>
                         <div class="metric-detail" id="best-title">
                             Across saved charts
                         </div>
                     </article>
                     <article class="metric">
                         <div class="metric-label">Worst Chart VF</div>
-                        <div class="metric-value" id="entry-vf">—</div>
+                        <div class="metric-value" id="entry-vf">-</div>
                         <div class="metric-detail" id="entry-detail">
                             VF needed to enter Top 50
                         </div>
                     </article>
                     <article class="metric">
                         <div class="metric-label">Tracked plays</div>
-                        <div class="metric-value" id="play-count">—</div>
-                        <div class="metric-detail" id="play-detail">—</div>
+                        <div class="metric-value" id="play-count">-</div>
+                        <div class="metric-detail" id="play-detail">-</div>
                     </article>
                     <article class="metric">
                         <div class="metric-label">Spendings</div>
-                        <div class="metric-value" id="spending-total">—</div>
+                        <div class="metric-value" id="spending-total">-</div>
                         <div class="metric-detail" id="spending-detail">
                             Standard Start with EX-TRACK
                         </div>
                     </article>
                     <article class="metric metric-playtime">
                         <div class="metric-label">Active Playtime</div>
-                        <div class="metric-value" id="playtime-total">—</div>
+                        <div class="metric-value" id="playtime-total">-</div>
                         <div class="metric-detail" id="playtime-detail">
                             Waiting for tracked gameplay
                         </div>
@@ -982,7 +982,7 @@
                                     All plays
                                 </button>
                             </div>
-                            <div id="session-meta" class="session-meta">—</div>
+                            <div id="session-meta" class="session-meta">-</div>
                             <div id="recent-plays" class="play-list"></div>
                         </article>
                         <article class="panel top-panel">
@@ -1420,7 +1420,7 @@
                                         id="calculator-formula-level"
                                         title="Level"
                                     >
-                                        —
+                                        -
                                     </mn>
                                     <mo>×</mo>
                                     <mfrac>
@@ -1428,7 +1428,7 @@
                                             id="calculator-formula-score"
                                             title="Score"
                                         >
-                                            —
+                                            -
                                         </mn>
                                         <mn>10&#8239;000&#8239;000</mn>
                                     </mfrac>
@@ -1437,7 +1437,7 @@
                                         id="calculator-formula-grade"
                                         title="Grade coefficient"
                                     >
-                                        —
+                                        -
                                     </mn>
                                     <mo>×</mo>
                                     <mi>Clear Coeff</mi>
@@ -1775,6 +1775,7 @@
         <dialog
             id="song-library"
             class="panel appeal-helper song-library"
+            data-library-view="grid"
             aria-labelledby="library-title"
             closedby="closerequest"
         >
@@ -1869,7 +1870,58 @@
                         Help
                     </button>
                 </div>
-                <p id="library-count" class="library-count" role="status"></p>
+                <div class="library-view-tools">
+                    <p id="library-count" class="library-count" role="status"></p>
+                    <div
+                        id="library-view"
+                        class="segmented library-view-switch"
+                        role="group"
+                        aria-label="Library view"
+                    >
+                        <button
+                            type="button"
+                            class="selected"
+                            data-library-view="grid"
+                            aria-pressed="true"
+                            aria-controls="library-results"
+                        >
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                aria-hidden="true"
+                            >
+                                <rect x="2" y="2" width="6" height="6" rx="1" />
+                                <rect x="12" y="2" width="6" height="6" rx="1" />
+                                <rect x="2" y="12" width="6" height="6" rx="1" />
+                                <rect x="12" y="12" width="6" height="6" rx="1" />
+                            </svg>
+                            Grid
+                        </button>
+                        <button
+                            type="button"
+                            data-library-view="list"
+                            aria-pressed="false"
+                            aria-controls="library-results"
+                        >
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                aria-hidden="true"
+                            >
+                                <path d="M2 4h3m3 0h10M2 10h3m3 0h10M2 16h3m3 0h10" />
+                            </svg>
+                            List
+                        </button>
+                    </div>
+                </div>
                 <div id="library-results"></div>
             </div>
         </dialog>

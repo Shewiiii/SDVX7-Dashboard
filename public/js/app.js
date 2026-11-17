@@ -29,6 +29,7 @@ import { subscribeArchive } from "./core/live.js";
 import { initSearchTools } from "./search/search-tools.js";
 import { setSearchData } from "./search/search-query.js";
 import { createLibrary } from "./library/library.js";
+import { initLibraryView } from "./library/library-view.js";
 import { DIFFS, summary, songCatalog, chartPlays } from "./profile/metrics.js";
 import { motion, initSegmentedControls } from "./core/motion.js";
 import { createCalculator } from "./profile/calculator.js";
@@ -825,6 +826,7 @@ initChartActions({
 });
 initSearchInputs();
 initChartPopups();
+initLibraryView();
 initSegmentedControls();
 preparePanelHistory();
 restoreUrl();

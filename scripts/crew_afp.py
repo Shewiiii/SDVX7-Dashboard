@@ -2,12 +2,50 @@
 
 from __future__ import annotations
 
+import math
 import struct
 from typing import Any
 
 from sdvx_afp.geo import Shape
-from sdvx_afp.swf import SWF
-from sdvx_afp.types import AP2Tag
+from sdvx_afp.swf import SWF, AP2DefineSpriteTag, AP2PlaceObjectTag, Tag
+from sdvx_afp.types import AP2Tag, Matrix
+
+UNSET_TRANSFORM = Matrix(
+    a11=math.nan,
+    a12=math.nan,
+    a13=math.nan,
+    a21=math.nan,
+    a22=math.nan,
+    a23=math.nan,
+    a31=math.nan,
+    a32=math.nan,
+    a33=math.nan,
+    a41=math.nan,
+    a42=math.nan,
+    a43=math.nan,
+)
+
+
+def export_transform_updates(tags: list[Tag], exported: list[dict[str, Any]]) -> None:
+    for tag, record in zip(tags, exported, strict=True):
+        if isinstance(tag, AP2DefineSpriteTag):
+            export_transform_updates(tag.tags, record["tags"])
+        elif (
+            isinstance(tag, AP2PlaceObjectTag)
+            and tag.update
+            and tag.projection == AP2PlaceObjectTag.PROJECTION_PERSPECTIVE
+            and tag.transform is not None
+        ):
+            # Keep explicitly written zeroes and omit fields absent from the frame
+            transform = UNSET_TRANSFORM.update(tag.transform, True).as_dict()
+            if "a" in transform:
+                for affine, spatial in zip("abcd", ("a11", "a12", "a21", "a22")):
+                    transform[spatial] = transform.pop(affine)
+            record["transform_update"] = {
+                name: value
+                for name, value in transform.items()
+                if not math.isnan(value)
+            }
 
 
 class CrewShape(Shape):
@@ -37,6 +75,11 @@ class CrewShape(Shape):
 
 
 class CrewMovie(SWF):
+    def as_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        result = super().as_dict(*args, **kwargs)
+        export_transform_updates(self.tags, result["tags"])
+        return result
+
     def _SWF__parse_tag(
         self,
         ap2_version: int,

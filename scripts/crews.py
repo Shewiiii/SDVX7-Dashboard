@@ -91,7 +91,7 @@ def prepare_afp(key: str) -> dict[str, Any]:
         raise ValueError("Unknown animated crew")
     cached = CACHE / "afp" / f"{key}.json"
     source = graphics() / entry["archive"]
-    signature = [source.stat().st_mtime_ns, source.stat().st_size, 2]
+    signature = [source.stat().st_mtime_ns, source.stat().st_size, 3]
     previous = read_json(cached, {})
     if previous.get("signature") == signature:
         return previous

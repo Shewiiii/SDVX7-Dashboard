@@ -11,6 +11,7 @@ import {
     searchSongs,
 } from "../profile/metrics.js";
 import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
+import { BEGINNER_SONG_IDS } from "../../game-data/beginner-songs.js";
 import { SKILL_ANALYZER_COURSES } from "../../game-data/skill-analyzer.js";
 import {
     UNLOCK_METHODS,
@@ -21,6 +22,13 @@ import {
 // Song folders retain search's selection. Chart folders open the exact difficulty.
 export const chartFolderMode = (mode) =>
     ["level", "clear", "grade", "skill"].includes(mode);
+
+const flatLibraryGroups = new Map([
+    ["all", "All"],
+    ["boss", "All"],
+    ["favorites", "Favorites"],
+    ["recommended", "Recommended for beginners"],
+]);
 
 const versionNames = Object.values(SONG_VERSIONS);
 const compareSkillCourses = (a, b) =>
@@ -135,6 +143,8 @@ export function libraryEntries(
         Infinity,
     )) {
         if (mode === "favorites" && !favorites.has(song.music_id)) continue;
+        if (mode === "recommended" && !BEGINNER_SONG_IDS.has(song.music_id))
+            continue;
         if (mode === "skill") {
             for (const course of skillCourses) {
                 for (const [position, track] of course.tracks.entries()) {
@@ -199,8 +209,8 @@ export function libraryEntries(
                 });
             }
         } else {
-            const groups = ["all", "boss", "favorites"].includes(mode)
-                ? [mode === "favorites" ? "Favorites" : "All"]
+            const groups = flatLibraryGroups.has(mode)
+                ? [flatLibraryGroups.get(mode)]
                 : mode === "version"
                   ? [SONG_VERSIONS[songVersion(song)] || "Unknown version"]
                   : mode === "year"
@@ -417,7 +427,7 @@ export function createLibrary(
             content.className = "library-folder-content";
             let folder,
                 heading = content;
-            if (["all", "boss", "favorites"].includes(mode.value)) {
+            if (flatLibraryGroups.has(mode.value)) {
                 parent.append(content);
             } else {
                 folder = document.createElement("details");

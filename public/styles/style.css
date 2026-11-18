@@ -192,6 +192,11 @@
     --performance-background-iris-feather-mobile: 189px;
     --performance-background-blur-strength: 6px;
 
+    /* Particle multipliers */
+    --performance-dust-density: 1;
+    --performance-dust-size: 1;
+    --performance-dust-speed: 1;
+
     /* Shared panel material */
     --performance-panel-dim: 0.9;
     --performance-panel-blur: 7px;

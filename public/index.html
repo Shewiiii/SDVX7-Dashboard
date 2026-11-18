@@ -53,20 +53,23 @@
             </defs>
         </svg>
         <div class="ambient" aria-hidden="true">
-            <div class="ambient-scene">
-                <div class="ambient-blur">
-                    <div class="ambient-blur-image">
-                        <div class="ambient-fringe"></div>
+            <div class="ambient-artwork">
+                <div class="ambient-scene">
+                    <div class="ambient-blur">
+                        <div class="ambient-blur-image">
+                            <div class="ambient-fringe"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ambient-scene ambient-scene--exceed">
+                    <div class="ambient-blur">
+                        <div class="ambient-blur-image">
+                            <div class="ambient-fringe"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="ambient-scene ambient-scene--exceed">
-                <div class="ambient-blur">
-                    <div class="ambient-blur-image">
-                        <div class="ambient-fringe"></div>
-                    </div>
-                </div>
-            </div>
+            <div class="ambient-sparks" hidden></div>
         </div>
         <div
             class="settings-backdrop"
@@ -154,6 +157,32 @@
                                             aria-pressed="false"
                                         >
                                             Nabla
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="settings-row">
+                                    <span id="settings-sparks-label">
+                                        Particles
+                                    </span>
+                                    <div
+                                        class="segmented"
+                                        role="group"
+                                        aria-labelledby="settings-sparks-label"
+                                    >
+                                        <button
+                                            type="button"
+                                            data-sparks-option="on"
+                                            aria-pressed="false"
+                                        >
+                                            On
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-sparks-option="off"
+                                            class="selected"
+                                            aria-pressed="true"
+                                        >
+                                            Off
                                         </button>
                                     </div>
                                 </div>
@@ -478,6 +507,57 @@
                                             step="0.01"
                                             value="0.05"
                                             aria-description="Lift the background's deepest shadows for a faded film look"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-dust-density"
+                                    >
+                                        <span>Dust density</span>
+                                        <output
+                                            id="settings-dust-density-value"
+                                            for="settings-dust-density"
+                                        ></output>
+                                        <input
+                                            id="settings-dust-density"
+                                            type="range"
+                                            min="0.25"
+                                            max="3"
+                                            step="0.05"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-dust-size"
+                                    >
+                                        <span>Dust size</span>
+                                        <output
+                                            id="settings-dust-size-value"
+                                            for="settings-dust-size"
+                                        ></output>
+                                        <input
+                                            id="settings-dust-size"
+                                            type="range"
+                                            min="0.25"
+                                            max="2"
+                                            step="0.05"
+                                        />
+                                    </label>
+                                    <label
+                                        class="settings-control"
+                                        for="settings-dust-speed"
+                                    >
+                                        <span>Dust speed</span>
+                                        <output
+                                            id="settings-dust-speed-value"
+                                            for="settings-dust-speed"
+                                        ></output>
+                                        <input
+                                            id="settings-dust-speed"
+                                            type="range"
+                                            min="0.25"
+                                            max="3"
+                                            step="0.05"
                                         />
                                     </label>
                                     <div class="settings-footer">

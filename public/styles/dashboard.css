@@ -21,7 +21,12 @@
             )
     );
 }
-:root[data-raised-blacks] .ambient {
+.ambient-artwork {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+}
+:root[data-raised-blacks] .ambient-artwork {
     filter: url("#ambient-black-curve");
 }
 .ambient-scene {
@@ -79,7 +84,7 @@
 :root[data-iris-blur] .ambient-blur-image {
     filter: url("#ambient-iris-blur");
 }
-.ambient::after {
+.ambient-artwork::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -110,6 +115,42 @@
             )
         );
 }
+.ambient-sparks {
+    position: absolute;
+    inset: 0;
+}
+.ambient-sparks > i {
+    position: absolute;
+    width: calc(var(--grain-width) * var(--performance-dust-size));
+    height: calc(var(--grain-height) * var(--performance-dust-size));
+    mix-blend-mode: screen;
+    background: color-mix(in srgb, var(--accent) 45%, #c7bfc3);
+    border-radius: 54% 23% 38% 17% / 29% 44% 25% 47%;
+    animation: ambient-dust-drift calc(var(--grain-duration) / var(--performance-dust-speed))
+        linear calc(var(--grain-delay) / var(--performance-dust-speed)) infinite;
+}
+.ambient-sparks > i:nth-child(3n) {
+    border-radius: 17% 58% 22% 39% / 47% 21% 51% 32%;
+}
+@keyframes ambient-dust-drift {
+    0% {
+        opacity: 0;
+        transform: translate(var(--half-travel), calc(var(--half-travel) * -0.2))
+            rotate(var(--tilt));
+    }
+    15%,
+    83% {
+        opacity: var(--dust-opacity);
+    }
+    50% {
+        transform: translate(0, var(--sway)) rotate(calc(var(--tilt) + 30deg));
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-1 * var(--half-travel)), calc(var(--half-travel) * 0.2))
+            rotate(calc(var(--tilt) + 57deg));
+    }
+}
 @media (max-width: 900px), (hover: none) {
     .ambient {
         /* Use a stable height to prevent rescaling on scroll */
@@ -118,6 +159,11 @@
     }
 }
 @media (prefers-reduced-motion: reduce) {
+    .ambient-sparks > i {
+        animation: none;
+        opacity: var(--dust-opacity);
+        transform: rotate(var(--tilt));
+    }
     .ambient-scene {
         transition: none;
     }

@@ -17,6 +17,9 @@
             property: "--background-edge",
         },
         { name: "background-dim", unit: "", max: 1 },
+        { name: "dust-density", unit: "", min: 0.25, max: 3 },
+        { name: "dust-size", unit: "", min: 0.25, max: 2 },
+        { name: "dust-speed", unit: "", min: 0.25, max: 3 },
         { name: "background-black-lift", unit: "", max: 0.3 },
         { name: "panel-dim", unit: "", max: 1 },
         { name: "panel-blur", unit: "px", max: 100 },
@@ -93,9 +96,9 @@
             // Keep legacy shared settings for the theme they were saved with.
             const stored =
                 saved.themes?.[name] ?? (name === theme ? saved : {});
-            return [
-                name,
-                Object.fromEntries(
+            const values = {
+                "background-sparks": stored["background-sparks"] === true,
+                ...Object.fromEntries(
                     controls.map((control) => {
                         let value = stored[control.name];
                         if (control.type === "color") {
@@ -137,12 +140,16 @@
                         return [
                             control.name,
                             typeof value === "number" && Number.isFinite(value)
-                                ? Math.max(0, Math.min(control.max, value))
+                                ? Math.max(
+                                      control.min ?? 0,
+                                      Math.min(control.max, value),
+                                  )
                                 : control.defaultValue,
                         ];
                     }),
                 ),
-            ];
+            };
+            return [name, values];
         }),
     );
     root.dataset.theme = theme;
@@ -164,6 +171,10 @@
         const backdrop = document.getElementById("settings-backdrop");
         const container = toggle.closest(".dashboard-settings");
         const themeButtons = panel.querySelectorAll("[data-theme-option]");
+        const sparkButtons = panel.querySelectorAll("[data-sparks-option]");
+        const sparkLayer = document.querySelector(".ambient-sparks");
+        const dustDensity = document.getElementById("settings-dust-density");
+        const phone = matchMedia("(max-width: 900px)");
         const artworkCredit = document.getElementById("artwork-credit");
         const artworkCredits = {
             exceed: { artist: "蒼流リダ", url: "https://x.com/Lida_2617" },
@@ -287,6 +298,70 @@
         updateThemeMotion();
         reducedMotion.addEventListener("change", updateThemeMotion);
 
+        function syncDust() {
+            if (sparkLayer.hidden) return;
+            const count = Math.round(
+                (phone.matches ? 64 : 128) * dustDensity.valueAsNumber,
+            );
+            while (sparkLayer.childElementCount > count) {
+                sparkLayer.lastElementChild.remove();
+            }
+
+            const sparks = document.createDocumentFragment();
+            for (
+                let index = sparkLayer.childElementCount;
+                index < count;
+                index++
+            ) {
+                const spark = document.createElement("i");
+                const depth = Math.random();
+                const duration = 13 + Math.random() * 5;
+                const size = 1.2 + 3.6 * depth ** 2;
+                const travel = duration * (13 + depth * 11);
+                const column = index % 4;
+                const row = (index + Math.floor(index / 4)) % 4;
+
+                spark.style.left = `${(column + Math.random()) * 25}%`;
+                spark.style.top = `${(row + Math.random()) * 25}%`;
+                spark.style.setProperty("--grain-width", `${size}px`);
+                spark.style.setProperty(
+                    "--grain-height",
+                    `${size * (0.6 + Math.random() * 0.4)}px`,
+                );
+                spark.style.setProperty("--grain-duration", `${duration}s`);
+                spark.style.setProperty("--grain-delay", `${-Math.random() * duration}s`);
+                spark.style.setProperty("--half-travel", `${travel / 2}px`);
+                spark.style.setProperty("--sway", `${Math.random() * 18 - 9}px`);
+                spark.style.setProperty("--tilt", `${Math.random() * 180}deg`);
+                spark.style.setProperty("--dust-opacity", 0.14 + depth * 0.22);
+                sparks.append(spark);
+            }
+            sparkLayer.append(sparks);
+        }
+
+        function updateSparks() {
+            const enabled = themeSettings[theme]["background-sparks"];
+            sparkLayer.hidden = !enabled || document.hidden;
+            syncDust();
+            for (const button of sparkButtons) {
+                const selected =
+                    (button.dataset.sparksOption === "on") === enabled;
+                button.classList.toggle("selected", selected);
+                button.setAttribute("aria-pressed", String(selected));
+            }
+        }
+
+        document.addEventListener("visibilitychange", updateSparks);
+        phone.addEventListener("change", syncDust);
+        for (const button of sparkButtons) {
+            button.addEventListener("click", () => {
+                themeSettings[theme]["background-sparks"] =
+                    button.dataset.sparksOption === "on";
+                updateSparks();
+                persist();
+            });
+        }
+
         function setTheme(value) {
             theme = value;
             root.dataset.theme = theme;
@@ -302,12 +377,13 @@
                 control.value = themeSettings[theme][control.name];
                 update(control);
             }
+            updateSparks();
         }
 
         function persist() {
-            themeSettings[theme] = Object.fromEntries(
-                controls.map(({ name, value }) => [name, value]),
-            );
+            for (const { name, value } of controls) {
+                themeSettings[theme][name] = value;
+            }
             try {
                 localStorage.setItem(
                     storageKey,
@@ -378,6 +454,7 @@
                         ? control.input.value
                         : Number(control.input.value);
                 update(control);
+                if (control.name === "dust-density") syncDust();
                 persist();
             });
         }
@@ -451,6 +528,8 @@
         document
             .getElementById("settings-reset")
             .addEventListener("click", () => {
+                themeSettings[theme]["background-sparks"] = false;
+                updateSparks();
                 for (const control of controls) {
                     control.value = control.defaultValue;
                     update(control);

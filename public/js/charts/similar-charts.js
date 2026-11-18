@@ -21,7 +21,7 @@ export function radarDistance(first, second) {
 function radarDifferenceColor(distance) {
     if (distance <= 0) return "var(--accent)";
     if (distance >= 30) return "var(--red)";
-    const stops = ["--accent", "--yellow", "--orange", "--red"];
+    const stops = ["--accent", "--similarity-yellow", "--orange", "--red"];
     const position = distance / 10;
     const index = Math.min(2, Math.floor(position));
     const percent = (position - index) * 100;

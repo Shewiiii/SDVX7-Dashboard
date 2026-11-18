@@ -1327,7 +1327,7 @@ td.row-index + td {
 }
 .difficulty-badge.d1,
 .difficulty-tabs :is(button, a)[data-chart-diff="1"] {
-    --difficulty-color: #e1cf9d;
+    --difficulty-color: var(--yellow);
 }
 .difficulty-badge.d2,
 .difficulty-tabs :is(button, a)[data-chart-diff="2"] {
@@ -4320,6 +4320,17 @@ tr.chart-row .cover-tile {
     color: var(--muted);
     fill: var(--muted);
     font: 10px var(--sans);
+}
+.details-tempo-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px 20px;
+    margin-inline-start: auto;
+    white-space: nowrap;
+}
+.details-chart h3 .details-lane-speed {
+    color: var(--yellow);
 }
 .details-chart svg {
     display: block;

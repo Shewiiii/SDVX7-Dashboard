@@ -781,6 +781,8 @@ def upload(
                     for d in payload["details"]
                 ):
                     required_schema = DETAILS_SCHEMA
+                if any("lane_speed_locked" in d for d in payload["details"]):
+                    required_schema = 9
                 if result.get("details_schema", 0) < required_schema:
                     raise RuntimeError(
                         "Deploy the updated dashboard API before syncing chart details"

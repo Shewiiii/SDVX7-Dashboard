@@ -151,7 +151,7 @@ export default async function handler(req, res) {
             upload_compression: "gzip",
             accepted: rows.length,
             play_schema: 4,
-            details_schema: 8,
+            details_schema: 9,
             audio_schema: 2,
             catalog_schema: 3,
             profile_radar_schema: 3,

@@ -23,7 +23,7 @@ const time = (value) =>
         ? `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`
         : "—";
 
-function timeline(chart) {
+function timeline(chart, laneSpeedLocked) {
     const density = chart.density.map((value) => value / (chart.duration / 64));
     const lasers =
         chart.laser_density_version === 2
@@ -42,6 +42,10 @@ function timeline(chart) {
     const tempos = chart.bpm_changes.filter((p) => p[0] <= chart.duration);
     const low = Math.min(...tempos.map((p) => p[1])),
         high = Math.max(...tempos.map((p) => p[1]));
+    const tempoRange = `${count(low)}${high !== low ? `–${count(high)}` : ""} BPM`;
+    const laneSpeedLabel = laneSpeedLocked
+        ? '<span class="details-lane-speed">Fixed lane-speed</span>'
+        : "";
     let bpmPath = "";
     for (const [i, point] of tempos.entries()) {
         const x = 52 + (point[0] / chart.duration) * 456;
@@ -74,7 +78,15 @@ function timeline(chart) {
             [76, 0],
         ],
     )}<polygon class="details-density-fill" points="52,76 ${points} 508,76"/><polyline class="details-density-line" points="${points}"/>${laserPoints ? `<polygon class="details-laser-density-fill" points="52,76 ${laserPoints} 508,76"/><polyline class="details-laser-density-line" points="${laserPoints}"/>` : ""}<text x="52" y="93">0:00</text><text x="508" y="93" text-anchor="end">${time(chart.duration)}</text></svg></section>
-        <section class="details-chart" data-plot="tempo"><h3>Tempo <span>${count(low)}${high !== low ? `–${count(high)}` : ""} BPM</span></h3><svg viewBox="0 0 520 96" role="img" aria-label="BPM changes across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
+        <section class="details-chart" data-plot="tempo">
+            <h3>
+                Tempo
+                <span class="details-tempo-meta">
+                    ${laneSpeedLabel}
+                    <span>${tempoRange}</span>
+                </span>
+            </h3>
+            <svg viewBox="0 0 520 96" role="img" aria-label="BPM changes across the chart"><path class="details-grid" d="M52 18H508M52 47H508M52 76H508"/>${ticks(
             high === low
                 ? [[47, low]]
                 : [
@@ -275,7 +287,7 @@ export function createChartDetails(isPreview, renderSong) {
     const closeButton = document.getElementById("chart-details-close");
     dialog.setAttribute("closedby", "none");
     const cache = new Map();
-    const cacheKey = "chart-details-cache-v7";
+    const cacheKey = "chart-details-cache-v8";
     try {
         for (const [key, entry] of JSON.parse(
             localStorage.getItem(cacheKey) || "[]",
@@ -411,7 +423,10 @@ export function createChartDetails(isPreview, renderSong) {
         if (chart) {
             plots = document.createElement("div");
             plots.className = "details-plots";
-            plots.innerHTML = timeline(chart);
+            plots.innerHTML = timeline(
+                chart,
+                record.lane_speed_locked === true,
+            );
             body.append(plots);
             inspectPlots(plots, chart);
         } else {
@@ -454,7 +469,7 @@ export function createChartDetails(isPreview, renderSong) {
                         saved.record.chart.visual_gimmicks_version !== 2))
             ) {
                 const response = await fetch(
-                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=7`,
+                    `/api/chart?music=${current.music_id}&diff=${current.diff_idx}&schema=8`,
                     { signal: request.signal },
                 );
                 if (!response.ok)

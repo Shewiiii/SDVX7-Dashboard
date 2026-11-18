@@ -333,7 +333,7 @@ class ChartDetails:
                     )
                     if node is None or not (number(node, "difnum") or 0) > 0:
                         continue
-                    metadata[f"{mid}:{diff}"] = {
+                    chart_metadata = {
                         **base,
                         "diff_idx": diff,
                         "level": number(node, "difnum", 10),
@@ -341,6 +341,9 @@ class ChartDetails:
                         "illustrator": node.findtext("illustrator", "")[:200],
                         "max_exscore": number(node, "max_exscore"),
                     }
+                    if node.findtext("lanespeed_lock", "").strip() == "1":
+                        chart_metadata["lane_speed_locked"] = True
+                    metadata[f"{mid}:{diff}"] = chart_metadata
         files = {}
         for root in (self.music.base_root, self.music.custom_root):
             for folder in (root / "music").glob("*"):

@@ -518,7 +518,7 @@
     font-size: 10px;
     transition: color 0.16s;
 }
-.metric-particle {
+.metric-spark {
     position: absolute;
     right: 16px;
     width: 92px;
@@ -5154,7 +5154,7 @@ tr.chart-row .cover-tile {
         width: 23px;
         height: 23px;
     }
-    .metric.featured .metric-particle {
+    .metric.featured .metric-spark {
         display: block;
     }
     .records-panel table,

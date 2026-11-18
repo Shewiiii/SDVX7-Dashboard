@@ -69,7 +69,7 @@
                     </div>
                 </div>
             </div>
-            <div class="ambient-sparks" hidden></div>
+            <div class="ambient-particles" hidden></div>
         </div>
         <div
             class="settings-backdrop"
@@ -161,24 +161,24 @@
                                     </div>
                                 </div>
                                 <div class="settings-row">
-                                    <span id="settings-sparks-label">
+                                    <span id="settings-particles-label">
                                         Particles
                                     </span>
                                     <div
                                         class="segmented"
                                         role="group"
-                                        aria-labelledby="settings-sparks-label"
+                                        aria-labelledby="settings-particles-label"
                                     >
                                         <button
                                             type="button"
-                                            data-sparks-option="on"
+                                            data-particles-option="on"
                                             aria-pressed="false"
                                         >
                                             On
                                         </button>
                                         <button
                                             type="button"
-                                            data-sparks-option="off"
+                                            data-particles-option="off"
                                             class="selected"
                                             aria-pressed="true"
                                         >
@@ -511,15 +511,15 @@
                                     </label>
                                     <label
                                         class="settings-control"
-                                        for="settings-dust-density"
+                                        for="settings-particle-density"
                                     >
-                                        <span>Dust density</span>
+                                        <span>Particle density</span>
                                         <output
-                                            id="settings-dust-density-value"
-                                            for="settings-dust-density"
+                                            id="settings-particle-density-value"
+                                            for="settings-particle-density"
                                         ></output>
                                         <input
-                                            id="settings-dust-density"
+                                            id="settings-particle-density"
                                             type="range"
                                             min="0.25"
                                             max="3"
@@ -528,15 +528,15 @@
                                     </label>
                                     <label
                                         class="settings-control"
-                                        for="settings-dust-size"
+                                        for="settings-particle-size"
                                     >
-                                        <span>Dust size</span>
+                                        <span>Particle size</span>
                                         <output
-                                            id="settings-dust-size-value"
-                                            for="settings-dust-size"
+                                            id="settings-particle-size-value"
+                                            for="settings-particle-size"
                                         ></output>
                                         <input
-                                            id="settings-dust-size"
+                                            id="settings-particle-size"
                                             type="range"
                                             min="0.25"
                                             max="2"
@@ -545,15 +545,15 @@
                                     </label>
                                     <label
                                         class="settings-control"
-                                        for="settings-dust-speed"
+                                        for="settings-particle-speed"
                                     >
-                                        <span>Dust speed</span>
+                                        <span>Particle speed</span>
                                         <output
-                                            id="settings-dust-speed-value"
-                                            for="settings-dust-speed"
+                                            id="settings-particle-speed-value"
+                                            for="settings-particle-speed"
                                         ></output>
                                         <input
-                                            id="settings-dust-speed"
+                                            id="settings-particle-speed"
                                             type="range"
                                             min="0.25"
                                             max="3"
@@ -562,15 +562,15 @@
                                     </label>
                                     <label
                                         class="settings-control"
-                                        for="settings-dust-fps"
+                                        for="settings-particle-fps"
                                     >
                                         <span>Particle FPS limit</span>
                                         <output
-                                            id="settings-dust-fps-value"
-                                            for="settings-dust-fps"
+                                            id="settings-particle-fps-value"
+                                            for="settings-particle-fps"
                                         ></output>
                                         <input
-                                            id="settings-dust-fps"
+                                            id="settings-particle-fps"
                                             type="range"
                                             min="5"
                                             max="60"
@@ -686,8 +686,8 @@
                             ></a>
                         </div>
                         <div
-                            class="metric-spark"
-                            id="spark"
+                            class="metric-particle"
+                            id="particle"
                             aria-hidden="true"
                         ></div>
                     </article>

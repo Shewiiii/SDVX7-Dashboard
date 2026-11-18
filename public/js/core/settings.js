@@ -17,10 +17,10 @@
             property: "--background-edge",
         },
         { name: "background-dim", unit: "", max: 1 },
-        { name: "dust-density", unit: "", min: 0.25, max: 3 },
-        { name: "dust-size", unit: "", min: 0.25, max: 2 },
-        { name: "dust-speed", unit: "", min: 0.25, max: 3 },
-        { name: "dust-fps", unit: "", suffix: " FPS", min: 5, max: 60 },
+        { name: "particle-density", unit: "", min: 0.25, max: 3 },
+        { name: "particle-size", unit: "", min: 0.25, max: 2 },
+        { name: "particle-speed", unit: "", min: 0.25, max: 3 },
+        { name: "particle-fps", unit: "", suffix: " FPS", min: 5, max: 60 },
         { name: "background-black-lift", unit: "", max: 0.3 },
         { name: "panel-dim", unit: "", max: 1 },
         { name: "panel-blur", unit: "px", max: 100 },
@@ -97,11 +97,16 @@
             // Keep legacy shared settings for the theme they were saved with.
             const stored =
                 saved.themes?.[name] ?? (name === theme ? saved : {});
+            const particlesEnabled =
+                stored["background-particles"] ?? stored["background-sparks"];
             const values = {
-                "background-sparks": stored["background-sparks"] === true,
+                "background-particles": particlesEnabled === true,
                 ...Object.fromEntries(
                     controls.map((control) => {
                         let value = stored[control.name];
+                        if (value === undefined && control.name.startsWith("particle-")) {
+                            value = stored[control.name.replace("particle-", "dust-")];
+                        }
                         if (control.type === "color") {
                             return [
                                 control.name,
@@ -172,9 +177,9 @@
         const backdrop = document.getElementById("settings-backdrop");
         const container = toggle.closest(".dashboard-settings");
         const themeButtons = panel.querySelectorAll("[data-theme-option]");
-        const sparkButtons = panel.querySelectorAll("[data-sparks-option]");
-        const sparkLayer = document.querySelector(".ambient-sparks");
-        const dustDensity = document.getElementById("settings-dust-density");
+        const particleButtons = panel.querySelectorAll("[data-particles-option]");
+        const particleLayer = document.querySelector(".ambient-particles");
+        const particleDensity = document.getElementById("settings-particle-density");
         const phone = matchMedia("(max-width: 900px)");
         const artworkCredit = document.getElementById("artwork-credit");
         const artworkCredits = {
@@ -299,27 +304,27 @@
         updateThemeMotion();
         reducedMotion.addEventListener("change", updateThemeMotion);
 
-        const dustFps = document.getElementById("settings-dust-fps");
-        let dustTimer;
-        let dustTime = 0;
+        const particleFps = document.getElementById("settings-particle-fps");
+        let particleTimer;
+        let particleTime = 0;
 
-        function syncDust() {
-            clearInterval(dustTimer);
-            if (sparkLayer.hidden) return;
+        function syncParticles() {
+            clearInterval(particleTimer);
+            if (particleLayer.hidden) return;
             const count = Math.round(
-                (phone.matches ? 64 : 128) * dustDensity.valueAsNumber,
+                (phone.matches ? 64 : 128) * particleDensity.valueAsNumber,
             );
-            while (sparkLayer.childElementCount > count) {
-                sparkLayer.lastElementChild.remove();
+            while (particleLayer.childElementCount > count) {
+                particleLayer.lastElementChild.remove();
             }
 
-            const sparks = document.createDocumentFragment();
+            const particles = document.createDocumentFragment();
             for (
-                let index = sparkLayer.childElementCount;
+                let index = particleLayer.childElementCount;
                 index < count;
                 index++
             ) {
-                const spark = document.createElement("i");
+                const particle = document.createElement("i");
                 const depth = Math.random();
                 const duration = 13 + Math.random() * 5;
                 const size = 1.2 + 3.6 * depth ** 2;
@@ -327,59 +332,59 @@
                 const column = index % 4;
                 const row = (index + Math.floor(index / 4)) % 4;
 
-                spark.style.left = `${(column + Math.random()) * 25}%`;
-                spark.style.top = `${(row + Math.random()) * 25}%`;
-                spark.style.setProperty("--grain-width", `${size}px`);
-                spark.style.setProperty(
-                    "--grain-height",
+                particle.style.left = `${(column + Math.random()) * 25}%`;
+                particle.style.top = `${(row + Math.random()) * 25}%`;
+                particle.style.setProperty("--particle-width", `${size}px`);
+                particle.style.setProperty(
+                    "--particle-height",
                     `${size * (0.6 + Math.random() * 0.4)}px`,
                 );
-                spark.style.setProperty("--grain-duration", `${duration}s`);
-                spark.style.setProperty("--grain-delay", `${-Math.random() * duration}s`);
-                spark.style.setProperty("--half-travel", `${travel / 2}px`);
-                spark.style.setProperty("--sway", `${Math.random() * 18 - 9}px`);
-                spark.style.setProperty("--tilt", `${Math.random() * 180}deg`);
-                spark.style.setProperty("--dust-opacity", 0.14 + depth * 0.22);
-                sparks.append(spark);
+                particle.style.setProperty("--particle-duration", `${duration}s`);
+                particle.style.setProperty("--particle-delay", `${-Math.random() * duration}s`);
+                particle.style.setProperty("--half-travel", `${travel / 2}px`);
+                particle.style.setProperty("--sway", `${Math.random() * 18 - 9}px`);
+                particle.style.setProperty("--tilt", `${Math.random() * 180}deg`);
+                particle.style.setProperty("--particle-opacity", 0.14 + depth * 0.22);
+                particles.append(particle);
             }
-            sparkLayer.append(sparks);
+            particleLayer.append(particles);
             if (reducedMotion.matches) return;
 
-            const animations = sparkLayer.getAnimations({ subtree: true });
-            const start = performance.now() - dustTime;
-            function drawDust() {
-                dustTime = performance.now() - start;
+            const animations = particleLayer.getAnimations({ subtree: true });
+            const start = performance.now() - particleTime;
+            function drawParticles() {
+                particleTime = performance.now() - start;
                 for (const animation of animations) {
-                    animation.currentTime = dustTime;
+                    animation.currentTime = particleTime;
                 }
             }
-            drawDust();
-            dustTimer = setInterval(
-                drawDust,
-                Math.ceil(1000 / dustFps.valueAsNumber),
+            drawParticles();
+            particleTimer = setInterval(
+                drawParticles,
+                Math.ceil(1000 / particleFps.valueAsNumber),
             );
         }
 
-        function updateSparks() {
-            const enabled = themeSettings[theme]["background-sparks"];
-            sparkLayer.hidden = !enabled || document.hidden;
-            syncDust();
-            for (const button of sparkButtons) {
+        function updateParticles() {
+            const enabled = themeSettings[theme]["background-particles"];
+            particleLayer.hidden = !enabled || document.hidden;
+            syncParticles();
+            for (const button of particleButtons) {
                 const selected =
-                    (button.dataset.sparksOption === "on") === enabled;
+                    (button.dataset.particlesOption === "on") === enabled;
                 button.classList.toggle("selected", selected);
                 button.setAttribute("aria-pressed", String(selected));
             }
         }
 
-        document.addEventListener("visibilitychange", updateSparks);
-        phone.addEventListener("change", syncDust);
-        reducedMotion.addEventListener("change", syncDust);
-        for (const button of sparkButtons) {
+        document.addEventListener("visibilitychange", updateParticles);
+        phone.addEventListener("change", syncParticles);
+        reducedMotion.addEventListener("change", syncParticles);
+        for (const button of particleButtons) {
             button.addEventListener("click", () => {
-                themeSettings[theme]["background-sparks"] =
-                    button.dataset.sparksOption === "on";
-                updateSparks();
+                themeSettings[theme]["background-particles"] =
+                    button.dataset.particlesOption === "on";
+                updateParticles();
                 persist();
             });
         }
@@ -399,7 +404,7 @@
                 control.value = themeSettings[theme][control.name];
                 update(control);
             }
-            updateSparks();
+            updateParticles();
         }
 
         function persist() {
@@ -438,7 +443,7 @@
                         ? `${control.value}px`
                         : `${Math.round(control.value * 100)}%`;
             control.output.value = display;
-            if (control.name === "dust-fps") {
+            if (control.name === "particle-fps") {
                 control.output.classList.toggle("above-default-fps", control.value > 30);
             }
             control.input.setAttribute("aria-valuetext", display);
@@ -482,10 +487,10 @@
                         : Number(control.input.value);
                 update(control);
                 if (
-                    control.name === "dust-density" ||
-                    control.name === "dust-fps"
+                    control.name === "particle-density" ||
+                    control.name === "particle-fps"
                 ) {
-                    syncDust();
+                    syncParticles();
                 }
                 persist();
             });
@@ -564,7 +569,7 @@
                     control.value = control.defaultValue;
                     update(control);
                 }
-                syncDust();
+                syncParticles();
                 persist();
             });
     });

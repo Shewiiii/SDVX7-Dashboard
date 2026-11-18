@@ -115,25 +115,25 @@
             )
         );
 }
-.ambient-sparks {
+.ambient-particles {
     position: absolute;
     inset: 0;
 }
-.ambient-sparks > i {
+.ambient-particles > i {
     position: absolute;
-    width: calc(var(--grain-width) * var(--performance-dust-size));
-    height: calc(var(--grain-height) * var(--performance-dust-size));
+    width: calc(var(--particle-width) * var(--performance-particle-size));
+    height: calc(var(--particle-height) * var(--performance-particle-size));
     mix-blend-mode: screen;
     background: color-mix(in srgb, var(--accent) 45%, #c7bfc3);
     border-radius: 54% 23% 38% 17% / 29% 44% 25% 47%;
-    animation: ambient-dust-drift calc(var(--grain-duration) / var(--performance-dust-speed))
-        linear calc(var(--grain-delay) / var(--performance-dust-speed)) infinite;
+    animation: ambient-particle-drift calc(var(--particle-duration) / var(--performance-particle-speed))
+        linear calc(var(--particle-delay) / var(--performance-particle-speed)) infinite;
     animation-play-state: paused;
 }
-.ambient-sparks > i:nth-child(3n) {
+.ambient-particles > i:nth-child(3n) {
     border-radius: 17% 58% 22% 39% / 47% 21% 51% 32%;
 }
-@keyframes ambient-dust-drift {
+@keyframes ambient-particle-drift {
     0% {
         opacity: 0;
         transform: translate(var(--half-travel), calc(var(--half-travel) * -0.2))
@@ -141,7 +141,7 @@
     }
     15%,
     83% {
-        opacity: var(--dust-opacity);
+        opacity: var(--particle-opacity);
     }
     50% {
         transform: translate(0, var(--sway)) rotate(calc(var(--tilt) + 30deg));
@@ -160,9 +160,9 @@
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    .ambient-sparks > i {
+    .ambient-particles > i {
         animation: none;
-        opacity: var(--dust-opacity);
+        opacity: var(--particle-opacity);
         transform: rotate(var(--tilt));
     }
     .ambient-scene {
@@ -321,10 +321,10 @@
     font-size: 12px;
     color: var(--muted);
 }
-#settings-dust-fps-value {
+#settings-particle-fps-value {
     transition: color 160ms;
 }
-#settings-dust-fps-value.above-default-fps {
+#settings-particle-fps-value.above-default-fps {
     color: var(--red);
 }
 .settings-control output {
@@ -518,7 +518,7 @@
     font-size: 10px;
     transition: color 0.16s;
 }
-.metric-spark {
+.metric-particle {
     position: absolute;
     right: 16px;
     width: 92px;
@@ -5154,7 +5154,7 @@ tr.chart-row .cover-tile {
         width: 23px;
         height: 23px;
     }
-    .metric.featured .metric-spark {
+    .metric.featured .metric-particle {
         display: block;
     }
     .records-panel table,

@@ -242,6 +242,9 @@ select {
 button {
     cursor: pointer;
     color: inherit;
+}
+button,
+a[href] {
     transition:
         background 0.16s,
         color 0.16s,

@@ -502,6 +502,8 @@
     font-size: inherit;
     white-space: nowrap;
 }
+.tab:hover,
+.tab:focus-visible,
 .tab.active {
     color: var(--ink);
 }
@@ -1475,6 +1477,9 @@ td:nth-child(2) {
 .score-cell {
     color: #c8c3d9;
 }
+tbody > tr {
+    transition: background-color 0.16s;
+}
 @media (hover: hover) {
     tbody > tr:hover {
         background: var(--row-hover);
@@ -2289,6 +2294,7 @@ footer > :last-child {
     cursor: pointer;
     list-style: none;
     font-size: 14px;
+    transition: color 0.16s;
 }
 .library-folder > summary::-webkit-details-marker {
     display: none;
@@ -2605,6 +2611,9 @@ footer > :last-child {
 }
 .selected-song-heading h3 {
     margin: 0;
+}
+.song-reading-title {
+    transition: color 0.16s;
 }
 .song-reading-title:hover,
 .song-reading-title:focus-visible {
@@ -2928,8 +2937,9 @@ footer > :last-child {
 }
 .song-search-panel .judgement-row,
 .radar-contributors .judgement-row {
+    --judgement-row-background: #ffffff03;
     border-top: 0;
-    background: #ffffff03;
+    background: var(--judgement-row-background);
 }
 .song-search-panel .judgement-row td,
 .radar-contributors .judgement-row > td {
@@ -5373,10 +5383,11 @@ tr.chart-row .cover-tile {
 }
 @keyframes new-play-highlight {
     from {
-        background-color: color-mix(in srgb, var(--accent) 20%, transparent);
-    }
-    to {
-        background-color: transparent;
+        background-color: color-mix(
+            in srgb,
+            var(--accent) 20%,
+            var(--judgement-row-background, transparent)
+        );
     }
 }
 @media (prefers-reduced-motion: reduce) {

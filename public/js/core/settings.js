@@ -176,8 +176,11 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        const { createSettingsPanel } =
-            await import("/js/core/settings-panel.js");
+        const [{ createSettingsPanel }, { createParticleRenderer }] =
+            await Promise.all([
+                import("/js/core/settings-panel.js"),
+                import("/js/core/ambient-particles.js"),
+            ]);
         const toggle = document.getElementById("settings-toggle");
         const panel = document.getElementById("settings-panel");
         const backdrop = document.getElementById("settings-backdrop");
@@ -187,6 +190,9 @@
             "[data-particles-option]",
         );
         const particleLayer = document.querySelector(".ambient-particles");
+        const particleRenderer = createParticleRenderer(
+            particleLayer.querySelector("canvas"),
+        );
         const particleDensity = document.getElementById(
             "settings-particle-density",
         );
@@ -315,83 +321,41 @@
         reducedMotion.addEventListener("change", updateThemeMotion);
 
         const particleFps = document.getElementById("settings-particle-fps");
-        let particleTimer;
+        const particleSpeed = document.getElementById("settings-particle-speed");
+        let particleFrame;
         let particleTime = 0;
 
         function syncParticles() {
-            clearInterval(particleTimer);
-            if (particleLayer.hidden) return;
-            const count = Math.round(
-                192 * particleDensity.valueAsNumber,
+            cancelAnimationFrame(particleFrame);
+            if (!particleRenderer || particleLayer.hidden) return;
+            particleRenderer.setCount(
+                Math.round(192 * particleDensity.valueAsNumber),
             );
-            while (particleLayer.childElementCount > count) {
-                particleLayer.lastElementChild.remove();
+            if (reducedMotion.matches) {
+                particleRenderer.draw(0, 1, true);
+                return;
             }
 
-            const particles = document.createDocumentFragment();
-            for (
-                let index = particleLayer.childElementCount;
-                index < count;
-                index++
-            ) {
-                const particle = document.createElement("i");
-                const depth = Math.random();
-                const duration = 13 + Math.random() * 5;
-                const size = 1.2 + 3 * depth ** 2;
-                const travel = duration * (13 + depth * 11);
-                const column = index % 4;
-                const row = (index + Math.floor(index / 4)) % 4;
+            const start = performance.now();
+            const initialTime = particleTime;
+            const frameInterval = 1000 / particleFps.valueAsNumber;
+            let frameIndex = -1;
 
-                particle.style.left = `${(column + Math.random()) * 25}%`;
-                particle.style.top = `${(row + Math.random()) * 25}%`;
-                particle.style.setProperty("--particle-width", size);
-                particle.style.setProperty(
-                    "--particle-height",
-                    size * (0.6 + Math.random() * 0.4),
-                );
-                particle.style.setProperty(
-                    "--particle-duration",
-                    `${duration}s`,
-                );
-                particle.style.setProperty(
-                    "--particle-delay",
-                    `${-Math.random() * duration}s`,
-                );
-                particle.style.setProperty("--half-travel", `${travel / 2}px`);
-                particle.style.setProperty(
-                    "--half-drop",
-                    `${travel * (Math.random() * 0.1 - 0.01)}px`,
-                );
-                particle.style.setProperty(
-                    "--tilt",
-                    `${Math.random() * 180}deg`,
-                );
-                particle.style.setProperty(
-                    "--particle-opacity",
-                    0.04 + (depth * 0.7) ** 1.2,
-                );
-                particle.style.setProperty(
-                    "--particle-diffusion",
-                    Math.random() ** 1.3,
-                );
-                particles.append(particle);
-            }
-            particleLayer.append(particles);
-            if (reducedMotion.matches) return;
+            function drawParticles(now) {
+                particleFrame = requestAnimationFrame(drawParticles);
+                const elapsed = now - start;
+                const index = Math.floor((elapsed + 0.5) / frameInterval);
+                if (index <= frameIndex) return;
+                frameIndex = index;
 
-            const animations = particleLayer.getAnimations({ subtree: true });
-            const start = performance.now() - particleTime;
-            function drawParticles() {
-                particleTime = performance.now() - start;
-                for (const animation of animations) {
-                    animation.currentTime = particleTime;
-                }
+                particleTime = initialTime + elapsed;
+                particleRenderer.draw(
+                    particleTime,
+                    particleSpeed.valueAsNumber,
+                    false,
+                );
             }
-            drawParticles();
-            particleTimer = setInterval(
-                drawParticles,
-                Math.ceil(1000 / particleFps.valueAsNumber),
-            );
+            drawParticles(start);
         }
 
         function updateParticles() {
@@ -520,7 +484,8 @@
                 update(control);
                 if (
                     control.name === "particle-density" ||
-                    control.name === "particle-fps"
+                    control.name === "particle-fps" ||
+                    (control.name === "particle-size" && reducedMotion.matches)
                 ) {
                     syncParticles();
                 }

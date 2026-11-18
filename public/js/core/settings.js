@@ -20,6 +20,7 @@
         { name: "dust-density", unit: "", min: 0.25, max: 3 },
         { name: "dust-size", unit: "", min: 0.25, max: 2 },
         { name: "dust-speed", unit: "", min: 0.25, max: 3 },
+        { name: "dust-fps", unit: "", suffix: " FPS", min: 5, max: 60 },
         { name: "background-black-lift", unit: "", max: 0.3 },
         { name: "panel-dim", unit: "", max: 1 },
         { name: "panel-blur", unit: "px", max: 100 },
@@ -298,7 +299,12 @@
         updateThemeMotion();
         reducedMotion.addEventListener("change", updateThemeMotion);
 
+        const dustFps = document.getElementById("settings-dust-fps");
+        let dustTimer;
+        let dustTime = 0;
+
         function syncDust() {
+            clearInterval(dustTimer);
             if (sparkLayer.hidden) return;
             const count = Math.round(
                 (phone.matches ? 64 : 128) * dustDensity.valueAsNumber,
@@ -337,6 +343,21 @@
                 sparks.append(spark);
             }
             sparkLayer.append(sparks);
+            if (reducedMotion.matches) return;
+
+            const animations = sparkLayer.getAnimations({ subtree: true });
+            const start = performance.now() - dustTime;
+            function drawDust() {
+                dustTime = performance.now() - start;
+                for (const animation of animations) {
+                    animation.currentTime = dustTime;
+                }
+            }
+            drawDust();
+            dustTimer = setInterval(
+                drawDust,
+                Math.ceil(1000 / dustFps.valueAsNumber),
+            );
         }
 
         function updateSparks() {
@@ -353,6 +374,7 @@
 
         document.addEventListener("visibilitychange", updateSparks);
         phone.addEventListener("change", syncDust);
+        reducedMotion.addEventListener("change", syncDust);
         for (const button of sparkButtons) {
             button.addEventListener("click", () => {
                 themeSettings[theme]["background-sparks"] =
@@ -410,10 +432,15 @@
             const display =
                 control.type === "color"
                     ? control.value
-                    : control.unit
-                      ? `${control.value}px`
-                      : `${Math.round(control.value * 100)}%`;
+                    : control.suffix
+                      ? `${control.value}${control.suffix}`
+                      : control.unit
+                        ? `${control.value}px`
+                        : `${Math.round(control.value * 100)}%`;
             control.output.value = display;
+            if (control.name === "dust-fps") {
+                control.output.classList.toggle("above-default-fps", control.value > 30);
+            }
             control.input.setAttribute("aria-valuetext", display);
             root.style.setProperty(
                 control.property,
@@ -454,7 +481,12 @@
                         ? control.input.value
                         : Number(control.input.value);
                 update(control);
-                if (control.name === "dust-density") syncDust();
+                if (
+                    control.name === "dust-density" ||
+                    control.name === "dust-fps"
+                ) {
+                    syncDust();
+                }
                 persist();
             });
         }
@@ -528,12 +560,11 @@
         document
             .getElementById("settings-reset")
             .addEventListener("click", () => {
-                themeSettings[theme]["background-sparks"] = false;
-                updateSparks();
                 for (const control of controls) {
                     control.value = control.defaultValue;
                     update(control);
                 }
+                syncDust();
                 persist();
             });
     });

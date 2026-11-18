@@ -196,6 +196,7 @@
     --performance-dust-density: 1;
     --performance-dust-size: 1;
     --performance-dust-speed: 1;
+    --performance-dust-fps: 30;
 
     /* Shared panel material */
     --performance-panel-dim: 0.9;

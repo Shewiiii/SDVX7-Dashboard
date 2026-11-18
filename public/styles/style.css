@@ -193,6 +193,9 @@
     --performance-background-blur-strength: 6px;
 
     /* Particle multipliers */
+    /* Change opacity formula in public/js/core/settings.js around line 355*/
+    /* Same for size delta*/
+    --particle-unit: min(1.5px, calc(0.4px + 100vmin / 2160));
     --performance-particle-density: 1;
     --performance-particle-size: 1;
     --performance-particle-speed: 1;

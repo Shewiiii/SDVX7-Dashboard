@@ -104,8 +104,14 @@
                 ...Object.fromEntries(
                     controls.map((control) => {
                         let value = stored[control.name];
-                        if (value === undefined && control.name.startsWith("particle-")) {
-                            value = stored[control.name.replace("particle-", "dust-")];
+                        if (
+                            value === undefined &&
+                            control.name.startsWith("particle-")
+                        ) {
+                            value =
+                                stored[
+                                    control.name.replace("particle-", "dust-")
+                                ];
                         }
                         if (control.type === "color") {
                             return [
@@ -177,9 +183,13 @@
         const backdrop = document.getElementById("settings-backdrop");
         const container = toggle.closest(".dashboard-settings");
         const themeButtons = panel.querySelectorAll("[data-theme-option]");
-        const particleButtons = panel.querySelectorAll("[data-particles-option]");
+        const particleButtons = panel.querySelectorAll(
+            "[data-particles-option]",
+        );
         const particleLayer = document.querySelector(".ambient-particles");
-        const particleDensity = document.getElementById("settings-particle-density");
+        const particleDensity = document.getElementById(
+            "settings-particle-density",
+        );
         const phone = matchMedia("(max-width: 900px)");
         const artworkCredit = document.getElementById("artwork-credit");
         const artworkCredits = {
@@ -312,7 +322,7 @@
             clearInterval(particleTimer);
             if (particleLayer.hidden) return;
             const count = Math.round(
-                (phone.matches ? 64 : 128) * particleDensity.valueAsNumber,
+                192 * particleDensity.valueAsNumber,
             );
             while (particleLayer.childElementCount > count) {
                 particleLayer.lastElementChild.remove();
@@ -327,24 +337,43 @@
                 const particle = document.createElement("i");
                 const depth = Math.random();
                 const duration = 13 + Math.random() * 5;
-                const size = 1.2 + 3.6 * depth ** 2;
+                const size = 1.2 + 3 * depth ** 2;
                 const travel = duration * (13 + depth * 11);
                 const column = index % 4;
                 const row = (index + Math.floor(index / 4)) % 4;
 
                 particle.style.left = `${(column + Math.random()) * 25}%`;
                 particle.style.top = `${(row + Math.random()) * 25}%`;
-                particle.style.setProperty("--particle-width", `${size}px`);
+                particle.style.setProperty("--particle-width", size);
                 particle.style.setProperty(
                     "--particle-height",
-                    `${size * (0.6 + Math.random() * 0.4)}px`,
+                    size * (0.6 + Math.random() * 0.4),
                 );
-                particle.style.setProperty("--particle-duration", `${duration}s`);
-                particle.style.setProperty("--particle-delay", `${-Math.random() * duration}s`);
+                particle.style.setProperty(
+                    "--particle-duration",
+                    `${duration}s`,
+                );
+                particle.style.setProperty(
+                    "--particle-delay",
+                    `${-Math.random() * duration}s`,
+                );
                 particle.style.setProperty("--half-travel", `${travel / 2}px`);
-                particle.style.setProperty("--sway", `${Math.random() * 18 - 9}px`);
-                particle.style.setProperty("--tilt", `${Math.random() * 180}deg`);
-                particle.style.setProperty("--particle-opacity", 0.14 + depth * 0.22);
+                particle.style.setProperty(
+                    "--half-drop",
+                    `${travel * (Math.random() * 0.1 - 0.01)}px`,
+                );
+                particle.style.setProperty(
+                    "--tilt",
+                    `${Math.random() * 180}deg`,
+                );
+                particle.style.setProperty(
+                    "--particle-opacity",
+                    0.04 + (depth * 0.7) ** 1.2,
+                );
+                particle.style.setProperty(
+                    "--particle-diffusion",
+                    Math.random() ** 1.3,
+                );
                 particles.append(particle);
             }
             particleLayer.append(particles);
@@ -444,7 +473,10 @@
                         : `${Math.round(control.value * 100)}%`;
             control.output.value = display;
             if (control.name === "particle-fps") {
-                control.output.classList.toggle("above-default-fps", control.value > 30);
+                control.output.classList.toggle(
+                    "above-default-fps",
+                    control.value > 30,
+                );
             }
             control.input.setAttribute("aria-valuetext", display);
             root.style.setProperty(

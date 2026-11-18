@@ -120,11 +120,26 @@
     inset: 0;
 }
 .ambient-particles > i {
+    --particle-color: color-mix(in srgb, var(--accent) 45%, #c7bfc3);
     position: absolute;
-    width: calc(var(--particle-width) * var(--performance-particle-size));
-    height: calc(var(--particle-height) * var(--performance-particle-size));
+    width: calc(var(--particle-width) * var(--particle-unit) * var(--performance-particle-size));
+    height: calc(var(--particle-height) * var(--particle-unit) * var(--performance-particle-size));
     mix-blend-mode: screen;
-    background: color-mix(in srgb, var(--accent) 45%, #c7bfc3);
+    background: color-mix(
+        in srgb,
+        var(--particle-color) calc(100% - 80% * var(--particle-diffusion)),
+        transparent
+    );
+    box-shadow: 0 0
+        calc(
+            var(--particle-width) * var(--particle-unit) *
+                var(--performance-particle-size) * var(--particle-diffusion) * 0.6
+        )
+        color-mix(
+            in srgb,
+            var(--particle-color) calc(100% * var(--particle-diffusion)),
+            transparent
+        );
     border-radius: 54% 23% 38% 17% / 29% 44% 25% 47%;
     animation: ambient-particle-drift calc(var(--particle-duration) / var(--performance-particle-speed))
         linear calc(var(--particle-delay) / var(--performance-particle-speed)) infinite;
@@ -136,19 +151,16 @@
 @keyframes ambient-particle-drift {
     0% {
         opacity: 0;
-        transform: translate(var(--half-travel), calc(var(--half-travel) * -0.2))
+        transform: translate(var(--half-travel), calc(-1 * var(--half-drop)))
             rotate(var(--tilt));
     }
     15%,
     83% {
         opacity: var(--particle-opacity);
     }
-    50% {
-        transform: translate(0, var(--sway)) rotate(calc(var(--tilt) + 30deg));
-    }
     100% {
         opacity: 0;
-        transform: translate(calc(-1 * var(--half-travel)), calc(var(--half-travel) * 0.2))
+        transform: translate(calc(-1 * var(--half-travel)), var(--half-drop))
             rotate(calc(var(--tilt) + 57deg));
     }
 }

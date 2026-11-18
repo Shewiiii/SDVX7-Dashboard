@@ -66,13 +66,6 @@ export function createSettingsPanel({
         },
         events,
     );
-    container.addEventListener(
-        "focusout",
-        (event) => {
-            if (!container.contains(event.relatedTarget)) setOpen(false);
-        },
-        events,
-    );
     document.addEventListener(
         "keydown",
         (event) => {

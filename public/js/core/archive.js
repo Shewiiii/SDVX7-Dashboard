@@ -89,11 +89,13 @@ export function createArchiveLoader() {
                     state: { ...archive.state, ...library.state },
                 };
                 revision = version.revision;
-                catalog = library;
-                try {
-                    localStorage.setItem(key, JSON.stringify(catalog));
-                } catch {
-                    /* Memory cache still works. */
+                if (catalog !== library) {
+                    catalog = library;
+                    try {
+                        localStorage.setItem(key, JSON.stringify(catalog));
+                    } catch {
+                        // Memory cache still works
+                    }
                 }
                 return current;
             } catch (error) {

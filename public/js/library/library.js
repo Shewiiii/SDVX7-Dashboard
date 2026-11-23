@@ -15,6 +15,7 @@ import { BEGINNER_SONG_IDS } from "../../game-data/beginner-songs.js";
 import { SKILL_ANALYZER_COURSES } from "../../game-data/skill-analyzer.js";
 import {
     UNLOCK_METHODS,
+    getCachedUnlockMethods,
     unlockFolder,
     loadUnlockMethods as fetchUnlockMethods,
 } from "./unlock-methods.js";
@@ -302,10 +303,11 @@ export function createLibrary(
     const closeButton = document.getElementById("library-close");
     let entries = [],
         closing = false;
-    let unlockMethods,
-        unlockTask,
+    let renderedSignature;
+    let savedScrollTop = 0;
+    let unlockTask,
         unlockError,
-        unlockLoadedAt = 0;
+        unlockRetryAt = 0;
     const folderState = new Map();
     const searchFolderState = new Map();
     let folderQuery = "";
@@ -313,18 +315,18 @@ export function createLibrary(
     function loadUnlockMethods() {
         if (unlockTask) return;
         unlockTask = fetchUnlockMethods()
-            .then((methods) => {
-                unlockMethods = methods;
-                unlockLoadedAt = Date.now();
+            .then(() => {
                 unlockError = null;
             })
             .catch(() => {
-                unlockError = "Unlock methods are unavailable. Try again.";
+                if (getCachedUnlockMethods().methods)
+                    unlockRetryAt = Date.now() + 60000;
+                else unlockError = "Unlock methods are unavailable. Try again.";
             })
             .finally(() => {
                 unlockTask = null;
                 if (dialog.open && !closing && mode.value === "unlock")
-                    render(true);
+                    render(true, { preserveScroll: true });
             });
     }
 
@@ -365,7 +367,7 @@ export function createLibrary(
                         : a.localeCompare(b, undefined, { numeric: true }),
         );
     }
-    function render(rebuild = false) {
+    function render(rebuild = false, { preserveScroll = false } = {}) {
         sort.disabled = mode.value === "skill";
         const currentQuery = query.value.trim();
         if (currentQuery !== folderQuery) {
@@ -377,29 +379,31 @@ export function createLibrary(
             results.textContent = "Sync your archive to browse the library.";
             return;
         }
-        if (
-            mode.value === "unlock" &&
-            (!unlockMethods || Date.now() - unlockLoadedAt >= 60000)
-        ) {
-            results.replaceChildren();
-            document.getElementById("library-count").textContent = "";
-            if (unlockError) {
-                const message = document.createElement("p");
-                message.textContent = unlockError;
-                const retry = document.createElement("button");
-                retry.type = "button";
-                retry.className = "text-button";
-                retry.textContent = "Retry";
-                retry.addEventListener("click", () => {
-                    unlockError = null;
-                    render(true);
-                });
-                results.append(message, retry);
-            } else {
-                results.textContent = "Loading unlock methods...";
+        const { methods: unlockMethods, expiresAt } = getCachedUnlockMethods();
+        if (mode.value === "unlock") {
+            if (unlockMethods) unlockError = null;
+            if (!unlockError && Date.now() >= Math.max(expiresAt, unlockRetryAt))
                 loadUnlockMethods();
+            if (!unlockMethods) {
+                results.replaceChildren();
+                document.getElementById("library-count").textContent = "";
+                if (unlockError) {
+                    const message = document.createElement("p");
+                    message.textContent = unlockError;
+                    const retry = document.createElement("button");
+                    retry.type = "button";
+                    retry.className = "text-button";
+                    retry.textContent = "Retry";
+                    retry.addEventListener("click", () => {
+                        unlockError = null;
+                        render(true);
+                    });
+                    results.append(message, retry);
+                } else {
+                    results.textContent = "Loading unlock methods...";
+                }
+                return;
             }
-            return;
         }
         if (rebuild) {
             entries = libraryEntries(
@@ -410,6 +414,15 @@ export function createLibrary(
                 unlockMethods,
             );
         }
+        const signature = JSON.stringify([
+            mode.value,
+            currentQuery,
+            sort.value,
+            entries,
+        ]);
+        if (preserveScroll && signature === renderedSignature) return;
+        renderedSignature = signature;
+        const scrollTop = dialog.scrollTop;
         const grouped = new Map(folderNames().map((name) => [name, []]));
         for (const entry of entries) grouped.get(entry.group).push(entry);
         const shown = entries;
@@ -646,9 +659,11 @@ export function createLibrary(
         )
             ? `${shown.length.toLocaleString()} charts - ${new Set(shown.map((entry) => entry.song.music_id)).size.toLocaleString()} songs`
             : `${new Set(shown.map((entry) => entry.song.music_id)).size.toLocaleString()} songs`;
+        if (preserveScroll) dialog.scrollTop = scrollTop;
     }
     async function close() {
         if (!dialog.open || closing) return;
+        savedScrollTop = dialog.scrollTop;
         closing = true;
         dialog.classList.remove("is-visible");
         await Promise.allSettled(dialog.getAnimations().map((a) => a.finished));
@@ -661,6 +676,7 @@ export function createLibrary(
     function open(group) {
         if (dialog.open || closing) return;
         if (group) {
+            if (group !== mode.value || query.value) savedScrollTop = 0;
             mode.value = group;
             query.value = "";
             clearTimeout(queryTimer);
@@ -677,6 +693,7 @@ export function createLibrary(
             ? query
             : closeButton;
         initialFocus.focus({ preventScroll: true });
+        dialog.scrollTop = savedScrollTop;
     }
     openButton.addEventListener("click", () => open());
     dialog.addEventListener("close", () => {
@@ -727,7 +744,8 @@ export function createLibrary(
     return {
         open,
         update() {
-            if (dialog.open && !closing) render(true);
+            if (dialog.open && !closing)
+                render(true, { preserveScroll: true });
         },
     };
 }

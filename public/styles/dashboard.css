@@ -521,7 +521,7 @@
     border: 0;
     background: none;
     color: var(--muted);
-    padding: 0 0 14px;
+    padding: 0 0 22px;
     font-size: inherit;
     white-space: nowrap;
 }
@@ -2480,9 +2480,13 @@ footer > :last-child {
         justify-content: flex-start;
         z-index: 1;
         margin: 8px;
-        padding: 4px;
-        border-radius: var(--control-radius);
+        color: var(--ink);
+        text-shadow: 0 1px 3px #000, 0 0 2px #000;
+    }
+
+    .library-song .difficulty-badge {
         background: var(--popup-bg);
+        text-shadow: none;
     }
 }
 @media (max-width: 600px) {
@@ -2502,7 +2506,6 @@ footer > :last-child {
 
         .library-song .song-option-range {
             margin: 5px;
-            padding: 3px;
             gap: 3px;
         }
 
@@ -5442,9 +5445,6 @@ body .chart-legend :is(button, .chart-legend-item) {
 }
 body .metric-detail {
     font-size: 14px;
-}
-body .navigation-row {
-    padding-bottom: 8px;
 }
 body .search-help-body .table-scroll {
     padding: 8px;

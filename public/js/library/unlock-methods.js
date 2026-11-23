@@ -1,3 +1,5 @@
+export const UNLOCK_CACHE_MS = 24 * 60 * 60 * 1000;
+
 export const UNLOCK_METHODS = Object.freeze({
     default_unlocked: "Unlocked by default",
     blc: "BLC",
@@ -28,14 +30,17 @@ export function chartUnlockFolder(chart, methods) {
     );
 }
 
-let savedMethods,
-    methodsTask,
-    methodsLoadedAt = 0;
+let methodsCache = { expiresAt: 0 };
+let methodsTask;
+
+export function getCachedUnlockMethods() {
+    return methodsCache;
+}
 
 export function loadUnlockMethods() {
     if (methodsTask) return methodsTask;
-    if (savedMethods && Date.now() - methodsLoadedAt < 60000)
-        return Promise.resolve(savedMethods);
+    if (Date.now() < methodsCache.expiresAt)
+        return Promise.resolve(methodsCache.methods);
     methodsTask = fetch("/api/unlocks?index=methods")
         .then(async (response) => {
             if (!response.ok) throw new Error("Unlock methods unavailable");
@@ -51,9 +56,12 @@ export function loadUnlockMethods() {
                 )
             )
                 throw new Error("Invalid unlock methods");
-            savedMethods = new Map(Object.entries(methods));
-            methodsLoadedAt = Date.now();
-            return savedMethods;
+            const index = new Map(Object.entries(methods));
+            methodsCache = {
+                methods: index,
+                expiresAt: Date.now() + UNLOCK_CACHE_MS,
+            };
+            return index;
         })
         .finally(() => {
             methodsTask = null;

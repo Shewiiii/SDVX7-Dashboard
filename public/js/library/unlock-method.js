@@ -1,11 +1,13 @@
+import { UNLOCK_CACHE_MS } from "./unlock-methods.js";
+
 const cache = new Map();
 
 function getUnlockMethod(chart) {
     const key = `${chart.music_id}:${chart.diff_idx}`;
     const saved = cache.get(key);
-    if (saved && (saved.pending || Date.now() - saved.at < 60000))
+    if (saved && (saved.pending || Date.now() < saved.expiresAt))
         return saved.task;
-    const entry = { pending: true, at: Date.now() };
+    const entry = { pending: true };
     entry.task = (async () => {
         const response = await fetch(
             `/api/unlocks?music=${chart.music_id}&diff=${chart.diff_idx}`,
@@ -23,7 +25,7 @@ function getUnlockMethod(chart) {
     })()
         .then((record) => {
             entry.pending = false;
-            entry.at = Date.now();
+            entry.expiresAt = Date.now() + (record ? UNLOCK_CACHE_MS : 60000);
             return record;
         })
         .catch((error) => {

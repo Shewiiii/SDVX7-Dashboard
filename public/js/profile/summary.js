@@ -24,6 +24,22 @@ export function createProfileSummary({
         $("vf-distribution"),
     );
     const spending = createSpending(getData);
+    const vfClassButton = $("vf-class");
+    const vfPercentile = $("vf-percentile");
+    const vfStanding = vfPercentile.parentElement;
+    const standingResize = new ResizeObserver(() => {
+        if (vfPercentile.hidden) return;
+        const classWidth = vfClassButton.getBoundingClientRect().width;
+        const gap = classWidth
+            ? parseFloat(getComputedStyle(vfStanding).columnGap)
+            : 0;
+        const available = vfStanding.getBoundingClientRect().width;
+        const required =
+            classWidth + gap + vfPercentile.getBoundingClientRect().width;
+        vfPercentile.toggleAttribute("data-overflow", required > available);
+    });
+    for (const element of [vfStanding, vfClassButton, vfPercentile])
+        standingResize.observe(element);
 
     function renderPlaytime() {
         const data = getData();
@@ -47,15 +63,14 @@ export function createProfileSummary({
     function renderVolforcePercentile() {
         const data = getData();
         const stats = getStats();
-        const label = $("vf-percentile");
         const total = comparisonVolforce(
             data?.state,
             rankingOptions(),
             volforceOverrides,
         );
         const percent = volforceTopPercent(total, volforceRanking);
-        label.hidden = percent === null;
-        label.textContent =
+        vfPercentile.hidden = percent === null;
+        vfPercentile.textContent =
             percent === null
                 ? ""
                 : percent < 0.01
@@ -101,10 +116,10 @@ export function createProfileSummary({
         else card.removeAttribute("src");
         $("appeal-helper-open").hidden = card.hidden;
         const vfClass = volforceClass(stats.total);
-        $("vf-class").hidden = !vfClass;
+        vfClassButton.hidden = !vfClass;
         if (vfClass) {
             setText("vf-class-name", vfClass.name);
-            $("vf-class").setAttribute(
+            vfClassButton.setAttribute(
                 "aria-label",
                 `${vfClass.name} - View VolForce classes`,
             );
@@ -119,7 +134,7 @@ export function createProfileSummary({
                 song?.difficulties.find(
                     (chart) => chart.diff_idx === bestChart.diff_idx,
                 )?.level ?? bestChart.level;
-            const label = `${song?.title ?? chartTitle(bestChart)} (${DIFFS[bestChart.diff_idx]} ${level ?? "—"})`;
+            const label = `${song?.title ?? chartTitle(bestChart)} (${DIFFS[bestChart.diff_idx]})`;
             const link = document.createElement("button");
             link.type = "button";
             link.className = "metric-chart-link open-chart";

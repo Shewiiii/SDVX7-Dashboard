@@ -55,9 +55,9 @@ let data = null,
     loading = false;
 let dataFingerprint = "";
 const revealedViews = new Set();
-const defaultRecordSorts = { top: "vf", history: "recent" };
+const defaultRecordSorts = { best50: "vf", history: "recent" };
 const recordStates = {
-    top: { query: "", page: 0, sort: defaultRecordSorts.top },
+    best50: { query: "", page: 0, sort: defaultRecordSorts.best50 },
     history: { query: "", page: 0, sort: defaultRecordSorts.history },
 };
 
@@ -204,7 +204,7 @@ const searchTools = initSearchTools(() => {
     if (!data) return;
     if (view === "search" && !$("song-options").hidden)
         songSearch.renderMatches();
-    if (["top", "history"].includes(view)) records.render({ animate: false });
+    if (["best50", "history"].includes(view)) records.render({ animate: false });
     songLibrary.update();
 });
 
@@ -215,8 +215,8 @@ function prepareLoading() {
             '<div class="play-row loading-entry" aria-hidden="true"><span class="skeleton-shape skeleton-position"></span><span class="skeleton-shape skeleton-cover"></span><div><span class="skeleton-shape skeleton-title"></span><span class="skeleton-shape skeleton-detail"></span></div><div><span class="skeleton-shape skeleton-value"></span><span class="skeleton-shape skeleton-score"></span></div></div>',
     ).join("");
     $("recent-plays").innerHTML = placeholders;
-    $("top-plays").innerHTML = placeholders;
-    $("top-foot").textContent = "";
+    $("best50-plays").innerHTML = placeholders;
+    $("best50-foot").textContent = "";
     $("records").innerHTML =
         `<tr class="record-loading-row"><td colspan="6">${placeholders}</td></tr>`;
     $("song-search-records").innerHTML =
@@ -308,7 +308,7 @@ function updateUrl(replace = false) {
             params.set("diff", songSearch.selected.diff_idx);
         }
         if (songSearch.page) params.set("page", songSearch.page + 1);
-    } else if (view === "top" || view === "history") {
+    } else if (view === "best50" || view === "history") {
         if (records.page) params.set("page", records.page + 1);
         if ($("search").value) params.set("q", $("search").value);
         const defaultSort = defaultRecordSorts[view];
@@ -340,8 +340,13 @@ function restoreUrl() {
     const previousDays = days;
     const previousChart = JSON.stringify([difficulty, [...shown]]);
     const [route, query = ""] = location.hash.slice(1).split("?");
-    // Keep previously shared song links working
-    const routeName = route === "leaderboard" ? "search" : route;
+    // Keep previously shared links working
+    const routeName =
+        route === "top"
+            ? "best50"
+            : route === "leaderboard"
+              ? "search"
+              : route;
     if (routeName !== route)
         history.replaceState(
             history.state,
@@ -350,7 +355,7 @@ function restoreUrl() {
         );
     const next = [
         "overview",
-        "top",
+        "best50",
         "history",
         "search",
         "calculator",
@@ -423,7 +428,7 @@ function restoreUrl() {
         else if (previousChart !== JSON.stringify([difficulty, [...shown]]))
             renderChart();
     } else if (!sameSongSearch) switchView(next, false, { animate: false });
-    if (["top", "history"].includes(next)) {
+    if (["best50", "history"].includes(next)) {
         records.page = restoredPage;
         $("search").value = params.get("q") || "";
         const sort = params.get("sort");
@@ -544,7 +549,7 @@ function switchView(
         else button.removeAttribute("aria-current");
     });
     $("overview-view").hidden = view !== "overview";
-    $("records-view").hidden = !["top", "history"].includes(view);
+    $("records-view").hidden = !["best50", "history"].includes(view);
     $("song-search-view").hidden = view !== "search";
     $("calculator-view").hidden = view !== "calculator";
     if (view in recordStates) {
@@ -634,7 +639,7 @@ async function load({ fresh = false, check = false, live = false } = {}) {
         if (view === "search")
             songSearch.render({ animate, restartRadar: fresh });
         else if (view === "calculator") calculator.updateData({ animate });
-        else if (["top", "history"].includes(view)) records.render({ animate });
+        else if (["best50", "history"].includes(view)) records.render({ animate });
         document.body.dataset.ready = "true";
         clearExpiredHighlights();
         restoreScroll(scrollRestoration.pending);
@@ -658,7 +663,7 @@ async function load({ fresh = false, check = false, live = false } = {}) {
         if (!data) {
             setText("chart-summary", "No data available");
             setText("progress-empty", "No play data available");
-            for (const id of ["recent-plays", "top-plays"])
+            for (const id of ["recent-plays", "best50-plays"])
                 $(id).innerHTML =
                     '<div class="empty-list">No data available</div>';
             $("records").innerHTML =
@@ -766,8 +771,8 @@ $("difficulty").addEventListener("change", () => {
 $("all-plays").addEventListener("click", () =>
     switchView("history", true, { scroll: true }),
 );
-$("all-top").addEventListener("click", () =>
-    switchView("top", true, { scroll: true }),
+$("all-best50").addEventListener("click", () =>
+    switchView("best50", true, { scroll: true }),
 );
 function rankingOptions() {
     return {
@@ -800,7 +805,7 @@ document.addEventListener("dashboard:ranking-change", async () => {
     songLibrary.update();
     if (view === "calculator") calculator.updateData({ animate: false });
     else if (view === "search") songSearch.render({ animate: false });
-    else if (["top", "history"].includes(view))
+    else if (["best50", "history"].includes(view))
         records.render({ animate: false });
 });
 

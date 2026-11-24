@@ -29,8 +29,8 @@ export function createRecords({
 }) {
     let page = 0;
 
-    function recordPosition(record, { top, grouped, playCounts }) {
-        if (top) return formatRank(record.rank);
+    function recordPosition(record, { best50, grouped, playCounts }) {
+        if (best50) return formatRank(record.rank);
         if (grouped) {
             const count = playCounts.get(chartKey(record));
             return `${number(count)}<br>${count === 1 ? "play" : "plays"}`;
@@ -39,7 +39,7 @@ export function createRecords({
     }
 
     function recordRow(record, options) {
-        return `<tr class="chart-row" ${!options.top && !options.grouped ? newPlayAttributes(record) : ""} ${playAttributes(record)} data-music="${record.music_id}" data-diff="${record.diff_idx}">
+        return `<tr class="chart-row" ${!options.best50 && !options.grouped ? newPlayAttributes(record) : ""} ${playAttributes(record)} data-music="${record.music_id}" data-diff="${record.diff_idx}">
             <td class="row-index record-position">${recordPosition(record, options)}</td>
             <td class="record-song"><div class="table-song">${coverMarkup(record)}${chartInfo(record, { artist: true, detailsClass: "record-details" })}</div></td>
             <td class="record-difficulty">${badge(record)}</td>
@@ -53,16 +53,16 @@ export function createRecords({
         const data = getData();
         const catalog = getCatalog();
         const view = getView();
-        const top = view === "top";
+        const best50 = view === "best50";
         const sort = $("sort").value;
-        const grouped = !top && sort === "plays";
+        const grouped = !best50 && sort === "plays";
         $("records-view").setAttribute(
             "aria-label",
-            top ? "Top 50" : "Play history",
+            best50 ? "Best 50" : "Play history",
         );
-        setText("first-column", top ? "Rank" : grouped ? "Plays" : "Played");
+        setText("first-column", best50 ? "Rank" : grouped ? "Plays" : "Played");
         setText("records-score-heading", grouped ? "Best score" : "Score");
-        setText("records-vf-heading", top ? "Chart VF" : "Play VF");
+        setText("records-vf-heading", best50 ? "Chart VF" : "Play VF");
         updateSearchClearButtons();
         if (!data) return;
         animate = revealOnce(view, animate);
@@ -71,7 +71,7 @@ export function createRecords({
         }
         const { records, playCounts } = recordList(data, catalog, {
             ...rankingOptions(),
-            top,
+            best50,
             sort,
             query: $("search").value,
         });
@@ -81,7 +81,7 @@ export function createRecords({
         $("records").innerHTML = chunk.length
             ? chunk
                   .map((record) =>
-                      recordRow(record, { top, grouped, playCounts }),
+                      recordRow(record, { best50, grouped, playCounts }),
                   )
                   .join("")
             : `<tr><td class="empty-state" colspan="6">${escape(parseSearch($("search").value).errors[0] || "No matching charts")}</td></tr>`;
@@ -111,7 +111,7 @@ export function createRecords({
         $("page-info").closest(".pagination"),
         {
             onChange(requested) {
-                if (!getData() || !["top", "history"].includes(getView()))
+                if (!getData() || !["best50", "history"].includes(getView()))
                     return;
                 rememberScroll();
                 page = requested;

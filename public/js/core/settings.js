@@ -64,7 +64,7 @@
         "--chart-play-points",
         "--chart-best",
         "--chart-avg10",
-        "--chart-top50",
+        "--chart-best50",
         "--timing-early-color",
         "--timing-late-color",
         "--timing-curve-color",

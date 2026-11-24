@@ -12,7 +12,7 @@ export function historyIdentity(record, kind) {
                   record.timestamp,
                   record.total_vf,
                   record.minimum_vf,
-                  record.top_count,
+                  record.best50_count ?? record.top_count,
               ],
     );
 }

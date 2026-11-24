@@ -704,7 +704,7 @@
                         <div class="metric-label">Worst Chart VF</div>
                         <div class="metric-value" id="entry-vf">-</div>
                         <div class="metric-detail" id="entry-detail">
-                            VF needed to enter Top 50
+                            VF needed to enter Best 50
                         </div>
                     </article>
                     <article class="metric">
@@ -737,7 +737,9 @@
                         >
                             Overview
                         </a>
-                        <a href="#top" class="tab" data-view="top">Top 50</a>
+                        <a href="#best50" class="tab" data-view="best50"
+                            >Best 50</a
+                        >
                         <a href="#history" class="tab" data-view="history">
                             Play history
                         </a>
@@ -812,7 +814,7 @@
                             </button>
                             <button data-series="threshold" aria-pressed="true">
                                 <i class="dot threshold"></i>
-                                Top 50
+                                Best 50
                             </button>
                             <button data-series="total" aria-pressed="true">
                                 <i class="dot total"></i>
@@ -1190,19 +1192,19 @@
                             <div id="session-meta" class="session-meta">-</div>
                             <div id="recent-plays" class="play-list"></div>
                         </article>
-                        <article class="panel top-panel">
+                        <article class="panel best50-panel">
                             <div class="panel-head compact">
                                 <div>
                                     <h2>Best charts</h2>
                                 </div>
-                                <button class="text-button" id="all-top">
-                                    Top 50
+                                <button class="text-button" id="all-best50">
+                                    Best 50
                                 </button>
                             </div>
-                            <div class="session-meta" id="top-foot"></div>
+                            <div class="session-meta" id="best50-foot"></div>
                             <div
-                                id="top-plays"
-                                class="play-list top-list"
+                                id="best50-plays"
+                                class="play-list best50-list"
                             ></div>
                         </article>
                     </div>
@@ -1210,7 +1212,7 @@
                 <section
                     id="records-view"
                     class="panel records-panel"
-                    aria-label="Top 50"
+                    aria-label="Best 50"
                     hidden
                 >
                     <div class="table-tools">
@@ -1912,10 +1914,8 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td><code>top50</code> (Optional)</td>
-                                <td>
-                                    <code>top50</code>
-                                </td>
+                                <td><code>best50</code> (Optional)</td>
+                                <td><code>best50</code></td>
                             </tr>
                             <tr>
                                 <td>

@@ -474,7 +474,7 @@ def observation_record(
         raise ValueError("Different profile")
     total, count, minimum = (
         record["total_volforce"],
-        record["top_count"],
+        record.get("best50_count", record.get("top_count")),
         record.get("minimum_volforce"),
     )
     if (
@@ -490,7 +490,7 @@ def observation_record(
         "timestamp": stamp(record["timestamp"]),
         "total_vf": total / 1000,
         "minimum_vf": minimum / 1000 if minimum is not None else None,
-        "top_count": count,
+        "best50_count": count,
     }
 
 
@@ -979,7 +979,14 @@ def sync_once(
             or bool(changed_catalogs)
         )
         if plays or observations or changed:
-            payload = {"plays": plays, "observations": observations}
+            payload = {
+                "plays": plays,
+                # Older sync servers still require the legacy count field
+                "observations": [
+                    {**observation, "top_count": observation["best50_count"]}
+                    for observation in observations
+                ],
+            }
             if changed:
                 # Omitted catalogs are preserved by the API's state merge.
                 payload["state"] = {
@@ -1241,7 +1248,7 @@ def export_preview(catalog: Catalog | None = None) -> None:
     )
     observations = list(
         {
-            (o["timestamp"], o["total_vf"], o["minimum_vf"], o["top_count"]): o
+            (o["timestamp"], o["total_vf"], o["minimum_vf"], o["best50_count"]): o
             for o in observations
         }.values()
     )

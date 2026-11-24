@@ -716,7 +716,7 @@
     background: var(--chart-avg100);
 }
 .threshold {
-    background: var(--chart-top50);
+    background: var(--chart-best50);
 }
 .total {
     background: var(--chart-total);
@@ -1389,7 +1389,7 @@ td.row-index + td {
 .play-list > .empty-list {
     padding-inline: var(--list-padding-inline);
 }
-.top-list {
+.best50-list {
     padding-top: 0;
 }
 .table-tools {
@@ -2045,7 +2045,7 @@ footer > :last-child {
 .vf-distribution-class-line {
     stroke: color-mix(
         in srgb,
-        var(--chart-top50) calc(100% * 41 / 255),
+        var(--chart-best50) calc(100% * 41 / 255),
         transparent
     );
     stroke-dasharray: 3 4;

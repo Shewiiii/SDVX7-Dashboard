@@ -1,6 +1,6 @@
 import { SONG_GENRES } from "../library/song-metadata.js";
 import { isBossChart } from "../library/boss-charts.js";
-import { topCharts } from "../profile/top-charts.js";
+import { best50Charts } from "../profile/best-50.js";
 
 export function normalizeSearch(value) {
     return String(value)
@@ -42,7 +42,8 @@ const aliases = {
     score: "score",
     grade: "grade",
     clear: "clear",
-    top50: "top50",
+    best50: "best50",
+    top50: "best50",
     favorite: "favorite",
     favorites: "favorite",
     boss: "boss",
@@ -78,7 +79,7 @@ const textFields = new Set([
 ]);
 const booleanFields = new Set([
     "custom",
-    "top50",
+    "best50",
     "favorite",
     "boss",
     "gimmicks",
@@ -90,7 +91,7 @@ const genreNames = new Set(
 );
 let index = new Map(),
     best = new Map(),
-    top = new Set(),
+    best50 = new Set(),
     favorites = new Set();
 
 const genreCache = new Map();
@@ -158,8 +159,10 @@ export function setSearchData(data, options = {}) {
             clear: Math.max(previous.clear, chart.clear_type || 0),
         });
     }
-    top = new Set(
-        topCharts(data.state, options).map((c) => `${c.music_id}:${c.diff_idx}`),
+    best50 = new Set(
+        best50Charts(data.state, options).map(
+            (chart) => `${chart.music_id}:${chart.diff_idx}`,
+        ),
     );
 }
 export function parseSearch(query) {
@@ -170,7 +173,7 @@ export function parseSearch(query) {
         errors = [];
     let difficulty = -1;
     for (const word of words) {
-        const boolean = word.match(/^(!?)(custom|top50|favorites?)$/i);
+        const boolean = word.match(/^(!?)(custom|(?:best|top)50|favorites?)$/i);
         const filter = boolean
             ? `${boolean[2]}=${boolean[1] ? "false" : "true"}`
             : word;
@@ -197,7 +200,7 @@ export function parseSearch(query) {
             field = aliases[rawField.toLowerCase().replace(/-/g, "")];
         const optionalField =
             textFields.has(field) ||
-            ["custom", "top50", "favorite"].includes(field);
+            ["custom", "best50", "favorite"].includes(field);
         let operator = rawOperator,
             value = raw;
         if (value.startsWith("!")) {
@@ -344,7 +347,7 @@ export function matchesSearchFilters(song, d, search) {
         else if (field === "diff_idx") actual = d.diff_idx;
         else if (field === "score") actual = played?.score || 0;
         else if (field === "clear") actual = played?.clear || 0;
-        else if (field === "top50") actual = Number(top.has(key));
+        else if (field === "best50") actual = Number(best50.has(key));
         else if (field === "favorite")
             actual = Number(favorites.has(song.music_id));
         else if (field === "boss") {

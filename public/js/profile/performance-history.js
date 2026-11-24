@@ -320,7 +320,7 @@ export function createPerformanceHistory({
                     }),
                 );
         }
-        // Keep separate threshold segments when the Top 50 was not full
+        // Keep separate threshold segments when the Best 50 was not full
         let segment = [];
         for (const o of observations) {
             if (o.minimum_vf === null) {
@@ -328,7 +328,7 @@ export function createPerformanceHistory({
                 line(
                     "threshold",
                     segment,
-                    "var(--chart-top50)",
+                    "var(--chart-best50)",
                     1.2,
                     y,
                     true,
@@ -337,7 +337,7 @@ export function createPerformanceHistory({
                 segment = [];
             } else segment.push([o.time, o.minimum_vf]);
         }
-        line("threshold", segment, "var(--chart-top50)", 1.2, y, true, "4 5");
+        line("threshold", segment, "var(--chart-best50)", 1.2, y, true, "4 5");
         let best = 0;
         const bestPoints = plays
             .filter(
@@ -426,9 +426,9 @@ export function createPerformanceHistory({
             },
             {
                 key: "threshold",
-                label: "Top 50",
+                label: "Best 50",
                 points: observations.map((o) => [o.time, o.minimum_vf]),
-                color: "var(--chart-top50)",
+                color: "var(--chart-best50)",
                 step: true,
                 y,
             },

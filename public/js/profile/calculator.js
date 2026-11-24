@@ -140,7 +140,7 @@ export function createCalculator(
             ? getChartPlays(chartFilter.music_id, chartFilter.diff_idx).map(
                   (play) => ({ ...play, ...chartFilter, vf: play.play_vf }),
               )
-            : getSummary()?.top || [];
+            : getSummary()?.best50 || [];
         return charts.map((chart, index) => ({ ...chart, rank: index + 1 }));
     }
 
@@ -208,7 +208,7 @@ export function createCalculator(
                 class: "calculator-crosshair",
             }),
         );
-        const worst = getSummary()?.top?.at(-1)?.vf;
+        const worst = getSummary()?.best50?.at(-1)?.vf;
         for (const { type } of VF_CLEARS) {
             const value = calculateChartVf(level, score, type);
             const output = $(`vf-${type}`);
@@ -235,15 +235,15 @@ export function createCalculator(
 
     function updateReferences({ animate = true } = {}) {
         if (!plot) return;
-        const top = getSummary()?.top || [];
+        const best50 = getSummary()?.best50 || [];
         const references = [
-            { key: "best", label: "Best", value: top[0]?.vf },
+            { key: "best", label: "Best", value: best50[0]?.vf },
             {
                 key: "average",
-                label: "Average Top 50",
-                value: average(top.map((chart) => chart.vf)),
+                label: "Average Best 50",
+                value: average(best50.map((chart) => chart.vf)),
             },
-            { key: "worst", label: "Worst", value: top.at(-1)?.vf },
+            { key: "worst", label: "Worst", value: best50.at(-1)?.vf },
         ].filter(
             ({ value }) =>
                 Number.isFinite(value) && value >= 0 && value <= plot.ceiling,

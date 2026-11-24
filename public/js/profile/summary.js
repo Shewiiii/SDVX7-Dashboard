@@ -139,9 +139,9 @@ export function createProfileSummary({
         setText("entry-vf", vf(stats.entry));
         setText(
             "entry-detail",
-            stats.top.length === 50
-                ? "in Top 50"
-                : `${stats.top.length} / 50 charts recorded`,
+            stats.best50.length === 50
+                ? "in Best 50"
+                : `${stats.best50.length} / 50 charts recorded`,
         );
         const updated = data.state.updated_at || data.synced_at;
         setText(
@@ -165,23 +165,23 @@ export function createProfileSummary({
                   .map((p) => row(p))
                   .join("")
             : '<div class="empty-list">No data available</div>';
-        $("top-plays").innerHTML = stats.top.length
-            ? stats.top
+        $("best50-plays").innerHTML = stats.best50.length
+            ? stats.best50
                   .slice(0, 5)
                   .map((p, i) => row(p, i + 1))
                   .join("")
             : '<div class="empty-list">No data available</div>';
         setText(
-            "top-foot",
-            `Top ${stats.top.length} average: ${vf(average(stats.top.map((p) => p.vf)) ?? 0)} VF`,
+            "best50-foot",
+            `Best ${stats.best50.length} average: ${vf(average(stats.best50.map((p) => p.vf)) ?? 0)} VF`,
         );
         renderSpark();
         if (animate) {
             motion.metrics(document.querySelector(".metrics"));
             motion.data(document.querySelector(".hero-meta"));
-            for (const id of ["session-meta", "top-foot"]) motion.data($(id));
+            for (const id of ["session-meta", "best50-foot"]) motion.data($(id));
             motion.data($("recent-plays"), ".play-row, .empty-list");
-            motion.data($("top-plays"), ".play-row, .empty-list");
+            motion.data($("best50-plays"), ".play-row, .empty-list");
         }
     }
 

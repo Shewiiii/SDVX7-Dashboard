@@ -4,9 +4,9 @@ import {
     extraSearchText,
     matchesSearchFilters,
 } from "../search/search-query.js";
-import { topCharts } from "./top-charts.js";
+import { best50Charts } from "./best-50.js";
 import { rankingHistory } from "./ranking-history.js";
-export { topCharts } from "./top-charts.js";
+export { best50Charts } from "./best-50.js";
 export { SCORE_GRADES, VF_CLEARS, grade, calculateChartVf } from "./volforce.js";
 export { normalizeSearch } from "../search/search-query.js";
 export const DIFFS = ["NOV", "ADV", "EXH", "INF/VVD", "MXM", "ULT"];
@@ -196,21 +196,21 @@ export function visibleObservations(observations, start, end) {
 }
 
 export function summary(data, options = {}) {
-    const top = topCharts(data.state, options);
-    const bestChart = top[0] ?? null;
+    const best50 = best50Charts(data.state, options);
+    const bestChart = best50[0] ?? null;
     const observed = rankingHistory(data, options).observations;
     const latest = observed.at(-1);
     const total = data.state.charts?.length
-        ? top.reduce((s, p) => s + p.vf, 0)
+        ? best50.reduce((s, p) => s + p.vf, 0)
         : (latest?.total_vf ?? null);
     return {
         total,
-        top,
+        best50,
         best: bestChart?.vf ?? null,
         bestChart,
         entry:
-            top.length === 50
-                ? (Math.round(top[49].vf * 1000) + 1) / 1000
+            best50.length === 50
+                ? (Math.round(best50[49].vf * 1000) + 1) / 1000
                 : null,
         growth:
             total !== null && observed.length
@@ -246,21 +246,21 @@ function groupChartPlays(plays) {
 export function recordList(
     data,
     catalog,
-    { top = false, query = "", sort = "recent", includeCustom = false } = {},
+    { best50 = false, query = "", sort = "recent", includeCustom = false } = {},
 ) {
-    const source = top
-        ? topCharts(data.state, { includeCustom }).map((chart, index) => ({
+    const source = best50
+        ? best50Charts(data.state, { includeCustom }).map((chart, index) => ({
               ...chart,
               rank: index + 1,
           }))
         : data.plays;
     let records = filterCharts(source, catalog, query);
     const totalPlays = records.length;
-    const grouped = !top && sort === "plays";
+    const grouped = !best50 && sort === "plays";
     const playCounts =
         sort === "plays" ? countChartPlays(data.plays) : new Map();
     const latestPlays = new Map();
-    if (top && sort === "recent") {
+    if (best50 && sort === "recent") {
         for (const play of data.plays) {
             const time = Date.parse(play.received_at || play.timestamp);
             const key = chartKey(play);
@@ -271,7 +271,7 @@ export function recordList(
                 latestPlays.set(key, time);
         }
     }
-    const recentFirst = top
+    const recentFirst = best50
         ? (a, b) =>
               (latestPlays.get(chartKey(b)) ?? -Infinity) -
                   (latestPlays.get(chartKey(a)) ?? -Infinity) || a.rank - b.rank

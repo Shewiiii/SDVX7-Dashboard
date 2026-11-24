@@ -1,6 +1,6 @@
 import { calculateChartVf } from "./volforce.js";
 
-export function topCharts(state, { includeCustom = false } = {}) {
+export function best50Charts(state, { includeCustom = false } = {}) {
     const customSongs = new Set(
         (state.catalog || [])
             .filter((song) => song.is_custom === true)

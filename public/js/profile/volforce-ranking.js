@@ -1,4 +1,4 @@
-import { topCharts } from "./top-charts.js";
+import { best50Charts } from "./best-50.js";
 
 export function comparisonVolforce(state, options = {}, overrides = {}) {
     if (!state?.charts?.length) return null;
@@ -30,10 +30,10 @@ export function comparisonVolforce(state, options = {}, overrides = {}) {
                   : level,
         };
     });
-    const top = topCharts({ ...state, charts }, options);
+    const best50 = best50Charts({ ...state, charts }, options);
 
     return (
-        top.reduce((sum, chart) => sum + Math.round(chart.vf * 1000), 0) / 1000
+        best50.reduce((sum, chart) => sum + Math.round(chart.vf * 1000), 0) / 1000
     );
 }
 

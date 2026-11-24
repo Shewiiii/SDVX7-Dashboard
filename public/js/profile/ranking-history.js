@@ -1,4 +1,4 @@
-import { topCharts } from "./top-charts.js";
+import { best50Charts } from "./best-50.js";
 import { calculateChartVf } from "./volforce.js";
 
 const cache = new WeakMap();
@@ -56,14 +56,16 @@ export function rankingHistory(data, { includeCustom = false } = {}) {
     const options = { includeCustom };
 
     function append(timestamp, charts, force = false) {
-        const top = topCharts({ ...data.state, charts }, options);
+        const best50 = best50Charts({ ...data.state, charts }, options);
         const point = {
             timestamp,
             total_vf:
-                top.reduce((sum, chart) => sum + Math.round(chart.vf * 1000), 0) /
-                1000,
-            minimum_vf: top.length === 50 ? top[49].vf : null,
-            top_count: top.length,
+                best50.reduce(
+                    (sum, chart) => sum + Math.round(chart.vf * 1000),
+                    0,
+                ) / 1000,
+            minimum_vf: best50.length === 50 ? best50[49].vf : null,
+            best50_count: best50.length,
         };
         const previous = observations.at(-1);
         if (previous?.timestamp === timestamp) observations.pop();
@@ -71,7 +73,7 @@ export function rankingHistory(data, { includeCustom = false } = {}) {
             !force &&
             previous?.total_vf === point.total_vf &&
             previous?.minimum_vf === point.minimum_vf &&
-            previous?.top_count === point.top_count
+            previous?.best50_count === point.best50_count
         )
             return;
         observations.push(point);

@@ -12,8 +12,8 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
 
 - Interactive performance history
 - 7 values timing histogram from the game's internal logic
-- Play history and Top 50, sorted by date, VF, score or play count
-- VF calculator, useful to check if a given score/diff/clear enters Top 50
+- Play history and Best 50, sorted by date, VF, score or play count
+- VF calculator, useful to check if a given score/diff/clear enters Best 50
 - Appeal card helper, to easily find the card you want to display in-game
 - Advanced search feature, to get details about a chart, including its radar
 - ASCII string of a song, useful to search the song in-game
@@ -34,7 +34,7 @@ The dashboard has much more features and ways to view your data than [KONAMI's o
    **If setup fails** one way or another, don't delete the created project on Vercel, and choose 1 on the next try. If you did it, delete both `.local/` and `.vercel/` and try again.
 3. From now on, run `run-proxy-with-dashboard.bat`, before starting the game. Otherwise, it will not connect to the network, but you can change back `EA Service URL` to your server URL at any point\*.
 
-\*Note: If you do this, then score a play that makes your top 50 change, the performance history will consider that play to have been played before the beginning of the tracking, making the Total VF graph slightly inaccurate.
+\*Note: If you do this, then score a play that makes your Best 50 change, the performance history will consider that play to have been played before the beginning of the tracking, making the Total VF graph slightly inaccurate.
 
 ## Update
 

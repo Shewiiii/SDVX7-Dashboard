@@ -17,6 +17,7 @@ import {
 } from "./charts/chart-markup.js";
 import { createProfileSummary } from "./profile/summary.js";
 import { createPerformanceHistory } from "./profile/performance-history.js";
+import { createDifficultyProgress } from "./profile/difficulty-progress.js";
 import { renderTimingHistogram } from "./profile/timing-histogram.js";
 import {
     initChartPopups,
@@ -104,6 +105,12 @@ const performanceHistory = createPerformanceHistory({
     getSongs: () => songs,
     rankingOptions,
     shown,
+});
+const difficultyProgress = createDifficultyProgress({
+    coverMarkup,
+    chartInfo,
+    revealChart: motion.history,
+    stopChart: motion.stop,
 });
 
 const profileRadar = createProfileRadar(
@@ -253,18 +260,6 @@ function renderSummary(options) {
 
 function renderChart({ animate = true, transition = false } = {}) {
     if (!data) return;
-    if (transition) {
-        performanceHistory.clearHover();
-        return motion.swap(
-            [
-                $("chart-wrap"),
-                document.querySelector(".timing-chart-wrap"),
-                $("chart-summary"),
-                $("timing-summary"),
-            ],
-            () => renderChart({ animate: false }),
-        );
-    }
     animate = view === "overview" ? revealOnce("overview", animate) : false;
     if (!animate) {
         // Keep the first reveal queued until this graph actually comes into view
@@ -276,12 +271,25 @@ function renderChart({ animate = true, transition = false } = {}) {
         ])
             if (!motion.isPending($(id))) motion.stop($(id));
     }
-    renderTimingHistogram(data.plays, { days, difficulty, animate });
+    const now = Date.now();
+    if (view === "overview")
+        difficultyProgress.update(data.plays, songs, {
+            days,
+            now,
+            ...rankingOptions(),
+        });
+    renderTimingHistogram(data.plays, {
+        days,
+        difficulty,
+        now,
+        animate,
+        transition,
+    });
     profileRadar.render(data.state.profile_radar, {
         animate,
         ...rankingOptions(),
     });
-    performanceHistory.render({ days, difficulty, animate });
+    performanceHistory.render({ days, difficulty, now, animate, transition });
 }
 
 function updateUrl(replace = false) {
@@ -649,6 +657,7 @@ async function load({ fresh = false, check = false, live = false } = {}) {
         $("notice").hidden = false;
         if (!data) {
             setText("chart-summary", "No data available");
+            setText("progress-empty", "No play data available");
             for (const id of ["recent-plays", "top-plays"])
                 $(id).innerHTML =
                     '<div class="empty-list">No data available</div>';
@@ -803,7 +812,6 @@ window.addEventListener("resize", () => {
     if (innerWidth === chartWidth) return;
     chartWidth = innerWidth;
     renderChart({ animate: false });
-    if (view === "calculator") calculator.render({ animate: false });
 });
 const liveUpdates = subscribeArchive(() => load({ check: true, live: true }));
 // Keep a fallback for an unavailable stream or an older deployment

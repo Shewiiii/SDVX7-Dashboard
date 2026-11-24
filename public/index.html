@@ -758,9 +758,7 @@
                         <div class="panel-head">
                             <div>
                                 <h2>Performance history</h2>
-                                <p class="panel-subtitle">
-                                    Chart VolForce over time (crashes excluded)
-                                </p>
+                                <p class="panel-subtitle">Crashes excluded</p>
                             </div>
                             <div class="chart-controls">
                                 <div
@@ -843,9 +841,7 @@
                         >
                             <div class="timing-heading">
                                 <h2 id="timing-title">Timing histogram</h2>
-                                <p>
-                                    Accuracy of BT/FX notes in S-CRITICAL plays
-                                </p>
+                                <p>S-CRITICAL plays only</p>
                             </div>
                             <div class="timing-chart-wrap">
                                 <svg
@@ -868,6 +864,135 @@
                             </div>
                         </section>
                         <section
+                            id="difficulty-progress"
+                            class="timing-section"
+                            aria-labelledby="difficulty-progress-title"
+                        >
+                            <div class="timing-heading">
+                                <h2 id="difficulty-progress-title">
+                                    Weekly clear rate
+                                </h2>
+                            </div>
+                            <div
+                                class="progress-controls calculator-controls"
+                                hidden
+                            >
+                                <div class="calculator-field">
+                                    <label for="progress-level">Level</label>
+                                    <div class="number-control">
+                                        <input
+                                            id="progress-level"
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            step="1"
+                                            inputmode="numeric"
+                                            required
+                                        />
+                                        <div class="number-steps">
+                                            <button
+                                                type="button"
+                                                data-progress-level-step="1"
+                                                aria-label="Increase level"
+                                            >
+                                                ▴
+                                            </button>
+                                            <button
+                                                type="button"
+                                                data-progress-level-step="-1"
+                                                aria-label="Decrease level"
+                                            >
+                                                ▾
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="calculator-field">
+                                    <label for="progress-minimum">
+                                        Ignore plays under
+                                    </label>
+                                    <div class="number-control">
+                                        <input
+                                            id="progress-minimum"
+                                            type="text"
+                                            role="spinbutton"
+                                            aria-valuemin="0"
+                                            aria-valuemax="10000000"
+                                            aria-valuenow="8500000"
+                                            value="8&#8239;500&#8239;000"
+                                            inputmode="numeric"
+                                            autocomplete="off"
+                                            aria-describedby="progress-cutoff-note"
+                                        />
+                                        <div class="number-steps">
+                                            <button
+                                                type="button"
+                                                data-progress-step="1"
+                                                aria-label="Increase cutoff by 25,000"
+                                            >
+                                                ▴
+                                            </button>
+                                            <button
+                                                type="button"
+                                                data-progress-step="-1"
+                                                aria-label="Decrease cutoff by 25,000"
+                                            >
+                                                ▾
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p id="progress-cutoff-note" class="sr-only">
+                                    Enter 0 to include every score. Known April
+                                    Fools charts are exempt.
+                                </p>
+                            </div>
+                            <div id="progress-chart-wrap" class="chart-wrap">
+                                <svg
+                                    id="progress-chart"
+                                    class="chart-svg"
+                                    viewBox="0 0 1100 280"
+                                    role="img"
+                                    aria-label="Weekly clear rate"
+                                    hidden
+                                ></svg>
+                                <div
+                                    id="progress-popup"
+                                    class="chart-popup"
+                                    hidden
+                                ></div>
+                                <p
+                                    id="progress-empty"
+                                    class="chart-empty"
+                                    role="status"
+                                >
+                                    Loading plays...
+                                </p>
+                            </div>
+                            <div id="progress-footer" hidden>
+                                <div class="chart-summary">
+                                    <span id="progress-summary"></span>
+                                </div>
+                                <details
+                                    id="progress-breakdown"
+                                    class="progress-breakdown"
+                                >
+                                    <summary>Details</summary>
+                                    <label
+                                        class="select-wrap progress-week-control"
+                                    >
+                                        <span id="progress-period-label">Week of</span>
+                                        <select id="progress-week"></select>
+                                    </label>
+                                    <ul
+                                        id="progress-songs"
+                                        class="table-scroll"
+                                        aria-label="Charts played in the selected period"
+                                    ></ul>
+                                </details>
+                            </div>
+                        </section>
+                        <section
                             id="vf-distribution"
                             class="vf-distribution-section"
                             aria-labelledby="vf-distribution-title"
@@ -876,16 +1001,6 @@
                                 <h2 id="vf-distribution-title">
                                     VolForce distribution
                                 </h2>
-                                <p>
-                                    <a
-                                        href="https://gall.dcinside.com/board/view/?id=sdvx&amp;no=3204443#container"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        data-distribution-subtitle
-                                        >VolForce across public arcade
-                                        profiles</a
-                                    >
-                                </p>
                             </div>
                             <div
                                 class="chart-legend vf-distribution-legend"
@@ -936,15 +1051,6 @@
                         >
                             <div class="timing-heading">
                                 <h2 id="profile-radar-title">Profile Radar</h2>
-                                <p>
-                                    <a
-                                        href="https://note.com/logthm/n/n59dca7461be8"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        >Based on the top 50 songs in each
-                                        skill</a
-                                    >
-                                </p>
                             </div>
                             <div id="profile-radar" class="profile-radar-wrap">
                                 <p class="profile-radar-empty">
@@ -1970,7 +2076,11 @@
                     </button>
                 </div>
                 <div class="library-view-tools">
-                    <p id="library-count" class="library-count" role="status"></p>
+                    <p
+                        id="library-count"
+                        class="library-count"
+                        role="status"
+                    ></p>
                     <div
                         id="library-view"
                         class="segmented library-view-switch"
@@ -1994,9 +2104,27 @@
                                 aria-hidden="true"
                             >
                                 <rect x="2" y="2" width="6" height="6" rx="1" />
-                                <rect x="12" y="2" width="6" height="6" rx="1" />
-                                <rect x="2" y="12" width="6" height="6" rx="1" />
-                                <rect x="12" y="12" width="6" height="6" rx="1" />
+                                <rect
+                                    x="12"
+                                    y="2"
+                                    width="6"
+                                    height="6"
+                                    rx="1"
+                                />
+                                <rect
+                                    x="2"
+                                    y="12"
+                                    width="6"
+                                    height="6"
+                                    rx="1"
+                                />
+                                <rect
+                                    x="12"
+                                    y="12"
+                                    width="6"
+                                    height="6"
+                                    rx="1"
+                                />
                             </svg>
                             Grid
                         </button>
@@ -2015,7 +2143,9 @@
                                 stroke-width="1.5"
                                 aria-hidden="true"
                             >
-                                <path d="M2 4h3m3 0h10M2 10h3m3 0h10M2 16h3m3 0h10" />
+                                <path
+                                    d="M2 4h3m3 0h10M2 10h3m3 0h10M2 16h3m3 0h10"
+                                />
                             </svg>
                             List
                         </button>

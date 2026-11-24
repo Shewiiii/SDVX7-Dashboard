@@ -1,9 +1,14 @@
+import { createCalculatorReveal } from "./calculator-reveal.js";
+
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const pending = new Map();
 const running = new Set();
 const owners = new WeakMap();
 const swaps = new WeakMap();
 const curveReveals = new WeakMap();
+const chartTweens = new Map();
+const chartTransitionDuration = 500;
+let chartFrame = 0;
 const ease = "cubic-bezier(.22, 1, .36, 1)";
 const LIST_REVEAL_STEP_MS = 17;
 // A lighter slowdown at the end of the graph sweeps.
@@ -43,6 +48,10 @@ function clearTree(root) {
     for (const animation of running) {
         if (root.contains(animation.effect?.target)) animation.cancel();
     }
+    for (const chart of chartTweens.keys()) {
+        if (!root.contains(chart)) continue;
+        chartTweens.delete(chart);
+    }
 }
 
 function visible(root, minimum = 0) {
@@ -59,6 +68,23 @@ function visible(root, minimum = 0) {
         height > 0 &&
         height >= Math.min(bounds.height * minimum, (bottom - top) * 0.5)
     );
+}
+
+function tickCharts(now) {
+    chartFrame = 0;
+    for (const [root, tween] of chartTweens) {
+        if (!root.isConnected) {
+            chartTweens.delete(root);
+            continue;
+        }
+        tween.start ??= now;
+        const progress = document.hidden
+            ? 1
+            : Math.min(1, (now - tween.start) / chartTransitionDuration);
+        tween.draw(1 - (1 - progress) ** 3);
+        if (progress === 1) chartTweens.delete(root);
+    }
+    if (chartTweens.size) chartFrame = requestAnimationFrame(tickCharts);
 }
 
 function start(root) {
@@ -226,7 +252,26 @@ export function initSegmentedControls() {
         initSegmentedControl(group, { selectedClass: "active" });
 }
 
+const calculatorReveal = createCalculatorReveal({
+    queue,
+    sweep,
+    play,
+    isPending: (root) => pending.has(root),
+    reducedMotion,
+});
+
 export const motion = {
+    tweenChart(root, draw) {
+        clearTree(root);
+        if (reducedMotion.matches || !visible(root)) {
+            draw(1);
+            return;
+        }
+
+        draw(0);
+        chartTweens.set(root, { draw, start: null });
+        if (!chartFrame) chartFrame = requestAnimationFrame(tickCharts);
+    },
     profileRadar(root, reveal, animate = true) {
         if (animate) queue(root, reveal, 0.3);
     },
@@ -395,63 +440,8 @@ export const motion = {
             0.5,
         );
     },
-    calculator(svg, animate = true, { guidesAlongCurve = false } = {}) {
-        if (!animate && !pending.has(svg)) return;
-        queue(
-            svg,
-            () => {
-                let curveEnd = 0;
-                let curveReveal;
-                svg.querySelectorAll(
-                    ".calculator-curve:not([hidden]), .calculator-chart-points, .calculator-reference",
-                ).forEach((curve, index) => {
-                    const animation = sweep(svg, curve, index * 65);
-                    if (guidesAlongCurve && !curveReveal)
-                        curveReveal = {
-                            bounds: curve.getBBox(),
-                            timing: animation.effect.getTiming(),
-                        };
-                    curveEnd = Math.max(
-                        curveEnd,
-                        animation.effect.getComputedTiming().endTime,
-                    );
-                });
-                svg.querySelectorAll(
-                    ".calculator-markers, .calculator-guides",
-                ).forEach((markers) => {
-                    if (curveReveal && markers.matches(".calculator-guides")) {
-                        const { bounds, timing } = curveReveal;
-                        for (const guide of markers.children) {
-                            const position =
-                                guide.querySelector("line").x1.baseVal.value;
-                            const progress = Math.max(
-                                0,
-                                Math.min(1, (position - bounds.x) / bounds.width),
-                            );
-                            play(
-                                svg,
-                                guide,
-                                [
-                                    { opacity: 0, offset: 0 },
-                                    { opacity: 0, offset: progress },
-                                    { opacity: 1, offset: progress },
-                                    { opacity: 1, offset: 1 },
-                                ],
-                                timing,
-                            );
-                        }
-                        return;
-                    }
-
-                    play(svg, markers, [{ opacity: 0 }, { opacity: 1 }], {
-                        duration: 300,
-                        delay: guidesAlongCurve ? curveEnd : 900,
-                    });
-                });
-            },
-            0.5,
-        );
-    },
+    calculator: calculatorReveal.render,
+    calculatorTime: calculatorReveal.time,
     calculatorCurves(svg, showPuc, animate = true) {
         const shouldAnimate =
             animate &&
@@ -521,4 +511,8 @@ reducedMotion.addEventListener("change", () => {
     }
     pending.clear();
     for (const animation of running) animation.cancel();
+    cancelAnimationFrame(chartFrame);
+    chartFrame = 0;
+    for (const { draw } of chartTweens.values()) draw(1);
+    chartTweens.clear();
 });

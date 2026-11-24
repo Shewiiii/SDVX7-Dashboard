@@ -14,7 +14,6 @@ const tierThresholds = VF_CLASSES.flatMap(({ minimum, step }) =>
 
 export function createVolforceDistribution(root) {
     const svg = root.querySelector("svg");
-    const subtitle = root.querySelector("[data-distribution-subtitle]");
     const summary = root.querySelector("#vf-distribution-summary");
     const empty = root.querySelector("[data-distribution-empty]");
     const popup = root.querySelector(".chart-popup");
@@ -124,8 +123,9 @@ export function createVolforceDistribution(root) {
         hidePopup();
         hover = null;
 
-        const animate = !drawn || motion.isPending(svg);
-        if (!motion.isPending(svg)) motion.stop(svg);
+        const animate = !drawn;
+        const resumeAt = motion.calculatorTime(svg);
+        motion.stop(svg);
         drawn = true;
         svg.removeAttribute("hidden");
         empty.hidden = true;
@@ -156,7 +156,6 @@ export function createVolforceDistribution(root) {
             volforceTopPercent(rawTotal, ranking),
         );
 
-        subtitle.textContent = `Based on ${ranking.length.toLocaleString()} EXCEED GEAR arcade profiles`;
         let description = Number.isFinite(total)
             ? `${total.toFixed(3)} Exceed Gear VF, ${topLabel}`
             : "No data available";
@@ -368,7 +367,7 @@ export function createVolforceDistribution(root) {
         });
         svg.append(crosshair, point);
         hover = { width, left, right, maximum, y, crosshair, point };
-        motion.calculator(svg, animate, { guidesAlongCurve: true });
+        motion.calculator(svg, animate, { guidesAlongCurve: true, resumeAt });
         if (summary && animate) motion.data(summary);
     }
 

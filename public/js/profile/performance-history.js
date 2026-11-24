@@ -14,6 +14,94 @@ import {
 } from "./metrics.js";
 import { rankingHistory } from "./ranking-history.js";
 
+function moveHistoryLayer(layer, camera, bounds) {
+    const { range } = layer;
+    const span = camera.end - camera.start;
+    const scaleX = (range.end - range.start) / span;
+    const offsetX =
+        bounds.left * (1 - scaleX) +
+        ((range.start - camera.start) / span) * (bounds.right - bounds.left);
+    for (const [group, low, high] of [
+        [layer.chart, "low", "high"],
+        [layer.total, "totalLow", "totalHigh"],
+    ]) {
+        const height = camera[high] - camera[low];
+        const scaleY = (range[high] - range[low]) / height;
+        const offsetY =
+            bounds.bottom * (1 - scaleY) -
+            ((range[low] - camera[low]) / height) *
+                (bounds.bottom - bounds.top);
+        group.setAttribute(
+            "transform",
+            `matrix(${scaleX} 0 0 ${scaleY} ${offsetX} ${offsetY})`,
+        );
+    }
+}
+
+function interpolateValueAxis(source, target, low, high, progress) {
+    // Blend the value-to-pixel mapping so narrow ranges do not move late
+    const sourceWeight = (1 - progress) / (source[high] - source[low]);
+    const targetWeight = progress / (target[high] - target[low]);
+    const scale = sourceWeight + targetWeight;
+    const minimum =
+        (source[low] * sourceWeight + target[low] * targetWeight) / scale;
+    return { [low]: minimum, [high]: minimum + 1 / scale };
+}
+
+function zoomHistory(svg, viewport, previous, next) {
+    const outgoing = previous.layers.reduce((visible, layer) =>
+        layer.opacity >= visible.opacity ? layer : visible,
+    );
+    const incoming = next.layers[0];
+    const source = previous.camera;
+    const target = incoming.range;
+    const sourceSpan = source.end - source.start;
+    const targetSpan = target.end - target.start;
+    const outgoingOpacity = outgoing.opacity;
+    viewport.prepend(outgoing.element);
+    viewport.classList.add("history-zooming");
+    next.layers.unshift(outgoing);
+
+    motion.tweenChart(svg, (progress) => {
+        if (progress === 1) {
+            outgoing.element.remove();
+            viewport.classList.remove("history-zooming");
+            incoming.element.removeAttribute("opacity");
+            incoming.chart.removeAttribute("transform");
+            incoming.total.removeAttribute("transform");
+            incoming.opacity = 1;
+            next.layers = [incoming];
+            next.camera = target;
+            next.moving = false;
+            next.labelCamera(target);
+            return;
+        }
+        const end = source.end + (target.end - source.end) * progress;
+        const span = sourceSpan * (targetSpan / sourceSpan) ** progress;
+        const camera = {
+            start: end - span,
+            end,
+            ...interpolateValueAxis(source, target, "low", "high", progress),
+            ...interpolateValueAxis(
+                source,
+                target,
+                "totalLow",
+                "totalHigh",
+                progress,
+            ),
+        };
+        next.camera = camera;
+        next.moving = true;
+        next.labelCamera(camera);
+        outgoing.opacity = outgoingOpacity * (1 - progress);
+        incoming.opacity = progress;
+        for (const layer of next.layers) {
+            moveHistoryLayer(layer, camera, next.bounds);
+            layer.element.setAttribute("opacity", layer.opacity);
+        }
+    });
+}
+
 export function createPerformanceHistory({
     getData,
     getSongs,
@@ -21,19 +109,29 @@ export function createPerformanceHistory({
     shown,
 }) {
     let hover = null;
+    let plot = null;
 
-    function render({ days, difficulty, animate = true } = {}) {
+    function render({
+        days,
+        difficulty,
+        now = Date.now(),
+        animate = true,
+        transition = false,
+    } = {}) {
         const data = getData();
         if (!data) return;
         const songs = getSongs();
-        const plays = performance(data.plays, { days, difficulty });
+        const plays = performance(data.plays, { days, difficulty, now });
         const svg = $("chart");
+        const reveal = animate || motion.isPending(svg);
+        const previous = plot;
         svg.replaceChildren();
         svg.removeAttribute("aria-hidden");
         hover = null;
         $("popup").hidden = true;
         $("chart-empty").hidden = !!plays.length;
         if (!plays.length) {
+            plot = null;
             setText("chart-summary", "No data available");
             return;
         }
@@ -80,6 +178,7 @@ export function createPerformanceHistory({
         const totalPad = Math.max((totalMax - totalMin) * 0.14, 0.025);
         const totalLow = Math.max(0, totalMin - totalPad),
             totalHigh = totalMax + totalPad;
+        const range = { start, end, low, high, totalLow, totalHigh };
         const x = (time) =>
             left + ((time - start) / (end - start)) * (right - left);
         const y = (value) =>
@@ -111,9 +210,22 @@ export function createPerformanceHistory({
                     "Total VF",
                 ),
             );
+        const ticks = [];
+        function addTick(attributes, caption) {
+            const node = svgElement("text", attributes);
+            ticks.push({ node, caption });
+            svg.append(node);
+        }
+        function labelCamera(camera) {
+            for (const { node, caption } of ticks) {
+                const text = caption(camera);
+                if (node.textContent !== text) node.textContent = text;
+            }
+        }
         const gridCount = mobile ? 8 : 12;
         for (let i = 0; i <= gridCount; i++) {
-            const py = top + (i / gridCount) * (bottom - top);
+            const ratio = i / gridCount;
+            const py = top + ratio * (bottom - top);
             svg.append(
                 svgElement("line", {
                     x1: left,
@@ -123,46 +235,58 @@ export function createPerformanceHistory({
                     class: "grid",
                 }),
             );
-            svg.append(
-                svgElement(
-                    "text",
-                    {
-                        x: right + (mobile ? 7 : 13),
-                        y: py + 4,
-                    },
-                    vf(high - (i / gridCount) * (high - low)),
-                ),
+            addTick({ x: right + (mobile ? 7 : 13), y: py + 4 }, (camera) =>
+                vf(camera.high - ratio * (camera.high - camera.low)),
             );
             if (observations.length && shown.has("total"))
-                svg.append(
-                    svgElement(
-                        "text",
-                        {
-                            x: left - (mobile ? 7 : 13),
-                            y: py + 4,
-                            "text-anchor": "end",
-                        },
+                addTick(
+                    {
+                        x: left - (mobile ? 7 : 13),
+                        y: py + 4,
+                        "text-anchor": "end",
+                    },
+                    (camera) =>
                         vf(
-                            totalHigh -
-                                (i / gridCount) * (totalHigh - totalLow),
+                            camera.totalHigh -
+                                ratio * (camera.totalHigh - camera.totalLow),
                         ),
-                    ),
                 );
         }
-        const singleDay = end - start < 86400000;
         const tickCount = mobile ? 3 : 5;
         for (let i = 0; i <= tickCount; i++) {
-            const t = start + (i / tickCount) * (end - start);
-            svg.append(
-                svgElement(
-                    "text",
-                    { x: x(t), y: bottom + 27, "text-anchor": "middle" },
-                    singleDay ? clock(t) : shortDate(t),
-                ),
+            const ratio = i / tickCount;
+            addTick(
+                {
+                    x: left + ratio * (right - left),
+                    y: bottom + 27,
+                    "text-anchor": "middle",
+                },
+                (camera) => {
+                    const span = camera.end - camera.start;
+                    const time = camera.start + ratio * span;
+                    return span < 86400000 ? clock(time) : shortDate(time);
+                },
             );
         }
+        labelCamera(range);
+        const clip = svgElement("clipPath", { id: "history-plot-clip" });
+        clip.append(
+            svgElement("rect", {
+                x: left,
+                y: top,
+                width: right - left,
+                height: bottom - top,
+            }),
+        );
+        const viewport = svgElement("g", {
+            "clip-path": "url(#history-plot-clip)",
+        });
         const seriesLayer = svgElement("g", { class: "history-series" });
-        svg.append(seriesLayer);
+        const chartLayer = svgElement("g");
+        const totalLayer = svgElement("g");
+        seriesLayer.append(chartLayer, totalLayer);
+        viewport.append(seriesLayer);
+        svg.append(clip, viewport);
         function line(
             series,
             points,
@@ -173,8 +297,9 @@ export function createPerformanceHistory({
             dash = "",
         ) {
             if (!shown.has(series) || !points.length) return;
+            const layer = series === "total" ? totalLayer : chartLayer;
             if (points.length === 1) {
-                seriesLayer.append(
+                layer.append(
                     svgElement("circle", {
                         cx: x(points[0][0]),
                         cy: mapper(points[0][1]),
@@ -183,7 +308,7 @@ export function createPerformanceHistory({
                     }),
                 );
             } else
-                seriesLayer.append(
+                layer.append(
                     svgElement("path", {
                         d: pathData(points, x, mapper, step),
                         fill: "none",
@@ -223,8 +348,11 @@ export function createPerformanceHistory({
             )
             .map((play) => {
                 const value =
-                    calculateChartVf(play.level, play.score, play.clear_type) ??
-                    play.play_vf;
+                    calculateChartVf(
+                        play.level,
+                        play.score,
+                        play.clear_type,
+                    ) ?? play.play_vf;
                 best = Math.max(best, value);
                 return [Date.parse(play.received_at), best];
             });
@@ -248,7 +376,7 @@ export function createPerformanceHistory({
                     }),
                 ),
             );
-            seriesLayer.append(group);
+            chartLayer.append(group);
         }
         line("avg10", avg10Points, "var(--chart-avg10)", 1.8);
         line("avg100", avg100Points, "var(--chart-avg100)", 2.8);
@@ -319,14 +447,39 @@ export function createPerformanceHistory({
         };
         $("chart-summary").innerHTML =
             `<span><strong>${number(plays.length)}</strong> plays</span><span>Best <strong>${vf(bestPoints.length ? best : null)}</strong></span><span>Average <strong>${vf(average(values))}</strong></span>`;
-        motion.history(svg, animate);
+        plot = {
+            width,
+            camera: range,
+            labelCamera,
+            bounds: { left, right, top, bottom },
+            layers: [
+                {
+                    element: seriesLayer,
+                    chart: chartLayer,
+                    total: totalLayer,
+                    range,
+                    opacity: 1,
+                },
+            ],
+        };
+        if (
+            !reveal &&
+            transition &&
+            previous?.width === width &&
+            Object.keys(range).some(
+                (key) => previous.camera[key] !== range[key],
+            )
+        )
+            zoomHistory(svg, viewport, previous, plot);
+        else motion.history(svg, reveal);
         if (animate) motion.data($("chart-summary"));
     }
 
     function showChartPopup(event) {
-        if (!hover) return;
+        if (!hover || plot?.moving) return;
         const bounds = $("chart").getBoundingClientRect();
-        const px = ((event.clientX - bounds.left) / bounds.width) * hover.width;
+        const px =
+            ((event.clientX - bounds.left) / bounds.width) * hover.width;
         if (px < hover.left || px > hover.right) {
             hidePopup();
             return;
@@ -378,11 +531,5 @@ export function createPerformanceHistory({
         hide: hidePopup,
     });
 
-    return {
-        render,
-        clearHover() {
-            hidePopup();
-            hover = null;
-        },
-    };
+    return { render };
 }

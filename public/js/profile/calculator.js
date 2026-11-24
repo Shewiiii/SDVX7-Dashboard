@@ -10,6 +10,13 @@ import {
 import { svgElement, pathData } from "../core/svg.js";
 import { motion } from "../core/motion.js";
 import {
+    formatScoreInput,
+    maxScore,
+    parseScore,
+    stepScore,
+    writeScoreInput,
+} from "./score-input.js";
+import {
     DIFFICULTY_LIMITS,
     difficultyStep,
     nextDifficulty,
@@ -22,10 +29,8 @@ const defaults = {
     targetScore: 9700000,
     targetLevel: 17,
 };
-const limits = { level: DIFFICULTY_LIMITS, score: [0, 10000000, 1] };
+const limits = { level: DIFFICULTY_LIMITS, score: [0, maxScore, 1] };
 const formatScore = (score) => score.toLocaleString();
-const formatScoreInput = (score) =>
-    String(score).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f");
 const scoreMatchTolerance = 50000;
 const scoreScaleFocus = 100000;
 const scoreScaleLog = Math.log1p(limits.score[1] / scoreScaleFocus);
@@ -63,28 +68,72 @@ function difficultyAtPosition(position) {
     return Math.max(limits.level[0], Math.min(limits.level[1], level));
 }
 
-function parseScore(value) {
-    const digits = value.replace(/[\s,]/g, "");
-    return /^-?\d+$/.test(digits) ? Number(digits) : NaN;
-}
-
 function snapDifficulty(level) {
     const step = Math.round(difficultyStep(level) * 10);
     const nearest = Math.round(Math.round(level * 10) / step) * step;
     return Math.max(limits.level[0], Math.min(limits.level[1], nearest / 10));
 }
 
-export function createCalculator(getSummary, renderChartRow, getChartPlays) {
+export function createCalculator(
+    getSummary,
+    renderChartRow,
+    getChartPlays,
+    { fitContainer = false } = {},
+) {
     const $ = (id) => document.getElementById(`calculator-${id}`);
     const svg = $("chart");
+    const phone = matchMedia(`(max-width: ${fitContainer ? 600 : 900}px)`);
     const target = $("target");
     const popup = $("popup");
+    const matchList = $("matches");
     let state = { ...defaults },
         plot,
-        rendered = false,
         chartSignature = "",
         chartFilter = null,
         plottedCharts = [];
+
+    function plotSize() {
+        const bounds = svg.getBoundingClientRect();
+        const mobile = phone.matches;
+        const visible = bounds.width > 0;
+        if (fitContainer && !mobile && visible) {
+            // Keep label sizes stable as the drawing area grows
+            const scale = Math.min(bounds.width, 1360) / 1100;
+            return {
+                width: bounds.width / scale,
+                height: bounds.height / scale,
+                mobile,
+                visible,
+            };
+        }
+        return {
+            width: mobile ? Math.max(260, bounds.width) : 1100,
+            height: mobile ? 330 : 390,
+            mobile,
+            visible,
+        };
+    }
+
+    function samePlotSize(size) {
+        return (
+            plot?.mobile === size.mobile &&
+            Math.abs(plot.width - size.width) <= 0.5 &&
+            Math.abs(plot.height - size.height) <= 0.5
+        );
+    }
+
+    function plotSettings() {
+        return JSON.stringify([
+            state.mode,
+            state.level,
+            state.score,
+            chartFilter?.music_id,
+            chartFilter?.diff_idx,
+            chartFilter?.title,
+            chartFilter?.artist,
+            chartFilter?.level,
+        ]);
+    }
 
     function getCharts() {
         const charts = chartFilter
@@ -95,27 +144,9 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         return charts.map((chart, index) => ({ ...chart, rank: index + 1 }));
     }
 
-    function formatScoreField(preserveCaret = false) {
-        const input = $("score");
-        const digitsBeforeCaret = input.value
-            .slice(0, input.selectionStart)
-            .replace(/\D/g, "").length;
-        input.value = formatScoreInput(state.score);
-        input.setAttribute("aria-valuenow", state.score);
-        if (preserveCaret && document.activeElement === input) {
-            let caret = 0,
-                digits = 0;
-            while (caret < input.value.length && digits < digitsBeforeCaret) {
-                if (/\d/.test(input.value[caret])) digits++;
-                caret++;
-            }
-            input.setSelectionRange(caret, caret);
-        }
-    }
-
     function syncControls() {
         $("level").value = state.level;
-        formatScoreField();
+        writeScoreInput($("score"), state.score);
         for (const key of ["level", "score"])
             $(key).removeAttribute("aria-invalid");
         $("validation").hidden = true;
@@ -152,6 +183,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         if (state.mode === "score") state.targetScore = score;
         else state.targetLevel = level;
         const point = state.mode === "score" ? score : level;
+        plot.targetValue = point;
         target.value =
             state.mode === "score"
                 ? scorePosition(score)
@@ -253,7 +285,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             group.append(guide);
         }
         svg.insertBefore(group, plot.markers);
-        if (animate && !motion.isPending(svg))
+        if (animate && motion.calculatorTime(svg) === null)
             motion.calculatorReferences(group);
     }
 
@@ -267,6 +299,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
 
     function updateCharts(charts, points) {
         plottedCharts = charts;
+        if (!matchList) return;
         const matches = charts.filter(matchesChart);
         const noun = chartFilter ? "play" : "chart";
         $("match-count").textContent =
@@ -275,7 +308,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         $("filter-label").textContent = chartFilter
             ? `Showing: ${chartFilter.artist} - ${chartFilter.title} (${DIFFS[chartFilter.diff_idx]} ${chartFilter.level ?? "—"})`
             : "";
-        $("matches").innerHTML = matches.length
+        matchList.innerHTML = matches.length
             ? matches.map((chart) => renderChartRow(chart, chart.rank)).join("")
             : `<div class="empty-list">${chartFilter ? "No recorded plays for this chart yet" : "No matching charts"}</div>`;
 
@@ -342,14 +375,29 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
     }
 
     function render({ animate = true } = {}) {
-        animate = animate || !rendered;
-        rendered = true;
         const previous = plot;
+        animate = animate || !previous;
+        const variableScore = state.mode === "score";
+        const value = variableScore ? state.targetScore : state.targetLevel;
+        const size = plotSize();
+        const settings = plotSettings();
+        const charts = getCharts();
+        const signature = JSON.stringify(charts);
+        if (
+            !animate &&
+            previous.settings === settings &&
+            chartSignature === signature &&
+            samePlotSize(size)
+        ) {
+            updateReferences({ animate: false });
+            if (previous.targetValue !== value) updateTarget(value);
+            return;
+        }
+
+        const resumeAt = animate ? null : motion.calculatorTime(svg);
         hideChartPreview();
         motion.stop(svg);
         svg.replaceChildren();
-        const variableScore = state.mode === "score";
-        const value = variableScore ? state.targetScore : state.targetLevel;
         const showPuc =
             (variableScore ? Math.round(value) : state.score) ===
             limits.score[1];
@@ -357,11 +405,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             animate &&
             previous?.mode === state.mode &&
             previous.showPuc !== showPuc;
-        const mobile = matchMedia("(max-width: 900px)").matches;
-        const width = mobile
-            ? Math.max(260, svg.getBoundingClientRect().width)
-            : 1100;
-        const height = mobile ? 330 : 390;
+        const { mobile, width, height } = size;
         const left = 25,
             right = width - (mobile ? 56 : 74);
         const top = variableScore ? 48 : 32,
@@ -376,8 +420,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
                 variableScore ? point : state.score,
                 type,
             );
-        const charts = getCharts();
-        chartSignature = JSON.stringify(charts);
+        chartSignature = signature;
         const peak = Math.max(
             valueAt(maximum, 6),
             ...charts.map((chart) => chart.vf).filter(Number.isFinite),
@@ -569,6 +612,10 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         });
         svg.append(chartPoints, markers);
         plot = {
+            settings,
+            mobile,
+            width,
+            height,
             mode: state.mode,
             showPuc: transitionCurves ? previous.showPuc : undefined,
             x,
@@ -593,7 +640,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         if (transitionCurves)
             motion.calculatorCurves(svg, previous.showPuc, false);
         updateTarget(value);
-        if (!transitionCurves) motion.calculator(svg, animate);
+        if (!transitionCurves) motion.calculator(svg, animate, { resumeAt });
     }
 
     document.querySelectorAll("[data-calculator-mode]").forEach((button) => {
@@ -626,7 +673,8 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
             if (!valid) return;
             const changed = state[key] !== value;
             state[key] = value;
-            if (key === "score") formatScoreField(true);
+            if (key === "score")
+                writeScoreInput($(key), value, { preserveCaret: true });
             if (!changed) return;
             render();
         });
@@ -658,10 +706,7 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         input.value =
             key === "level"
                 ? nextDifficulty(current, direction)
-                : Math.max(
-                      limits.score[0],
-                      Math.min(limits.score[1], current + direction * 25000),
-                  );
+                : stepScore(current, direction);
         input.dispatchEvent(new Event("input", { bubbles: true }));
     }
     document.querySelectorAll("[data-step-input]").forEach((button) => {
@@ -710,10 +755,10 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
     });
     function clearFilter() {
         chartFilter = null;
-        $("filter").hidden = true;
+        if (matchList) $("filter").hidden = true;
         hideChartPreview();
     }
-    $("filter-remove").addEventListener("click", () => {
+    $("filter-remove")?.addEventListener("click", () => {
         clearFilter();
         render({ animate: false });
     });
@@ -725,10 +770,22 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
         '<div class="calculator-grade" aria-label="Score grade multiplier"><span><i class="dot"></i><span id="calculator-grade-name"></span></span><output id="calculator-grade-multiplier"></output></div>';
     syncControls();
 
+    function resizePlot() {
+        if (!plot) return;
+        const size = plotSize();
+        if (size.visible && !samePlotSize(size)) render({ animate: false });
+    }
+    new ResizeObserver(resizePlot).observe(svg);
+    phone.addEventListener("change", resizePlot);
+
     return {
         render,
         clearFilter,
         updateData({ animate = true } = {}) {
+            if (plot?.settings !== plotSettings()) {
+                render({ animate: false });
+                return;
+            }
             const charts = getCharts();
             const signature = JSON.stringify(charts);
             if (signature === chartSignature) {
@@ -736,7 +793,11 @@ export function createCalculator(getSummary, renderChartRow, getChartPlays) {
                 updateTarget();
                 return;
             }
-            if (!plot || charts.some((chart) => chart.vf > plot.ceiling)) {
+            if (motion.calculatorTime(svg) !== null) {
+                render({ animate: false });
+                return;
+            }
+            if (charts.some((chart) => chart.vf > plot.ceiling)) {
                 render({ animate: false });
                 if (animate)
                     motion.calculatorReferences(

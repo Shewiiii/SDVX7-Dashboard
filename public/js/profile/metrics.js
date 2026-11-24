@@ -90,11 +90,14 @@ export function sessions(plays) {
     return groups;
 }
 
+export const playCutoff = (days, now) =>
+    days ? now - days * 86400000 : -Infinity;
+
 export function performance(
     plays,
     { days = 0, difficulty = 1, now = Date.now() } = {},
 ) {
-    const cutoff = days ? now - days * 86400000 : -Infinity;
+    const cutoff = playCutoff(days, now);
     return plays
         .filter(
             (p) =>
@@ -112,7 +115,7 @@ export function timingHistogram(
     { days = 0, difficulty = 1, now = Date.now() } = {},
 ) {
     const bins = Array(7).fill(0);
-    const cutoff = days ? now - days * 86400000 : -Infinity;
+    const cutoff = playCutoff(days, now);
     let recorded = 0;
     for (const play of plays) {
         const histogram = play.timing_histogram;

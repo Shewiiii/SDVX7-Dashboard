@@ -27,6 +27,7 @@ import {
     paginate,
     PAGE_SIZE,
     timingText,
+    judgmentAccuracy,
 } from "../profile/metrics.js";
 import { radarMarkup, paintRadar } from "../profile/radar.js";
 import { clear, gradeMarkup, difficultyRange } from "../charts/chart-markup.js";
@@ -214,15 +215,17 @@ export function createSongSearch({
             !Number.isFinite(play.timing)
         )
             return '<p class="judgements-unavailable">Judgements weren’t recorded for this play.</p>';
+        const accuracy = judgmentAccuracy([play]);
+        const accuracyText = accuracy === null ? "—" : `${accuracy.toFixed(2)}%`;
         return `<dl class="judgement-counts">${fields
             .map(([key, label]) =>
                 key === "timing"
-                    ? `<div class="judgement-timing"><dt>${label}</dt>${timingText(play.timing)}</div>`
+                    ? `<div><dt>${label}</dt><dd>${timingText(play.timing)}</dd></div>`
                     : key === "near"
                       ? `<div><dt>${label}</dt><dd title="Early - Late" aria-label="Early Near ${count("early_near")}, Late Near ${count("late_near")}">${count("early_near")} - ${count("late_near")}</dd></div>`
                       : `<div><dt>${label}</dt><dd>${count(key)}</dd></div>`,
             )
-            .join("")}</dl>`;
+            .join("")}<div><dt>Accuracy</dt><dd>${accuracyText}</dd></div></dl>`;
     }
 
     function fitDifficultyButtons() {

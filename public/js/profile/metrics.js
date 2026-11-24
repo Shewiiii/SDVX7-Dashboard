@@ -109,6 +109,25 @@ export function performance(
         .sort(byTime);
 }
 
+export function judgmentAccuracy(plays) {
+    let criticalJudgments = 0;
+    let totalJudgments = 0;
+    for (const { judgments } of plays) {
+        // Plays with S-CRITICAL disabled record the total under CRITICAL
+        const { s_critical = 0, critical, near, error } = judgments ?? {};
+        if (
+            [s_critical, critical, near, error].every(
+                (count) => Number.isSafeInteger(count) && count >= 0,
+            )
+        ) {
+            const accurate = s_critical + critical;
+            criticalJudgments += accurate;
+            totalJudgments += accurate + near + error;
+        }
+    }
+    return totalJudgments ? (criticalJudgments / totalJudgments) * 100 : null;
+}
+
 export const TIMING_OFFSETS = [87.5, 37.5, 25, 0, -25, -37.5, -87.5];
 export function timingHistogram(
     plays,
@@ -116,9 +135,7 @@ export function timingHistogram(
 ) {
     const bins = Array(7).fill(0);
     const cutoff = playCutoff(days, now);
-    let recorded = 0;
-    let criticalJudgments = 0;
-    let totalJudgments = 0;
+    const recorded = [];
     for (const play of plays) {
         const histogram = play.timing_histogram;
         if (
@@ -134,18 +151,7 @@ export function timingHistogram(
         )
             continue;
         histogram.forEach((count, index) => (bins[index] += count));
-        recorded++;
-
-        const { s_critical, critical, near, error } = play.judgments ?? {};
-        if (
-            [s_critical, critical, near, error].every(
-                (count) => Number.isSafeInteger(count) && count >= 0,
-            )
-        ) {
-            const accurate = s_critical + critical;
-            criticalJudgments += accurate;
-            totalJudgments += accurate + near + error;
-        }
+        recorded.push(play);
     }
     const hits = bins.reduce((sum, count) => sum + count, 0);
     const weighted = bins.reduce(
@@ -154,12 +160,10 @@ export function timingHistogram(
     );
     return {
         bins,
-        plays: recorded,
+        plays: recorded.length,
         hits,
         average: hits ? weighted / hits : null,
-        accuracy: totalJudgments
-            ? (criticalJudgments / totalJudgments) * 100
-            : null,
+        accuracy: judgmentAccuracy(recorded),
     };
 }
 

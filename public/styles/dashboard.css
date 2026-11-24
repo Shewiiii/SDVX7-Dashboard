@@ -3079,7 +3079,7 @@ footer > :last-child {
 }
 .judgement-counts {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 12px;
     margin: 0;
     text-align: center;
@@ -5211,9 +5211,6 @@ tr.chart-row .cover-tile {
     .judgement-counts {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px 8px;
-    }
-    .judgement-timing {
-        grid-column: 1 / -1;
     }
     .song-search-panel .judgement-row td {
         padding: 4px 12px;

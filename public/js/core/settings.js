@@ -3,6 +3,9 @@
     const legacyStorageKey = "rasis-tracker-appearance";
     const root = document.documentElement;
     const styles = getComputedStyle(root);
+    const defaultParticlesEnabled = !matchMedia(
+        "(max-width: 600px) and (pointer: coarse), (max-width: 1024px) and (max-height: 550px) and (pointer: coarse)",
+    ).matches;
     const controls = [
         {
             name: "background-tint",
@@ -100,7 +103,10 @@
             const particlesEnabled =
                 stored["background-particles"] ?? stored["background-sparks"];
             const values = {
-                "background-particles": particlesEnabled === true,
+                "background-particles":
+                    typeof particlesEnabled === "boolean"
+                        ? particlesEnabled
+                        : defaultParticlesEnabled,
                 ...Object.fromEntries(
                     controls.map((control) => {
                         let value = stored[control.name];

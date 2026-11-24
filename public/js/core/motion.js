@@ -1,4 +1,7 @@
-import { createCalculatorReveal } from "./calculator-reveal.js";
+import {
+    calculatorCurveStart,
+    createCalculatorReveal,
+} from "./calculator-reveal.js";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const pending = new Map();
@@ -95,10 +98,21 @@ function start(root) {
         return;
     }
     if (!next || !visible(root, next.minimum)) return;
+    if (next.nextFrame) {
+        next.frame ??= requestAnimationFrame(() => {
+            if (pending.get(root) !== next) return;
+            next.nextFrame = false;
+            start(root);
+        });
+        return;
+    }
     pending.delete(root);
     observer?.unobserve(root);
-    root.classList.remove("reveal-pending");
-    if (root.isConnected && !reducedMotion.matches) next.reveal();
+    try {
+        if (root.isConnected && !reducedMotion.matches) next.reveal();
+    } finally {
+        root.classList.remove("reveal-pending");
+    }
 }
 
 const observer =
@@ -125,14 +139,14 @@ window.visualViewport?.addEventListener("scroll", checkVisibility);
 window.visualViewport?.addEventListener("resize", checkVisibility);
 document.addEventListener("visibilitychange", checkVisibility);
 
-function queue(root, reveal, minimum = 0) {
+function queue(root, reveal, minimum = 0, { nextFrame = false } = {}) {
     if (!root) return;
     cancel(root);
     pending.delete(root);
     observer?.unobserve(root);
     root.classList.remove("reveal-pending");
     if (reducedMotion.matches) return;
-    pending.set(root, { reveal, minimum });
+    pending.set(root, { reveal, minimum, nextFrame });
     root.classList.add("reveal-pending");
     if (visible(root, minimum)) start(root);
     else observer?.observe(root);
@@ -257,7 +271,6 @@ const calculatorReveal = createCalculatorReveal({
     sweep,
     play,
     isPending: (root) => pending.has(root),
-    reducedMotion,
 });
 
 export const motion = {
@@ -461,7 +474,7 @@ export const motion = {
             if (!active && curve.hasAttribute("hidden") === !show) continue;
             const style = getComputedStyle(curve);
             const from = curve.hasAttribute("hidden")
-                ? { opacity: 0, clipPath: "inset(0 100% 0 0)" }
+                ? calculatorCurveStart
                 : { opacity: style.opacity, clipPath: style.clipPath };
             curveReveals.delete(curve);
             clearTree(curve);

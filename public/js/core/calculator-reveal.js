@@ -1,49 +1,20 @@
-export function createCalculatorReveal({
-    queue,
-    sweep,
-    play,
-    isPending,
-    reducedMotion,
-}) {
+export const calculatorCurveStart = {
+    opacity: 0,
+    // Let the sweep start moving before it reaches the plot origin
+    clipPath: "inset(0 104% 0 0)",
+};
+
+export function createCalculatorReveal({ queue, sweep, play, isPending }) {
     const sweeps = new WeakMap();
-    const nextFrame = () => new Promise(requestAnimationFrame);
 
     function time(svg) {
         const reveal = sweeps.get(svg);
         if (!reveal) return null;
         if (isPending(svg)) return reveal.startAt;
-        const active = reveal.animations.filter(
-            (animation) =>
-                animation.playState === "running" ||
-                animation.playState === "paused",
+        const active = reveal.animations.findLast(
+            (animation) => animation.playState === "running",
         );
-        return active.length
-            ? Math.max(...active.map((animation) => Number(animation.currentTime)))
-            : null;
-    }
-
-    async function startAfterPaint(svg, reveal) {
-        const { animations, startAt } = reveal;
-        for (const animation of animations) {
-            if (startAt >= animation.effect.getComputedTiming().endTime) {
-                animation.cancel();
-                continue;
-            }
-            animation.pause();
-            animation.currentTime = startAt;
-        }
-        if (startAt === 0) {
-            // Let the initial frame paint before the reveal clock starts
-            await Promise.allSettled(
-                animations.map((animation) => animation.ready),
-            );
-            await nextFrame();
-            await nextFrame();
-        }
-        if (sweeps.get(svg) !== reveal || reducedMotion.matches) return;
-        for (const animation of animations) {
-            if (animation.playState === "paused") animation.play();
-        }
+        return active ? Number(active.currentTime) : null;
     }
 
     function render(
@@ -53,58 +24,65 @@ export function createCalculatorReveal({
     ) {
         const startAt = resumeAt ?? (animate ? 0 : null);
         if (startAt === null) return;
-        const reveal = { startAt, animations: [] };
-        sweeps.set(svg, reveal);
-        queue(svg, () => {
-            const { animations } = reveal;
-            let curveEnd = 0;
-            let curveReveal;
-            svg.querySelectorAll(
-                ".calculator-curve:not([hidden]), .calculator-chart-points, .calculator-reference",
-            ).forEach((curve, index) => {
-                const animation = sweep(svg, curve, index * 65);
-                animations.push(animation);
-                if (guidesAlongCurve && !curveReveal)
-                    curveReveal = {
-                        bounds: curve.getBBox(),
-                        timing: animation.effect.getTiming(),
-                    };
-                curveEnd = Math.max(curveEnd, animation.effect.getComputedTiming().endTime);
-            });
-            for (const markers of svg.querySelectorAll(".calculator-markers, .calculator-guides")) {
-                if (curveReveal && markers.matches(".calculator-guides")) {
-                    const { bounds, timing } = curveReveal;
-                    for (const guide of markers.children) {
-                        const position = guide.querySelector("line").x1.baseVal.value;
-                        const progress = Math.max(
-                            0,
-                            Math.min(1, (position - bounds.x) / bounds.width),
-                        );
-                        animations.push(
-                            play(
-                                svg,
-                                guide,
-                                [
-                                    { opacity: 0, offset: 0 },
-                                    { opacity: 0, offset: progress },
-                                    { opacity: 1, offset: progress },
-                                    { opacity: 1, offset: 1 },
-                                ],
-                                timing,
-                            ),
-                        );
+        const animations = [];
+        sweeps.set(svg, { startAt, animations });
+        queue(
+            svg,
+            () => {
+                const curves = svg.querySelectorAll(
+                    ".calculator-curve:not([hidden]), .calculator-chart-points, .calculator-reference",
+                );
+                curves.forEach((curve, index) => {
+                    const from =
+                        !guidesAlongCurve && curve.matches(".calculator-curve")
+                            ? calculatorCurveStart
+                            : undefined;
+                    animations.push(sweep(svg, curve, index * 65, { from }));
+                });
+
+                const curveEnd =
+                    animations.at(-1)?.effect.getComputedTiming().endTime ??
+                    0;
+                const curve = guidesAlongCurve && animations[0]?.effect;
+                for (const group of svg.querySelectorAll(
+                    ".calculator-markers, .calculator-guides",
+                )) {
+                    if (curve && group.matches(".calculator-guides")) {
+                        const bounds = curve.target.getBBox();
+                        const timing = curve.getTiming();
+                        for (const guide of group.children) {
+                            const x = guide.querySelector("line").x1.baseVal.value;
+                            const offset = Math.max(
+                                0,
+                                Math.min(1, (x - bounds.x) / bounds.width),
+                            );
+                            const keyframes = {
+                                opacity: [0, 0, 1, 1],
+                                offset: [0, offset, offset, 1],
+                            };
+                            animations.push(play(svg, guide, keyframes, timing));
+                        }
+                        continue;
                     }
-                } else {
                     animations.push(
-                        play(svg, markers, [{ opacity: 0 }, { opacity: 1 }], {
+                        play(svg, group, [{ opacity: 0 }, { opacity: 1 }], {
                             duration: 300,
                             delay: guidesAlongCurve ? curveEnd : 900,
                         }),
                     );
                 }
-            }
-            void startAfterPaint(svg, reveal);
-        }, 0.5);
+
+                if (startAt > 0) {
+                    for (const animation of animations) {
+                        const endTime = animation.effect.getComputedTiming().endTime;
+                        if (startAt < endTime) animation.currentTime = startAt;
+                        else animation.cancel();
+                    }
+                }
+            },
+            0.5,
+            { nextFrame: startAt === 0 },
+        );
     }
 
     return { render, time };

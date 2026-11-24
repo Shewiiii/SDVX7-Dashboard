@@ -176,11 +176,15 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        const [{ createSettingsPanel }, { createParticleRenderer }] =
-            await Promise.all([
-                import("/js/core/settings-panel.js"),
-                import("/js/core/ambient-particles.js"),
-            ]);
+        const [
+            { createSettingsPanel },
+            { createParticleRenderer },
+            { hasVisiblePanelBackdrop },
+        ] = await Promise.all([
+            import("/js/core/settings-panel.js"),
+            import("/js/core/ambient-particles.js"),
+            import("/js/core/panels.js"),
+        ]);
         const toggle = document.getElementById("settings-toggle");
         const panel = document.getElementById("settings-panel");
         const backdrop = document.getElementById("settings-backdrop");
@@ -192,6 +196,7 @@
         const particleLayer = document.querySelector(".ambient-particles");
         const particleRenderer = createParticleRenderer(
             particleLayer.querySelector("canvas"),
+            hasVisiblePanelBackdrop,
         );
         const particleDensity = document.getElementById(
             "settings-particle-density",
@@ -327,7 +332,14 @@
 
         function syncParticles() {
             cancelAnimationFrame(particleFrame);
-            if (!particleRenderer || particleLayer.hidden) return;
+            particleLayer.hidden =
+                !themeSettings[theme]["background-particles"] || document.hidden;
+            if (
+                !particleRenderer ||
+                particleLayer.hidden ||
+                hasVisiblePanelBackdrop()
+            )
+                return;
             particleRenderer.setCount(
                 Math.round(192 * particleDensity.valueAsNumber),
             );
@@ -336,13 +348,14 @@
                 return;
             }
 
-            const start = performance.now();
             const initialTime = particleTime;
             const frameInterval = 1000 / particleFps.valueAsNumber;
+            let start;
             let frameIndex = -1;
 
             function drawParticles(now) {
                 particleFrame = requestAnimationFrame(drawParticles);
+                start ??= now;
                 const elapsed = now - start;
                 const index = Math.floor((elapsed + 0.5) / frameInterval);
                 if (index <= frameIndex) return;
@@ -355,12 +368,11 @@
                     false,
                 );
             }
-            drawParticles(start);
+            particleFrame = requestAnimationFrame(drawParticles);
         }
 
         function updateParticles() {
             const enabled = themeSettings[theme]["background-particles"];
-            particleLayer.hidden = !enabled || document.hidden;
             syncParticles();
             for (const button of particleButtons) {
                 const selected =
@@ -370,7 +382,11 @@
             }
         }
 
-        document.addEventListener("visibilitychange", updateParticles);
+        document.addEventListener("visibilitychange", syncParticles);
+        document.addEventListener(
+            "dashboard:panel-backdrop-change",
+            syncParticles,
+        );
         phone.addEventListener("change", syncParticles);
         reducedMotion.addEventListener("change", syncParticles);
         for (const button of particleButtons) {

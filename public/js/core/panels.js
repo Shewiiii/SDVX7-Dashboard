@@ -6,11 +6,25 @@ const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 let background = [];
 let listening = false;
 let previousOverflow = "";
+let backdropVisible = false;
 
 const focusableSelector =
     'a[href], button, input, select, textarea, [tabindex], [contenteditable="true"]';
 
 const nextFrame = () => new Promise(requestAnimationFrame);
+
+export function hasVisiblePanelBackdrop() {
+    return panels.some(
+        ({ dialog }) => dialog.open && dialog.classList.contains("is-visible"),
+    );
+}
+
+function syncPanelBackdrop() {
+    const visible = hasVisiblePanelBackdrop();
+    if (visible === backdropVisible) return;
+    backdropVisible = visible;
+    document.dispatchEvent(new Event("dashboard:panel-backdrop-change"));
+}
 
 async function prepareOpening(dialog, layer) {
     if (reducedMotion.matches) return;
@@ -70,6 +84,7 @@ function syncPanels() {
         document.documentElement.style.overflow = previousOverflow;
         background = [];
     }
+    syncPanelBackdrop();
 }
 
 function listen() {
@@ -84,7 +99,9 @@ function listen() {
                 ({ dialog }) => dialog === event.target,
             );
             if (index < 0 || event.target.open) return;
-            const [{ dialog, layer, trigger, historyEntry }] = panels.splice(index, 1);
+            const [{ dialog, layer, trigger, historyEntry, backdropObserver }] =
+                panels.splice(index, 1);
+            backdropObserver.disconnect();
             closePanelHistory(historyEntry);
             openings.get(dialog)?.();
             layer.before(dialog);
@@ -163,7 +180,9 @@ export function showPanel(dialog, { linked = false } = {}) {
               const cancel = new Event("cancel", { cancelable: true });
               if (dialog.dispatchEvent(cancel)) dialog.close();
           });
-    panels.push({ dialog, layer, trigger, historyEntry });
+    const backdropObserver = new MutationObserver(syncPanelBackdrop);
+    backdropObserver.observe(dialog, { attributeFilter: ["class", "open"] });
+    panels.push({ dialog, layer, trigger, historyEntry, backdropObserver });
     void prepareOpening(dialog, layer);
     dialog.show();
     syncPanels();

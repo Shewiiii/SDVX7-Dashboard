@@ -36,7 +36,7 @@ function createParticle(index) {
     };
 }
 
-export function createParticleRenderer(canvas) {
+export function createParticleRenderer(canvas, isPaused = () => false) {
     const context = canvas.getContext("2d");
     const atlas = document.createElement("canvas");
     const sprites = atlas.getContext("2d");
@@ -173,7 +173,7 @@ export function createParticleRenderer(canvas) {
     new ResizeObserver(([{ contentRect }]) => {
         width = contentRect.width;
         height = contentRect.height;
-        if (still) draw(0, 1, true);
+        if (still && !isPaused()) draw(0, 1, true);
     }).observe(canvas);
 
     return { setCount, draw };

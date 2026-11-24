@@ -119,7 +119,7 @@ export function createProfileSummary({
                 song?.difficulties.find(
                     (chart) => chart.diff_idx === bestChart.diff_idx,
                 )?.level ?? bestChart.level;
-            const label = `${song?.artist ?? bestChart.artist ?? ""} - ${song?.title ?? chartTitle(bestChart)} (${DIFFS[bestChart.diff_idx]} ${level ?? "—"})`;
+            const label = `${song?.title ?? chartTitle(bestChart)} (${DIFFS[bestChart.diff_idx]} ${level ?? "—"})`;
             const link = document.createElement("button");
             link.type = "button";
             link.className = "metric-chart-link open-chart";

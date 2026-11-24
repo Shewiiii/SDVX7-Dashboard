@@ -20,6 +20,8 @@ const monthDate = new Intl.DateTimeFormat(undefined, {
     month: "short",
     year: "numeric",
 });
+const fullAccentPlayCount = 20;
+const lowPlayCountThreshold = 10;
 
 function periodStart(time, unit) {
     const start = new Date(time);
@@ -317,6 +319,16 @@ export function createDifficultyProgress({
             );
         }
 
+        const gradientId = "progress-play-gradient";
+        const gradient = svgElement("linearGradient", {
+            id: gradientId,
+            gradientUnits: "userSpaceOnUse",
+            x1: left,
+            x2: right,
+        });
+        const defs = svgElement("defs");
+        defs.append(gradient);
+
         const series = svgElement("g", { class: "history-series" });
         let segment = [];
         function appendLine() {
@@ -325,7 +337,7 @@ export function createDifficultyProgress({
                     svgElement("path", {
                         d: pathData(segment, x, y),
                         fill: "none",
-                        stroke: "var(--accent)",
+                        stroke: `url(#${gradientId})`,
                         "stroke-width": 2,
                         "stroke-linecap": "round",
                         "stroke-linejoin": "round",
@@ -364,14 +376,24 @@ export function createDifficultyProgress({
             }
             const value = clearRate(period);
             segment.push([column, value]);
-            dots.push(
-                svgElement("circle", {
-                    cx: x(column),
-                    cy: y(value),
-                    r: 3.5,
-                    class: "hover-point",
-                }),
-            );
+            const dot = svgElement("circle", {
+                cx: x(column),
+                cy: y(value),
+                r: 3.5,
+                class: "hover-point",
+            });
+            const stop = svgElement("stop", {
+                class: "progress-play-stop",
+                offset: column / Math.max(1, lastColumn),
+            });
+            const accent =
+                period.attempts >= fullAccentPlayCount
+                    ? 100
+                    : (100 * (period.attempts - 1)) / (fullAccentPlayCount - 1);
+            dot.style.setProperty("--progress-accent-weight", `${accent}%`);
+            stop.style.setProperty("--progress-accent-weight", `${accent}%`);
+            dots.push(dot);
+            gradient.append(stop);
         }
         appendLine();
         series.append(...dots);
@@ -381,7 +403,7 @@ export function createDifficultyProgress({
             class: "crosshair",
             visibility: "hidden",
         });
-        svg.append(series, crosshair);
+        svg.append(defs, series, crosshair);
         plot = { width, left, right, x, crosshair, signature };
         weekSelect.replaceChildren(
             ...periods.map(
@@ -425,9 +447,23 @@ export function createDifficultyProgress({
             const value = document.createElement("div");
             value.className = "popup-value";
             value.textContent = displayRate(period);
-            const attempts = document.createElement("small");
-            attempts.textContent = `${number(period.attempts)} ${period.attempts === 1 ? "play" : "plays"}`;
-            popup.replaceChildren(heading, value, attempts);
+            const clearRow = document.createElement("div");
+            clearRow.className = "popup-line";
+            const clears = document.createElement("span");
+            clears.textContent = period.attempts
+                ? `${number(period.clear)} of ${number(period.attempts)} cleared`
+                : `${number(0)} plays`;
+            clearRow.append(clears);
+            popup.replaceChildren(heading, value, clearRow);
+            if (
+                period.attempts > 0 &&
+                period.attempts < lowPlayCountThreshold
+            ) {
+                const notice = document.createElement("span");
+                notice.className = "progress-low-play-count";
+                notice.textContent = "Low play count";
+                clearRow.before(notice);
+            }
             positionChartPopup(popup, wrap, event);
         },
         hide: hidePopup,

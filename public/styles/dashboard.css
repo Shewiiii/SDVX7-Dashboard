@@ -773,6 +773,20 @@
     stroke-width: 2;
     pointer-events: none;
 }
+#progress-chart .hover-point,
+#progress-chart .progress-play-stop {
+    --progress-play-color: color-mix(
+        in srgb,
+        var(--accent) var(--progress-accent-weight),
+        var(--faint)
+    );
+}
+#progress-chart .hover-point {
+    fill: var(--progress-play-color);
+}
+#progress-chart .progress-play-stop {
+    stop-color: var(--progress-play-color);
+}
 .chart-empty {
     position: absolute;
     inset: 0;
@@ -822,9 +836,10 @@
     color: var(--accent);
     margin: 3px 0;
 }
-.chart-popup small {
-    color: var(--muted);
-    font-size: 9px;
+.progress-low-play-count {
+    display: block;
+    margin-top: 7px;
+    color: var(--orange);
 }
 .chart-summary {
     display: flex;
@@ -1992,6 +2007,13 @@ footer > :last-child {
     padding: 0 var(--panel-padding-inline);
     text-align: center;
     font-size: 14px;
+}
+#progress-footer .chart-summary {
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+#progress-color-note {
+    font-size: 12px;
 }
 .progress-breakdown {
     margin: 0 var(--panel-padding-inline) 10px;

@@ -286,8 +286,10 @@ export function renderTimingHistogram(
             "Approximate offset (ms)",
         ),
     );
+    const accuracy =
+        stats.accuracy === null ? "—" : `${stats.accuracy.toFixed(2)}%`;
     $("timing-summary").innerHTML =
-        `<span><strong>${number(stats.plays)}</strong> plays</span><span><strong>${number(stats.hits)}</strong> notes</span><span>Average <strong>${timingText(stats.average)}</strong></span>`;
+        `<span><strong>${number(stats.plays)}</strong> plays</span><span><strong>${number(stats.hits)}</strong> notes</span><span>Average <strong>${timingText(stats.average)}</strong></span><span><button type="button" class="chart-vf-trigger" aria-describedby="chart-vf-popup" data-chart-vf-description="The following formula is applied to all plays in the selected timerange: Accuracy = (S-CRITICAL + CRITICAL) / (S-CRITICAL + CRITICAL + NEAR + ERROR). It also takes into account hold and laser ticks.">Accuracy</button> <strong>${accuracy}</strong></span>`;
     const target = {
         heights: stats.bins.map((count) => count / maximum),
         maximum,
@@ -328,7 +330,8 @@ export function renderTimingHistogram(
     timingPlot = plot;
     const start = previous ?? { heights: zeros, maximum };
     if (
-        !reveal && transition &&
+        !reveal &&
+        transition &&
         (start.maximum !== maximum ||
             target.heights.some(
                 (height, index) => height !== start.heights[index],

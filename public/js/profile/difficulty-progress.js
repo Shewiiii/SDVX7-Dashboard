@@ -90,9 +90,6 @@ export function indexDifficultyProgress(
         levels.add(level);
         if (time < cutoff) continue;
 
-        const start = periodStart(time, unit);
-        if (!periods.has(start)) periods.set(start, new Map());
-
         const key = chartKey(play);
         if (
             play.score < minimum &&
@@ -101,6 +98,8 @@ export function indexDifficultyProgress(
         )
             continue;
 
+        const start = periodStart(time, unit);
+        if (!periods.has(start)) periods.set(start, new Map());
         const byLevel = periods.get(start);
         if (!byLevel.has(level)) byLevel.set(level, new Map());
         const charts = byLevel.get(level);
@@ -119,23 +118,22 @@ export function indexDifficultyProgress(
         entry.clear += Number(play.clear_type >= 2);
     }
 
-    const starts = [...periods.keys()];
     return {
         periods,
         levels: [...levels].sort((a, b) => b - a),
         unit,
-        first: days ? periodStart(cutoff, unit) : starts[0],
-        last: days
-            ? Math.max(periodStart(now, unit), starts.at(-1) ?? -Infinity)
-            : starts.at(-1),
     };
 }
 
 export function difficultyProgressWindow(index, level) {
+    const starts = [...index.periods.keys()].filter((start) =>
+        index.periods.get(start).has(level),
+    );
+    const last = starts.at(-1);
     const periods = [];
     for (
-        let start = index.first;
-        start <= index.last;
+        let start = starts[0];
+        start <= last;
         start = nextPeriod(start, index.unit)
     ) {
         const charts = [

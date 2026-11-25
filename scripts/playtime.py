@@ -4,7 +4,7 @@ from pathlib import Path
 from scripts.companion import proxy_module, resolve_proxy, shared_settings
 
 
-def playtime_snapshot(proxy: Path) -> dict[str, int] | None:
+def playtime_snapshot(proxy: Path) -> dict[str, int | dict[str, int]] | None:
     try:
         helpers = proxy_module(proxy, "playtime")
         config = shared_settings(proxy)

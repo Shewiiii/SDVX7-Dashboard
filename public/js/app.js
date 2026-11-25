@@ -17,6 +17,7 @@ import {
 } from "./charts/chart-markup.js";
 import { createProfileSummary } from "./profile/summary.js";
 import { createPerformanceHistory } from "./profile/performance-history.js";
+import { createDailyActivity } from "./profile/daily-activity.js";
 import { createDifficultyProgress } from "./profile/difficulty-progress.js";
 import { renderTimingHistogram } from "./profile/timing-histogram.js";
 import {
@@ -106,6 +107,7 @@ const performanceHistory = createPerformanceHistory({
     rankingOptions,
     shown,
 });
+const dailyActivity = createDailyActivity();
 const difficultyProgress = createDifficultyProgress({
     coverMarkup,
     chartInfo,
@@ -272,12 +274,19 @@ function renderChart({ animate = true, transition = false } = {}) {
             if (!motion.isPending($(id))) motion.stop($(id));
     }
     const now = Date.now();
-    if (view === "overview")
+    if (view === "overview") {
+        dailyActivity.render(data.plays, data.state.daily_playtime, {
+            days,
+            now,
+            animate,
+            transition,
+        });
         difficultyProgress.update(data.plays, songs, {
             days,
             now,
             ...rankingOptions(),
         });
+    }
     renderTimingHistogram(data.plays, {
         days,
         difficulty,

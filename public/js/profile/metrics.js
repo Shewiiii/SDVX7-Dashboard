@@ -47,6 +47,87 @@ export function playtimeText(seconds) {
     return `${hours.toLocaleString()}h ${String(minutes).padStart(2, "0")}m`;
 }
 
+export const DAY_MS = 86400000;
+
+function localCalendarDay(time) {
+    const offset = new Date(time).getTimezoneOffset() * 60000;
+    return Math.floor((time - offset) / DAY_MS);
+}
+
+function weekStart(day) {
+    const weekday = new Date(day * DAY_MS).getUTCDay();
+    return day - ((weekday + 6) % 7);
+}
+
+function currentStreak(periods, current, step) {
+    let period = periods.has(current) ? current : current - step;
+    let count = 0;
+    while (periods.has(period)) {
+        count++;
+        period -= step;
+    }
+    return count;
+}
+
+export function dailyActivity(
+    plays,
+    dailyPlaytime,
+    { days = 0, now = Date.now() } = {},
+) {
+    const playCounts = new Map();
+    for (const play of plays) {
+        const time = Date.parse(play.received_at || play.timestamp);
+        if (!Number.isFinite(time)) continue;
+        const day = localCalendarDay(time);
+        playCounts.set(day, (playCounts.get(day) ?? 0) + 1);
+    }
+    const byDay = ([a], [b]) => a - b;
+    const allCounts = [...playCounts].sort(byDay);
+    const allTimes = Object.entries(dailyPlaytime ?? {})
+        .map(([day, seconds]) => [Date.parse(day) / DAY_MS, seconds])
+        .filter(
+            ([day, seconds]) =>
+                Number.isInteger(day) &&
+                Number.isSafeInteger(seconds) &&
+                seconds > 0,
+        )
+        .sort(byDay);
+    const activeDays = new Set([
+        ...playCounts.keys(),
+        ...allTimes.map(([day]) => day),
+    ]);
+    const activeWeeks = new Set([...activeDays].map(weekStart));
+    const today = localCalendarDay(now);
+    const cutoff = days ? today - days + 1 : -Infinity;
+    const visible = ([day]) => day >= cutoff && (!days || day <= today);
+    const countPoints = allCounts.filter(visible);
+    const timePoints = allTimes.filter(visible);
+    const firstCount = allCounts[0]?.[0] ?? Infinity;
+    const lastCount = allCounts.at(-1)?.[0] ?? -Infinity;
+    const first = Math.min(
+        countPoints[0]?.[0] ?? Infinity,
+        timePoints[0]?.[0] ?? Infinity,
+    );
+    const last = Math.max(
+        countPoints.at(-1)?.[0] ?? -Infinity,
+        timePoints.at(-1)?.[0] ?? -Infinity,
+    );
+    return {
+        hasActivity: first <= last,
+        first,
+        last,
+        countStart: Math.max(first, firstCount),
+        countEnd: Math.min(last, lastCount),
+        playCounts,
+        countPoints,
+        timeByDay: new Map(timePoints),
+        timePoints,
+        dayStreak: currentStreak(activeDays, today, 1),
+        weekStreak: currentStreak(activeWeeks, weekStart(today), 7),
+        averageSeconds: average(timePoints.map(([, seconds]) => seconds)),
+    };
+}
+
 // Same thresholds and quarter ranks as the proxy's profile command.
 export const VF_CLASSES = [
     { name: "Sienna", minimum: 0, step: 2.5 },
@@ -91,7 +172,7 @@ export function sessions(plays) {
 }
 
 export const playCutoff = (days, now) =>
-    days ? now - days * 86400000 : -Infinity;
+    days ? now - days * DAY_MS : -Infinity;
 
 export function performance(
     plays,

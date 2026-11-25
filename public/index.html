@@ -866,6 +866,57 @@
                             </div>
                         </section>
                         <section
+                            id="daily-activity"
+                            class="timing-section"
+                            aria-labelledby="daily-activity-title"
+                            hidden
+                        >
+                            <div class="timing-heading">
+                                <h2 id="daily-activity-title">Daily activity</h2>
+                            </div>
+                            <div
+                                class="chart-legend"
+                                role="group"
+                                aria-label="Visible daily activity series"
+                            >
+                                <button
+                                    type="button"
+                                    data-activity-toggle="playtime"
+                                    aria-pressed="true"
+                                >
+                                    <i class="dot daily-activity-playtime-dot"></i>
+                                    Active playtime
+                                </button>
+                                <button
+                                    type="button"
+                                    data-activity-toggle="count"
+                                    aria-pressed="true"
+                                >
+                                    <i class="dot daily-activity-count-dot"></i>
+                                    Play count
+                                </button>
+                            </div>
+                            <div
+                                class="timing-chart-wrap"
+                                id="daily-activity-chart-wrap"
+                            >
+                                <svg
+                                    id="daily-activity-chart"
+                                    class="chart-svg"
+                                    role="img"
+                                    aria-label="Daily active playtime and play count"
+                                ></svg>
+                                <div
+                                    class="chart-popup"
+                                    id="daily-activity-popup"
+                                    hidden
+                                ></div>
+                            </div>
+                            <div class="chart-summary">
+                                <span id="daily-activity-summary"></span>
+                            </div>
+                        </section>
+                        <section
                             id="difficulty-progress"
                             class="timing-section"
                             aria-labelledby="difficulty-progress-title"

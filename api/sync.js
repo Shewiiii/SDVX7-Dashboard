@@ -140,6 +140,7 @@ export default async function handler(req, res) {
           'favorite_song_ids', COALESCE(EXCLUDED.record->'favorite_song_ids', dashboard_state.record->'favorite_song_ids', '[]'::jsonb),
           'appeal_cards', COALESCE(EXCLUDED.record->'appeal_cards', dashboard_state.record->'appeal_cards', '[]'::jsonb),
           'playtime', COALESCE(EXCLUDED.record->'playtime', dashboard_state.record->'playtime', 'null'::jsonb),
+          'daily_playtime', COALESCE(EXCLUDED.record->'daily_playtime', dashboard_state.record->'daily_playtime', '{}'::jsonb),
           'skill_level', COALESCE(EXCLUDED.record->'skill_level', dashboard_state.record->'skill_level', 'null'::jsonb),
           'profile_radar', COALESCE(EXCLUDED.record->'profile_radar', dashboard_state.record->'profile_radar', 'null'::jsonb))`);
         if (state || plays.length || observations.length)

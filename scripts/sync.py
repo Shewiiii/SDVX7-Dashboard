@@ -497,6 +497,10 @@ def observation_record(
 def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]:
     preferences = dashboard_settings()
     playtime = playtime_snapshot(proxy)
+    daily_playtime = playtime.pop("daily_seconds", None) if playtime else None
+    playtime_fields: dict[str, Any] = {"playtime": playtime}
+    if daily_playtime:
+        playtime_fields["daily_playtime"] = daily_playtime
     path = proxy / "player-data/server_data.json"
     if not path.exists():
         state = {
@@ -506,7 +510,7 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
             "charts": [],
             "appeal_card": getattr(catalog, "appeal_card", None),
             "appeal_cards": getattr(catalog, "appeal_cards", []),
-            "playtime": playtime,
+            **playtime_fields,
             "skill_level": None,
             "crew_id": None,
             "favorite_song_ids": [],
@@ -582,7 +586,7 @@ def snapshot(proxy: Path, catalog: Catalog) -> tuple[dict[str, Any], str | None]
         "charts": charts,
         "appeal_card": getattr(catalog, "appeal_card", None),
         "appeal_cards": getattr(catalog, "appeal_cards", []),
-        "playtime": playtime,
+        **playtime_fields,
         "skill_level": skill_level,
         "crew_id": crew_id,
         "favorite_song_ids": favorite_song_ids,

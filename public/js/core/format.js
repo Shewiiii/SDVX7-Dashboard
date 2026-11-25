@@ -11,16 +11,18 @@ export const escape = (value) =>
             })[c],
     );
 export const number = (value) => (value == null ? "—" : value.toLocaleString());
-export const date = (value) =>
+export const date = (value, timeZone) =>
     new Date(value).toLocaleDateString(undefined, {
         day: "2-digit",
         month: "short",
         year: "numeric",
+        timeZone,
     });
-export const shortDate = (value) =>
+export const shortDate = (value, timeZone) =>
     new Date(value).toLocaleDateString(undefined, {
         day: "2-digit",
         month: "short",
+        timeZone,
     });
 export const clock = (value) =>
     new Date(value).toLocaleTimeString(undefined, {

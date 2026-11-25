@@ -748,6 +748,7 @@
 }
 #chart,
 #progress-chart,
+#daily-activity-chart,
 #vf-distribution-chart {
     overflow: visible;
     touch-action: pan-y pinch-zoom;
@@ -755,6 +756,7 @@
 }
 #chart .crosshair,
 #progress-chart .crosshair,
+#daily-activity-chart .crosshair,
 #vf-distribution-chart .crosshair {
     stroke: color-mix(
         in srgb,
@@ -853,6 +855,7 @@
 #chart-summary,
 #timing-summary,
 #progress-summary,
+#daily-activity-summary,
 #vf-distribution-summary {
     display: flex;
     flex-wrap: wrap;
@@ -861,6 +864,7 @@
 #chart-summary > span,
 #timing-summary > span,
 #progress-summary > span,
+#daily-activity-summary > span,
 #vf-distribution-summary > span {
     white-space: nowrap;
 }
@@ -1588,8 +1592,15 @@ footer > :last-child {
 .vf-distribution-section {
     --clear-color: var(--accent);
 }
-.vf-distribution-chart-wrap {
+.vf-distribution-chart-wrap,
+#daily-activity-chart-wrap {
     position: relative;
+}
+.daily-activity-playtime-dot {
+    background: var(--accent);
+}
+.daily-activity-count-dot {
+    background: var(--faint);
 }
 .vf-distribution-class-guide {
     pointer-events: none;

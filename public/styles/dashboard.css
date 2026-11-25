@@ -1390,6 +1390,15 @@ td.row-index + td {
 .clear-label.puc {
     color: #d8c295;
 }
+.clear-label.skill-analyzer-clear {
+    display: block;
+    flex: 1;
+    contain: inline-size;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--accent);
+}
 .panel-foot {
     font: 12px var(--sans);
     color: var(--faint);

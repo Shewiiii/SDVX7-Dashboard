@@ -55,6 +55,7 @@ export function indexDifficultyProgress(
         .map((play) => ({ play, time: Date.parse(play.received_at) }))
         .filter(
             ({ play, time }) =>
+                play.is_skill_analyzer !== true &&
                 Number.isFinite(time) &&
                 Number.isSafeInteger(play.score) &&
                 play.score >= 0 &&

@@ -13,6 +13,7 @@ import {
 import { SONG_GENRES, SONG_VERSIONS } from "./song-metadata.js";
 import { BEGINNER_SONG_IDS } from "../../game-data/beginner-songs.js";
 import { SKILL_ANALYZER_COURSES } from "../../game-data/skill-analyzer.js";
+import { danName } from "./skill-courses.js";
 import {
     UNLOCK_METHODS,
     getCachedUnlockMethods,
@@ -44,12 +45,7 @@ const versionOrder = (name) => {
     return position < 0 ? versionNames.length : position;
 };
 
-export function danName(level) {
-    if (level === 12) return "Infinite Dan";
-    const suffix =
-        level === 1 ? "st" : level === 2 ? "nd" : level === 3 ? "rd" : "th";
-    return `${level}${suffix} Dan`;
-}
+export { danName };
 
 export function folderDifficultyRange(items) {
     const charts = items

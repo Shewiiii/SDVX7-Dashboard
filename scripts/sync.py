@@ -75,7 +75,7 @@ def search_forms(text: str, *, reading: bool = False) -> list[str]:
     return sorted(f for f in forms if f)
 
 
-PLAY_SCHEMA = 5
+PLAY_SCHEMA = 6
 DETAILS_SCHEMA = 8
 UPLOAD_COMPRESSION: dict[str, bool] = {}
 CLEARS = {1: 50, 2: 100, 3: 102, 4: 106, 5: 110, 6: 104}
@@ -451,6 +451,9 @@ def play_record(record: dict[str, Any], catalog: Catalog) -> dict[str, Any]:
         for key in judgement_keys
         if type(value := counts.get(key)) is int and 0 <= value <= 10000000
     }
+    options = record.get("result_options")
+    skill_analyzer = isinstance(options, dict) and options.get("mode") in (2, "2")
+    mode_fields = {"is_skill_analyzer": True} if skill_analyzer else {}
     return {
         "music_id": mid,
         "diff_idx": diff,
@@ -464,6 +467,7 @@ def play_record(record: dict[str, Any], catalog: Catalog) -> dict[str, Any]:
         "timing_histogram": timing_histogram,
         "timing_eligible": timing_histogram is not None,
         "judgments": judgments or None,
+        **mode_fields,
     }
 
 
@@ -758,6 +762,12 @@ def upload(
             if payload.get("plays") and result.get("play_schema", 0) < 4:
                 raise RuntimeError(
                     "Deploy the updated dashboard API before syncing timing histograms"
+                )
+            if result.get("play_schema", 0) < 5 and any(
+                play.get("is_skill_analyzer") for play in payload.get("plays", [])
+            ):
+                raise RuntimeError(
+                    "Deploy the updated dashboard API before syncing Skill Analyzer plays"
                 )
             if payload.get("audio") and result.get("audio_schema", 0) < (
                 2 if any(a.get("chart_url") for a in payload["audio"]) else 1

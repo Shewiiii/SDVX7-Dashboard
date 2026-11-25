@@ -16,11 +16,17 @@ import {
     formatRank,
 } from "../core/format.js";
 import { songPath } from "../core/song-links.js";
+import { skillCourseLabel } from "../library/skill-courses.js";
 
 export const badge = (p) =>
     `<span class="difficulty-badge d${p.diff_idx}">${DIFFS[p.diff_idx]}${p.level ? " " + escape(p.level) : ""}</span>`;
-export const clear = (p) =>
-    `<span class="clear-label ${p.clear_type === 6 ? "puc" : ""}">${CLEARS[p.clear_type] || "—"}</span>`;
+export function clear(p) {
+    if (p.is_skill_analyzer === true) {
+        const label = escape(skillCourseLabel(p));
+        return `<span class="clear-label skill-analyzer-clear" title="${label}">${label}</span>`;
+    }
+    return `<span class="clear-label ${p.clear_type === 6 ? "puc" : ""}">${CLEARS[p.clear_type] || "—"}</span>`;
+}
 export const gradeMarkup = (score) => {
     const label = grade(score);
     return label === "—"

@@ -58,7 +58,7 @@ function renderSeries(svg, lines, series, { x, left, right, top, bottom }) {
             "text",
             {
                 x: isPlaytime ? left : right,
-                y: top - 11,
+                y: top - 16,
                 "text-anchor": isPlaytime ? "start" : "end",
                 class: "axis-caption",
             },
@@ -72,7 +72,7 @@ function renderSeries(svg, lines, series, { x, left, right, top, bottom }) {
                 "text",
                 {
                     x: isPlaytime ? left - 8 : right + 8,
-                    y: y(value) + 3,
+                    y: y(value) + 4,
                     "text-anchor": isPlaytime ? "end" : "start",
                 },
                 series.tick(value),
@@ -235,7 +235,7 @@ export function createDailyActivity() {
         const height = mobile ? 175 : 205;
         const left = mobile ? 52 : 69;
         const right = width - (mobile ? 46 : 72);
-        const top = 27;
+        const top = 33;
         const bottom = height - 33;
         const x = (day) =>
             left + ((day - first + 0.5) / dayCount) * (right - left);

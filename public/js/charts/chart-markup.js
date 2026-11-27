@@ -85,7 +85,7 @@ export function createChartMarkup({ getData, getSongs, newPlayAttributes }) {
         const regularPlays = plays.filter(
             (play) => play.is_skill_analyzer !== true,
         );
-        const mark =
+        const regularMark =
             saved || regularPlays.length
                 ? Math.max(
                       saved?.clear_type || 0,
@@ -105,29 +105,35 @@ export function createChartMarkup({ getData, getSongs, newPlayAttributes }) {
                 ?.difficulties.find(
                     (difficulty) => difficulty.diff_idx === chart.diff_idx,
                 )?.level;
-        const danOnly = !saved && plays.length > 0 && !regularPlays.length;
+        const chartHistory = data.plays.filter(
+            (play) =>
+                play.music_id === chart.music_id &&
+                play.diff_idx === chart.diff_idx,
+        );
+        const hasDan = chartHistory.some(
+            (play) => play.is_skill_analyzer === true,
+        );
+        const danOnly = !saved && hasDan && !regularPlays.length;
         const chartVf =
-            calculateChartVf(level, score, mark) ??
+            calculateChartVf(level, score, regularMark) ??
             saved?.vf ??
             (danOnly ? 0 : null);
         const popupText =
             "Chart VF combines the highest regular-play score and clear mark for this chart, even when they come from different plays";
         const averageTiming = average(
-            data.plays
-                .filter(
-                    (play) =>
-                        play.music_id === chart.music_id &&
-                        play.diff_idx === chart.diff_idx &&
-                        Number.isFinite(play.timing),
-                )
-                .map((play) => play.timing),
+            chartHistory.map((play) => play.timing).filter(Number.isFinite),
         );
+        // A Dan attempt earns the Played badge for display
+        const mark = hasDan ? Math.max(regularMark ?? 0, 1) : regularMark;
+        // The chart summary uses the in-game Played label beside the clear-mark icon
         const clearLabel =
             mark === null
                 ? "—"
-                : mark >= 2 && mark <= 4
-                  ? `${CLEARS[mark]} Clear`
-                  : CLEARS[mark];
+                : mark === 1
+                  ? "Played"
+                  : mark >= 2 && mark <= 4
+                    ? `${CLEARS[mark]} Clear`
+                    : CLEARS[mark];
         const clearIcon =
             mark === null
                 ? ""

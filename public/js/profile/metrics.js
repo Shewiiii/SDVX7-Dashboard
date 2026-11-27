@@ -49,9 +49,64 @@ export function playtimeText(seconds) {
 
 export const DAY_MS = 86400000;
 
-function localCalendarDay(time) {
+export function localCalendarDay(time) {
     const offset = new Date(time).getTimezoneOffset() * 60000;
     return Math.floor((time - offset) / DAY_MS);
+}
+
+export function calendarDayStart(day) {
+    const utc = new Date(day * DAY_MS);
+    const local = new Date(0);
+    local.setFullYear(
+        utc.getUTCFullYear(),
+        utc.getUTCMonth(),
+        utc.getUTCDate(),
+    );
+    return local.setHours(0, 0, 0, 0);
+}
+
+function trackedPlaytime(dailyPlaytime) {
+    return Object.entries(dailyPlaytime ?? {})
+        .map(([day, seconds]) => [Date.parse(day) / DAY_MS, seconds])
+        .filter(
+            ([day, seconds]) =>
+                Number.isInteger(day) &&
+                Number.isSafeInteger(seconds) &&
+                seconds > 0,
+        );
+}
+
+export function trackingRange(
+    plays,
+    { days = 0, now = Date.now(), observations = [], dailyPlaytime } = {},
+) {
+    let start = Infinity;
+    let end = -Infinity;
+    function include(time) {
+        if (!Number.isFinite(time)) return;
+        start = Math.min(start, time);
+        end = Math.max(end, time);
+    }
+    for (const play of plays)
+        include(Date.parse(play.received_at || play.timestamp));
+    for (const observation of observations)
+        include(Date.parse(observation.timestamp));
+    for (const [day] of trackedPlaytime(dailyPlaytime))
+        include(calendarDayStart(day));
+
+    // All graphs tied to the timeframe control start at max(today minus the
+    // selected number of days, first tracked day) and end on the last tracked day
+    // ALL starts on the first tracked day and graph filters never change the bounds
+    if (days)
+        start = Math.max(start, calendarDayStart(localCalendarDay(now) - days));
+    return start <= end
+        ? {
+              start,
+              end,
+              first: localCalendarDay(start),
+              last: localCalendarDay(end),
+          }
+        : null;
 }
 
 function weekStart(day) {
@@ -72,7 +127,11 @@ function currentStreak(periods, current, step) {
 export function dailyActivity(
     plays,
     dailyPlaytime,
-    { days = 0, now = Date.now() } = {},
+    {
+        days = 0,
+        now = Date.now(),
+        range = trackingRange(plays, { days, now, dailyPlaytime }),
+    } = {},
 ) {
     const playCounts = new Map();
     for (const play of plays) {
@@ -83,37 +142,21 @@ export function dailyActivity(
     }
     const byDay = ([a], [b]) => a - b;
     const allCounts = [...playCounts].sort(byDay);
-    const allTimes = Object.entries(dailyPlaytime ?? {})
-        .map(([day, seconds]) => [Date.parse(day) / DAY_MS, seconds])
-        .filter(
-            ([day, seconds]) =>
-                Number.isInteger(day) &&
-                Number.isSafeInteger(seconds) &&
-                seconds > 0,
-        )
-        .sort(byDay);
+    const allTimes = trackedPlaytime(dailyPlaytime).sort(byDay);
     const activeDays = new Set([
         ...playCounts.keys(),
         ...allTimes.map(([day]) => day),
     ]);
     const activeWeeks = new Set([...activeDays].map(weekStart));
     const today = localCalendarDay(now);
-    const cutoff = days ? today - days + 1 : -Infinity;
-    const visible = ([day]) => day >= cutoff && (!days || day <= today);
+    const { first = Infinity, last = -Infinity } = range ?? {};
+    const visible = ([day]) => day >= first && day <= last;
     const countPoints = allCounts.filter(visible);
     const timePoints = allTimes.filter(visible);
     const firstCount = allCounts[0]?.[0] ?? Infinity;
     const lastCount = allCounts.at(-1)?.[0] ?? -Infinity;
-    const first = Math.min(
-        countPoints[0]?.[0] ?? Infinity,
-        timePoints[0]?.[0] ?? Infinity,
-    );
-    const last = Math.max(
-        countPoints.at(-1)?.[0] ?? -Infinity,
-        timePoints.at(-1)?.[0] ?? -Infinity,
-    );
     return {
-        hasActivity: first <= last,
+        hasActivity: range !== null,
         first,
         last,
         countStart: Math.max(first, firstCount),
@@ -171,22 +214,27 @@ export function sessions(plays) {
     return groups;
 }
 
-export const playCutoff = (days, now) =>
-    days ? now - days * DAY_MS : -Infinity;
-
 export function performance(
     plays,
-    { days = 0, difficulty = 1, now = Date.now() } = {},
+    {
+        days = 0,
+        difficulty = 1,
+        now = Date.now(),
+        range = trackingRange(plays, { days, now }),
+    } = {},
 ) {
-    const cutoff = playCutoff(days, now);
+    if (!range) return [];
     return plays
-        .filter(
-            (p) =>
+        .filter((p) => {
+            const time = Date.parse(p.received_at);
+            return (
                 p.clear_type > 1 &&
                 p.diff_idx >= difficulty &&
                 Number.isFinite(p.play_vf) &&
-                Date.parse(p.received_at) >= cutoff,
-        )
+                time >= range.start &&
+                time <= range.end
+            );
+        })
         .sort(byTime);
 }
 
@@ -212,17 +260,23 @@ export function judgmentAccuracy(plays) {
 export const TIMING_OFFSETS = [87.5, 37.5, 25, 0, -25, -37.5, -87.5];
 export function timingHistogram(
     plays,
-    { days = 0, difficulty = 1, now = Date.now() } = {},
+    {
+        days = 0,
+        difficulty = 1,
+        now = Date.now(),
+        range = trackingRange(plays, { days, now }),
+    } = {},
 ) {
     const bins = Array(7).fill(0);
-    const cutoff = playCutoff(days, now);
     const recorded = [];
     for (const play of plays) {
         const histogram = play.timing_histogram;
+        const time = Date.parse(play.received_at);
         if (
+            !range ||
             play.timing_eligible !== true ||
             play.diff_idx < difficulty ||
-            !(Date.parse(play.received_at) >= cutoff) ||
+            !(time >= range.start && time <= range.end) ||
             !Array.isArray(histogram) ||
             histogram.length !== 7 ||
             !histogram.every(

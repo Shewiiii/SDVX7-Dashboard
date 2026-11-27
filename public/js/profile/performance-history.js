@@ -6,8 +6,10 @@ import { bindChartHover, positionChartPopup } from "../core/chart-hover.js";
 import {
     vf,
     average,
+    calendarDayStart,
     performance,
     rolling,
+    trackingRange,
     visibleObservations,
     calculateChartVf,
     lineValue,
@@ -114,14 +116,24 @@ export function createPerformanceHistory({
     function render({
         days,
         difficulty,
-        now = Date.now(),
+        now,
+        range: sharedRange,
         animate = true,
         transition = false,
     } = {}) {
         const data = getData();
         if (!data) return;
         const songs = getSongs();
-        const plays = performance(data.plays, { days, difficulty, now });
+        const tracking =
+            sharedRange === undefined
+                ? trackingRange(data.plays, {
+                      days,
+                      now,
+                      observations: data.observations,
+                      dailyPlaytime: data.state.daily_playtime,
+                  })
+                : sharedRange;
+        const plays = performance(data.plays, { range: tracking, difficulty });
         const svg = $("chart");
         const reveal = animate || motion.isPending(svg);
         const previous = plot;
@@ -145,18 +157,14 @@ export function createPerformanceHistory({
             right = width - (mobile ? 46 : 72),
             top = 33,
             bottom = height - 50;
-        let start = Date.parse(plays[0].received_at),
-            end = Date.parse(plays.at(-1).received_at);
+        let { start, end } = tracking;
         const history = rankingHistory(data, rankingOptions());
-        const lastObservation = history.observations.length
-            ? Math.max(
-                  ...history.observations.map((o) => Date.parse(o.timestamp)),
-              )
-            : end;
-        end = Math.max(end, lastObservation);
         if (start === end) {
-            start -= 30000;
-            end += 30000;
+            start = Math.max(start - 30000, calendarDayStart(tracking.first));
+            end = Math.min(
+                end + 30000,
+                calendarDayStart(tracking.last + 1) - 1,
+            );
         }
         const observations = visibleObservations(
             history.observations,

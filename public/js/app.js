@@ -32,7 +32,13 @@ import { initSearchTools } from "./search/search-tools.js";
 import { setSearchData } from "./search/search-query.js";
 import { createLibrary } from "./library/library.js";
 import { initLibraryView } from "./library/library-view.js";
-import { DIFFS, summary, songCatalog, chartPlays } from "./profile/metrics.js";
+import {
+    DIFFS,
+    summary,
+    songCatalog,
+    chartPlays,
+    trackingRange,
+} from "./profile/metrics.js";
 import { motion, initSegmentedControls } from "./core/motion.js";
 import { createCalculator } from "./profile/calculator.js";
 import { createAppealCardHelper } from "./crew/appeal-cards.js";
@@ -274,23 +280,28 @@ function renderChart({ animate = true, transition = false } = {}) {
             if (!motion.isPending($(id))) motion.stop($(id));
     }
     const now = Date.now();
+    const range = trackingRange(data.plays, {
+        days,
+        now,
+        observations: data.observations,
+        dailyPlaytime: data.state.daily_playtime,
+    });
     if (view === "overview") {
         dailyActivity.render(data.plays, data.state.daily_playtime, {
-            days,
+            range,
             now,
             animate,
             transition,
         });
         difficultyProgress.update(data.plays, songs, {
             days,
-            now,
+            range,
             ...rankingOptions(),
         });
     }
     renderTimingHistogram(data.plays, {
-        days,
+        range,
         difficulty,
-        now,
         animate,
         transition,
     });
@@ -298,7 +309,7 @@ function renderChart({ animate = true, transition = false } = {}) {
         animate,
         ...rankingOptions(),
     });
-    performanceHistory.render({ days, difficulty, now, animate, transition });
+    performanceHistory.render({ range, difficulty, animate, transition });
 }
 
 function updateUrl(replace = false) {

@@ -297,9 +297,13 @@ export function createDailyActivity() {
         motion.history(svg, reveal);
     }
 
-    function render(plays, dailyPlaytime, { days, now, animate, transition }) {
+    function render(
+        plays,
+        dailyPlaytime,
+        { days, range, now, animate, transition },
+    ) {
         const previous = activity;
-        activity = dailyActivity(plays, dailyPlaytime, { days, now });
+        activity = dailyActivity(plays, dailyPlaytime, { days, range, now });
         const { first, last, dayStreak, weekStreak, averageSeconds } = activity;
         const rangeChanged =
             first !== previous?.first || last !== previous?.last;

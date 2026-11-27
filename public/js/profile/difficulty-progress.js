@@ -3,7 +3,12 @@ import { bindChartHover, positionChartPopup } from "../core/chart-hover.js";
 import { date, number, shortDate } from "../core/format.js";
 import { pathData, svgElement } from "../core/svg.js";
 import { DIFFICULTY_LIMITS } from "../library/difficulty.js";
-import { chartKey, playCutoff } from "./metrics.js";
+import {
+    DAY_MS,
+    chartKey,
+    localCalendarDay,
+    trackingRange,
+} from "./metrics.js";
 import {
     maxScore,
     parseScore,
@@ -47,6 +52,7 @@ export function indexDifficultyProgress(
         aprilFools = new Set(),
         days = 0,
         now = Date.now(),
+        range = trackingRange(plays, { days, now }),
     } = {},
 ) {
     const periods = new Map();
@@ -65,12 +71,10 @@ export function indexDifficultyProgress(
                 play.clear_type <= 6,
         )
         .sort((a, b) => a.time - b.time);
-    const cutoff = playCutoff(days, now);
     const unit =
         days === 7
             ? "day"
-            : !days &&
-                attempts[0]?.time < playCutoff(120, attempts.at(-1)?.time)
+            : range && range.last - range.first > 120
               ? "month"
               : "week";
 
@@ -89,7 +93,7 @@ export function indexDifficultyProgress(
         if (!Number.isFinite(rating) || rating < 1) continue;
         const level = Math.floor(rating);
         levels.add(level);
-        if (time < cutoff) continue;
+        if (!range || time < range.start || time > range.end) continue;
 
         const key = chartKey(play);
         if (
@@ -123,17 +127,16 @@ export function indexDifficultyProgress(
         periods,
         levels: [...levels].sort((a, b) => b - a),
         unit,
+        range,
     };
 }
 
 export function difficultyProgressWindow(index, level) {
-    const starts = [...index.periods.keys()].filter((start) =>
-        index.periods.get(start).has(level),
-    );
-    const last = starts.at(-1);
+    if (!index.range) return [];
+    const last = periodStart(index.range.end, index.unit);
     const periods = [];
     for (
-        let start = starts[0];
+        let start = periodStart(index.range.start, index.unit);
         start <= last;
         start = nextPeriod(start, index.unit)
     ) {
@@ -188,7 +191,7 @@ export function createDifficultyProgress({
         songs,
         includeCustom,
         days,
-        now,
+        range,
         periods,
         selectedPeriod,
         plot;
@@ -275,6 +278,8 @@ export function createDifficultyProgress({
         const signature = JSON.stringify([
             selectedLevel,
             index.unit,
+            index.range.first,
+            index.range.last,
             periods.map(({ start, attempts, clear }) => [
                 start,
                 attempts,
@@ -294,9 +299,15 @@ export function createDifficultyProgress({
             right = width - 29,
             top = 24,
             bottom = height - 38;
-        const lastColumn = periods.length - 1;
-        const x = (column) =>
-            left + (lastColumn ? column / lastColumn : 0.5) * (right - left);
+        const { first, last } = index.range;
+        const columns = periods.map(({ start }) =>
+            Math.max(first, localCalendarDay(start)),
+        );
+        const xDay = (day) =>
+            left +
+            (first === last ? 0.5 : (day - first) / (last - first)) *
+                (right - left);
+        const x = (column) => xDay(columns[column]);
         const y = (value) => bottom - (value / 100) * (bottom - top);
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
         svg.setAttribute("aria-label", `${title} for level ${selectedLevel}`);
@@ -344,27 +355,28 @@ export function createDifficultyProgress({
                 );
             segment = [];
         }
-        const ticks = periods.map(({ start }, column) =>
+        const tickDays = [...new Set([...columns, last])];
+        const ticks = tickDays.map((day, column) =>
             svgElement(
                 "text",
-                { x: x(column), y: bottom + 22, "text-anchor": "middle" },
-                labelDate(start),
+                { x: xDay(day), y: bottom + 22, "text-anchor": "middle" },
+                day === first || day === last
+                    ? shortDate(day * DAY_MS, "UTC")
+                    : labelDate(periods[column].start),
             ),
         );
         svg.append(...ticks);
         const labelWidth = Math.max(
             ...ticks.map((tick) => tick.getComputedTextLength()),
         );
-        const tickStep = Math.max(
-            1,
-            Math.ceil(((labelWidth + 14) * lastColumn) / (right - left)),
-        );
+        const tickGap = labelWidth + 14;
+        let previousTick = xDay(first);
         ticks.forEach((tick, column) => {
-            if (
-                column > 0 &&
-                (column < tickStep || (lastColumn - column) % tickStep !== 0)
-            )
+            if (column === 0 || column === ticks.length - 1) return;
+            const px = xDay(tickDays[column]);
+            if (px - previousTick < tickGap || xDay(last) - px < tickGap)
                 tick.remove();
+            else previousTick = px;
         });
 
         const dots = [];
@@ -383,7 +395,7 @@ export function createDifficultyProgress({
             });
             const stop = svgElement("stop", {
                 class: "progress-play-stop",
-                offset: column / Math.max(1, lastColumn),
+                offset: (x(column) - left) / (right - left),
             });
             const accent =
                 period.attempts >= fullAccentPlayCount
@@ -403,7 +415,17 @@ export function createDifficultyProgress({
             visibility: "hidden",
         });
         svg.append(defs, series, crosshair);
-        plot = { width, left, right, x, crosshair, signature };
+        plot = {
+            width,
+            left,
+            right,
+            first,
+            last,
+            columns,
+            x,
+            crosshair,
+            signature,
+        };
         weekSelect.replaceChildren(
             ...periods.map(
                 ({ start }) => new Option(labelDate(start, true), start),
@@ -420,15 +442,13 @@ export function createDifficultyProgress({
         const rect = svg.getBoundingClientRect();
         const px = ((event.clientX - rect.left) / rect.width) * plot.width;
         if (px < plot.left - 12 || px > plot.right + 12) return -1;
-        return Math.max(
-            0,
-            Math.min(
-                periods.length - 1,
-                Math.round(
-                    ((px - plot.left) / (plot.right - plot.left)) *
-                        (periods.length - 1),
-                ),
-            ),
+        const day =
+            plot.first +
+            ((px - plot.left) / (plot.right - plot.left)) *
+                (plot.last - plot.first);
+        return plot.columns.findLastIndex(
+            (start, column) =>
+                column === 0 || (start + plot.columns[column - 1]) / 2 <= day,
         );
     }
 
@@ -485,7 +505,7 @@ export function createDifficultyProgress({
             minimum,
             aprilFools,
             days,
-            now,
+            range,
         });
         controls.hidden = !index.levels.length;
         level.max = Math.max(
@@ -587,13 +607,23 @@ export function createDifficultyProgress({
         update(
             nextPlays,
             nextSongs,
-            { includeCustom: allowCustom, days: nextDays, now: nextNow } = {},
+            {
+                includeCustom: allowCustom,
+                days: nextDays,
+                now,
+                range: nextRange = trackingRange(nextPlays, {
+                    days: nextDays,
+                    now,
+                }),
+            } = {},
         ) {
             if (
                 nextPlays === plays &&
                 nextSongs === songs &&
                 allowCustom === includeCustom &&
-                nextDays === days
+                nextDays === days &&
+                nextRange?.start === range?.start &&
+                nextRange?.end === range?.end
             ) {
                 const small = matchMedia("(max-width: 900px)").matches;
                 const width = small
@@ -610,9 +640,8 @@ export function createDifficultyProgress({
             plays = nextPlays;
             songs = nextSongs;
             includeCustom = allowCustom;
-            if (days !== nextDays) selectedPeriod = null;
             days = nextDays;
-            now = nextNow;
+            range = nextRange;
             updateIndex();
         },
     };

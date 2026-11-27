@@ -48,9 +48,9 @@ function morphTiming(svg, from, to, draw, finish) {
 
 export function renderTimingHistogram(
     plays,
-    { days, difficulty, now, animate = true, transition = false } = {},
+    { days, range, difficulty, now, animate = true, transition = false } = {},
 ) {
-    const stats = timingHistogram(plays, { days, difficulty, now });
+    const stats = timingHistogram(plays, { days, range, difficulty, now });
     const svg = $("timing-chart");
     const reveal = animate || motion.isPending(svg);
     svg.removeAttribute("aria-hidden");

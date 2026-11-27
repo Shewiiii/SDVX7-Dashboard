@@ -75,7 +75,7 @@ def search_forms(text: str, *, reading: bool = False) -> list[str]:
     return sorted(f for f in forms if f)
 
 
-PLAY_SCHEMA = 6
+PLAY_SCHEMA = 7
 DETAILS_SCHEMA = 8
 UPLOAD_COMPRESSION: dict[str, bool] = {}
 CLEARS = {1: 50, 2: 100, 3: 102, 4: 106, 5: 110, 6: 104}
@@ -379,7 +379,11 @@ def play_record(record: dict[str, Any], catalog: Catalog) -> dict[str, Any]:
     metadata = catalog.get(mid, diff)
     # Prefer decoded XML metadata over levels captured by the old scaling heuristic.
     level = metadata.get("level") or record.get("level")
-    if clear == 0:
+    options = record.get("result_options")
+    skill_analyzer = isinstance(options, dict) and options.get("mode") in (2, "2")
+    if skill_analyzer:
+        vf = 0.0
+    elif clear == 0:
         vf = 0.0  # Failed plays do not contribute to performance.
     elif record.get("volforce_source") == "updated":
         vf = int(record["volforce"]) / 1000
@@ -451,8 +455,6 @@ def play_record(record: dict[str, Any], catalog: Catalog) -> dict[str, Any]:
         for key in judgement_keys
         if type(value := counts.get(key)) is int and 0 <= value <= 10000000
     }
-    options = record.get("result_options")
-    skill_analyzer = isinstance(options, dict) and options.get("mode") in (2, "2")
     mode_fields = {"is_skill_analyzer": True} if skill_analyzer else {}
     return {
         "music_id": mid,

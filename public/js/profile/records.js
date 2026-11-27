@@ -8,8 +8,8 @@ import {
 } from "../core/format.js";
 import { createPagination } from "../core/pagination.js";
 import { motion } from "../core/motion.js";
-import { vf, recordList, chartKey, paginate } from "./metrics.js";
-import { badge, clear } from "../charts/chart-markup.js";
+import { recordList, chartKey, paginate } from "./metrics.js";
+import { badge, clear, recordVfMarkup } from "../charts/chart-markup.js";
 import { parseSearch } from "../search/search-query.js";
 import { updateSearchClearButtons } from "../search/search-inputs.js";
 
@@ -45,7 +45,7 @@ export function createRecords({
             <td class="record-difficulty">${badge(record)}</td>
             <td class="score-cell record-score">${number(record.score)}</td>
             <td class="record-clear">${clear(record)}</td>
-            <td class="right vf-cell record-vf">${vf(record.vf ?? record.play_vf)}</td>
+            <td class="right vf-cell record-vf">${recordVfMarkup(record)}</td>
         </tr>`;
     }
 

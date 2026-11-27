@@ -27,6 +27,13 @@ export function clear(p) {
     }
     return `<span class="clear-label ${p.clear_type === 6 ? "puc" : ""}">${CLEARS[p.clear_type] || "—"}</span>`;
 }
+export function recordVfMarkup(play) {
+    const value = vf(play.vf ?? play.play_vf);
+    return play.is_skill_analyzer === true
+        ? `<span class="skill-analyzer-vf">${value}</span>`
+        : value;
+}
+
 export const gradeMarkup = (score) => {
     const label = grade(score);
     return label === "—"
@@ -74,16 +81,20 @@ export function createChartMarkup({ getData, getSongs, newPlayAttributes }) {
                 record.music_id === chart.music_id &&
                 record.diff_idx === chart.diff_idx,
         );
+        // Dan stages stay in play history but never supply a Chart VF score or clear mark
+        const regularPlays = plays.filter(
+            (play) => play.is_skill_analyzer !== true,
+        );
         const mark =
-            saved || plays.length
+            saved || regularPlays.length
                 ? Math.max(
                       saved?.clear_type || 0,
-                      ...plays.map((play) => play.clear_type),
+                      ...regularPlays.map((play) => play.clear_type),
                   )
                 : null;
         const scores = [
             saved?.score,
-            ...plays.map((play) => play.score),
+            ...regularPlays.map((play) => play.score),
         ].filter(Number.isSafeInteger);
         const score = scores.length ? Math.max(...scores) : null;
         const level =
@@ -94,10 +105,13 @@ export function createChartMarkup({ getData, getSongs, newPlayAttributes }) {
                 ?.difficulties.find(
                     (difficulty) => difficulty.diff_idx === chart.diff_idx,
                 )?.level;
+        const danOnly = !saved && plays.length > 0 && !regularPlays.length;
         const chartVf =
-            calculateChartVf(level, score, mark) ?? saved?.vf ?? null;
+            calculateChartVf(level, score, mark) ??
+            saved?.vf ??
+            (danOnly ? 0 : null);
         const popupText =
-            "Chart VF combines the highest score and clear mark for this chart, even when they come from different plays";
+            "Chart VF combines the highest regular-play score and clear mark for this chart, even when they come from different plays";
         const averageTiming = average(
             data.plays
                 .filter(
@@ -132,7 +146,7 @@ export function createChartMarkup({ getData, getSongs, newPlayAttributes }) {
     }
 
     function row(p, rank = null) {
-        return `<a class="play-row chart-row" href="${songPath(p.music_id, p.diff_idx)}" ${rank === null ? newPlayAttributes(p) : ""} ${playAttributes(p)} data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p, "small", false)}${chartInfo(p, { titleMarkup: `<span class="song-title">${escape(chartTitle(p))}</span>` })}<div class="row-values"><div class="row-vf">${vf(p.vf ?? p.play_vf)}</div><div class="row-score">${number(p.score)}</div></div></a>`;
+        return `<a class="play-row chart-row" href="${songPath(p.music_id, p.diff_idx)}" ${rank === null ? newPlayAttributes(p) : ""} ${playAttributes(p)} data-music="${p.music_id}" data-diff="${p.diff_idx}"><span class="row-index">${rank !== null ? formatRank(rank) : clock(p.received_at)}</span>${coverMarkup(p, "small", false)}${chartInfo(p, { titleMarkup: `<span class="song-title">${escape(chartTitle(p))}</span>` })}<div class="row-values"><div class="row-vf">${recordVfMarkup(p)}</div><div class="row-score">${number(p.score)}</div></div></a>`;
     }
 
     function chartSongMarkup(chart) {

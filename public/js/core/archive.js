@@ -1,4 +1,5 @@
 import { mergeArchive } from "./history.js";
+import { applySkillAnalyzerVf } from "../profile/skill-analyzer-vf.js";
 
 export function createArchiveLoader() {
     let current, revision, catalog;
@@ -41,7 +42,10 @@ export function createArchiveLoader() {
                 fresh || check || attempt > 0,
             );
             // Older preview servers may still return a complete archive.
-            if (Array.isArray(version.plays)) return version;
+            if (Array.isArray(version.plays))
+                return Array.isArray(version.state?.charts)
+                    ? applySkillAnalyzerVf(version)
+                    : version;
             if (!version.revision || !version.catalog_revision)
                 throw new Error("Invalid archive revision");
             if (
@@ -84,10 +88,10 @@ export function createArchiveLoader() {
                     !Array.isArray(library.state?.appeal_cards)
                 )
                     throw new Error("Invalid archive");
-                current = {
+                current = applySkillAnalyzerVf({
                     ...archive,
                     state: { ...archive.state, ...library.state },
-                };
+                });
                 revision = version.revision;
                 if (catalog !== library) {
                     catalog = library;

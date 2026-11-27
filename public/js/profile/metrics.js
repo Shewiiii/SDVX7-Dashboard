@@ -228,6 +228,7 @@ export function performance(
         .filter((p) => {
             const time = Date.parse(p.received_at);
             return (
+                p.is_skill_analyzer !== true &&
                 p.clear_type > 1 &&
                 p.diff_idx >= difficulty &&
                 Number.isFinite(p.play_vf) &&

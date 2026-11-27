@@ -1060,6 +1060,9 @@
     stroke-width: 1;
     r: 3.5;
 }
+.calculator-chart-dot .calculator-dot.skill-analyzer-vf {
+    fill: var(--faint);
+}
 .calculator-chart-dot:focus-visible {
     outline: none;
 }
@@ -1374,6 +1377,9 @@ td.row-index + td {
 .vf-cell {
     font-size: var(--entry-vf-size);
     color: var(--entry-vf-color);
+}
+.skill-analyzer-vf {
+    color: var(--faint);
 }
 .row-score,
 .score-cell {

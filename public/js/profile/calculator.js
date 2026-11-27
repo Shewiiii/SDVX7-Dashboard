@@ -21,6 +21,7 @@ import {
     difficultyStep,
     nextDifficulty,
 } from "../library/difficulty.js";
+import { skillCourseLabel } from "../library/skill-courses.js";
 
 const defaults = {
     mode: "score",
@@ -324,6 +325,10 @@ export function createCalculator(
             )
                 continue;
             const matching = matchesChart(chart);
+            const skillAnalyzer = chart.is_skill_analyzer === true;
+            const clearLabel = skillAnalyzer
+                ? skillCourseLabel(chart)
+                : CLEARS[chart.clear_type];
             const caption = `${chart.title || `Chart ${chart.music_id}`} - ${DIFFS[chart.diff_idx]} ${chart.level ?? ""} - ${Number.isFinite(chart.score) ? formatScoreInput(chart.score) : "—"} - VF ${vf(chart.vf)}`;
             const dot = svgElement("g", {
                 class: `calculator-chart-dot chart-row${matching ? " is-matching" : ""}`,
@@ -332,7 +337,7 @@ export function createCalculator(
                 "data-rank": chart.rank,
                 tabindex: 0,
                 role: "button",
-                "aria-label": `${chartFilter ? "Play" : "Top"} ${chart.rank} - ${caption} - ${CLEARS[chart.clear_type]}. View plays`,
+                "aria-label": `${chartFilter ? "Play" : "Top"} ${chart.rank} - ${caption} - ${clearLabel}. View plays`,
             });
             dot.append(
                 svgElement("circle", {
@@ -345,7 +350,9 @@ export function createCalculator(
                     cx: plot.x(value),
                     cy: plot.y(chart.vf),
                     r: 2.4,
-                    class: "calculator-dot",
+                    class: skillAnalyzer
+                        ? "calculator-dot skill-analyzer-vf"
+                        : "calculator-dot",
                 }),
             );
             points.append(dot);

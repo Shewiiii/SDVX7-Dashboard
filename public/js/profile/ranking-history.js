@@ -12,8 +12,9 @@ export function rankingHistory(data, { includeCustom = false } = {}) {
     }
     if (variants.has(includeCustom)) return variants.get(includeCustom);
 
+    const plays = data.plays.filter((play) => play.is_skill_analyzer !== true);
     const tracked = new Map();
-    for (const play of data.plays) {
+    for (const play of plays) {
         const key = keyOf(play);
         const best = tracked.get(key) || { score: 0, clear_type: 0 };
         best.score = Math.max(best.score, play.score || 0);
@@ -40,7 +41,7 @@ export function rankingHistory(data, { includeCustom = false } = {}) {
     }
 
     const events = [
-        ...data.plays.map((play) => ({
+        ...plays.map((play) => ({
             timestamp: play.received_at,
             time: Date.parse(play.received_at),
             play,

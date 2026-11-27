@@ -21,7 +21,6 @@ import {
 import { motion, initSegmentedControl } from "../core/motion.js";
 import {
     DIFFS,
-    vf,
     chartPlays,
     searchSongs,
     paginate,
@@ -30,7 +29,12 @@ import {
     judgmentAccuracy,
 } from "../profile/metrics.js";
 import { radarMarkup, paintRadar } from "../profile/radar.js";
-import { clear, gradeMarkup, difficultyRange } from "../charts/chart-markup.js";
+import {
+    clear,
+    gradeMarkup,
+    difficultyRange,
+    recordVfMarkup,
+} from "../charts/chart-markup.js";
 import { dismissSearchKeyboard } from "./search-tools.js";
 import { parseSearch } from "./search-query.js";
 import { updateSearchClearButtons } from "./search-inputs.js";
@@ -365,7 +369,7 @@ export function createSongSearch({
                   .map((p, index) => {
                       const key = judgementKey(p);
                       const expanded = expandedJudgements.has(key);
-                      return `<tr id="song-score-${index}" class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span>${DETAILS_CHEVRON}</button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${vf(p.play_vf)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
+                      return `<tr id="song-score-${index}" class="song-search-entry" ${newPlayAttributes(p)} data-judgements="${index}" data-judgement-key="${escape(key)}" data-play-vf="${p.play_vf}"><td class="row-index score-position">${formatRank(start + index + 1)}</td><td class="score-cell"><button type="button" class="score-with-grade judgement-toggle" aria-expanded="${expanded}" aria-controls="judgements-${index}" aria-label="${expanded ? "Hide" : "Show"} judgements for score ${number(p.score)}">${gradeMarkup(p.score)}<span>${number(p.score)}</span>${DETAILS_CHEVRON}</button></td><td class="score-clear">${clear(p)}</td><td class="played-date">${date(p.received_at)} <span>${clock(p.received_at)}</span></td><td class="right vf-cell">${recordVfMarkup(p)}</td></tr><tr id="judgements-${index}" class="judgement-row" ${expanded ? "" : "hidden"}><td colspan="5">${judgementDetails(p)}</td></tr>`;
                   })
                   .join("")
             : '<tr><td class="empty-state" colspan="5">No data available</td></tr>';
